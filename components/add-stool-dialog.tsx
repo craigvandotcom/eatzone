@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import type { Stool } from "@/types/stool" // Declare the Stool variable
+import type { Stool } from "@/lib/types"
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"

@@ -92,13 +92,21 @@ The application follows a **local-first** data storage approach, prioritizing us
 
 #### 3.2. AI Analysis Flow (Privacy-Preserving)
 
-The AI analysis follows an **ephemeral processing** model that maintains privacy:
+The AI analysis follows an **ephemeral processing** model that maintains privacy while optimizing for rapid iteration:
+
+**Architecture Strategy: Hybrid Workflow Approach**
+
+The system uses a **visual workflow orchestrator** (n8n) combined with an **AI API aggregator** (OpenRouter) to maximize iteration speed and flexibility:
 
 1. **Capture:** User takes photo on frontend
-2. **Ephemeral Processing:** Frontend sends image to Vercel serverless function
-3. **AI Analysis:** Function calls external AI API (GPT-4o, Claude Vision, etc.)
-4. **Structured Response:** AI returns JSON matching our data interfaces
-5. **No Persistence:** **Critical** - Server function processes data without storing it
+2. **Webhook Trigger:** Frontend sends image to Next.js API route (`/api/analyze`)
+3. **Workflow Orchestration:** API route forwards request to n8n webhook URL
+4. **AI Processing:** n8n workflow handles the complex AI logic:
+   - Calls OpenRouter API with configurable model selection
+   - Processes AI response and formats to match data interfaces
+   - Handles error cases and validation
+   - Returns structured JSON to webhook response
+5. **No Persistence:** **Critical** - All processing remains ephemeral
 6. **Local Storage:** Frontend receives structured data and saves to IndexedDB
 
 **Key Privacy Principles:**
@@ -107,11 +115,18 @@ The AI analysis follows an **ephemeral processing** model that maintains privacy
 - All processing happens in memory and is immediately discarded
 - User data only exists on their device and in transit during analysis
 
+**Architecture Benefits:**
+- **Rapid Iteration:** AI logic can be modified in n8n without code deployments
+- **Model Flexibility:** Easy switching between AI providers via OpenRouter
+- **Decoupled Design:** Main application is independent of AI implementation details
+- **Visual Development:** Complex AI workflows can be built and tested visually
+
 **Security & Performance Considerations:**
 - **API Security:** AI API keys stored as server-side environment variables only
 - **Rate Limiting:** IP-based rate limiting on `/api/analyze` endpoint to prevent abuse
 - **Data Validation:** **Zod** schema validation for all AI responses before client processing
 - **Error Handling:** Graceful fallbacks when AI analysis fails or returns malformed data
+- **Workflow Security:** n8n webhook endpoints secured with authentication tokens
 
 #### 3.3. Future Architecture Considerations
 
@@ -214,16 +229,21 @@ This section outlines potential paths for evolving the application.
 
 - **Real AI Integration:**
 
-- **Objective:** Replace the `setTimeout` simulation with a real AI backend.
-- **Implementation:** Privacy-preserving serverless functions
+- **Objective:** Replace the `setTimeout` simulation with a real AI backend using the hybrid workflow approach.
+- **Implementation:** Visual workflow orchestrator (n8n) + AI API aggregator (OpenRouter)
 - **Steps:**
 
-1. Create a Next.js API Route (e.g., `app/api/analyze/route.ts`).
-2. The client will `POST` the base64 image data to this route.
-3. The API route will call a multimodal AI model (e.g., GPT-4o, Claude Vision).
-4. The prompt will instruct the AI to return a structured JSON object matching our interfaces (e.g., `{ ingredients: [{ name: "lettuce", ... }], ... }`).
-5. **Critical:** The function processes data ephemerally without persistence.
-6. The client will update the placeholder entry with the AI's response and save to IndexedDB.
+1. **Setup n8n:** Deploy n8n (cloud or self-hosted) for visual workflow management
+2. **Configure OpenRouter:** Set up OpenRouter account for unified AI model access
+3. **Build AI Workflow:** Create n8n workflow with webhook trigger, OpenRouter integration, and response formatting
+4. **Create Next.js API Route:** Build simple `/api/analyze` route that forwards requests to n8n webhook
+5. **Implement Security:** Add rate limiting, authentication tokens, and input validation
+6. **Test & Iterate:** Use n8n's visual interface to rapidly test different models and prompts
+7. **Client Integration:** Update frontend to handle workflow responses and save to IndexedDB
+
+**Migration Path:**
+- **Phase 1:** Start with n8n + OpenRouter for maximum iteration speed
+- **Phase 2:** Once AI logic is proven, optionally migrate to direct API calls for performance optimization
 
 - **Enhanced Local Storage:**
 
@@ -308,10 +328,11 @@ This section outlines potential paths for evolving the application.
 - **Next:** Enhanced PWA with Capacitor for native features
 - **Future:** Hybrid approach with optional cloud sync
 
-- **AI Model Options:**
+- **AI Architecture Evolution:**
 
-- **Current:** External API calls (OpenAI, Anthropic)
-- **Future:** On-device AI models for complete privacy
-- **Consideration:** WebAssembly-based inference for sensitive analysis
+- **Phase 1:** n8n + OpenRouter for rapid iteration and model flexibility
+- **Phase 2:** Direct API calls for performance optimization (optional)
+- **Phase 3:** On-device AI models for complete privacy (future consideration)
+- **Advanced:** WebAssembly-based inference for sensitive analysis
 
 ---

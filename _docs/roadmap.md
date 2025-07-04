@@ -13,6 +13,65 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 ---
 
+### Phase 0: Development Environment Setup
+
+**Goal:** Establish a complete, professional development environment with all necessary tools, dependencies, and configurations for efficient solo development.
+
+-   [ ] **Task 0.1: Node.js & Package Manager Setup (`setup-node-env`)**
+    -   **Action:** Ensure Node.js 18+ is installed and configure package manager.
+    -   **Implementation:**
+        - Verify Node.js version (18+ required for Next.js 15)
+        - Install/configure pnpm (already in use based on `pnpm-lock.yaml`)
+        - Set up `.nvmrc` for Node.js version consistency
+    -   **Outcome:** Consistent Node.js environment ready for development.
+
+-   [ ] **Task 0.2: Install Core Dependencies (`install-dependencies`)**
+    -   **Action:** Install all foundational packages for the tech stack.
+    -   **Dependencies to Install:**
+        - `dexie` and `dexie-react-hooks` for IndexedDB
+        - `zod` for data validation
+        - `@upstash/ratelimit` for API rate limiting
+        - Development tools: `@types/node`, `eslint`, `prettier`
+    -   **Outcome:** All necessary packages installed and configured.
+
+-   [ ] **Task 0.3: Development Tools Configuration (`configure-dev-tools`)**
+    -   **Action:** Set up code quality and development efficiency tools.
+    -   **Configuration:**
+        - ESLint with Next.js and TypeScript rules
+        - Prettier for consistent code formatting
+        - VS Code settings and recommended extensions
+        - Git hooks for pre-commit linting (optional)
+    -   **Outcome:** Professional development environment with code quality enforcement.
+
+-   [ ] **Task 0.4: Environment Variables & Security (`setup-env-vars`)**
+    -   **Action:** Configure environment variable management for development and production.
+    -   **Implementation:**
+        - Create `.env.local` template with required variables
+        - Set up `.env.example` for documentation
+        - Configure Vercel environment variables (when ready)
+        - Document security best practices
+    -   **Outcome:** Secure environment variable management system.
+
+-   [ ] **Task 0.5: Development Scripts & Workflow (`setup-dev-scripts`)**
+    -   **Action:** Create helpful development scripts and document the development workflow.
+    -   **Scripts to Add:**
+        - `dev:clean` - Clean build artifacts and reinstall dependencies
+        - `build:check` - Build and type-check without deployment
+        - `db:reset` - Clear IndexedDB for testing (development utility)
+        - `test:pwa` - Test PWA functionality locally
+    -   **Outcome:** Streamlined development workflow with helpful utilities.
+
+-   [ ] **Task 0.6: Verify Current Implementation (`audit-existing-code`)**
+    -   **Action:** Review and test existing components to ensure they work with the new environment.
+    -   **Verification:**
+        - Test all existing UI components render correctly
+        - Verify camera capture functionality works
+        - Check PWA manifest and service worker
+        - Ensure TypeScript compilation is clean
+    -   **Outcome:** Existing codebase is verified and ready for Phase 1 development.
+
+---
+
 ### Phase 1: Foundational PWA - The Local-First Core
 
 **Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the core MVP.
@@ -50,24 +109,52 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 **Goal:** Implement the privacy-preserving AI analysis flow to bring "smart" features online.
 
--   [ ] **Task 6: Create AI API Route (`create-api-route`)**
-    -   **Action:** Create a Next.js API route (e.g., `/api/analyze`) that acts as a secure, ephemeral processor.
+-   [ ] **Task 6: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)**
+    -   **Action:** Implement the hybrid workflow approach using n8n + OpenRouter for maximum iteration speed.
+    -   **Implementation Steps:**
+        - Deploy n8n (start with cloud version for simplicity)
+        - Set up OpenRouter account and configure API access
+        - Create authentication tokens for webhook security
+        - Test basic webhook connectivity
+    -   **Outcome:** Visual workflow platform ready for AI logic development.
+
+-   [ ] **Task 7: Build AI Analysis Workflow (`build-ai-workflow`)**
+    -   **Action:** Create the visual workflow in n8n that handles image analysis and JSON formatting.
+    -   **Workflow Components:**
+        - Webhook trigger node for receiving image data
+        - OpenRouter HTTP request node for AI model calls
+        - Data transformation nodes for JSON formatting
+        - Error handling and validation nodes
+        - Response formatting for client consumption
+    -   **Outcome:** Complete AI analysis workflow that can be visually modified and tested.
+
+-   [ ] **Task 8: Create Simple API Route (`create-api-route`)**
+    -   **Action:** Build a lightweight Next.js API route that forwards requests to the n8n workflow.
     -   **Security Implementation:**
-        - Store AI API keys as server-side environment variables only
-        - Implement rate limiting using `@upstash/ratelimit` or similar
-        - Add Zod schema validation for AI responses
-        - Implement proper error handling for malformed AI responses
-    -   **Outcome:** A secure, serverless endpoint ready to receive image data for analysis with proper safeguards.
+        - Implement rate limiting using `@upstash/ratelimit`
+        - Add input validation and sanitization
+        - Secure webhook authentication with tokens
+        - Implement proper error handling and timeouts
+    -   **Outcome:** Secure API endpoint that acts as a bridge between client and AI workflow.
 
--   [ ] **Task 7: Integrate Camera with API (`integrate-camera`)**
-    -   **Action:** Connect the `camera-capture.tsx` component to the new API route, sending image data on capture.
-    -   **Outcome:** Photos taken in the app are sent for AI processing.
+-   [ ] **Task 9: Integrate Camera with Workflow (`integrate-camera`)**
+    -   **Action:** Connect the `camera-capture.tsx` component to the new API route, sending image data to the AI workflow.
+    -   **Implementation:**
+        - Update camera component to call `/api/analyze` endpoint
+        - Handle workflow response timing (may be slower than direct API calls)
+        - Implement proper loading states and error handling
+    -   **Outcome:** Photos taken in the app are sent through the AI workflow for processing.
 
--   [ ] **Task 8: Handle AI Analysis in UI (`update-ui-for-ai`)**
-    -   **Action:** Implement UI states to handle "Analyzing..." placeholders and display the structured data returned by the AI.
-    -   **Outcome:** A seamless user experience from capture to categorized data entry.
+-   [ ] **Task 10: Handle AI Analysis in UI (`update-ui-for-ai`)**
+    -   **Action:** Implement UI states to handle "Analyzing..." placeholders and display the structured data returned by the AI workflow.
+    -   **Implementation:**
+        - Add loading states for workflow processing
+        - Handle workflow timeouts and errors gracefully
+        - Display structured data from workflow responses
+        - Implement retry logic for failed analyses
+    -   **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling.
 
--   [ ] **Task 9: Build Insights Page (`build-insights-page`)**
+-   [ ] **Task 11: Build Insights Page (`build-insights-page`)**
     -   **Action:** Create the "Insights & Analytics" page that performs all calculations and visualizations on the client-side using data from IndexedDB.
     -   **Outcome:** Users can see trends and correlations in their health data without it ever leaving their device.
 
@@ -77,20 +164,21 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 **Goal:** Package the PWA as a native app for iOS and Android to expand its reach and capabilities.
 
--   [ ] **Task 10: Integrate Capacitor (`integrate-capacitor`)**
+-   [ ] **Task 12: Integrate Capacitor (`integrate-capacitor`)**
     -   **Action:** Add Capacitor to the Next.js project.
-    -   **Important Note:** Capacitor packages the PWA as a static web app. The native app will make network requests to the deployed Vercel API endpoints (e.g., `https://your-app.vercel.app/api/analyze`) for AI functionality.
+    -   **Important Note:** Capacitor packages the PWA as a static web app. The native app will make network requests to the deployed Vercel API endpoints and n8n workflows for AI functionality.
     -   **Implementation:**
         - Configure Next.js for static export (`next build && next export`)
         - Install and configure Capacitor
         - Update API calls to use absolute URLs in production
+        - Ensure n8n webhook URLs are accessible from native apps
     -   **Outcome:** The project is configured to build native app packages with proper client-server separation.
 
--   [ ] **Task 11: Configure Native Projects (`configure-native-projects`)**
+-   [ ] **Task 13: Configure Native Projects (`configure-native-projects`)**
     -   **Action:** Set up the iOS (Xcode) and Android (Android Studio) projects, including icons, splash screens, and permissions.
     -   **Outcome:** Native project shells are ready for compilation.
 
--   [ ] **Task 12: Build and Test on Devices (`test-native`)**
+-   [ ] **Task 14: Build and Test on Devices (`test-native`)**
     -   **Action:** Compile the app and test it thoroughly on iOS and Android emulators and physical devices.
     -   **Outcome:** A stable, distributable native application.
 
@@ -100,11 +188,35 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 **Goal:** Implement "Tier 3" features that require careful privacy considerations, such as optional cloud sync.
 
--   [ ] **Task 13: Implement E2EE Sync (`e2ee-sync`)**
+-   [ ] **Task 15: Implement E2EE Sync (`e2ee-sync`)**
     -   **Action:** As an opt-in feature, build an end-to-end encrypted synchronization system.
     -   **Technology:** Use a service like Supabase to store encrypted data blobs that the server cannot read.
     -   **Outcome:** Users can securely sync their data across multiple devices while maintaining privacy.
 
--   [ ] **Task 14: Implement Secure Sharing (`secure-sharing`)**
+-   [ ] **Task 16: Implement Secure Sharing (`secure-sharing`)**
     -   **Action:** Create a feature allowing users to securely share a snapshot of their data with a healthcare provider.
     -   **Outcome:** Users can grant temporary, controlled access to their health information.
+
+---
+
+## AI Architecture Migration Path
+
+As the application matures, there's an optional migration path for the AI architecture:
+
+### **Phase 1: n8n + OpenRouter (Recommended Start)**
+- **Benefits:** Maximum iteration speed, model flexibility, visual development
+- **Trade-offs:** Additional service dependency, slightly higher latency
+- **When to use:** During development and early user testing
+
+### **Phase 2: Direct API Integration (Optional Optimization)**
+- **Benefits:** Lower latency, fewer dependencies, potentially lower costs
+- **Trade-offs:** Reduced iteration speed, more complex code changes
+- **When to migrate:** When AI logic is proven and stable, performance becomes critical
+
+### **Decision Criteria for Migration:**
+- **Performance:** If workflow latency becomes unacceptable (>5-10 seconds)
+- **Cost:** If n8n + OpenRouter costs exceed direct API costs significantly
+- **Complexity:** If visual workflow becomes harder to manage than code
+- **Scale:** If request volume requires more optimized architecture
+
+**Important:** Only migrate when you have a clear performance or cost issue. The n8n approach provides significant development velocity advantages for solo developers.

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import type { Liquid } from "@/types/liquid" // Declare the Liquid variable
+import type { Liquid } from "@/lib/types"
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"

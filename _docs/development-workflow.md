@@ -18,52 +18,27 @@ pnpm dev
 
 ### Development
 
-```bash
-# Start development server with hot reload
-pnpm dev
-
-# Clean build artifacts and reinstall dependencies
-pnpm dev:clean
-
-# Type check without building
-pnpm type-check
-```
+- **`pnpm dev`**: Starts the development server with hot-reloading at `http://localhost:3000`.
+- **`pnpm dev:clean`**: A "hard reset" script. Deletes build caches (`.next`), `node_modules`, and reinstalls all dependencies. Use this to resolve stubborn dependency or caching issues.
+- **`pnpm type-check`**: Runs the TypeScript compiler (`tsc`) to check for type errors across the project without generating JavaScript files.
 
 ### Code Quality
 
-```bash
-# Run ESLint
-pnpm lint
-
-# Format code with Prettier
-pnpm format
-
-# Check if code is formatted correctly
-pnpm format:check
-```
+- **`pnpm lint`**: Analyzes the codebase with ESLint to find and report potential errors and style violations.
+- **`pnpm format`**: Formats all relevant files in the project with Prettier to ensure a consistent code style.
+- **`pnpm format:check`**: Checks if all files are correctly formatted with Prettier without making any changes. Ideal for use in CI pipelines.
 
 ### Building & Testing
 
-```bash
-# Build for production
-pnpm build
-
-# Build and run linting
-pnpm build:check
-
-# Test PWA functionality (builds and starts production server)
-pnpm test:pwa
-
-# Start production server (after build)
-pnpm start
-```
+- **`pnpm build`**: Creates a production-ready, optimized build of the application.
+- **`pnpm build:check`**: A pre-deployment quality check. It runs a full production build and lints the code to catch issues beforehand.
+- **`pnpm test:pwa`**: Builds the application and serves it locally to allow for testing PWA features (like offline support and installability) in a production-like environment.
+- **`pnpm start`**: Starts a local server to serve the production build created by `pnpm build`.
 
 ### Database Development
 
-```bash
-# Reset IndexedDB (manual instruction)
-pnpm db:reset
-```
+- **`db:reset` (Manual Task)**: This is not an automated script. To test the application with a clean slate, you must clear the IndexedDB manually via your browser's developer tools.
+  - **How-to**: Open DevTools → Application → Storage → IndexedDB → Right-click on the database → Delete.
 
 ## Development Workflow
 

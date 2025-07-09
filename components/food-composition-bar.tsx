@@ -5,11 +5,11 @@ interface Ingredient {
   healthCategory?: "green" | "yellow" | "red"
 }
 
-interface MealCompositionBarProps {
+interface FoodCompositionBarProps {
   ingredients: Ingredient[]
 }
 
-export function MealCompositionBar({ ingredients }: MealCompositionBarProps) {
+export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   const totalIngredients = ingredients.length
 
   if (totalIngredients === 0) {

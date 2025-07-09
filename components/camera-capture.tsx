@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Camera, Edit3 } from "lucide-react"
 
@@ -111,7 +111,7 @@ export function CameraCapture({ open, onOpenChange, onCapture, onManualEntry, ti
         <div className="relative">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-lg font-semibold">{title}</h2>
+            <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
           </div>
 
           {/* Camera View */}

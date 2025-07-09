@@ -1,204 +1,184 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
+import type { Symptom } from "@/lib/types";
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from "lucide-react"
-import { format } from "date-fns"
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from "lucide-react";
 
-interface Symptom {
-  name: string
-  severity: number
-  time: string
-  notes?: string
+interface LocalSymptom {
+  name: string;
+  severity: number;
 }
 
 interface AddSymptomDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onAddSymptom: (symptom: {
-    name: string
-    severity: number
-    time: string
-    date: string
-    notes?: string
-  }) => void
-  editingSymptom?: Symptom | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAddSymptom: (symptom: Omit<Symptom, "id" | "timestamp">) => void;
+  onClose: () => void;
+  editingSymptom?: Symptom | null;
 }
 
-export function AddSymptomDialog({ open, onOpenChange, onAddSymptom, editingSymptom }: AddSymptomDialogProps) {
-  const [currentSymptom, setCurrentSymptom] = useState("")
-  const [symptoms, setSymptoms] = useState<Symptom[]>([])
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [editingValue, setEditingValue] = useState("")
-  const [severitySelectionIndex, setSeveritySelectionIndex] = useState<number | null>(null)
-  const [notes, setNotes] = useState("")
-  const [showNotes, setShowNotes] = useState(false)
+export function AddSymptomDialog({
+  open,
+  onOpenChange,
+  onAddSymptom,
+  onClose,
+  editingSymptom,
+}: AddSymptomDialogProps) {
+  const [currentSymptom, setCurrentSymptom] = useState("");
+  const [symptoms, setSymptoms] = useState<LocalSymptom[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingValue, setEditingValue] = useState("");
+  const [severitySelectionIndex, setSeveritySelectionIndex] = useState<
+    number | null
+  >(null);
+  const [notes, setNotes] = useState("");
+  const [showNotes, setShowNotes] = useState(false);
 
   // Pre-populate form when editing
   useEffect(() => {
     if (editingSymptom) {
-      const now = new Date()
       setSymptoms([
         {
           name: editingSymptom.name,
           severity: editingSymptom.severity,
-          time: editingSymptom.time,
-          notes: editingSymptom.notes,
         },
-      ])
-      setNotes(editingSymptom.notes || "")
-      setShowNotes(!!editingSymptom.notes)
+      ]);
+      setNotes(editingSymptom.notes || "");
+      setShowNotes(!!editingSymptom.notes);
+    } else {
+      setSymptoms([]);
+      setNotes("");
+      setShowNotes(false);
     }
-  }, [editingSymptom])
+  }, [editingSymptom]);
 
   const handleSymptomKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && currentSymptom.trim()) {
-      e.preventDefault()
-      const now = new Date()
+      e.preventDefault();
       setSymptoms([
         ...symptoms,
         {
           name: currentSymptom.trim(),
           severity: 0, // Set to 0 to indicate it needs to be set
-          time: format(now, "HH:mm"),
         },
-      ])
-      setCurrentSymptom("")
+      ]);
+      setCurrentSymptom("");
       // Automatically open severity selection for the new symptom
-      setSeveritySelectionIndex(symptoms.length)
+      setSeveritySelectionIndex(symptoms.length);
     }
-  }
+  };
 
   const handleDeleteSymptom = (index: number) => {
-    setSymptoms(symptoms.filter((_, i) => i !== index))
-    setSeveritySelectionIndex(null)
-  }
+    setSymptoms(symptoms.filter((_, i) => i !== index));
+    setSeveritySelectionIndex(null);
+  };
 
   const handleEditSymptom = (index: number) => {
-    setEditingIndex(index)
-    setEditingValue(symptoms[index].name)
-    setSeveritySelectionIndex(null)
-  }
+    setEditingIndex(index);
+    setEditingValue(symptoms[index].name);
+    setSeveritySelectionIndex(null);
+  };
 
   const handleToggleSeveritySelection = (index: number) => {
-    setSeveritySelectionIndex(severitySelectionIndex === index ? null : index)
-  }
+    setSeveritySelectionIndex(severitySelectionIndex === index ? null : index);
+  };
 
   const handleSelectSeverity = (index: number, severity: number) => {
-    const updatedSymptoms = [...symptoms]
-    updatedSymptoms[index].severity = severity
-    setSymptoms(updatedSymptoms)
-    setSeveritySelectionIndex(null) // Close severity selection
-  }
-
-  const handleSeverityChange = (index: number, newSeverity: number[]) => {
-    const updatedSymptoms = [...symptoms]
-    updatedSymptoms[index].severity = newSeverity[0]
-    setSymptoms(updatedSymptoms)
-  }
-
-  const handleSeveritySelectionComplete = () => {
-    setSeveritySelectionIndex(null)
-  }
+    const updatedSymptoms = [...symptoms];
+    updatedSymptoms[index].severity = severity;
+    setSymptoms(updatedSymptoms);
+    setSeveritySelectionIndex(null); // Close severity selection
+  };
 
   const handleSaveEdit = (index: number) => {
     if (editingValue.trim()) {
-      const updatedSymptoms = [...symptoms]
-      updatedSymptoms[index].name = editingValue.trim()
-      setSymptoms(updatedSymptoms)
+      const updatedSymptoms = [...symptoms];
+      updatedSymptoms[index].name = editingValue.trim();
+      setSymptoms(updatedSymptoms);
     }
-    setEditingIndex(null)
-    setEditingValue("")
-  }
+    setEditingIndex(null);
+    setEditingValue("");
+  };
 
   const handleCancelEdit = () => {
-    setEditingIndex(null)
-    setEditingValue("")
-  }
+    setEditingIndex(null);
+    setEditingValue("");
+  };
 
   const handleEditKeyPress = (e: React.KeyboardEvent, index: number) => {
     if (e.key === "Enter") {
-      e.preventDefault()
-      handleSaveEdit(index)
+      e.preventDefault();
+      handleSaveEdit(index);
     } else if (e.key === "Escape") {
-      e.preventDefault()
-      handleCancelEdit()
+      e.preventDefault();
+      handleCancelEdit();
     }
-  }
+  };
 
   const getSeverityColor = (severity: number) => {
-    if (severity <= 2) return "bg-green-100 text-green-700"
-    if (severity <= 4) return "bg-yellow-100 text-yellow-700"
-    return "bg-red-100 text-red-700"
-  }
-
-  const getSeverityLabel = (severity: number) => {
-    const labels = {
-      1: "Very Mild",
-      2: "Mild",
-      3: "Moderate",
-      4: "Severe",
-      5: "Very Severe",
-    }
-    return labels[severity as keyof typeof labels] || "Unknown"
-  }
+    if (severity <= 2) return "bg-green-100 text-green-700";
+    if (severity <= 4) return "bg-yellow-100 text-yellow-700";
+    return "bg-red-100 text-red-700";
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const validSymptoms = symptoms.filter((symptom) => symptom.severity > 0)
-    if (validSymptoms.length === 0) return
-
-    const now = new Date()
-    const date = format(now, "yyyy-MM-dd")
+    e.preventDefault();
+    const validSymptoms = symptoms.filter(symptom => symptom.severity > 0);
+    if (validSymptoms.length === 0) return;
 
     // Submit each valid symptom individually
-    validSymptoms.forEach((symptom) => {
-      onAddSymptom({
-        name: symptom.name,
-        severity: symptom.severity,
-        time: symptom.time,
-        date,
-        notes: notes || undefined,
-      })
-    })
+    validSymptoms.forEach(localSymptom => {
+      const symptom: Omit<Symptom, "id" | "timestamp"> = {
+        name: localSymptom.name,
+        severity: localSymptom.severity,
+        notes: notes.trim() || undefined,
+      };
+      onAddSymptom(symptom);
+    });
 
     // Reset form
-    if (!editingSymptom) {
-      setCurrentSymptom("")
-      setSymptoms([])
-      setNotes("")
-      setShowNotes(false)
-      setEditingIndex(null)
-      setEditingValue("")
-      setSeveritySelectionIndex(null)
-    }
-    onOpenChange(false)
-  }
+    setCurrentSymptom("");
+    setSymptoms([]);
+    setNotes("");
+    setShowNotes(false);
+    setEditingIndex(null);
+    setEditingValue("");
+    setSeveritySelectionIndex(null);
+    onClose();
+  };
 
   const handleClose = () => {
     if (!editingSymptom) {
-      setCurrentSymptom("")
-      setSymptoms([])
-      setNotes("")
-      setShowNotes(false)
-      setEditingIndex(null)
-      setEditingValue("")
-      setSeveritySelectionIndex(null)
+      setCurrentSymptom("");
+      setSymptoms([]);
+      setNotes("");
+      setShowNotes(false);
+      setEditingIndex(null);
+      setEditingValue("");
+      setSeveritySelectionIndex(null);
     }
-    onOpenChange(false)
-  }
+    onClose();
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{editingSymptom ? "Edit Symptom" : "Add Symptoms"}</DialogTitle>
+          <DialogTitle>
+            {editingSymptom ? "Edit Symptom" : "Add Symptoms"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -206,12 +186,14 @@ export function AddSymptomDialog({ open, onOpenChange, onAddSymptom, editingSymp
             <Input
               id="symptom-input"
               value={currentSymptom}
-              onChange={(e) => setCurrentSymptom(e.target.value)}
+              onChange={e => setCurrentSymptom(e.target.value)}
               onKeyPress={handleSymptomKeyPress}
               placeholder="Type symptom and press Enter"
               autoFocus
             />
-            <p className="text-xs text-gray-500 mt-1">Press Enter to add each symptom</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Press Enter to add each symptom
+            </p>
           </div>
 
           {/* Symptoms List */}
@@ -220,72 +202,77 @@ export function AddSymptomDialog({ open, onOpenChange, onAddSymptom, editingSymp
               <Label>Added Symptoms ({symptoms.length})</Label>
               <div className="space-y-2 mt-2 max-h-40 overflow-y-auto">
                 {symptoms.map((symptom, index) => (
-                  <div key={index} className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden">
+                  <div
+                    key={index}
+                    className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
+                  >
                     {/* Normal Symptom Row */}
-                    {severitySelectionIndex !== index && symptom.severity > 0 && (
-                      <>
-                        {editingIndex === index ? (
-                          <Input
-                            value={editingValue}
-                            onChange={(e) => setEditingValue(e.target.value)}
-                            onKeyPress={(e) => handleEditKeyPress(e, index)}
-                            onBlur={() => handleSaveEdit(index)}
-                            className="flex-1 h-8 mx-2"
-                            autoFocus
-                          />
-                        ) : (
-                          <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium">{symptom.name}</span>
-                            <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
-                              {symptom.time}
-                            </span>
-                            <span
-                              className={`text-xs px-1.5 py-0.5 rounded-full ${getSeverityColor(symptom.severity)}`}
+                    {severitySelectionIndex !== index &&
+                      symptom.severity > 0 && (
+                        <>
+                          {editingIndex === index ? (
+                            <Input
+                              value={editingValue}
+                              onChange={e => setEditingValue(e.target.value)}
+                              onKeyPress={e => handleEditKeyPress(e, index)}
+                              onBlur={() => handleSaveEdit(index)}
+                              className="flex-1 h-8 mx-2"
+                              autoFocus
+                            />
+                          ) : (
+                            <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium">
+                                {symptom.name}
+                              </span>
+                              <span
+                                className={`text-xs px-1.5 py-0.5 rounded-full ${getSeverityColor(symptom.severity)}`}
+                              >
+                                {symptom.severity}/5
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex gap-1 px-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleToggleSeveritySelection(index)
+                              }
+                              className={`p-1 transition-colors ${
+                                symptom.severity >= 4
+                                  ? "text-red-600 hover:text-red-700"
+                                  : symptom.severity >= 3
+                                    ? "text-yellow-600 hover:text-yellow-700"
+                                    : "text-green-600 hover:text-green-700"
+                              }`}
+                              title="Adjust severity"
                             >
-                              {symptom.severity}/5
-                            </span>
+                              <Target className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleEditSymptom(index)}
+                              className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                              title="Edit symptom"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSymptom(index)}
+                              className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                              title="Delete symptom"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
                           </div>
-                        )}
-                        <div className="flex gap-1 px-2">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleSeveritySelection(index)}
-                            className={`p-1 transition-colors ${
-                              symptom.severity >= 4
-                                ? "text-red-600 hover:text-red-700"
-                                : symptom.severity >= 3
-                                  ? "text-yellow-600 hover:text-yellow-700"
-                                  : "text-green-600 hover:text-green-700"
-                            }`}
-                            title="Adjust severity"
-                          >
-                            <Target className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditSymptom(index)}
-                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                            title="Edit symptom"
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteSymptom(index)}
-                            className="p-1 text-gray-500 hover:text-red-600 transition-colors"
-                            title="Delete symptom"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
 
                     {/* Severity Selection Row - Horizontal Multiple Choice */}
                     {severitySelectionIndex === index && (
                       <div className="flex-1 min-w-0 px-3 flex items-center justify-center">
                         <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map((level) => (
+                          {[1, 2, 3, 4, 5].map(level => (
                             <button
                               key={level}
                               type="button"
@@ -317,32 +304,46 @@ export function AddSymptomDialog({ open, onOpenChange, onAddSymptom, editingSymp
               onClick={() => setShowNotes(!showNotes)}
               className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
             >
-              {showNotes ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showNotes ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
               Add notes (optional)
             </button>
             {showNotes && (
               <div className="mt-2">
                 <Textarea
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={e => setNotes(e.target.value)}
                   placeholder="Any additional details..."
                   rows={3}
-                  autoFocus
                 />
               </div>
             )}
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose} className="flex-1 bg-transparent">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="flex-1 bg-transparent"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={symptoms.filter((s) => s.severity > 0).length === 0} className="flex-1">
-              {editingSymptom ? "Update Symptom" : `Add Symptoms (${symptoms.filter((s) => s.severity > 0).length})`}
+            <Button
+              type="submit"
+              disabled={symptoms.filter(s => s.severity > 0).length === 0}
+              className="flex-1"
+            >
+              {editingSymptom
+                ? "Update Symptom"
+                : `Add Symptoms (${symptoms.filter(s => s.severity > 0).length})`}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

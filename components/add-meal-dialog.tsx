@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import type { Meal } from "@/lib/types";
+import type { Meal, Ingredient } from "@/lib/types";
 
 import { useState, useEffect } from "react";
 import {
@@ -24,24 +24,11 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-interface Ingredient {
-  name: string;
-  isOrganic: boolean;
-  cookingMethod?: string;
-}
-
 interface AddMealDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddMeal: (meal: {
-    name: string;
-    time: string;
-    date: string;
-    category: string;
-    notes?: string;
-    healthCategory?: "green" | "yellow" | "red" | "analyzing";
-    ingredients?: Ingredient[];
-  }) => void;
+  onAddMeal: (meal: Omit<Meal, "id" | "timestamp">) => void;
+  onClose: () => void;
   editingMeal?: Meal | null;
 }
 
@@ -78,8 +65,10 @@ export function AddMealDialog({
   open,
   onOpenChange,
   onAddMeal,
+  onClose,
   editingMeal,
 }: AddMealDialogProps) {
+  const [name, setName] = useState("");
   const [currentIngredient, setCurrentIngredient] = useState("");
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -93,9 +82,15 @@ export function AddMealDialog({
   // Pre-populate form when editing
   useEffect(() => {
     if (editingMeal) {
+      setName(editingMeal.name || "");
       setIngredients(editingMeal.ingredients || []);
       setNotes(editingMeal.notes || "");
       setShowNotes(!!editingMeal.notes);
+    } else {
+      setName("");
+      setIngredients([]);
+      setNotes("");
+      setShowNotes(false);
     }
   }, [editingMeal]);
 
@@ -108,6 +103,8 @@ export function AddMealDialog({
           name: currentIngredient.trim(),
           isOrganic: false,
           cookingMethod: "raw",
+          foodGroup: "other",
+          zone: "yellow",
         },
       ]);
       setCurrentIngredient("");
@@ -137,7 +134,8 @@ export function AddMealDialog({
 
   const handleSelectCookingMethod = (index: number, method: string) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index].cookingMethod = method;
+    updatedIngredients[index].cookingMethod =
+      method as Ingredient["cookingMethod"];
     setIngredients(updatedIngredients);
     setCookingSelectionIndex(null);
   };
@@ -181,25 +179,28 @@ export function AddMealDialog({
     e.preventDefault();
     if (ingredients.length === 0) return;
 
-    const now = new Date();
-    // Create name from ingredients list
-    const ingredientNames = ingredients.map(ing => ing.name);
-    const name =
-      ingredientNames.length > 3
-        ? `${ingredientNames.slice(0, 3).join(", ")} + ${ingredientNames.length - 3} more`
-        : ingredientNames.join(", ");
+    // Create meal name from ingredients if not provided
+    const mealName =
+      name.trim() ||
+      (() => {
+        const ingredientNames = ingredients.map(ing => ing.name);
+        return ingredientNames.length > 3
+          ? `${ingredientNames.slice(0, 3).join(", ")} + ${ingredientNames.length - 3} more`
+          : ingredientNames.join(", ");
+      })();
 
-    onAddMeal({
-      name,
-      category: "meal", // Default category
-      healthCategory: "analyzing", // Will be analyzed by AI
+    const meal: Omit<Meal, "id" | "timestamp"> = {
+      name: mealName,
       ingredients,
-      notes: notes || undefined,
-      time: format(now, "HH:mm"),
-      date: format(now, "yyyy-MM-dd"),
-    });
+      notes: notes.trim() || undefined,
+      status: editingMeal ? editingMeal.status : "pending_review",
+      image: editingMeal?.image,
+    };
+
+    onAddMeal(meal);
 
     // Reset form
+    setName("");
     setCurrentIngredient("");
     setIngredients([]);
     setNotes("");
@@ -207,11 +208,12 @@ export function AddMealDialog({
     setEditingIndex(null);
     setEditingValue("");
     setCookingSelectionIndex(null);
-    onOpenChange(false);
+    onClose();
   };
 
   const handleClose = () => {
     if (!editingMeal) {
+      setName("");
       setCurrentIngredient("");
       setIngredients([]);
       setNotes("");
@@ -220,7 +222,7 @@ export function AddMealDialog({
       setEditingValue("");
       setCookingSelectionIndex(null);
     }
-    onOpenChange(false);
+    onClose();
   };
 
   return (
@@ -230,6 +232,16 @@ export function AddMealDialog({
           <DialogTitle>{editingMeal ? "Edit Food" : "Add Food"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="meal-name">Meal Name (optional)</Label>
+            <Input
+              id="meal-name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g., Lunch, Breakfast (auto-generated if empty)"
+            />
+          </div>
+
           <div>
             <Label htmlFor="ingredient-input">Ingredients</Label>
             <Input
@@ -389,7 +401,6 @@ export function AddMealDialog({
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Any additional details..."
                   rows={3}
-                  autoFocus
                 />
               </div>
             )}

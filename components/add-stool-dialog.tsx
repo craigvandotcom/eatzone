@@ -1,71 +1,89 @@
-"use client"
+"use client";
 
-import type React from "react"
-import type { Stool } from "@/lib/types"
+import type React from "react";
+import type { Stool } from "@/lib/types";
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { format } from "date-fns"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface AddStoolDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onAddStool: (stool: {
-    time: string
-    date: string
-    type: number
-    color: string
-    consistency: string
-    notes?: string
-  }) => void
-  editingStool?: Stool | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAddStool: (stool: Omit<Stool, "id" | "timestamp">) => void;
+  onClose: () => void;
+  editingStool?: Stool | null;
 }
 
-export function AddStoolDialog({ open, onOpenChange, onAddStool, editingStool }: AddStoolDialogProps) {
-  const [type, setType] = useState([4]) // Bristol stool scale
-  const [color, setColor] = useState("")
-  const [consistency, setConsistency] = useState("")
-  const [notes, setNotes] = useState("")
-  const [showNotes, setShowNotes] = useState(false)
+export function AddStoolDialog({
+  open,
+  onOpenChange,
+  onAddStool,
+  onClose,
+  editingStool,
+}: AddStoolDialogProps) {
+  const [bristolScale, setBristolScale] = useState([4]); // Bristol stool scale
+  const [color, setColor] = useState<Stool["color"]>("brown");
+  const [hasBlood, setHasBlood] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [showNotes, setShowNotes] = useState(false);
 
   // Pre-populate form when editing
   useEffect(() => {
     if (editingStool) {
-      setType([editingStool.type])
-      setColor(editingStool.color)
-      setConsistency(editingStool.consistency)
-      setNotes(editingStool.notes || "")
-      setShowNotes(!!editingStool.notes)
+      setBristolScale([editingStool.bristolScale]);
+      setColor(editingStool.color);
+      setHasBlood(editingStool.hasBlood);
+      setNotes(editingStool.notes || "");
+      setShowNotes(!!editingStool.notes);
+    } else {
+      setBristolScale([4]);
+      setColor("brown");
+      setHasBlood(false);
+      setNotes("");
+      setShowNotes(false);
     }
-  }, [editingStool])
+  }, [editingStool]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!color || !consistency) return
+    e.preventDefault();
+    if (!color) return;
 
-    const now = new Date()
-    onAddStool({
-      type: type[0],
+    const stool: Omit<Stool, "id" | "timestamp"> = {
+      bristolScale: bristolScale[0],
       color,
-      consistency,
-      notes: notes || undefined,
-      time: format(now, "HH:mm"),
-      date: format(now, "yyyy-MM-dd"),
-    })
+      hasBlood,
+      notes: notes.trim() || undefined,
+      image: editingStool?.image,
+    };
 
-    setType([4])
-    setColor("")
-    setConsistency("")
-    setNotes("")
-    setShowNotes(false)
-    onOpenChange(false)
-  }
+    onAddStool(stool);
+
+    // Reset form
+    setBristolScale([4]);
+    setColor("brown");
+    setHasBlood(false);
+    setNotes("");
+    setShowNotes(false);
+    onClose();
+  };
 
   const getTypeDescription = (value: number) => {
     const descriptions = {
@@ -76,32 +94,41 @@ export function AddStoolDialog({ open, onOpenChange, onAddStool, editingStool }:
       5: "Soft blobs (lacking fiber)",
       6: "Mushy consistency (mild diarrhea)",
       7: "Liquid consistency (severe diarrhea)",
-    }
-    return descriptions[value as keyof typeof descriptions]
-  }
+    };
+    return descriptions[value as keyof typeof descriptions];
+  };
 
   const handleClose = () => {
     if (!editingStool) {
-      setType([4])
-      setColor("")
-      setConsistency("")
-      setNotes("")
-      setShowNotes(false)
+      setBristolScale([4]);
+      setColor("brown");
+      setHasBlood(false);
+      setNotes("");
+      setShowNotes(false);
     }
-    onOpenChange(false)
-  }
+    onClose();
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{editingStool ? "Edit Bowel Movement" : "Add Bowel Movement"}</DialogTitle>
+          <DialogTitle>
+            {editingStool ? "Edit Bowel Movement" : "Add Bowel Movement"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="bristol-type">Bristol Stool Scale Type</Label>
             <div className="px-2 py-4">
-              <Slider value={type} onValueChange={setType} max={7} min={1} step={1} className="w-full" />
+              <Slider
+                value={bristolScale}
+                onValueChange={setBristolScale}
+                max={7}
+                min={1}
+                step={1}
+                className="w-full"
+              />
               <div className="flex justify-between text-xs text-gray-500 mt-2">
                 <span>1</span>
                 <span>2</span>
@@ -112,44 +139,42 @@ export function AddStoolDialog({ open, onOpenChange, onAddStool, editingStool }:
                 <span>7</span>
               </div>
               <p className="text-center mt-2 text-sm text-gray-700">
-                Type {type[0]}: {getTypeDescription(type[0])}
+                Type {bristolScale[0]}: {getTypeDescription(bristolScale[0])}
               </p>
             </div>
           </div>
+
           <div>
             <Label htmlFor="color">Color</Label>
-            <Select value={color} onValueChange={setColor} required>
+            <Select
+              value={color}
+              onValueChange={value => setColor(value as Stool["color"])}
+              required
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select color" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="brown">Brown</SelectItem>
-                <SelectItem value="light-brown">Light Brown</SelectItem>
-                <SelectItem value="dark-brown">Dark Brown</SelectItem>
-                <SelectItem value="yellow">Yellow</SelectItem>
                 <SelectItem value="green">Green</SelectItem>
+                <SelectItem value="yellow">Yellow</SelectItem>
                 <SelectItem value="black">Black</SelectItem>
+                <SelectItem value="white">White</SelectItem>
                 <SelectItem value="red">Red</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label htmlFor="consistency">Consistency</Label>
-            <Select value={consistency} onValueChange={setConsistency} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Select consistency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="very-hard">Very Hard</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="soft">Soft</SelectItem>
-                <SelectItem value="very-soft">Very Soft</SelectItem>
-                <SelectItem value="liquid">Liquid</SelectItem>
-              </SelectContent>
-            </Select>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="has-blood"
+              checked={hasBlood}
+              onCheckedChange={checked => setHasBlood(checked as boolean)}
+            />
+            <Label htmlFor="has-blood">Contains blood</Label>
           </div>
+
           {/* Collapsible Notes Section */}
           <div>
             <button
@@ -157,7 +182,11 @@ export function AddStoolDialog({ open, onOpenChange, onAddStool, editingStool }:
               onClick={() => setShowNotes(!showNotes)}
               className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
             >
-              {showNotes ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showNotes ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
               Add notes (optional)
             </button>
             {showNotes && (
@@ -165,16 +194,21 @@ export function AddStoolDialog({ open, onOpenChange, onAddStool, editingStool }:
                 <Textarea
                   id="stool-notes"
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={e => setNotes(e.target.value)}
                   placeholder="Any additional observations..."
                   rows={3}
-                  autoFocus
                 />
               </div>
             )}
           </div>
+
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => handleClose()} className="flex-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="flex-1"
+            >
               Cancel
             </Button>
             <Button type="submit" className="flex-1">
@@ -184,5 +218,5 @@ export function AddStoolDialog({ open, onOpenChange, onAddStool, editingStool }:
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

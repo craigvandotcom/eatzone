@@ -11,7 +11,9 @@ import {
   Atom,
   Plus,
   Leaf,
+  Settings,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AddMealDialog } from "@/components/add-meal-dialog";
 import { AddLiquidDialog } from "@/components/add-liquid-dialog";
 import { AddSymptomDialog } from "@/components/add-symptom-dialog";
@@ -66,6 +68,7 @@ export default function Dashboard() {
   const recentStools = useRecentStools();
   const waterStats = useWaterStats();
   const foodStats = useFoodStats();
+  const router = useRouter();
 
   // Dialog state
   const [showAddMeal, setShowAddMeal] = useState(false);
@@ -276,10 +279,12 @@ export default function Dashboard() {
         <h1 className="text-xl font-semibold text-gray-900">
           Your Body Compass
         </h1>
-        <div className="relative">
-          <User className="h-6 w-6 text-gray-600" />
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-        </div>
+        <button
+          onClick={() => router.push("/settings")}
+          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <Settings className="h-6 w-6 text-gray-600" />
+        </button>
       </div>
 
       <div className="px-4 py-6 space-y-6">
@@ -626,21 +631,21 @@ export default function Dashboard() {
       <div className="fixed bottom-0 left-0 right-0 bg-white px-4 py-4">
         <div className="flex justify-around space-x-4">
           <button
-            onClick={() => setShowAddLiquid(true)}
+            onClick={() => handleQuickCapture("drink")}
             className="relative w-14 h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Droplets className="h-6 w-6" />
             <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-blue-500 rounded-full" />
           </button>
           <button
-            onClick={() => setShowAddMeal(true)}
+            onClick={() => handleQuickCapture("eat")}
             className="relative w-14 h-14 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Utensils className="h-6 w-6" />
             <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-green-500 rounded-full" />
           </button>
           <button
-            onClick={() => setShowAddStool(true)}
+            onClick={() => handleQuickCapture("move")}
             className="relative w-14 h-14 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Atom className="h-6 w-6" />

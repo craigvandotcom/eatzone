@@ -127,6 +127,36 @@ The system uses a **visual workflow orchestrator** (n8n) combined with an **AI A
 - **Error Handling:** Graceful fallbacks when AI analysis fails or returns malformed data
 - **Workflow Security:** n8n webhook endpoints secured with authentication tokens
 
+#### 3.2.1. Ingredient Processing Pipeline
+
+The core intelligence of the app lies in its ability to not just identify ingredients, but to enrich them with nutritional context (food group and zone). This is achieved through a two-stage pipeline that runs on the backend (e.g., within an n8n workflow) after a user submits a meal.
+
+**Stage 1: Ingredient Identification (The "What")**
+
+This stage determines the list of ingredients from the user's input.
+
+- **Manual Input:** If the user types ingredients manually, this stage is complete. The system receives a direct list of strings (e.g., `["Chicken Breast", "Organic Tomatoes"]`).
+- **Camera Input:** When a photo is provided, a multimodal vision model (e.g., GPT-4o) is used with a prompt like: `"List the primary ingredients in this meal. Return as a JSON array of strings."` The goal is to produce the same list of strings as the manual input.
+
+**Stage 2: Ingredient Enrichment (The "So What")**
+
+This stage takes each ingredient string and assigns it a `foodGroup` and a `zone` using a hybrid system that ensures both consistency and scalability.
+
+1.  **Curated Ingredient Database (The Source of Truth):**
+    - The system first queries a curated backend database (e.g., a Supabase table or Vercel KV store). This database is our hand-maintained source of truth.
+    - **Schema:** Each entry contains `ingredientName`, `foodGroup`, `defaultZone`, and `zoneModifiers` (e.g., rules for when `isOrganic` or `cookingMethod` changes the zone).
+    - **Happy Path:** If a match is found (e.g., "Tomato"), the system uses the high-quality, consistent data from our database. This is fast and aligns perfectly with our app's nutritional philosophy.
+
+2.  **AI Fallback (For Scalability):**
+    - If an ingredient is not found in our curated database (e.g., "Gochujang"), the system proceeds to an AI fallback.
+    - A second, more specific AI call is made with a detailed prompt instructing the AI to classify the ingredient into a `foodGroup` and `zone` based on our predefined philosophy (e.g., "Green foods are whole and unprocessed...").
+
+3.  **The Learning Loop (For Continuous Improvement):**
+    - Whenever the AI fallback is used, the ingredient and the AI's classification are logged.
+    - This log can be periodically reviewed. If "Gochujang" appears frequently, it can be officially analyzed and added to the Curated Ingredient Database, making the system progressively smarter and less reliant on the AI for that item.
+
+This hybrid approach provides the consistency of a curated list for common foods while using AI's power to handle the near-infinite variety of other ingredients, ensuring the app can scale without sacrificing the quality of its core insights.
+
 #### 3.3. User Authentication & Access Control
 
 **Authentication Philosophy:** Privacy-First with Local Account Management
@@ -170,7 +200,6 @@ For the MVP, the `/app/settings` page will serve as the central hub for account 
 - **Local Authentication:** User credentials hashed and stored in IndexedDB
 - **Session Management:** JWT tokens stored in secure browser storage
 - **Biometric Integration:** Future support for WebAuthn/Touch ID/Face ID
-- **Account Recovery:** Local backup codes and security questions
 - **Data Isolation:** Each user account has isolated IndexedDB database
 
 **Security Considerations:**
@@ -179,6 +208,13 @@ For the MVP, the `/app/settings` page will serve as the central hub for account 
 - **Session Timeout:** Configurable auto-logout for security
 - **Device Fingerprinting:** Optional device recognition for enhanced security
 - **Rate Limiting:** Protection against brute force attacks on login
+
+**Data Recovery & Backup:**
+
+- **Primary Backup Method:** Export/Import Data functionality is the main recovery mechanism
+- **Device-Bound Accounts:** User accounts are tied to the device; no cloud-based account recovery
+- **Data Loss Prevention:** Clear user education about the importance of regular data exports
+- **No Password Recovery:** If a user forgets their password, they must reset the app and lose all data unless they have a manual backup
 
 #### 3.4. Desktop vs Mobile Experience Strategy
 
@@ -282,34 +318,44 @@ Current PWA can be enhanced with **Capacitor** if native device integration is n
 The following interfaces define the shape of the data stored in the application.
 
 ```typescript
-// Inferred from app/page.tsx
-
 interface Meal {
   id: string;
-  name: string; // e.g., "Chicken Salad & more"
-  time: string; // "HH:mm"
-  date: string; // "yyyy-MM-dd"
-  category: string;
-  healthCategory?: "green" | "yellow" | "red" | "analyzing";
-  ingredients?: Ingredient[];
-  image?: string; // base64 data URL from camera
+  name: string; // e.g., "Lunch" or a user-defined name
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
+  ingredients: Ingredient[]; // A meal is defined by its ingredients.
+  image?: string;
   notes?: string;
+  status: "pending_review" | "analyzing" | "processed";
 }
 
 interface Ingredient {
   name: string;
   isOrganic: boolean;
-  cookingMethod?: string; // "raw", "fried", "steamed", etc.
-  healthCategory?: "green" | "yellow" | "red";
+  cookingMethod?:
+    | "raw"
+    | "fried"
+    | "steamed"
+    | "baked"
+    | "grilled"
+    | "roasted"
+    | "other";
+  foodGroup:
+    | "vegetable"
+    | "fruit"
+    | "protein"
+    | "grain"
+    | "dairy"
+    | "fat"
+    | "other";
+  zone: "green" | "yellow" | "red";
 }
 
 interface Liquid {
   id: string;
-  name: string;
-  time: string;
-  date: string;
+  name: string; // e.g. "Morning Coffee"
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   amount: number; // in ml
-  type: string; // "water", "coffee", etc.
+  type: "water" | "coffee" | "tea" | "juice" | "soda" | "dairy" | "other";
   notes?: string;
   image?: string;
 }
@@ -318,18 +364,16 @@ interface Symptom {
   id: string;
   name: string;
   severity: number; // 1-5
-  time: string;
-  date: string;
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   notes?: string;
 }
 
 interface Stool {
   id: string;
-  time: string;
-  date: string;
-  type: number; // Bristol Stool Scale 1-7
-  color: string;
-  consistency: string;
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
+  bristolScale: number; // 1-7
+  color: "brown" | "green" | "yellow" | "black" | "white" | "red" | "other";
+  hasBlood: boolean;
   notes?: string;
   image?: string;
 }

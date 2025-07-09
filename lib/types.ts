@@ -3,30 +3,42 @@
 
 export interface Meal {
   id: string;
-  name: string; // e.g., "Chicken Salad & more"
-  time: string; // "HH:mm"
-  date: string; // "yyyy-MM-dd"
-  category: string;
-  healthCategory?: "green" | "yellow" | "red" | "analyzing";
-  ingredients?: Ingredient[];
-  image?: string; // base64 data URL from camera
+  name: string; // e.g., "Lunch" or a user-defined name
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
+  ingredients: Ingredient[]; // A meal is defined by its ingredients
+  image?: string;
   notes?: string;
+  status: "pending_review" | "analyzing" | "processed";
 }
 
 export interface Ingredient {
   name: string;
   isOrganic: boolean;
-  cookingMethod?: string; // "raw", "fried", "steamed", etc.
-  healthCategory?: "green" | "yellow" | "red";
+  cookingMethod?:
+    | "raw"
+    | "fried"
+    | "steamed"
+    | "baked"
+    | "grilled"
+    | "roasted"
+    | "other";
+  foodGroup:
+    | "vegetable"
+    | "fruit"
+    | "protein"
+    | "grain"
+    | "dairy"
+    | "fat"
+    | "other";
+  zone: "green" | "yellow" | "red";
 }
 
 export interface Liquid {
   id: string;
-  name: string;
-  time: string;
-  date: string;
+  name: string; // e.g. "Morning Coffee"
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   amount: number; // in ml
-  type: string; // "water", "coffee", etc.
+  type: "water" | "coffee" | "tea" | "juice" | "soda" | "dairy" | "other";
   notes?: string;
   image?: string;
 }
@@ -35,18 +47,16 @@ export interface Symptom {
   id: string;
   name: string;
   severity: number; // 1-5
-  time: string;
-  date: string;
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   notes?: string;
 }
 
 export interface Stool {
   id: string;
-  time: string;
-  date: string;
-  type: number; // Bristol Stool Scale 1-7
-  color: string;
-  consistency: string;
+  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
+  bristolScale: number; // 1-7
+  color: "brown" | "green" | "yellow" | "black" | "white" | "red" | "other";
+  hasBlood: boolean;
   notes?: string;
   image?: string;
 }

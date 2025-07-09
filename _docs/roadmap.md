@@ -86,37 +86,51 @@ This document outlines the development roadmap to build the Health Tracker appli
 - [ ] **Task 2: Refactor Data Logic (`refactor-page-tsx`)**
   - **Action:** Create `lib/db.ts` with centralized database operations and refactor `app/page.tsx` to use the new data layer.
   - **Implementation:**
-    - Create centralized database functions (`addMeal`, `getSymptoms`, etc.)
-    - Implement `useLiveQuery` hooks for reactive data binding
-    - Create custom hooks for common operations (`useTodaysMeals`, `useSymptomTrends`)
-    - Refactor components to use the data layer instead of direct database calls
+    - Implement data structures from PRD (unified `timestamp`).
+    - Create centralized database functions (`addMeal`, `getSymptoms`, etc.).
+    - Implement `useLiveQuery` hooks for reactive data binding.
+    - Create custom hooks for common operations (`useTodaysMeals`, `useSymptomTrends`).
+    - Refactor components to use the data layer instead of direct database calls.
   - **Outcome:** Clean separation of concerns with reactive state management and no "God component" anti-pattern.
 
 - [ ] **Task 3: Implement Export/Import (`data-export-import`)**
-  - **Action:** Build a feature to allow users to export their data to a JSON file and import it back.
-  - **Outcome:** Users can back up, restore, and migrate their data, ensuring data ownership.
+  - **Action:** Build the data export/import feature, positioning it as the primary user-managed backup system.
+  - **Implementation:**
+    - Allow users to export their complete IndexedDB data to a single JSON file.
+    - Create a clear UI for importing a previously exported file.
+    - Add user education within the UI explaining this is the ONLY way to back up data and migrate between devices.
+  - **Outcome:** A robust backup system that empowers users with full data ownership, aligned with the PRD's local-first principles.
 
 - [ ] **Task 4: Wire Up UI Components (`wire-up-ui`)**
   - **Action:** Connect all existing forms, dialogs, and visualizations to the new data layer.
   - **Outcome:** The UI is fully interactive and reflects the state of the local database.
+
+- [ ] **Task 4.5: Implement Core Visualizations (`implement-visualizations`)**
+  - **Action:** Build the key data visualization components defined in the PRD.
+  - **Components to Build:**
+    - `split-circular-progress.tsx` for the Liquids view.
+    - `food-category-progress.tsx` for the Foods pie chart.
+    - `vertical-progress-bar.tsx` for the daily organic "battery".
+    - `meal-composition-bar.tsx` for visualizing individual meal health.
+  - **Outcome:** The core, high-impact visualizations that form the heart of the user's "Body Compass" dashboard are implemented and ready for data binding.
 
 - [ ] **Task 5: Finalize PWA Functionality (`finalize-pwa`)**
   - **Action:** Ensure the service worker (`sw.js`) correctly caches all necessary assets for a seamless offline experience.
   - **Outcome:** The application is installable and works reliably without an internet connection.
 
 - [ ] **Task 6: Build Landing Page & Authentication (`build-landing-auth`)**
-  - **Action:** Create the public-facing landing page and authentication system.
+  - **Action:** Create the public-facing landing page and local-first authentication system.
   - **Landing Page (`/`):**
-    - Desktop: Comprehensive overview with app screenshots, QR code for mobile access
-    - Mobile: Streamlined introduction with quick signup/login
-    - Clear "better on mobile" messaging for desktop users
-    - Feature highlights optimized for each device type
+    - Desktop: Comprehensive overview with app screenshots, QR code for mobile access.
+    - Mobile: Streamlined introduction with quick signup/login.
+    - Clear "better on mobile" messaging for desktop users.
+    - Feature highlights optimized for each device type.
   - **Authentication Pages (`/login`, `/signup`):**
-    - Local account creation and management using IndexedDB
-    - Secure password hashing and session management
-    - Responsive forms optimized for both mobile and desktop
-    - Password reset and account recovery options
-  - **Outcome:** Complete public-facing experience with device-appropriate authentication.
+    - Local account creation and management using IndexedDB.
+    - Secure password hashing (e.g., bcrypt) and local session management.
+    - Responsive forms optimized for both mobile and desktop.
+    - **Important:** No cloud-based password reset or account recovery. Align with PRD's device-bound account model.
+  - **Outcome:** Complete public-facing experience with a secure, privacy-preserving, local-first authentication system.
 
 - [ ] **Task 7: Implement Route Protection (`implement-route-protection`)**
   - **Action:** Set up authentication-based route protection and user session management.
@@ -127,14 +141,22 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Create user profile and settings management
   - **Outcome:** Secure application structure with proper access control.
 
+- [ ] **Task 7.5: Build Settings Page (`build-settings-page`)**
+  - **Action:** Create the `/app/settings` page as the central hub for account and data controls.
+  - **Implementation:**
+    - **Account Management:** Implement a "Logout" button to end the current session.
+    - **Data Management:** House the "Export Data", "Import Data", and "Delete All Data" features here.
+    - **Appearance:** Add a theme toggle for switching between light and dark modes.
+  - **Outcome:** A centralized and user-friendly page for managing account, data, and app preferences as specified in the PRD.
+
 - [ ] **Task 8: Optimize Desktop Experience (`optimize-desktop-experience`)**
   - **Action:** Enhance the desktop experience while maintaining mobile-first design.
   - **Desktop Enhancements:**
-    - Responsive layout with sidebar navigation
-    - Keyboard shortcuts for power users
-    - Drag-and-drop file uploads for image capture
-    - Enhanced data visualization with hover details
-    - Multi-window support for data analysis
+    - Responsive layout with sidebar navigation.
+    - Keyboard shortcuts for power users.
+    - Implement file upload with drag-and-drop as a fallback for camera capture.
+    - Enhanced data visualization with hover details.
+    - Multi-window support for data analysis.
   - **Mobile Optimizations:**
     - Touch-friendly interface with appropriate target sizes
     - Swipe gestures for navigation
@@ -166,15 +188,29 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Test basic webhook connectivity
   - **Outcome:** Visual workflow platform ready for AI logic development.
 
+- [ ] **Task 10.5: Design & Build Curated Ingredient Database (`build-ingredient-db`)**
+  - **Action:** Create the backend database (e.g., Supabase table, Vercel KV) to act as the source of truth for ingredient classifications.
+  - **Implementation:**
+    - Define schema: `ingredientName`, `foodGroup`, `defaultZone`, `zoneModifiers`.
+    - Populate with an initial set of common ingredients (e.g., 200+ items).
+    - Create an interface or API for the n8n workflow to query this database.
+  - **Outcome:** A consistent, curated reference for core ingredient data that underpins the app's intelligence.
+
 - [ ] **Task 11: Build AI Analysis Workflow (`build-ai-workflow`)**
-  - **Action:** Create the visual workflow in n8n that handles image analysis and JSON formatting.
+  - **Action:** Create the visual workflow in n8n that handles the two-stage ingredient processing pipeline.
   - **Workflow Components:**
-    - Webhook trigger node for receiving image data
-    - OpenRouter HTTP request node for AI model calls
-    - Data transformation nodes for JSON formatting
-    - Error handling and validation nodes
-    - Response formatting for client consumption
-  - **Outcome:** Complete AI analysis workflow that can be visually modified and tested.
+    - **Stage 1 (Identification):**
+      - Webhook trigger for receiving image data or manual ingredient list.
+      - Multimodal AI call for image-to-text ingredient identification.
+    - **Stage 2 (Enrichment):**
+      - Database lookup node to query the **Curated Ingredient Database**.
+      - Conditional logic: if ingredient is found, use curated data.
+      - If not found, use a second AI call (fallback) to classify `foodGroup` and `zone`.
+      - Implement a "learning loop" by logging AI-classified ingredients for future review and addition to the curated database.
+    - **Output & Error Handling:**
+      - Data transformation nodes for final JSON formatting.
+      - Error handling and validation nodes.
+  - **Outcome:** A robust AI analysis workflow that combines the consistency of a curated database with the scalability of AI, capable of turning a photo or text into structured, intelligent data.
 
 - [ ] **Task 12: Create Simple API Route (`create-api-route`)**
   - **Action:** Build a lightweight Next.js API route that forwards requests to the n8n workflow.

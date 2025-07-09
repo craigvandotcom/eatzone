@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
       toast({
         title: "Data exported successfully",
-        description: `Exported ${data.meals.length} meals, ${data.liquids.length} liquids, ${data.symptoms.length} symptoms, and ${data.stools.length} stools.`,
+        description: `Exported ${data.foods.length} foods, ${data.liquids.length} liquids, ${data.symptoms.length} symptoms, and ${data.stools.length} stools.`,
       });
     } catch (error) {
       console.error("Export failed:", error);

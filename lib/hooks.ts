@@ -2,18 +2,18 @@
 // Uses useLiveQuery from dexie-react-hooks for automatic UI updates
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { Meal, Liquid, Symptom, Stool } from "./types";
+import { Food, Liquid, Symptom, Stool } from "./types";
 import {
-  getAllMeals,
+  getAllFoods,
   getAllLiquids,
   getAllSymptoms,
   getAllStools,
-  getTodaysMeals,
+  getTodaysFoods,
   getTodaysLiquids,
   getTodaysSymptoms,
   getTodaysStools,
   getLiquidsByType,
-  getMealById,
+  getFoodById,
   getLiquidById,
   getSymptomById,
   getStoolById,
@@ -21,30 +21,30 @@ import {
   isToday,
 } from "./db";
 
-// MEAL HOOKS
-export const useTodaysMeals = () => {
+// FOOD HOOKS
+export const useTodaysFoods = () => {
   return useLiveQuery(async () => {
-    return await getTodaysMeals();
+    return await getTodaysFoods();
   }, []);
 };
 
-export const useAllMeals = () => {
+export const useAllFoods = () => {
   return useLiveQuery(async () => {
-    return await getAllMeals();
+    return await getAllFoods();
   }, []);
 };
 
-export const useMealById = (id: string | null) => {
+export const useFoodById = (id: string | null) => {
   return useLiveQuery(async () => {
     if (!id) return null;
-    return await getMealById(id);
+    return await getFoodById(id);
   }, [id]);
 };
 
-export const useRecentMeals = (limit: number = 5) => {
+export const useRecentFoods = (limit: number = 5) => {
   return useLiveQuery(async () => {
-    const meals = await getAllMeals();
-    return meals.slice(0, limit);
+    const foods = await getAllFoods();
+    return foods.slice(0, limit);
   }, [limit]);
 };
 
@@ -167,9 +167,9 @@ export const useWaterStats = () => {
 
 export const useFoodStats = () => {
   return useLiveQuery(async () => {
-    const todaysMeals = await getTodaysMeals();
-    const todaysIngredients = todaysMeals.flatMap(
-      meal => meal.ingredients || []
+    const todaysFoods = await getTodaysFoods();
+    const todaysIngredients = todaysFoods.flatMap(
+      food => food.ingredients || []
     );
 
     const greenIngredients = todaysIngredients.filter(
@@ -269,20 +269,20 @@ export const useStoolTrends = (days: number = 7) => {
 // DAILY SUMMARY HOOK
 export const useDailySummary = () => {
   return useLiveQuery(async () => {
-    const [meals, liquids, symptoms, stools] = await Promise.all([
-      getTodaysMeals(),
+    const [foods, liquids, symptoms, stools] = await Promise.all([
+      getTodaysFoods(),
       getTodaysLiquids(),
       getTodaysSymptoms(),
       getTodaysStools(),
     ]);
 
     return {
-      meals: meals.length,
+      foods: foods.length,
       liquids: liquids.length,
       symptoms: symptoms.length,
       stools: stools.length,
       totalEntries:
-        meals.length + liquids.length + symptoms.length + stools.length,
+        foods.length + liquids.length + symptoms.length + stools.length,
     };
   }, []);
 };

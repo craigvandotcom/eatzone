@@ -1,8 +1,8 @@
 import Dexie, { Table } from "dexie";
-import { Meal, Ingredient, Liquid, Symptom, Stool } from "./types";
+import { Food, Ingredient, Liquid, Symptom, Stool } from "./types";
 
 export class HealthTrackerDB extends Dexie {
-  meals!: Table<Meal, string>;
+  foods!: Table<Food, string>;
   liquids!: Table<Liquid, string>;
   symptoms!: Table<Symptom, string>;
   stools!: Table<Stool, string>;
@@ -10,7 +10,7 @@ export class HealthTrackerDB extends Dexie {
   constructor() {
     super("HealthTrackerDB");
     this.version(1).stores({
-      meals: "++id, timestamp",
+      foods: "++id, timestamp",
       liquids: "++id, timestamp, type",
       symptoms: "++id, timestamp",
       stools: "++id, timestamp",
@@ -41,41 +41,41 @@ export const isToday = (timestamp: string): boolean => {
   return timestamp.startsWith(today);
 };
 
-// MEAL OPERATIONS
-export const addMeal = async (
-  meal: Omit<Meal, "id" | "timestamp">
+// FOOD OPERATIONS
+export const addFood = async (
+  food: Omit<Food, "id" | "timestamp">
 ): Promise<string> => {
-  const newMeal: Meal = {
-    ...meal,
+  const newFood: Food = {
+    ...food,
     id: generateId(),
     timestamp: generateTimestamp(),
   };
-  await db.meals.add(newMeal);
-  return newMeal.id;
+  await db.foods.add(newFood);
+  return newFood.id;
 };
 
-export const updateMeal = async (
+export const updateFood = async (
   id: string,
-  updates: Partial<Omit<Meal, "id">>
+  updates: Partial<Omit<Food, "id">>
 ): Promise<void> => {
-  await db.meals.update(id, updates);
+  await db.foods.update(id, updates);
 };
 
-export const deleteMeal = async (id: string): Promise<void> => {
-  await db.meals.delete(id);
+export const deleteFood = async (id: string): Promise<void> => {
+  await db.foods.delete(id);
 };
 
-export const getMealById = async (id: string): Promise<Meal | undefined> => {
-  return await db.meals.get(id);
+export const getFoodById = async (id: string): Promise<Food | undefined> => {
+  return await db.foods.get(id);
 };
 
-export const getAllMeals = async (): Promise<Meal[]> => {
-  return await db.meals.orderBy("timestamp").reverse().toArray();
+export const getAllFoods = async (): Promise<Food[]> => {
+  return await db.foods.orderBy("timestamp").reverse().toArray();
 };
 
-export const getTodaysMeals = async (): Promise<Meal[]> => {
+export const getTodaysFoods = async (): Promise<Food[]> => {
   const today = getTodayDate();
-  return await db.meals
+  return await db.foods
     .where("timestamp")
     .between(today + "T00:00:00.000Z", today + "T23:59:59.999Z")
     .reverse()
@@ -217,12 +217,12 @@ export const getTodaysStools = async (): Promise<Stool[]> => {
 export const clearAllData = async (): Promise<void> => {
   await db.transaction(
     "rw",
-    db.meals,
+    db.foods,
     db.liquids,
     db.symptoms,
     db.stools,
     async () => {
-      await db.meals.clear();
+      await db.foods.clear();
       await db.liquids.clear();
       await db.symptoms.clear();
       await db.stools.clear();
@@ -231,21 +231,21 @@ export const clearAllData = async (): Promise<void> => {
 };
 
 export const exportAllData = async (): Promise<{
-  meals: Meal[];
+  foods: Food[];
   liquids: Liquid[];
   symptoms: Symptom[];
   stools: Stool[];
   exportedAt: string;
 }> => {
-  const [meals, liquids, symptoms, stools] = await Promise.all([
-    getAllMeals(),
+  const [foods, liquids, symptoms, stools] = await Promise.all([
+    getAllFoods(),
     getAllLiquids(),
     getAllSymptoms(),
     getAllStools(),
   ]);
 
   return {
-    meals,
+    foods,
     liquids,
     symptoms,
     stools,
@@ -254,24 +254,24 @@ export const exportAllData = async (): Promise<{
 };
 
 export const importAllData = async (data: {
-  meals: Meal[];
+  foods: Food[];
   liquids: Liquid[];
   symptoms: Symptom[];
   stools: Stool[];
 }): Promise<void> => {
   await db.transaction(
     "rw",
-    db.meals,
+    db.foods,
     db.liquids,
     db.symptoms,
     db.stools,
     async () => {
-      await db.meals.clear();
+      await db.foods.clear();
       await db.liquids.clear();
       await db.symptoms.clear();
       await db.stools.clear();
 
-      await db.meals.bulkAdd(data.meals);
+      await db.foods.bulkAdd(data.foods);
       await db.liquids.bulkAdd(data.liquids);
       await db.symptoms.bulkAdd(data.symptoms);
       await db.stools.bulkAdd(data.stools);

@@ -26,12 +26,12 @@ The Health Tracker is a mobile-first Progressive Web App (PWA) designed to be a 
 
 The application is organized into four primary tracking categories, accessible via a main tab bar.
 
-| Category     | Icon | Purpose                                                             | Key Visualizations                                                                                                                                                                                                                                                                                                                           |
-| ------------ | ---- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Liquids**  | 💧   | Track hydration, differentiating between water and other beverages. | - **Split Circular Progress:** Shows progress towards a daily water goal vs. total intake of other liquids.                                                                                                                                                                                                                                  |
-| **Foods**    | 🍽️   | Log meals and their constituent ingredients.                        | - **Food Category Pie Chart:** Shows the daily ratio of "Good" (green), "Maybe" (yellow), and "Bad" (red) ingredients. `<br>` - **Vertical Organic "Battery":** Shows the percentage of daily ingredients that were organic. `<br>` - **Dual-Bar System (per meal):** Visualizes the health and organic composition of each individual meal. |
-| **Stools**   | 💩   | Record bowel movements for digestive health tracking.               | - **Daily Count:** A simple, large number showing total movements for the day.                                                                                                                                                                                                                                                               |
-| **Symptoms** | ⚡   | Log physical or emotional symptoms and their severity.              | - **Daily Count:** A simple, large number showing total symptoms logged for the day.                                                                                                                                                                                                                                                         |
+| Category     | Icon | Purpose                                                             | Key Visualizations                                                                                                                                                                                                                                                                                                                                       |
+| ------------ | ---- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Liquids**  | 💧   | Track hydration, differentiating between water and other beverages. | - **Split Circular Progress:** Shows progress towards a daily water goal vs. total intake of other liquids.                                                                                                                                                                                                                                              |
+| **Foods**    | 🍽️   | Log foods and their constituent ingredients.                        | - **Food Category Pie Chart:** Shows the daily ratio of "Good" (green), "Maybe" (yellow), and "Bad" (red) ingredients. `<br>` - **Vertical Organic "Battery":** Shows the percentage of daily ingredients that were organic. `<br>` - **Dual-Bar System (per food entry):** Visualizes the health and organic composition of each individual food entry. |
+| **Stools**   | 💩   | Record bowel movements for digestive health tracking.               | - **Daily Count:** A simple, large number showing total movements for the day.                                                                                                                                                                                                                                                                           |
+| **Symptoms** | ⚡   | Log physical or emotional symptoms and their severity.              | - **Daily Count:** A simple, large number showing total symptoms logged for the day.                                                                                                                                                                                                                                                                     |
 
 #### 2.1. Data Entry Methods
 
@@ -59,6 +59,165 @@ The application is organized into four primary tracking categories, accessible v
 - `public/manifest.json`: Defines the app's name, icons, theme colors, and display mode.
 - `public/sw.js`: A basic service worker that caches core application assets for offline access.
 - `app/layout.tsx`: Contains the necessary `<meta>` and `<link>` tags to ensure proper PWA behavior, including the viewport settings and Apple-specific tags for a native feel on iOS.
+
+#### 3.6. Project Structure
+
+The application follows a **feature-based architecture** organized around the four core tracking categories, with clear separation between shared and domain-specific code:
+
+```
+puls/
+├── _docs/                          # Project Documentation
+│   ├── PRD.md                     # Product Requirements Document
+│   ├── roadmap.md                 # Development Roadmap
+│   ├── brand-identity.md          # Brand Guidelines
+│   └── development-workflow.md    # Development Process
+├── app/                           # Next.js App Router
+│   ├── (auth)/                   # Authentication Route Group
+│   │   ├── login/page.tsx        # Login Page
+│   │   └── signup/page.tsx       # Signup Page
+│   ├── (protected)/              # Protected Route Group
+│   │   ├── app/
+│   │   │   ├── page.tsx          # Main Health Tracker Dashboard
+│   │   │   └── insights/page.tsx # Analytics & Trends
+│   │   └── settings/page.tsx     # User Settings & Data Management
+│   ├── api/                      # API Routes
+│   │   ├── analyze/route.ts      # AI Analysis Endpoint
+│   │   └── auth/route.ts         # Authentication API
+│   ├── globals.css               # Global Styles
+│   ├── layout.tsx               # Root Layout
+│   └── page.tsx                 # Public Landing Page
+├── features/                     # Feature-Based Organization
+│   ├── liquids/                 # 💧 Liquid Tracking Feature
+│   │   ├── components/
+│   │   │   ├── add-liquid-dialog.tsx
+│   │   │   ├── liquid-entry-card.tsx
+│   │   │   ├── liquid-list.tsx
+│   │   │   └── split-circular-progress.tsx
+│   │   ├── hooks/
+│   │   │   ├── use-liquids.ts
+│   │   │   ├── use-water-stats.ts
+│   │   │   └── use-liquid-analysis.ts
+│   │   ├── types/
+│   │   │   └── liquid.types.ts
+│   │   ├── utils/
+│   │   │   └── liquid.utils.ts
+│   │   └── index.ts             # Feature exports
+│   ├── foods/                   # 🍽️ Food Tracking Feature
+│   │   ├── components/
+│   │   │   ├── add-food-dialog.tsx
+│   │   │   ├── food-entry-card.tsx
+│   │   │   ├── food-list.tsx
+│   │   │   ├── food-category-progress.tsx
+│   │   │   ├── food-composition-bar.tsx
+│   │   │   ├── organic-composition-bar.tsx
+│   │   │   └── vertical-progress-bar.tsx
+│   │   ├── hooks/
+│   │   │   ├── use-foods.ts
+│   │   │   ├── use-food-stats.ts
+│   │   │   └── use-food-analysis.ts
+│   │   ├── types/
+│   │   │   ├── food.types.ts
+│   │   │   └── ingredient.types.ts
+│   │   ├── utils/
+│   │   │   └── food.utils.ts
+│   │   └── index.ts             # Feature exports
+│   ├── stools/                  # 💩 Stool Tracking Feature
+│   │   ├── components/
+│   │   │   ├── add-stool-dialog.tsx
+│   │   │   ├── stool-entry-card.tsx
+│   │   │   ├── stool-list.tsx
+│   │   │   └── bristol-scale-display.tsx
+│   │   ├── hooks/
+│   │   │   ├── use-stools.ts
+│   │   │   └── use-stool-analysis.ts
+│   │   ├── types/
+│   │   │   └── stool.types.ts
+│   │   ├── utils/
+│   │   │   └── stool.utils.ts
+│   │   └── index.ts             # Feature exports
+│   ├── symptoms/                # ⚡ Symptom Tracking Feature
+│   │   ├── components/
+│   │   │   ├── add-symptom-dialog.tsx
+│   │   │   ├── symptom-entry-card.tsx
+│   │   │   ├── symptom-list.tsx
+│   │   │   └── symptom-severity-display.tsx
+│   │   ├── hooks/
+│   │   │   ├── use-symptoms.ts
+│   │   │   └── use-symptom-analysis.ts
+│   │   ├── types/
+│   │   │   └── symptom.types.ts
+│   │   ├── utils/
+│   │   │   └── symptom.utils.ts
+│   │   └── index.ts             # Feature exports
+│   ├── analytics/               # 📊 Analytics & Insights Feature
+│   │   ├── components/
+│   │   │   ├── trend-chart.tsx
+│   │   │   ├── correlation-matrix.tsx
+│   │   │   └── health-score-card.tsx
+│   │   ├── hooks/
+│   │   │   ├── use-trends.ts
+│   │   │   └── use-correlations.ts
+│   │   ├── types/
+│   │   │   └── analytics.types.ts
+│   │   ├── utils/
+│   │   │   └── analytics.utils.ts
+│   │   └── index.ts             # Feature exports
+│   └── auth/                    # 🔐 Authentication Feature
+│       ├── components/
+│       │   ├── login-form.tsx
+│       │   ├── signup-form.tsx
+│       │   └── auth-guard.tsx
+│       ├── hooks/
+│       │   ├── use-auth.ts
+│       │   └── use-session.ts
+│       ├── types/
+│       │   └── auth.types.ts
+│       ├── utils/
+│       │   └── auth.utils.ts
+│       └── index.ts             # Feature exports
+├── components/                   # Shared/Generic Components
+│   ├── ui/                      # shadcn/ui Base Components
+│   ├── layout/                  # Layout Components
+│   │   ├── header.tsx
+│   │   ├── navigation.tsx
+│   │   └── footer.tsx
+│   ├── shared/                  # Shared Business Components
+│   │   ├── camera-capture.tsx
+│   │   ├── data-export-import.tsx
+│   │   └── loading-states.tsx
+│   └── theme-provider.tsx
+├── lib/                         # Core Application Logic
+│   ├── db/                      # Database Layer
+│   │   ├── db.ts               # Main Dexie.js setup
+│   │   ├── migrations.ts       # Database migrations
+│   │   └── seed.ts             # Initial data seeding
+│   ├── api/                     # API utilities
+│   │   ├── client.ts           # API client setup
+│   │   └── endpoints.ts        # API endpoints
+│   ├── validations/             # Zod Schemas
+│   │   ├── auth.schemas.ts
+│   │   ├── liquid.schemas.ts
+│   │   ├── meal.schemas.ts
+│   │   ├── stool.schemas.ts
+│   │   └── symptom.schemas.ts
+│   ├── constants.ts             # App constants
+│   ├── types.ts                # Global TypeScript types
+│   └── utils.ts                # Utility functions
+├── middleware.ts               # Next.js Middleware (Route Protection)
+├── public/                     # Static Assets
+│   ├── manifest.json          # PWA Manifest
+│   ├── sw.js                  # Service Worker
+│   └── icons/                 # PWA Icons
+└── [config files]             # package.json, next.config.js, etc.
+```
+
+**Key Architectural Principles:**
+
+- **Feature-Based Organization:** Each tracking category (liquids, foods, stools, symptoms) is a self-contained feature module
+- **Domain-Driven Design:** Clear boundaries between business domains with explicit exports
+- **Separation of Concerns:** Shared components are separate from feature-specific logic
+- **Scalability:** Easy to add new tracking categories as independent features
+- **Import Clarity:** Clean imports using feature barrel exports (e.g., `import { AddFoodDialog } from '@/features/foods'`)
 
 #### 3.1. Data Storage Strategy
 
@@ -129,14 +288,14 @@ The system uses a **visual workflow orchestrator** (n8n) combined with an **AI A
 
 #### 3.2.1. Ingredient Processing Pipeline
 
-The core intelligence of the app lies in its ability to not just identify ingredients, but to enrich them with nutritional context (food group and zone). This is achieved through a two-stage pipeline that runs on the backend (e.g., within an n8n workflow) after a user submits a meal.
+The core intelligence of the app lies in its ability to not just identify ingredients, but to enrich them with nutritional context (food group and zone). This is achieved through a two-stage pipeline that runs on the backend (e.g., within an n8n workflow) after a user submits a food entry.
 
 **Stage 1: Ingredient Identification (The "What")**
 
 This stage determines the list of ingredients from the user's input.
 
 - **Manual Input:** If the user types ingredients manually, this stage is complete. The system receives a direct list of strings (e.g., `["Chicken Breast", "Organic Tomatoes"]`).
-- **Camera Input:** When a photo is provided, a multimodal vision model (e.g., GPT-4o) is used with a prompt like: `"List the primary ingredients in this meal. Return as a JSON array of strings."` The goal is to produce the same list of strings as the manual input.
+- **Camera Input:** When a photo is provided, a multimodal vision model (e.g., GPT-4o) is used with a prompt like: `"List the primary ingredients in this food. Return as a JSON array of strings."` The goal is to produce the same list of strings as the manual input.
 
 **Stage 2: Ingredient Enrichment (The "So What")**
 
@@ -318,11 +477,11 @@ Current PWA can be enhanced with **Capacitor** if native device integration is n
 The following interfaces define the shape of the data stored in the application.
 
 ```typescript
-interface Meal {
+interface Food {
   id: string;
   name: string; // e.g., "Lunch" or a user-defined name
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  ingredients: Ingredient[]; // A meal is defined by its ingredients.
+  ingredients: Ingredient[]; // A food entry is defined by its ingredients.
   image?: string;
   notes?: string;
   status: "pending_review" | "analyzing" | "processed";
@@ -383,8 +542,8 @@ interface Stool {
 
 #### 5.1. Data Layer Architecture
 
-- **`lib/db.ts`**: **Centralized Data Layer** - Contains all Dexie.js database operations (`addMeal`, `getSymptoms`, `updateLiquid`, etc.). Components interact with data through these functions, not directly with Dexie.
-- **`lib/hooks/`**: **Custom React Hooks** - Data-specific hooks that encapsulate `useLiveQuery` calls and business logic (e.g., `useTodaysMeals`, `useSymptomTrends`).
+- **`lib/db.ts`**: **Centralized Data Layer** - Contains all Dexie.js database operations (`addFood`, `getSymptoms`, `updateLiquid`, etc.). Components interact with data through these functions, not directly with Dexie.
+- **`lib/hooks/`**: **Custom React Hooks** - Data-specific hooks that encapsulate `useLiveQuery` calls and business logic (e.g., `useTodaysFoods`, `useSymptomTrends`).
 
 #### 5.2. UI Components
 
@@ -397,4 +556,4 @@ interface Stool {
 - `split-circular-progress.tsx`: Renders the two-part circle for the Liquids view.
 - `food-category-progress.tsx`: Renders the three-part pie chart for the Foods view.
 - `vertical-progress-bar.tsx`: Renders the "battery" for the daily organic total.
-- `meal-composition-bar.tsx` & `
+- `food-composition-bar.tsx` & `

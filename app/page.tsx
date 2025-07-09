@@ -14,7 +14,7 @@ import {
   Settings,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AddMealDialog } from "@/components/add-meal-dialog";
+import { AddFoodDialog } from "@/components/add-food-dialog";
 import { AddLiquidDialog } from "@/components/add-liquid-dialog";
 import { AddSymptomDialog } from "@/components/add-symptom-dialog";
 import { AddStoolDialog } from "@/components/add-stool-dialog";
@@ -22,18 +22,18 @@ import { CameraCapture } from "@/components/camera-capture";
 import { SplitCircularProgress } from "@/components/split-circular-progress";
 import { FoodCategoryProgress } from "@/components/food-category-progress";
 import { format } from "date-fns";
-import { MealCompositionBar } from "@/components/meal-composition-bar";
+import { FoodCompositionBar } from "@/components/food-composition-bar";
 import { OrganicCompositionBar } from "@/components/organic-composition-bar";
 import { VerticalProgressBar } from "@/components/vertical-progress-bar";
 
 // Import types and database functions
-import { Meal, Liquid, Symptom, Stool } from "@/lib/types";
+import { Food, Liquid, Symptom, Stool } from "@/lib/types";
 import {
-  addMeal as dbAddMeal,
+  addFood as dbAddFood,
   addLiquid as dbAddLiquid,
   addSymptom as dbAddSymptom,
   addStool as dbAddStool,
-  updateMeal as dbUpdateMeal,
+  updateFood as dbUpdateFood,
   updateLiquid as dbUpdateLiquid,
   updateSymptom as dbUpdateSymptom,
   updateStool as dbUpdateStool,
@@ -42,11 +42,11 @@ import {
 
 // Import custom hooks
 import {
-  useTodaysMeals,
+  useTodaysFoods,
   useTodaysLiquids,
   useTodaysSymptoms,
   useTodaysStools,
-  useRecentMeals,
+  useRecentFoods,
   useRecentLiquids,
   useRecentSymptoms,
   useRecentStools,
@@ -58,11 +58,11 @@ type ViewType = "liquids" | "food" | "stool" | "symptoms";
 
 export default function Dashboard() {
   // Use custom hooks for reactive data binding
-  const todaysMeals = useTodaysMeals();
+  const todaysFoods = useTodaysFoods();
   const todaysLiquids = useTodaysLiquids();
   const todaysSymptoms = useTodaysSymptoms();
   const todaysStools = useTodaysStools();
-  const recentMeals = useRecentMeals();
+  const recentFoods = useRecentFoods();
   const recentLiquids = useRecentLiquids();
   const recentSymptoms = useRecentSymptoms();
   const recentStools = useRecentStools();
@@ -71,7 +71,7 @@ export default function Dashboard() {
   const router = useRouter();
 
   // Dialog state
-  const [showAddMeal, setShowAddMeal] = useState(false);
+  const [showAddFood, setShowAddFood] = useState(false);
   const [showAddLiquid, setShowAddLiquid] = useState(false);
   const [showAddSymptom, setShowAddSymptom] = useState(false);
   const [showAddStool, setShowAddStool] = useState(false);
@@ -82,20 +82,20 @@ export default function Dashboard() {
   const [currentView, setCurrentView] = useState<ViewType>("liquids");
 
   // Edit state
-  const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
+  const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [editingLiquid, setEditingLiquid] = useState<Liquid | null>(null);
   const [editingSymptom, setEditingSymptom] = useState<Symptom | null>(null);
   const [editingStool, setEditingStool] = useState<Stool | null>(null);
 
   // Database operations
-  const addMeal = async (meal: Omit<Meal, "id" | "timestamp">) => {
-    if (editingMeal) {
-      // Update existing meal
-      await dbUpdateMeal(editingMeal.id, meal);
-      setEditingMeal(null);
+  const addFood = async (food: Omit<Food, "id" | "timestamp">) => {
+    if (editingFood) {
+      // Update existing food
+      await dbUpdateFood(editingFood.id, food);
+      setEditingFood(null);
     } else {
-      // Add new meal
-      await dbAddMeal(meal);
+      // Add new food
+      await dbAddFood(food);
     }
   };
 
@@ -146,14 +146,14 @@ export default function Dashboard() {
       // TODO: Send to AI for analysis
       console.log("Analyzing drink image...");
     } else if (cameraType === "eat") {
-      const newMeal: Omit<Meal, "id" | "timestamp"> = {
+      const newFood: Omit<Food, "id" | "timestamp"> = {
         name: "Photo captured",
         ingredients: [], // Will be updated by AI analysis
         status: "analyzing",
         image: imageData,
         notes: "Analyzing image...",
       };
-      await dbAddMeal(newMeal);
+      await dbAddFood(newFood);
 
       // TODO: Send to AI for analysis
       console.log("Analyzing food image...");
@@ -176,7 +176,7 @@ export default function Dashboard() {
     if (cameraType === "drink") {
       setShowAddLiquid(true);
     } else if (cameraType === "eat") {
-      setShowAddMeal(true);
+      setShowAddFood(true);
     } else if (cameraType === "move") {
       setShowAddStool(true);
     }
@@ -236,9 +236,9 @@ export default function Dashboard() {
     setShowAddLiquid(true);
   };
 
-  const handleEditMeal = (meal: Meal) => {
-    setEditingMeal(meal);
-    setShowAddMeal(true);
+  const handleEditFood = (food: Food) => {
+    setEditingFood(food);
+    setShowAddFood(true);
   };
 
   const handleEditSymptom = (symptom: Symptom) => {
@@ -251,9 +251,9 @@ export default function Dashboard() {
     setShowAddStool(true);
   };
 
-  const handleCloseMealDialog = () => {
-    setShowAddMeal(false);
-    setEditingMeal(null);
+  const handleCloseFoodDialog = () => {
+    setShowAddFood(false);
+    setEditingFood(null);
   };
 
   const handleCloseLiquidDialog = () => {
@@ -389,7 +389,7 @@ export default function Dashboard() {
                 <button className="text-gray-500 text-sm">View more</button>
               </div>
               <div className="space-y-3">
-                {!recentMeals || recentMeals.length === 0 ? (
+                {!recentFoods || recentFoods.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Utensils className="h-8 w-8 text-gray-400" />
@@ -402,18 +402,18 @@ export default function Dashboard() {
                     </p>
                   </div>
                 ) : (
-                  recentMeals.map(meal => (
+                  recentFoods.map(food => (
                     <button
-                      key={meal.id}
-                      onClick={() => handleEditMeal(meal)}
+                      key={food.id}
+                      onClick={() => handleEditFood(food)}
                       className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
                     >
                       <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        {meal.image ? (
+                        {food.image ? (
                           <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                             <img
-                              src={meal.image || "/placeholder.svg"}
-                              alt={meal.name}
+                              src={food.image || "/placeholder.svg"}
+                              alt={food.name}
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -424,23 +424,23 @@ export default function Dashboard() {
                         )}
                         <div className="text-left flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">
-                            {meal.status === "analyzing"
-                              ? "New Meal"
-                              : meal.name}
+                            {food.status === "analyzing"
+                              ? "New Food"
+                              : food.name}
                           </p>
                           <p className="text-sm text-gray-500 truncate">
-                            {meal.ingredients
+                            {food.ingredients
                               ?.map(ing => ing.name)
                               .join(", ") || "No ingredients"}
                           </p>
                         </div>
                       </div>
                       <div className="flex-shrink-0 w-24 ml-2 space-y-1.5">
-                        <MealCompositionBar
-                          ingredients={meal.ingredients || []}
+                        <FoodCompositionBar
+                          ingredients={food.ingredients || []}
                         />
                         <OrganicCompositionBar
-                          ingredients={meal.ingredients || []}
+                          ingredients={food.ingredients || []}
                         />
                       </div>
                     </button>
@@ -671,12 +671,12 @@ export default function Dashboard() {
       />
 
       {/* Add Dialogs */}
-      <AddMealDialog
-        open={showAddMeal}
-        onOpenChange={setShowAddMeal}
-        onAddMeal={addMeal}
-        onClose={handleCloseMealDialog}
-        editingMeal={editingMeal}
+      <AddFoodDialog
+        open={showAddFood}
+        onOpenChange={setShowAddFood}
+        onAddFood={addFood}
+        onClose={handleCloseFoodDialog}
+        editingFood={editingFood}
       />
 
       <AddLiquidDialog

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import type { Meal, Ingredient } from "@/lib/types";
+import type { Food, Ingredient } from "@/lib/types";
 
 import { useState, useEffect } from "react";
 import {
@@ -24,12 +24,12 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-interface AddMealDialogProps {
+interface AddFoodDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddMeal: (meal: Omit<Meal, "id" | "timestamp">) => void;
+  onAddFood: (food: Omit<Food, "id" | "timestamp">) => void;
   onClose: () => void;
-  editingMeal?: Meal | null;
+  editingFood?: Food | null;
 }
 
 const cookingMethods = [
@@ -61,13 +61,13 @@ const cookingMethods = [
   },
 ];
 
-export function AddMealDialog({
+export function AddFoodDialog({
   open,
   onOpenChange,
-  onAddMeal,
+  onAddFood,
   onClose,
-  editingMeal,
-}: AddMealDialogProps) {
+  editingFood,
+}: AddFoodDialogProps) {
   const [name, setName] = useState("");
   const [currentIngredient, setCurrentIngredient] = useState("");
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -81,18 +81,18 @@ export function AddMealDialog({
 
   // Pre-populate form when editing
   useEffect(() => {
-    if (editingMeal) {
-      setName(editingMeal.name || "");
-      setIngredients(editingMeal.ingredients || []);
-      setNotes(editingMeal.notes || "");
-      setShowNotes(!!editingMeal.notes);
+    if (editingFood) {
+      setName(editingFood.name || "");
+      setIngredients(editingFood.ingredients || []);
+      setNotes(editingFood.notes || "");
+      setShowNotes(!!editingFood.notes);
     } else {
       setName("");
       setIngredients([]);
       setNotes("");
       setShowNotes(false);
     }
-  }, [editingMeal]);
+  }, [editingFood]);
 
   const handleIngredientKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && currentIngredient.trim()) {
@@ -179,8 +179,8 @@ export function AddMealDialog({
     e.preventDefault();
     if (ingredients.length === 0) return;
 
-    // Create meal name from ingredients if not provided
-    const mealName =
+    // Create food name from ingredients if not provided
+    const foodName =
       name.trim() ||
       (() => {
         const ingredientNames = ingredients.map(ing => ing.name);
@@ -189,15 +189,15 @@ export function AddMealDialog({
           : ingredientNames.join(", ");
       })();
 
-    const meal: Omit<Meal, "id" | "timestamp"> = {
-      name: mealName,
+    const food: Omit<Food, "id" | "timestamp"> = {
+      name: foodName,
       ingredients,
       notes: notes.trim() || undefined,
-      status: editingMeal ? editingMeal.status : "pending_review",
-      image: editingMeal?.image,
+      status: editingFood ? editingFood.status : "pending_review",
+      image: editingFood?.image,
     };
 
-    onAddMeal(meal);
+    onAddFood(food);
 
     // Reset form
     setName("");
@@ -212,7 +212,7 @@ export function AddMealDialog({
   };
 
   const handleClose = () => {
-    if (!editingMeal) {
+    if (!editingFood) {
       setName("");
       setCurrentIngredient("");
       setIngredients([]);
@@ -229,13 +229,13 @@ export function AddMealDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{editingMeal ? "Edit Food" : "Add Food"}</DialogTitle>
+          <DialogTitle>{editingFood ? "Edit Food" : "Add Food"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="meal-name">Meal Name (optional)</Label>
+            <Label htmlFor="food-name">Food Name (optional)</Label>
             <Input
-              id="meal-name"
+              id="food-name"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g., Lunch, Breakfast (auto-generated if empty)"
@@ -420,7 +420,7 @@ export function AddMealDialog({
               disabled={ingredients.length === 0}
               className="flex-1"
             >
-              {editingMeal
+              {editingFood
                 ? `Update Food (${ingredients.length} ingredients)`
                 : `Add Food (${ingredients.length} ingredients)`}
             </Button>

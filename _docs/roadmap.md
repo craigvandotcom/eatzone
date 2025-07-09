@@ -87,11 +87,16 @@ This document outlines the development roadmap to build the Health Tracker appli
   - **Action:** Create `lib/db.ts` with centralized database operations and refactor `app/page.tsx` to use the new data layer.
   - **Implementation:**
     - Implement data structures from PRD (unified `timestamp`).
-    - Create centralized database functions (`addMeal`, `getSymptoms`, etc.).
+    - Create centralized database functions (`addFood`, `getSymptoms`, etc.).
     - Implement `useLiveQuery` hooks for reactive data binding.
-    - Create custom hooks for common operations (`useTodaysMeals`, `useSymptomTrends`).
+    - Create custom hooks for common operations (`useTodaysFoods`, `useSymptomTrends`).
     - Refactor components to use the data layer instead of direct database calls.
-  - **Outcome:** Clean separation of concerns with reactive state management and no "God component" anti-pattern.
+    - **Structural Alignments:**
+      - The `features/foods/` folder is already correctly named. No change needed.
+      - Restructure `lib/` folder: create `lib/db/`, `lib/validations/`, `lib/api/` subfolders
+      - Move `lib/db.ts` → `lib/db/db.ts` and add `lib/db/migrations.ts`, `lib/db/seed.ts`
+      - Create Zod validation schemas in `lib/validations/` for all data types
+  - **Outcome:** Clean separation of concerns with reactive state management, proper folder structure, and no "God component" anti-pattern.
 
 - [ ] **Task 3: Implement Export/Import (`data-export-import`)**
   - **Action:** Build the data export/import feature, positioning it as the primary user-managed backup system.
@@ -103,7 +108,21 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 - [ ] **Task 4: Wire Up UI Components (`wire-up-ui`)**
   - **Action:** Connect all existing forms, dialogs, and visualizations to the new data layer.
-  - **Outcome:** The UI is fully interactive and reflects the state of the local database.
+  - **Implementation:**
+    - Connect all forms and dialogs to centralized database functions
+    - Wire up reactive data binding with useLiveQuery hooks
+    - **Structural Alignments - Move Components to Feature Folders:**
+      - `add-food-dialog.tsx` → `features/foods/components/`
+      - `add-liquid-dialog.tsx` → `features/liquids/components/`
+      - `add-stool-dialog.tsx` → `features/stools/components/`
+      - `add-symptom-dialog.tsx` → `features/symptoms/components/`
+      - `camera-capture.tsx` → `features/camera/components/`
+      - `split-circular-progress.tsx` → `features/liquids/components/`
+      - `food-category-progress.tsx` → `features/foods/components/`
+      - `vertical-progress-bar.tsx` → `features/foods/components/`
+      - `food-composition-bar.tsx` → `features/foods/components/`
+      - `organic-composition-bar.tsx` → `features/foods/components/`
+  - **Outcome:** The UI is fully interactive, reflects the state of the local database, and follows proper feature-based component organization.
 
 - [ ] **Task 4.5: Implement Core Visualizations (`implement-visualizations`)**
   - **Action:** Build the key data visualization components defined in the PRD.
@@ -111,12 +130,20 @@ This document outlines the development roadmap to build the Health Tracker appli
     - `split-circular-progress.tsx` for the Liquids view.
     - `food-category-progress.tsx` for the Foods pie chart.
     - `vertical-progress-bar.tsx` for the daily organic "battery".
-    - `meal-composition-bar.tsx` for visualizing individual meal health.
+    - `food-composition-bar.tsx` for visualizing individual food entry health.
   - **Outcome:** The core, high-impact visualizations that form the heart of the user's "Body Compass" dashboard are implemented and ready for data binding.
 
 - [ ] **Task 5: Finalize PWA Functionality (`finalize-pwa`)**
   - **Action:** Ensure the service worker (`sw.js`) correctly caches all necessary assets for a seamless offline experience.
   - **Outcome:** The application is installable and works reliably without an internet connection.
+
+- [ ] **Task 5.5: Verify PWA Compliance (`verify-pwa-compliance`)**
+  - **Action:** Perform PWA quality assurance testing before completing Phase 1.
+  - **Implementation:**
+    - Run Lighthouse audits on the deployed or local application.
+    - Verify offline functionality by disabling network access.
+    - Test "Add to Home Screen" functionality on both iOS and Android.
+  - **Outcome:** Confidence that the PWA meets quality standards for installability, offline access, and performance.
 
 - [ ] **Task 6: Build Landing Page & Authentication (`build-landing-auth`)**
   - **Action:** Create the public-facing landing page and local-first authentication system.
@@ -139,7 +166,11 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Implement route guards for protected pages
     - Add session timeout and auto-logout functionality
     - Create user profile and settings management
-  - **Outcome:** Secure application structure with proper access control.
+    - **Structural Alignments:**
+      - Create `middleware.ts` for Next.js route protection
+      - Enhance `lib/validations/` with authentication schemas (if not done in Task 2)
+      - Set up proper TypeScript types for authentication in `lib/types/`
+  - **Outcome:** Secure application structure with proper access control and middleware-based route protection.
 
 - [ ] **Task 7.5: Build Settings Page (`build-settings-page`)**
   - **Action:** Create the `/app/settings` page as the central hub for account and data controls.
@@ -171,7 +202,16 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Create new public home page at `app/page.tsx`
     - Implement responsive navigation (bottom tabs on mobile, sidebar on desktop)
     - Add proper page transitions and loading states
-  - **Outcome:** Clean separation between public and protected areas with intuitive navigation.
+    - **Structural Alignments - Implement Route Groups:**
+      - Create `app/(auth)/` route group for authentication pages
+        - Move `app/login/` → `app/(auth)/login/`
+        - Move `app/signup/` → `app/(auth)/signup/`
+      - Create `app/(protected)/` route group for authenticated pages
+        - Move `app/app/page.tsx` → `app/(protected)/app/page.tsx`
+        - Move `app/settings/` → `app/(protected)/settings/`
+        - Create `app/(protected)/app/insights/page.tsx` for analytics (placeholder)
+      - Update imports and navigation to reflect new structure
+  - **Outcome:** Clean separation between public and protected areas with intuitive navigation and proper route group organization.
 
 ---
 
@@ -219,28 +259,48 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Add input validation and sanitization
     - Secure webhook authentication with tokens
     - Implement proper error handling and timeouts
-  - **Outcome:** Secure API endpoint that acts as a bridge between client and AI workflow.
+    - **Structural Alignments:**
+      - Create `app/api/` folder structure with proper route organization
+      - Add `app/api/analyze/route.ts` for AI analysis endpoint
+      - Add `app/api/auth/route.ts` for authentication API (if needed)
+      - Enhance `lib/api/` with client utilities and endpoint definitions
+      - Add API-specific validation schemas to `lib/validations/`
+  - **Outcome:** Secure API endpoint infrastructure that acts as a bridge between client and AI workflow.
 
 - [ ] **Task 13: Integrate Camera with Workflow (`integrate-camera`)**
-  - **Action:** Connect the `camera-capture.tsx` component to the new API route, sending image data to the AI workflow.
+  - **Action:** Connect the UI to the AI workflow, ensuring a clean separation of concerns.
   - **Implementation:**
-    - Update camera component to call `/api/analyze` endpoint
-    - Handle workflow response timing (may be slower than direct API calls)
-    - Implement proper loading states and error handling
-  - **Outcome:** Photos taken in the app are sent through the AI workflow for processing.
+    - The _parent component_ that invokes `<CameraCapture>` will be responsible for handling the API call to `/api/analyze`.
+    - The `<CameraCapture>` component itself remains agnostic, only returning an image string via a callback.
+    - This preserves the reusability of the camera component as per the PRD.
+    - Handle workflow response timing (may be slower than direct API calls) with proper loading states and error handling in the parent component.
+  - **Outcome:** Photos taken in the app are sent through the AI workflow for processing, while maintaining a clean component architecture.
 
 - [ ] **Task 14: Handle AI Analysis in UI (`update-ui-for-ai`)**
   - **Action:** Implement UI states to handle "Analyzing..." placeholders and display the structured data returned by the AI workflow.
   - **Implementation:**
-    - Add loading states for workflow processing
-    - Handle workflow timeouts and errors gracefully
-    - Display structured data from workflow responses
-    - Implement retry logic for failed analyses
-  - **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling.
+    - Add loading states for workflow processing.
+    - Design and implement UI states for all three food statuses:
+      - `analyzing`: Show a loading indicator or placeholder.
+      - `pending_review`: Allow the user to view AI results and require confirmation before saving.
+      - `processed`: Display the final, confirmed data.
+    - Handle workflow timeouts and errors gracefully.
+    - Implement retry logic for failed analyses.
+  - **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling and a complete status lifecycle.
 
 - [ ] **Task 15: Build Insights Page (`build-insights-page`)**
   - **Action:** Create the "Insights & Analytics" page that performs all calculations and visualizations on the client-side using data from IndexedDB.
-  - **Outcome:** Users can see trends and correlations in their health data without it ever leaving their device.
+  - **Implementation:**
+    - Build comprehensive analytics and trend visualization components
+    - Implement correlation analysis between different health metrics
+    - Create time-based trend charts and pattern recognition
+    - **Structural Alignments:**
+      - Create `features/analytics/` folder with complete feature structure
+      - Add `features/analytics/components/` for trend charts, correlation matrices, health score cards
+      - Add `features/analytics/hooks/` for trend analysis and correlation calculations
+      - Add `features/analytics/types/` for analytics-specific TypeScript types
+      - Implement the actual `app/(protected)/app/insights/page.tsx` with full functionality
+  - **Outcome:** Users can see trends and correlations in their health data without it ever leaving their device, supported by a complete analytics feature architecture.
 
 ---
 
@@ -272,12 +332,32 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 **Goal:** Implement "Tier 3" features that require careful privacy considerations, such as optional cloud sync.
 
-- [ ] **Task 19: Implement E2EE Sync (`e2ee-sync`)**
+- [ ] **Task 19: Final Structural Cleanup (`final-structural-cleanup`)**
+  - **Action:** Complete remaining architectural alignments and codebase organization improvements.
+  - **Implementation:**
+    - **Component Organization:**
+      - Consolidate `shared/` and `components/` folders into a single, logical structure
+      - Move any remaining misplaced components to their proper feature folders
+      - Create proper barrel exports (`index.ts`) for all features
+    - **Documentation Alignment:**
+      - Add missing `brand-identity.md` with visual design guidelines
+      - Add missing `development-workflow.md` with coding standards and processes
+      - Update existing documentation to reflect new folder structure
+    - **Type System Enhancement:**
+      - Consolidate type definitions from `lib/types.ts` into feature-specific type files
+      - Ensure all features have proper TypeScript interfaces and exports
+    - **Final Validation:**
+      - Verify all imports use the new structure
+      - Ensure no broken references after structural changes
+      - Update any remaining hardcoded paths
+  - **Outcome:** Complete architectural alignment with PRD specifications and a fully organized, maintainable codebase.
+
+- [ ] **Task 20: Implement E2EE Sync (`e2ee-sync`)**
   - **Action:** As an opt-in feature, build an end-to-end encrypted synchronization system.
   - **Technology:** Use a service like Supabase to store encrypted data blobs that the server cannot read.
   - **Outcome:** Users can securely sync their data across multiple devices while maintaining privacy.
 
-- [ ] **Task 20: Implement Secure Sharing (`secure-sharing`)**
+- [ ] **Task 21: Implement Secure Sharing (`secure-sharing`)**
   - **Action:** Create a feature allowing users to securely share a snapshot of their data with a healthcare provider.
   - **Outcome:** Users can grant temporary, controlled access to their health information.
 

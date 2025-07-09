@@ -93,7 +93,7 @@ export default function SettingsPage() {
       const data = JSON.parse(text);
 
       // Validate the data structure
-      if (!data.meals || !data.liquids || !data.symptoms || !data.stools) {
+      if (!data.foods || !data.liquids || !data.symptoms || !data.stools) {
         throw new Error("Invalid backup file format");
       }
 
@@ -101,7 +101,7 @@ export default function SettingsPage() {
 
       toast({
         title: "Data imported successfully",
-        description: `Imported ${data.meals.length} meals, ${data.liquids.length} liquids, ${data.symptoms.length} symptoms, and ${data.stools.length} stools.`,
+        description: `Imported ${data.foods.length} foods, ${data.liquids.length} liquids, ${data.symptoms.length} symptoms, and ${data.stools.length} stools.`,
       });
     } catch (error) {
       console.error("Import failed:", error);
@@ -246,7 +246,7 @@ export default function SettingsPage() {
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete
-                      all your meals, liquids, symptoms, and stools data.
+                      all your foods, liquids, symptoms, and stools data.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

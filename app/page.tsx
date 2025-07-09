@@ -14,17 +14,17 @@ import {
   Settings,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AddFoodDialog } from "@/components/add-food-dialog";
-import { AddLiquidDialog } from "@/components/add-liquid-dialog";
-import { AddSymptomDialog } from "@/components/add-symptom-dialog";
-import { AddStoolDialog } from "@/components/add-stool-dialog";
-import { CameraCapture } from "@/components/camera-capture";
-import { SplitCircularProgress } from "@/components/split-circular-progress";
-import { FoodCategoryProgress } from "@/components/food-category-progress";
+import { AddFoodDialog } from "@/features/foods/components/add-food-dialog";
+import { AddLiquidDialog } from "@/features/liquids/components/add-liquid-dialog";
+import { AddSymptomDialog } from "@/features/symptoms/components/add-symptom-dialog";
+import { AddStoolDialog } from "@/features/stools/components/add-stool-dialog";
+import { CameraCapture } from "@/features/camera/components/camera-capture";
+import { SplitCircularProgress } from "@/features/liquids/components/split-circular-progress";
+import { FoodCategoryProgress } from "@/features/foods/components/food-category-progress";
 import { format } from "date-fns";
-import { FoodCompositionBar } from "@/components/food-composition-bar";
-import { OrganicCompositionBar } from "@/components/organic-composition-bar";
-import { VerticalProgressBar } from "@/components/vertical-progress-bar";
+import { FoodCompositionBar } from "@/features/foods/components/food-composition-bar";
+import { OrganicCompositionBar } from "@/features/foods/components/organic-composition-bar";
+import { VerticalProgressBar } from "@/features/foods/components/vertical-progress-bar";
 
 // Import types and database functions
 import { Food, Liquid, Symptom, Stool } from "@/lib/types";

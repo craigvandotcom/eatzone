@@ -1,6 +1,18 @@
-# Project Roadmap: Health Tracker PWA to Native App
+# MVP Roadmap: Health Tracker PWA (v0.1)
 
-This document outlines the development roadmap to build the Health Tracker application, starting from a Progressive Web App (PWA) with a local-first architecture and evolving into a native mobile application using Capacitor.
+This document outlines the development roadmap for the MVP (v0.1) of the Health Tracker application - a Progressive Web App (PWA) with a local-first architecture focused on core health tracking functionality.
+
+## MVP Scope (v0.1)
+
+The MVP focuses on delivering a fully functional, offline-capable PWA with robust local data storage and essential health tracking features. This version provides the foundation for user validation and feedback collection.
+
+### Core MVP Features:
+- **Local-First Architecture**: Complete offline functionality with IndexedDB storage
+- **Health Data Tracking**: Food, liquid, stool, and symptom logging
+- **Camera Integration**: Photo capture for food logging
+- **Data Visualization**: Core charts and progress indicators
+- **Data Ownership**: Export/import functionality for user data control
+- **PWA Compliance**: Installable, offline-capable application
 
 ## Engineering Principles
 
@@ -73,9 +85,9 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 ---
 
-### Phase 1: Foundational PWA - The Local-First Core
+### Phase 1: Core MVP Implementation
 
-**Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the core MVP.
+**Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the complete MVP.
 
 - [x] **Task 1: Migrate to IndexedDB (`indexeddb-migration`)**
   - **Action:** Replace `localStorage` with `IndexedDB` for data storage.
@@ -230,175 +242,44 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 ---
 
-### Phase 2: AI Integration & Intelligence
+## MVP Success Criteria
 
-**Goal:** Implement the privacy-preserving AI analysis flow to bring "smart" features online.
+To consider v0.1 complete, the following criteria must be met:
 
-- [ ] **Task 11: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)**
-  - **Action:** Implement the hybrid workflow approach using n8n + OpenRouter for maximum iteration speed.
-  - **Implementation Steps:**
-    - Deploy n8n (start with cloud version for simplicity)
-    - Set up OpenRouter account and configure API access
-    - Create authentication tokens for webhook security
-    - Test basic webhook connectivity
-  - **Outcome:** Visual workflow platform ready for AI logic development.
+### **Functional Requirements**
+- [ ] Users can create local accounts and login securely
+- [ ] Users can track food, liquid, stool, and symptom data
+- [ ] Users can capture photos for food logging
+- [ ] Users can view their data through core visualizations
+- [ ] Users can export/import their complete data set
+- [ ] App works completely offline after initial load
+- [ ] App is installable as a PWA on mobile and desktop
 
-- [ ] **Task 11.5: Design & Build Curated Ingredient Database (`build-ingredient-db`)**
-  - **Action:** Create the backend database (e.g., Supabase table, Vercel KV) to act as the source of truth for ingredient classifications.
-  - **Implementation:**
-    - Define schema: `ingredientName`, `foodGroup`, `defaultZone`, `zoneModifiers`.
-    - Populate with an initial set of common ingredients (e.g., 200+ items).
-    - Create an interface or API for the n8n workflow to query this database.
-  - **Outcome:** A consistent, curated reference for core ingredient data that underpins the app's intelligence.
+### **Technical Requirements**
+- [ ] IndexedDB properly stores and retrieves all data types
+- [ ] Reactive state management works across all components
+- [ ] Authentication and route protection function correctly
+- [ ] PWA manifest and service worker meet standards
+- [ ] Production deployment is stable and accessible
+- [ ] Code follows established architectural patterns
 
-- [ ] **Task 12: Build AI Analysis Workflow (`build-ai-workflow`)**
-  - **Action:** Create the visual workflow in n8n that handles the two-stage ingredient processing pipeline.
-  - **Workflow Components:**
-    - **Stage 1 (Identification):**
-      - Webhook trigger for receiving image data or manual ingredient list.
-      - Multimodal AI call for image-to-text ingredient identification.
-    - **Stage 2 (Enrichment):**
-      - Database lookup node to query the **Curated Ingredient Database**.
-      - Conditional logic: if ingredient is found, use curated data.
-      - If not found, use a second AI call (fallback) to classify `foodGroup` and `zone`.
-      - Implement a "learning loop" by logging AI-classified ingredients for future review and addition to the curated database.
-    - **Output & Error Handling:**
-      - Data transformation nodes for final JSON formatting.
-      - Error handling and validation nodes.
-  - **Outcome:** A robust AI analysis workflow that combines the consistency of a curated database with the scalability of AI, capable of turning a photo or text into structured, intelligent data.
-
-- [ ] **Task 13: Create Simple API Route (`create-api-route`)**
-  - **Action:** Build a lightweight Next.js API route that forwards requests to the n8n workflow.
-  - **Security Implementation:**
-    - Implement rate limiting using `@upstash/ratelimit`
-    - Add input validation and sanitization
-    - Secure webhook authentication with tokens
-    - Implement proper error handling and timeouts
-    - **Structural Alignments:**
-      - Create `app/api/` folder structure with proper route organization
-      - Add `app/api/analyze/route.ts` for AI analysis endpoint
-      - Add `app/api/auth/route.ts` for authentication API (if needed)
-      - Enhance `lib/api/` with client utilities and endpoint definitions
-      - Add API-specific validation schemas to `lib/validations/`
-  - **Outcome:** Secure API endpoint infrastructure that acts as a bridge between client and AI workflow.
-
-- [ ] **Task 14: Integrate Camera with Workflow (`integrate-camera`)**
-  - **Action:** Connect the UI to the AI workflow, ensuring a clean separation of concerns.
-  - **Implementation:**
-    - The _parent component_ that invokes `<CameraCapture>` will be responsible for handling the API call to `/api/analyze`.
-    - The `<CameraCapture>` component itself remains agnostic, only returning an image string via a callback.
-    - This preserves the reusability of the camera component as per the PRD.
-    - Handle workflow response timing (may be slower than direct API calls) with proper loading states and error handling in the parent component.
-  - **Outcome:** Photos taken in the app are sent through the AI workflow for processing, while maintaining a clean component architecture.
-
-- [ ] **Task 15: Handle AI Analysis in UI (`update-ui-for-ai`)**
-  - **Action:** Implement UI states to handle "Analyzing..." placeholders and display the structured data returned by the AI workflow.
-  - **Implementation:**
-    - Add loading states for workflow processing.
-    - Design and implement UI states for all three food statuses:
-      - `analyzing`: Show a loading indicator or placeholder.
-      - `pending_review`: Allow the user to view AI results and require confirmation before saving.
-      - `processed`: Display the final, confirmed data.
-    - Handle workflow timeouts and errors gracefully.
-    - Implement retry logic for failed analyses.
-  - **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling and a complete status lifecycle.
-
-- [ ] **Task 16: Build Insights Page (`build-insights-page`)**
-  - **Action:** Create the "Insights & Analytics" page that performs all calculations and visualizations on the client-side using data from IndexedDB.
-  - **Implementation:**
-    - Build comprehensive analytics and trend visualization components
-    - Implement correlation analysis between different health metrics
-    - Create time-based trend charts and pattern recognition
-    - **Structural Alignments:**
-      - Create `features/analytics/` folder with complete feature structure
-      - Add `features/analytics/components/` for trend charts, correlation matrices, health score cards
-      - Add `features/analytics/hooks/` for trend analysis and correlation calculations
-      - Add `features/analytics/types/` for analytics-specific TypeScript types
-      - Implement the actual `app/(protected)/app/insights/page.tsx` with full functionality
-  - **Outcome:** Users can see trends and correlations in their health data without it ever leaving their device, supported by a complete analytics feature architecture.
+### **User Experience Requirements**
+- [ ] Mobile-first design with responsive desktop layout
+- [ ] Intuitive navigation and clear information hierarchy
+- [ ] Fast loading and smooth interactions
+- [ ] Clear feedback for all user actions
+- [ ] Graceful handling of errors and edge cases
 
 ---
 
-### Phase 3: Native Integration with Capacitor
+## Post-MVP Considerations
 
-**Goal:** Package the PWA as a native app for iOS and Android to expand its reach and capabilities.
+After v0.1 is complete and validated with users, development will continue with v1.0 roadmap, which will include:
 
-- [ ] **Task 17: Integrate Capacitor (`integrate-capacitor`)**
-  - **Action:** Add Capacitor to the Next.js project.
-  - **Important Note:** Capacitor packages the PWA as a static web app. The native app will make network requests to the deployed Vercel API endpoints and n8n workflows for AI functionality.
-  - **Implementation:**
-    - Configure Next.js for static export (`next build && next export`)
-    - Install and configure Capacitor
-    - Update API calls to use absolute URLs in production
-    - Ensure n8n webhook URLs are accessible from native apps
-  - **Outcome:** The project is configured to build native app packages with proper client-server separation.
+- AI-powered food analysis and categorization
+- Advanced analytics and insights
+- Native mobile app packaging with Capacitor
+- Enhanced data visualization and trend analysis
+- Optional cloud sync and sharing features
 
-- [ ] **Task 18: Configure Native Projects (`configure-native-projects`)**
-  - **Action:** Set up the iOS (Xcode) and Android (Android Studio) projects, including icons, splash screens, and permissions.
-  - **Outcome:** Native project shells are ready for compilation.
-
-- [ ] **Task 19: Build and Test on Devices (`test-native`)**
-  - **Action:** Compile the app and test it thoroughly on iOS and Android emulators and physical devices.
-  - **Outcome:** A stable, distributable native application.
-
----
-
-### Phase 4: Advanced Features & Ecosystem
-
-**Goal:** Implement "Tier 3" features that require careful privacy considerations, such as optional cloud sync.
-
-- [ ] **Task 20: Final Structural Cleanup (`final-structural-cleanup`)**
-  - **Action:** Complete remaining architectural alignments and codebase organization improvements.
-  - **Implementation:**
-    - **Component Organization:**
-      - Consolidate `shared/` and `components/` folders into a single, logical structure
-      - Move any remaining misplaced components to their proper feature folders
-      - Create proper barrel exports (`index.ts`) for all features
-    - **Documentation Alignment:**
-      - Add missing `brand-identity.md` with visual design guidelines
-      - Add missing `development-workflow.md` with coding standards and processes
-      - Update existing documentation to reflect new folder structure
-    - **Type System Enhancement:**
-      - Consolidate type definitions from `lib/types.ts` into feature-specific type files
-      - Ensure all features have proper TypeScript interfaces and exports
-    - **Final Validation:**
-      - Verify all imports use the new structure
-      - Ensure no broken references after structural changes
-      - Update any remaining hardcoded paths
-  - **Outcome:** Complete architectural alignment with PRD specifications and a fully organized, maintainable codebase.
-
-- [ ] **Task 21: Implement E2EE Sync (`e2ee-sync`)**
-  - **Action:** As an opt-in feature, build an end-to-end encrypted synchronization system.
-  - **Technology:** Use a service like Supabase to store encrypted data blobs that the server cannot read.
-  - **Outcome:** Users can securely sync their data across multiple devices while maintaining privacy.
-
-- [ ] **Task 22: Implement Secure Sharing (`secure-sharing`)**
-  - **Action:** Create a feature allowing users to securely share a snapshot of their data with a healthcare provider.
-  - **Outcome:** Users can grant temporary, controlled access to their health information.
-
----
-
-## AI Architecture Migration Path
-
-As the application matures, there's an optional migration path for the AI architecture:
-
-### **Phase 1: n8n + OpenRouter (Recommended Start)**
-
-- **Benefits:** Maximum iteration speed, model flexibility, visual development
-- **Trade-offs:** Additional service dependency, slightly higher latency
-- **When to use:** During development and early user testing
-
-### **Phase 2: Direct API Integration (Optional Optimization)**
-
-- **Benefits:** Lower latency, fewer dependencies, potentially lower costs
-- **Trade-offs:** Reduced iteration speed, more complex code changes
-- **When to migrate:** When AI logic is proven and stable, performance becomes critical
-
-### **Decision Criteria for Migration:**
-
-- **Performance:** If workflow latency becomes unacceptable (>5-10 seconds)
-- **Cost:** If n8n + OpenRouter costs exceed direct API costs significantly
-- **Complexity:** If visual workflow becomes harder to manage than code
-- **Scale:** If request volume requires more optimized architecture
-
-**Important:** Only migrate when you have a clear performance or cost issue. The n8n approach provides significant development velocity advantages for solo developers.
+This MVP provides a solid foundation for user validation, feedback collection, and iterative improvement based on real-world usage patterns.

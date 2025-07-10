@@ -1,6 +1,32 @@
 // TypeScript interfaces for the Health Tracker PWA
 // Based on the PRD data structures
 
+// Authentication types
+export interface User {
+  id: string;
+  email: string;
+  passwordHash: string;
+  createdAt: string; // ISO 8601 string
+  lastLoginAt?: string; // ISO 8601 string
+  settings?: UserSettings;
+}
+
+export interface UserSettings {
+  theme: "light" | "dark" | "system";
+  waterGoal: number; // in ml
+  notifications: {
+    reminders: boolean;
+    dailySummary: boolean;
+  };
+}
+
+export interface AuthSession {
+  userId: string;
+  token: string;
+  expiresAt: string; // ISO 8601 string
+  createdAt: string; // ISO 8601 string
+}
+
 export interface Food {
   id: string;
   name: string; // e.g., "Lunch" or a user-defined name

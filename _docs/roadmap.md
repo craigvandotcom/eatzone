@@ -133,19 +133,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - `food-composition-bar.tsx` for visualizing individual food entry health.
   - **Outcome:** The core, high-impact visualizations that form the heart of the user's "Body Compass" dashboard are implemented and ready for data binding.
 
-- [ ] **Task 5: Finalize PWA Functionality (`finalize-pwa`)**
-  - **Action:** Ensure the service worker (`sw.js`) correctly caches all necessary assets for a seamless offline experience.
-  - **Outcome:** The application is installable and works reliably without an internet connection.
-
-- [ ] **Task 5.5: Verify PWA Compliance (`verify-pwa-compliance`)**
-  - **Action:** Perform PWA quality assurance testing before completing Phase 1.
-  - **Implementation:**
-    - Run Lighthouse audits on the deployed or local application.
-    - Verify offline functionality by disabling network access.
-    - Test "Add to Home Screen" functionality on both iOS and Android.
-  - **Outcome:** Confidence that the PWA meets quality standards for installability, offline access, and performance.
-
-- [ ] **Task 6: Build Landing Page & Authentication (`build-landing-auth`)**
+- [ ] **Task 5: Build Landing Page & Authentication (`build-landing-auth`)**
   - **Action:** Create the public-facing landing page and local-first authentication system.
   - **Landing Page (`/`):**
     - Desktop: Comprehensive overview with app screenshots, QR code for mobile access.
@@ -159,7 +147,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - **Important:** No cloud-based password reset or account recovery. Align with PRD's device-bound account model.
   - **Outcome:** Complete public-facing experience with a secure, privacy-preserving, local-first authentication system.
 
-- [ ] **Task 7: Implement Route Protection (`implement-route-protection`)**
+- [ ] **Task 6: Implement Route Protection (`implement-route-protection`)**
   - **Action:** Set up authentication-based route protection and user session management.
   - **Implementation:**
     - Create authentication context and hooks
@@ -172,7 +160,7 @@ This document outlines the development roadmap to build the Health Tracker appli
       - Set up proper TypeScript types for authentication in `lib/types/`
   - **Outcome:** Secure application structure with proper access control and middleware-based route protection.
 
-- [ ] **Task 7.5: Build Settings Page (`build-settings-page`)**
+- [ ] **Task 6.5: Build Settings Page (`build-settings-page`)**
   - **Action:** Create the `/app/settings` page as the central hub for account and data controls.
   - **Implementation:**
     - **Account Management:** Implement a "Logout" button to end the current session.
@@ -180,22 +168,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - **Appearance:** Add a theme toggle for switching between light and dark modes.
   - **Outcome:** A centralized and user-friendly page for managing account, data, and app preferences as specified in the PRD.
 
-- [ ] **Task 8: Optimize Desktop Experience (`optimize-desktop-experience`)**
-  - **Action:** Enhance the desktop experience while maintaining mobile-first design.
-  - **Desktop Enhancements:**
-    - Responsive layout with sidebar navigation.
-    - Keyboard shortcuts for power users.
-    - Implement file upload with drag-and-drop as a fallback for camera capture.
-    - Enhanced data visualization with hover details.
-    - Multi-window support for data analysis.
-  - **Mobile Optimizations:**
-    - Touch-friendly interface with appropriate target sizes
-    - Swipe gestures for navigation
-    - Pull-to-refresh functionality
-    - Optimized viewport and PWA behavior
-  - **Outcome:** Cohesive cross-device experience that works well on both mobile and desktop.
-
-- [ ] **Task 9: Restructure App Navigation (`restructure-app-navigation`)**
+- [ ] **Task 7: Restructure App Navigation (`restructure-app-navigation`)**
   - **Action:** Refactor the main application structure to work with the new authentication flow.
   - **Implementation:**
     - Move current `app/page.tsx` to `app/app/page.tsx` (protected route)
@@ -213,13 +186,55 @@ This document outlines the development roadmap to build the Health Tracker appli
       - Update imports and navigation to reflect new structure
   - **Outcome:** Clean separation between public and protected areas with intuitive navigation and proper route group organization.
 
+- [ ] **Task 8: Optimize Desktop Experience (`optimize-desktop-experience`)**
+  - **Action:** Enhance the desktop experience while maintaining mobile-first design.
+  - **Desktop Enhancements:**
+    - Responsive layout with sidebar navigation.
+    - Keyboard shortcuts for power users.
+    - Implement file upload with drag-and-drop as a fallback for camera capture.
+    - Enhanced data visualization with hover details.
+    - Multi-window support for data analysis.
+  - **Mobile Optimizations:**
+    - Touch-friendly interface with appropriate target sizes
+    - Swipe gestures for navigation
+    - Pull-to-refresh functionality
+    - Optimized viewport and PWA behavior
+  - **Outcome:** Cohesive cross-device experience that works well on both mobile and desktop.
+
+- [ ] **Task 9: Finalize PWA Functionality (`finalize-pwa`)**
+  - **Action:** Ensure the service worker (`sw.js`) correctly caches all necessary assets for a seamless offline experience.
+  - **Outcome:** The application is installable and works reliably without an internet connection.
+
+- [ ] **Task 9.5: Deploy to Production (`deploy-to-vercel`)**
+  - **Action:** Set up production deployment pipeline with custom domain and continuous integration.
+  - **Implementation:**
+    - Configure Vercel deployment with GitHub integration
+    - Set up custom domain with SSL certificate
+    - Configure environment variables for production
+    - Set up CI/CD pipeline with automatic deployments on main branch
+    - Configure preview deployments for pull requests
+    - Set up monitoring and error tracking (e.g., Sentry integration)
+    - Optimize build process for production (static exports, image optimization)
+  - **Outcome:** Production-ready deployment with professional domain, automated CI/CD, and proper monitoring infrastructure.
+
+- [ ] **Task 10: Verify PWA Compliance (`verify-pwa-compliance`)**
+  - **Action:** Perform PWA quality assurance testing on the deployed production application.
+  - **Implementation:**
+    - Run Lighthouse audits on the deployed application
+    - Verify offline functionality by disabling network access
+    - Test "Add to Home Screen" functionality on both iOS and Android
+    - Test PWA installation and uninstallation flows
+    - Verify service worker caching and update mechanisms
+    - Test cross-device synchronization (if implemented)
+  - **Outcome:** Confidence that the PWA meets quality standards for installability, offline access, and performance on the production domain.
+
 ---
 
 ### Phase 2: AI Integration & Intelligence
 
 **Goal:** Implement the privacy-preserving AI analysis flow to bring "smart" features online.
 
-- [ ] **Task 10: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)**
+- [ ] **Task 11: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)**
   - **Action:** Implement the hybrid workflow approach using n8n + OpenRouter for maximum iteration speed.
   - **Implementation Steps:**
     - Deploy n8n (start with cloud version for simplicity)
@@ -228,7 +243,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Test basic webhook connectivity
   - **Outcome:** Visual workflow platform ready for AI logic development.
 
-- [ ] **Task 10.5: Design & Build Curated Ingredient Database (`build-ingredient-db`)**
+- [ ] **Task 11.5: Design & Build Curated Ingredient Database (`build-ingredient-db`)**
   - **Action:** Create the backend database (e.g., Supabase table, Vercel KV) to act as the source of truth for ingredient classifications.
   - **Implementation:**
     - Define schema: `ingredientName`, `foodGroup`, `defaultZone`, `zoneModifiers`.
@@ -236,7 +251,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Create an interface or API for the n8n workflow to query this database.
   - **Outcome:** A consistent, curated reference for core ingredient data that underpins the app's intelligence.
 
-- [ ] **Task 11: Build AI Analysis Workflow (`build-ai-workflow`)**
+- [ ] **Task 12: Build AI Analysis Workflow (`build-ai-workflow`)**
   - **Action:** Create the visual workflow in n8n that handles the two-stage ingredient processing pipeline.
   - **Workflow Components:**
     - **Stage 1 (Identification):**
@@ -252,7 +267,7 @@ This document outlines the development roadmap to build the Health Tracker appli
       - Error handling and validation nodes.
   - **Outcome:** A robust AI analysis workflow that combines the consistency of a curated database with the scalability of AI, capable of turning a photo or text into structured, intelligent data.
 
-- [ ] **Task 12: Create Simple API Route (`create-api-route`)**
+- [ ] **Task 13: Create Simple API Route (`create-api-route`)**
   - **Action:** Build a lightweight Next.js API route that forwards requests to the n8n workflow.
   - **Security Implementation:**
     - Implement rate limiting using `@upstash/ratelimit`
@@ -267,7 +282,7 @@ This document outlines the development roadmap to build the Health Tracker appli
       - Add API-specific validation schemas to `lib/validations/`
   - **Outcome:** Secure API endpoint infrastructure that acts as a bridge between client and AI workflow.
 
-- [ ] **Task 13: Integrate Camera with Workflow (`integrate-camera`)**
+- [ ] **Task 14: Integrate Camera with Workflow (`integrate-camera`)**
   - **Action:** Connect the UI to the AI workflow, ensuring a clean separation of concerns.
   - **Implementation:**
     - The _parent component_ that invokes `<CameraCapture>` will be responsible for handling the API call to `/api/analyze`.
@@ -276,7 +291,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Handle workflow response timing (may be slower than direct API calls) with proper loading states and error handling in the parent component.
   - **Outcome:** Photos taken in the app are sent through the AI workflow for processing, while maintaining a clean component architecture.
 
-- [ ] **Task 14: Handle AI Analysis in UI (`update-ui-for-ai`)**
+- [ ] **Task 15: Handle AI Analysis in UI (`update-ui-for-ai`)**
   - **Action:** Implement UI states to handle "Analyzing..." placeholders and display the structured data returned by the AI workflow.
   - **Implementation:**
     - Add loading states for workflow processing.
@@ -288,7 +303,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Implement retry logic for failed analyses.
   - **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling and a complete status lifecycle.
 
-- [ ] **Task 15: Build Insights Page (`build-insights-page`)**
+- [ ] **Task 16: Build Insights Page (`build-insights-page`)**
   - **Action:** Create the "Insights & Analytics" page that performs all calculations and visualizations on the client-side using data from IndexedDB.
   - **Implementation:**
     - Build comprehensive analytics and trend visualization components
@@ -308,7 +323,7 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 **Goal:** Package the PWA as a native app for iOS and Android to expand its reach and capabilities.
 
-- [ ] **Task 16: Integrate Capacitor (`integrate-capacitor`)**
+- [ ] **Task 17: Integrate Capacitor (`integrate-capacitor`)**
   - **Action:** Add Capacitor to the Next.js project.
   - **Important Note:** Capacitor packages the PWA as a static web app. The native app will make network requests to the deployed Vercel API endpoints and n8n workflows for AI functionality.
   - **Implementation:**
@@ -318,11 +333,11 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Ensure n8n webhook URLs are accessible from native apps
   - **Outcome:** The project is configured to build native app packages with proper client-server separation.
 
-- [ ] **Task 17: Configure Native Projects (`configure-native-projects`)**
+- [ ] **Task 18: Configure Native Projects (`configure-native-projects`)**
   - **Action:** Set up the iOS (Xcode) and Android (Android Studio) projects, including icons, splash screens, and permissions.
   - **Outcome:** Native project shells are ready for compilation.
 
-- [ ] **Task 18: Build and Test on Devices (`test-native`)**
+- [ ] **Task 19: Build and Test on Devices (`test-native`)**
   - **Action:** Compile the app and test it thoroughly on iOS and Android emulators and physical devices.
   - **Outcome:** A stable, distributable native application.
 
@@ -332,7 +347,7 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 **Goal:** Implement "Tier 3" features that require careful privacy considerations, such as optional cloud sync.
 
-- [ ] **Task 19: Final Structural Cleanup (`final-structural-cleanup`)**
+- [ ] **Task 20: Final Structural Cleanup (`final-structural-cleanup`)**
   - **Action:** Complete remaining architectural alignments and codebase organization improvements.
   - **Implementation:**
     - **Component Organization:**
@@ -352,12 +367,12 @@ This document outlines the development roadmap to build the Health Tracker appli
       - Update any remaining hardcoded paths
   - **Outcome:** Complete architectural alignment with PRD specifications and a fully organized, maintainable codebase.
 
-- [ ] **Task 20: Implement E2EE Sync (`e2ee-sync`)**
+- [ ] **Task 21: Implement E2EE Sync (`e2ee-sync`)**
   - **Action:** As an opt-in feature, build an end-to-end encrypted synchronization system.
   - **Technology:** Use a service like Supabase to store encrypted data blobs that the server cannot read.
   - **Outcome:** Users can securely sync their data across multiple devices while maintaining privacy.
 
-- [ ] **Task 21: Implement Secure Sharing (`secure-sharing`)**
+- [ ] **Task 22: Implement Secure Sharing (`secure-sharing`)**
   - **Action:** Create a feature allowing users to securely share a snapshot of their data with a healthcare provider.
   - **Outcome:** Users can grant temporary, controlled access to their health information.
 

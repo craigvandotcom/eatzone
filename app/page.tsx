@@ -1,715 +1,422 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ChevronLeft,
-  User,
-  Utensils,
+  Smartphone,
+  Shield,
+  BarChart3,
+  Camera,
   Droplets,
+  Utensils,
   Activity,
   Atom,
-  Plus,
-  Leaf,
-  Settings,
+  CheckCircle,
+  ArrowRight,
+  Download,
+  QrCode,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AddFoodDialog } from "@/features/foods/components/add-food-dialog";
-import { AddLiquidDialog } from "@/features/liquids/components/add-liquid-dialog";
-import { AddSymptomDialog } from "@/features/symptoms/components/add-symptom-dialog";
-import { AddStoolDialog } from "@/features/stools/components/add-stool-dialog";
-import { CameraCapture } from "@/features/camera/components/camera-capture";
-import { SplitCircularProgress } from "@/features/liquids/components/split-circular-progress";
-import { FoodCategoryProgress } from "@/features/foods/components/food-category-progress";
-import { format } from "date-fns";
-import { FoodCompositionBar } from "@/features/foods/components/food-composition-bar";
-import { OrganicCompositionBar } from "@/features/foods/components/organic-composition-bar";
-import { VerticalProgressBar } from "@/features/foods/components/vertical-progress-bar";
 
-// Import types and database functions
-import { Food, Liquid, Symptom, Stool } from "@/lib/types";
-import {
-  addFood as dbAddFood,
-  addLiquid as dbAddLiquid,
-  addSymptom as dbAddSymptom,
-  addStool as dbAddStool,
-  updateFood as dbUpdateFood,
-  updateLiquid as dbUpdateLiquid,
-  updateSymptom as dbUpdateSymptom,
-  updateStool as dbUpdateStool,
-  generateTimestamp,
-} from "@/lib/db";
-
-// Import custom hooks
-import {
-  useTodaysFoods,
-  useTodaysLiquids,
-  useTodaysSymptoms,
-  useTodaysStools,
-  useRecentFoods,
-  useRecentLiquids,
-  useRecentSymptoms,
-  useRecentStools,
-  useWaterStats,
-  useFoodStats,
-} from "@/lib/hooks";
-
-type ViewType = "liquids" | "food" | "stool" | "symptoms";
-
-export default function Dashboard() {
-  // Use custom hooks for reactive data binding
-  const todaysFoods = useTodaysFoods();
-  const todaysLiquids = useTodaysLiquids();
-  const todaysSymptoms = useTodaysSymptoms();
-  const todaysStools = useTodaysStools();
-  const recentFoods = useRecentFoods();
-  const recentLiquids = useRecentLiquids();
-  const recentSymptoms = useRecentSymptoms();
-  const recentStools = useRecentStools();
-  const waterStats = useWaterStats();
-  const foodStats = useFoodStats();
+export default function LandingPage() {
   const router = useRouter();
+  const [showQR, setShowQR] = useState(false);
 
-  // Dialog state
-  const [showAddFood, setShowAddFood] = useState(false);
-  const [showAddLiquid, setShowAddLiquid] = useState(false);
-  const [showAddSymptom, setShowAddSymptom] = useState(false);
-  const [showAddStool, setShowAddStool] = useState(false);
-  const [showCameraCapture, setShowCameraCapture] = useState(false);
-  const [cameraType, setCameraType] = useState<"drink" | "eat" | "move" | null>(
-    null
-  );
-  const [currentView, setCurrentView] = useState<ViewType>("liquids");
+  const features = [
+    {
+      icon: Camera,
+      title: "AI-Powered Capture",
+      description:
+        "Take a photo of your food or drink and let AI analyze it for you",
+      color: "from-green-400 to-emerald-500",
+    },
+    {
+      icon: Shield,
+      title: "Privacy by Design",
+      description:
+        "Your health data never leaves your device - complete privacy guaranteed",
+      color: "from-blue-400 to-cyan-500",
+    },
+    {
+      icon: BarChart3,
+      title: "Visual Insights",
+      description:
+        "Beautiful charts and progress tracking to understand your body's patterns",
+      color: "from-purple-400 to-pink-500",
+    },
+    {
+      icon: Droplets,
+      title: "Comprehensive Tracking",
+      description:
+        "Monitor liquids, foods, symptoms, and more in one unified app",
+      color: "from-amber-400 to-orange-500",
+    },
+  ];
 
-  // Edit state
-  const [editingFood, setEditingFood] = useState<Food | null>(null);
-  const [editingLiquid, setEditingLiquid] = useState<Liquid | null>(null);
-  const [editingSymptom, setEditingSymptom] = useState<Symptom | null>(null);
-  const [editingStool, setEditingStool] = useState<Stool | null>(null);
-
-  // Database operations
-  const addFood = async (food: Omit<Food, "id" | "timestamp">) => {
-    if (editingFood) {
-      // Update existing food
-      await dbUpdateFood(editingFood.id, food);
-      setEditingFood(null);
-    } else {
-      // Add new food
-      await dbAddFood(food);
-    }
-  };
-
-  const addLiquid = async (liquid: Omit<Liquid, "id" | "timestamp">) => {
-    if (editingLiquid) {
-      // Update existing liquid
-      await dbUpdateLiquid(editingLiquid.id, liquid);
-      setEditingLiquid(null);
-    } else {
-      // Add new liquid
-      await dbAddLiquid(liquid);
-    }
-  };
-
-  const addSymptom = async (symptom: Omit<Symptom, "id" | "timestamp">) => {
-    if (editingSymptom) {
-      // Update existing symptom
-      await dbUpdateSymptom(editingSymptom.id, symptom);
-      setEditingSymptom(null);
-    } else {
-      // Add new symptom
-      await dbAddSymptom(symptom);
-    }
-  };
-
-  const addStool = async (stool: Omit<Stool, "id" | "timestamp">) => {
-    if (editingStool) {
-      // Update existing stool
-      await dbUpdateStool(editingStool.id, stool);
-      setEditingStool(null);
-    } else {
-      // Add new stool
-      await dbAddStool(stool);
-    }
-  };
-
-  const handleCameraCapture = async (imageData: string) => {
-    if (cameraType === "drink") {
-      const newLiquid: Omit<Liquid, "id" | "timestamp"> = {
-        name: "Photo captured",
-        amount: 0, // Will be updated by AI analysis
-        type: "other", // Will be updated by AI analysis
-        image: imageData,
-        notes: "Analyzing image...",
-      };
-      await dbAddLiquid(newLiquid);
-
-      // TODO: Send to AI for analysis
-      console.log("Analyzing drink image...");
-    } else if (cameraType === "eat") {
-      const newFood: Omit<Food, "id" | "timestamp"> = {
-        name: "Photo captured",
-        ingredients: [], // Will be updated by AI analysis
-        status: "analyzing",
-        image: imageData,
-        notes: "Analyzing image...",
-      };
-      await dbAddFood(newFood);
-
-      // TODO: Send to AI for analysis
-      console.log("Analyzing food image...");
-    } else if (cameraType === "move") {
-      const newStool: Omit<Stool, "id" | "timestamp"> = {
-        bristolScale: 4, // Will be updated by AI analysis
-        color: "brown", // Will be updated by AI analysis
-        hasBlood: false, // Will be updated by AI analysis
-        image: imageData,
-        notes: "Analyzing image...",
-      };
-      await dbAddStool(newStool);
-
-      // TODO: Send to AI for analysis
-      console.log("Analyzing stool image...");
-    }
-  };
-
-  const handleManualEntry = () => {
-    if (cameraType === "drink") {
-      setShowAddLiquid(true);
-    } else if (cameraType === "eat") {
-      setShowAddFood(true);
-    } else if (cameraType === "move") {
-      setShowAddStool(true);
-    }
-  };
-
-  const handleQuickCapture = (type: "drink" | "eat" | "move") => {
-    setCameraType(type);
-    setShowCameraCapture(true);
-  };
-
-  const getCameraTitle = () => {
-    switch (cameraType) {
-      case "drink":
-        return "Capture Drink";
-      case "eat":
-        return "Capture Food";
-      case "move":
-        return "Capture Movement";
-      default:
-        return "Capture";
-    }
-  };
-
-  // Get the active tab styling based on current view
-  const getActiveTabStyle = (view: ViewType) => {
-    if (currentView !== view) return "text-gray-600";
-
-    switch (view) {
-      case "liquids":
-        return "bg-gradient-to-r from-blue-400 to-cyan-500 text-white shadow-lg";
-      case "food":
-        return "bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg";
-      case "stool":
-        return "bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow-lg";
-      case "symptoms":
-        return "bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg";
-      default:
-        return "bg-white text-gray-900 shadow-sm";
-    }
-  };
-
-  const getStoolTypeDescription = (bristolScale: number) => {
-    const descriptions = {
-      1: "Hard lumps",
-      2: "Lumpy sausage",
-      3: "Cracked sausage",
-      4: "Smooth sausage",
-      5: "Soft blobs",
-      6: "Mushy consistency",
-      7: "Liquid consistency",
-    };
-    return descriptions[bristolScale as keyof typeof descriptions] || "Unknown";
-  };
-
-  const handleEditLiquid = (liquid: Liquid) => {
-    setEditingLiquid(liquid);
-    setShowAddLiquid(true);
-  };
-
-  const handleEditFood = (food: Food) => {
-    setEditingFood(food);
-    setShowAddFood(true);
-  };
-
-  const handleEditSymptom = (symptom: Symptom) => {
-    setEditingSymptom(symptom);
-    setShowAddSymptom(true);
-  };
-
-  const handleEditStool = (stool: Stool) => {
-    setEditingStool(stool);
-    setShowAddStool(true);
-  };
-
-  const handleCloseFoodDialog = () => {
-    setShowAddFood(false);
-    setEditingFood(null);
-  };
-
-  const handleCloseLiquidDialog = () => {
-    setShowAddLiquid(false);
-    setEditingLiquid(null);
-  };
-
-  const handleCloseSymptomDialog = () => {
-    setShowAddSymptom(false);
-    setEditingSymptom(null);
-  };
-
-  const handleCloseStoolDialog = () => {
-    setShowAddStool(false);
-    setEditingStool(null);
-  };
+  const trackingCategories = [
+    {
+      icon: Droplets,
+      name: "Liquids",
+      color: "text-blue-500",
+      description: "Hydration tracking",
+    },
+    {
+      icon: Utensils,
+      name: "Foods",
+      color: "text-green-500",
+      description: "Ingredient analysis",
+    },
+    {
+      icon: Atom,
+      name: "Stools",
+      color: "text-amber-500",
+      description: "Digestive health",
+    },
+    {
+      icon: Activity,
+      name: "Symptoms",
+      color: "text-red-500",
+      description: "Health monitoring",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-40">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Header */}
-      <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100">
-        <ChevronLeft className="h-6 w-6 text-gray-600" />
-        <h1 className="text-xl font-semibold text-gray-900">
-          Your Body Compass
-        </h1>
-        <button
-          onClick={() => router.push("/settings")}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-        >
-          <Settings className="h-6 w-6 text-gray-600" />
-        </button>
-      </div>
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg"></div>
+              <span className="text-xl font-bold text-gray-900">Puls</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" asChild>
+                <Link href="/login">Log In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Get Started</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <div className="px-4 py-6 space-y-6">
-        {currentView === "liquids" && (
-          <>
-            {/* Split Liquids Progress */}
-            <div className="flex flex-col items-center space-y-4 h-64">
-              <SplitCircularProgress
-                waterPercentage={waterStats?.waterPercentage || 0}
-                otherPercentage={waterStats?.otherPercentage || 0}
-                size={200}
-                strokeWidth={12}
-              />
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="text-center lg:text-left">
+            <Badge variant="secondary" className="mb-4">
+              Private • Offline-First • AI-Powered
+            </Badge>
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+              Your Body's{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500">
+                Compass
+              </span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              Track your health inputs and outputs with high-speed logging and
+              AI-powered insights. All while keeping your data completely
+              private on your device.
+            </p>
+
+            {/* Mobile CTA */}
+            <div className="lg:hidden space-y-4">
+              <Button size="lg" className="w-full" asChild>
+                <Link href="/signup">
+                  Start Tracking <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <p className="text-sm text-gray-500">
+                Works best on mobile • Install as PWA for native experience
+              </p>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
+            {/* Desktop CTA */}
+            <div className="hidden lg:block space-y-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button size="lg" asChild>
+                  <Link href="/signup">
+                    Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setShowQR(!showQR)}
+                >
+                  <QrCode className="mr-2 h-4 w-4" />
+                  Mobile Access
+                </Button>
               </div>
-              <div className="space-y-3">
-                {!recentLiquids || recentLiquids.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Droplets className="h-8 w-8 text-gray-400" />
+
+              {showQR && (
+                <Card className="w-fit">
+                  <CardContent className="p-4">
+                    <div className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center">
+                      <QrCode className="h-16 w-16 text-gray-400" />
                     </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No liquids logged yet
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Scan to open on mobile
                     </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the drink icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  recentLiquids.map(liquid => (
-                    <button
-                      key={liquid.id}
-                      onClick={() => handleEditLiquid(liquid)}
-                      className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        {liquid.image ? (
-                          <div className="w-12 h-12 rounded-full overflow-hidden">
-                            <img
-                              src={liquid.image || "/placeholder.svg"}
-                              alt={liquid.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-lg">💧</span>
-                          </div>
-                        )}
-                        <div className="text-left">
-                          <p className="font-medium text-gray-900 capitalize">
-                            {liquid.type}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {liquid.amount}ml
-                          </p>
-                        </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  No account required to try
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  Data stays on your device
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Visual */}
+          <div className="relative">
+            <div className="relative mx-auto w-64 h-[500px] lg:w-80 lg:h-[600px]">
+              {/* Phone Frame */}
+              <div className="absolute inset-0 bg-gray-900 rounded-[2.5rem] p-2">
+                <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden">
+                  {/* Mock App Interface */}
+                  <div className="h-full bg-gradient-to-br from-blue-50 to-green-50 p-4">
+                    <div className="text-center mb-8">
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        Your Body Compass
+                      </h3>
+                      <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
+                        <BarChart3 className="h-16 w-16 text-gray-600" />
                       </div>
-                      <span className="font-semibold text-gray-900">
-                        {liquid.amount}ml
-                      </span>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {currentView === "food" && (
-          <>
-            {/* Food Category Progress */}
-            <div className="relative flex flex-col items-center h-64">
-              <FoodCategoryProgress
-                greenCount={foodStats?.greenIngredients || 0}
-                yellowCount={foodStats?.yellowIngredients || 0}
-                redCount={foodStats?.redIngredients || 0}
-                size={200}
-                strokeWidth={12}
-              />
-              <div className="absolute right-0 top-0 flex flex-col items-center space-y-2">
-                <VerticalProgressBar
-                  percentage={foodStats?.totalOrganicPercentage || 0}
-                  height={200}
-                />
-                <Leaf className="h-5 w-5 text-green-600" />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
-              </div>
-              <div className="space-y-3">
-                {!recentFoods || recentFoods.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Utensils className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No foods logged yet
-                    </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the eat icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    {/* Temporary debug info */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4 text-xs">
-                      <strong>Debug Info:</strong>
-                      <pre>{JSON.stringify(recentFoods, null, 2)}</pre>
                     </div>
 
-                    {recentFoods.map(food => (
-                      <button
-                        key={food.id}
-                        onClick={() => handleEditFood(food)}
-                        className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                      >
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          {food.image ? (
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                              <img
-                                src={food.image || "/placeholder.svg"}
-                                alt={food.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-white text-lg">🍽️</span>
-                            </div>
-                          )}
-                          <div className="text-left flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
-                              {food.status === "analyzing"
-                                ? "New Food"
-                                : food.name}
-                            </p>
-                            <p className="text-sm text-gray-500 truncate">
-                              {food.ingredients
-                                ?.map(ing => ing.name)
-                                .join(", ") || "No ingredients"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0 w-24 ml-2 space-y-1.5">
-                          <FoodCompositionBar
-                            ingredients={food.ingredients || []}
+                    {/* Mock tracking buttons */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {trackingCategories.map((category, index) => (
+                        <div
+                          key={index}
+                          className="bg-white rounded-lg p-3 shadow-sm"
+                        >
+                          <category.icon
+                            className={`h-6 w-6 ${category.color} mb-2`}
                           />
-                          <OrganicCompositionBar
-                            ingredients={food.ingredients || []}
-                          />
+                          <p className="text-xs font-medium text-gray-900">
+                            {category.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {category.description}
+                          </p>
                         </div>
-                      </button>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {currentView === "stool" && (
-          <>
-            <div className="flex flex-col items-center space-y-4 h-64">
-              <div className="w-48 h-48 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-full flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">
-                    {todaysStools?.length || 0}
-                  </p>
-                  <p className="text-sm text-gray-600">Movements Today</p>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
-              </div>
-              <div className="space-y-3">
-                {!recentStools || recentStools.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Atom className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No movements logged yet
-                    </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the move icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  recentStools.map(stool => (
-                    <button
-                      key={stool.id}
-                      onClick={() => handleEditStool(stool)}
-                      className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        {stool.image ? (
-                          <div className="w-12 h-12 rounded-full overflow-hidden">
-                            <img
-                              src={stool.image || "/placeholder.svg"}
-                              alt="Stool"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-lg">💩</span>
-                          </div>
-                        )}
-                        <div className="text-left">
-                          <p className="font-medium text-gray-900">
-                            {getStoolTypeDescription(stool.bristolScale)}
-                          </p>
-                          <p className="text-sm text-gray-500 capitalize">
-                            {stool.color}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="text-xs">
-                          {stool.bristolScale}
-                        </Badge>
-                        {stool.hasBlood && (
-                          <Badge variant="destructive" className="text-xs">
-                            Blood
-                          </Badge>
-                        )}
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
+            {/* Desktop hint */}
+            <div className="hidden lg:block absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+              <Badge variant="outline" className="text-xs">
+                <Smartphone className="h-3 w-3 mr-1" />
+                Optimized for mobile
+              </Badge>
             </div>
-          </>
-        )}
-
-        {currentView === "symptoms" && (
-          <>
-            <div className="flex flex-col items-center space-y-4 h-64">
-              <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">
-                    {todaysSymptoms?.length || 0}
-                  </p>
-                  <p className="text-sm text-gray-600">Symptoms Today</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
-              </div>
-              <div className="space-y-3">
-                {!recentSymptoms || recentSymptoms.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Activity className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No symptoms logged yet
-                    </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the symptom icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  recentSymptoms.map(symptom => (
-                    <button
-                      key={symptom.id}
-                      onClick={() => handleEditSymptom(symptom)}
-                      className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-lg">⚡</span>
-                        </div>
-                        <div className="text-left">
-                          <p className="font-medium text-gray-900">
-                            {symptom.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Severity: {symptom.severity}/5
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {symptom.severity}/5
-                      </Badge>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="fixed bottom-20 left-0 right-0 bg-white px-4 py-4">
-        <div className="bg-gray-100 rounded-full p-1 flex justify-around space-x-1">
-          <button
-            onClick={() => setCurrentView("liquids")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("liquids")}`}
-          >
-            Liquids
-          </button>
-          <button
-            onClick={() => setCurrentView("food")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("food")}`}
-          >
-            Foods
-          </button>
-          <button
-            onClick={() => setCurrentView("stool")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("stool")}`}
-          >
-            Stools
-          </button>
-          <button
-            onClick={() => setCurrentView("symptoms")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("symptoms")}`}
-          >
-            Symptoms
-          </button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white px-4 py-4">
-        <div className="flex justify-around space-x-4">
-          <button
-            onClick={() => handleQuickCapture("drink")}
-            className="relative w-14 h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Droplets className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-blue-500 rounded-full" />
-          </button>
-          <button
-            onClick={() => handleQuickCapture("eat")}
-            className="relative w-14 h-14 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Utensils className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-green-500 rounded-full" />
-          </button>
-          <button
-            onClick={() => handleQuickCapture("move")}
-            className="relative w-14 h-14 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Atom className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-amber-500 rounded-full" />
-          </button>
-          <button
-            onClick={() => setShowAddSymptom(true)}
-            className="relative w-14 h-14 bg-gradient-to-r from-red-400 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Activity className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-red-500 rounded-full" />
-          </button>
+      {/* Features Section */}
+      <section className="bg-gray-50 py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              High-Speed Logging, Clear Insights
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Designed for busy lives. Capture your health data in seconds, then
+              get powerful insights without compromising your privacy.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <Card
+                key={index}
+                className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow"
+              >
+                <CardHeader>
+                  <div
+                    className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4`}
+                  >
+                    <feature.icon className="h-8 w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-lg">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-600">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Camera Capture Modal */}
-      <CameraCapture
-        open={showCameraCapture}
-        onOpenChange={setShowCameraCapture}
-        onCapture={handleCameraCapture}
-        onManualEntry={handleManualEntry}
-        title={getCameraTitle()}
-      />
+      {/* Privacy Section */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <Badge variant="secondary" className="mb-4">
+                <Shield className="h-3 w-3 mr-1" />
+                Privacy First
+              </Badge>
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+                Your Data Stays With You
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                Unlike other health apps, we believe your personal health data
+                should remain personal. Everything is stored locally on your
+                device using advanced encryption.
+              </p>
 
-      {/* Add Dialogs */}
-      <AddFoodDialog
-        open={showAddFood}
-        onOpenChange={setShowAddFood}
-        onAddFood={addFood}
-        onClose={handleCloseFoodDialog}
-        editingFood={editingFood}
-      />
+              <div className="space-y-4">
+                {[
+                  "No cloud storage of personal data",
+                  "AI processing happens securely",
+                  "Export your data anytime",
+                  "No tracking or analytics",
+                ].map((item, index) => (
+                  <div key={index} className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                    <span className="text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-      <AddLiquidDialog
-        open={showAddLiquid}
-        onOpenChange={setShowAddLiquid}
-        onAddLiquid={addLiquid}
-        onClose={handleCloseLiquidDialog}
-        editingLiquid={editingLiquid}
-      />
+            <div className="relative">
+              <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-green-100 rounded-2xl flex items-center justify-center">
+                <Shield className="h-24 w-24 text-gray-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <AddSymptomDialog
-        open={showAddSymptom}
-        onOpenChange={setShowAddSymptom}
-        onAddSymptom={addSymptom}
-        onClose={handleCloseSymptomDialog}
-        editingSymptom={editingSymptom}
-      />
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-blue-500 to-green-500 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+            Start Understanding Your Body Today
+          </h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Join thousands who've discovered patterns in their health with
+            completely private tracking.
+          </p>
 
-      <AddStoolDialog
-        open={showAddStool}
-        onOpenChange={setShowAddStool}
-        onAddStool={addStool}
-        onClose={handleCloseStoolDialog}
-        editingStool={editingStool}
-      />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/signup">
+                Create Free Account <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-white border-white hover:bg-white hover:text-blue-600"
+              asChild
+            >
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </div>
+
+          <p className="text-sm text-blue-100 mt-6">
+            No credit card required • Works offline • Install as app
+          </p>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded"></div>
+                <span className="text-lg font-bold text-white">Puls</span>
+              </div>
+              <p className="text-gray-400">
+                Your Body's Compass - Private health tracking with AI insights.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-white font-semibold mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/signup"
+                    className="hover:text-white transition-colors"
+                  >
+                    Get Started
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/login"
+                    className="hover:text-white transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <span className="text-gray-500">
+                    Mobile App (Coming Soon)
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-white font-semibold mb-4">Privacy</h3>
+              <ul className="space-y-2">
+                <li>
+                  <span className="text-gray-400">No data collection</span>
+                </li>
+                <li>
+                  <span className="text-gray-400">Local storage only</span>
+                </li>
+                <li>
+                  <span className="text-gray-400">
+                    Open source (Coming Soon)
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+            <p className="text-gray-400">
+              © 2024 Puls. Built with privacy in mind.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

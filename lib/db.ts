@@ -1,24 +1,45 @@
 import Dexie, { Table } from "dexie";
-import { Food, Ingredient, Liquid, Symptom, Stool } from "./types";
+import {
+  Food,
+  Ingredient,
+  Liquid,
+  Symptom,
+  Stool,
+  User,
+  AuthSession,
+} from "./types";
+import bcrypt from "bcryptjs";
+import * as jose from "jose";
 
 export class HealthTrackerDB extends Dexie {
   foods!: Table<Food, string>;
   liquids!: Table<Liquid, string>;
   symptoms!: Table<Symptom, string>;
   stools!: Table<Stool, string>;
+  users!: Table<User, string>;
+  sessions!: Table<AuthSession, string>;
 
   constructor() {
     super("HealthTrackerDB");
-    this.version(1).stores({
+    this.version(2).stores({
       foods: "++id, timestamp",
       liquids: "++id, timestamp, type",
       symptoms: "++id, timestamp",
       stools: "++id, timestamp",
+      users: "++id, email",
+      sessions: "++userId, token, expiresAt",
     });
   }
 }
 
 export const db = new HealthTrackerDB();
+
+// Constants
+const JWT_SECRET = "health-tracker-local-secret-key"; // For local storage only
+const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+// Helper function to encode the secret for jose
+const getSecret = () => new TextEncoder().encode(JWT_SECRET);
 
 // Helper function to generate ISO timestamp
 export const generateTimestamp = (): string => {
@@ -277,4 +298,132 @@ export const importAllData = async (data: {
       await db.stools.bulkAdd(data.stools);
     }
   );
+};
+
+// AUTHENTICATION OPERATIONS
+
+export const createUser = async (
+  email: string,
+  password: string
+): Promise<User> => {
+  // Check if user already exists
+  const existingUser = await db.users.where("email").equals(email).first();
+  if (existingUser) {
+    throw new Error("User with this email already exists");
+  }
+
+  // Hash password
+  const saltRounds = 12;
+  const passwordHash = await bcrypt.hash(password, saltRounds);
+
+  // Create user
+  const newUser: User = {
+    id: generateId(),
+    email,
+    passwordHash,
+    createdAt: generateTimestamp(),
+    settings: {
+      theme: "system",
+      waterGoal: 2000, // 2L default
+      notifications: {
+        reminders: true,
+        dailySummary: true,
+      },
+    },
+  };
+
+  await db.users.add(newUser);
+  return newUser;
+};
+
+export const authenticateUser = async (
+  email: string,
+  password: string
+): Promise<{ user: User; token: string }> => {
+  // Find user by email
+  const user = await db.users.where("email").equals(email).first();
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
+
+  // Verify password
+  const isValid = await bcrypt.compare(password, user.passwordHash);
+  if (!isValid) {
+    throw new Error("Invalid email or password");
+  }
+
+  // Update last login
+  await db.users.update(user.id, { lastLoginAt: generateTimestamp() });
+
+  // Create session with jose
+  const token = await new jose.SignJWT({ userId: user.id })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(getSecret());
+
+  const expiresAt = new Date(Date.now() + SESSION_DURATION).toISOString();
+
+  const session: AuthSession = {
+    userId: user.id,
+    token,
+    expiresAt,
+    createdAt: generateTimestamp(),
+  };
+
+  await db.sessions.add(session);
+
+  return { user, token };
+};
+
+export const validateSession = async (token: string): Promise<User | null> => {
+  try {
+    // Find session
+    const session = await db.sessions.where("token").equals(token).first();
+    if (!session) {
+      return null;
+    }
+
+    // Check if session is expired
+    if (new Date(session.expiresAt) < new Date()) {
+      await db.sessions.where("token").equals(token).delete();
+      return null;
+    }
+
+    // Verify JWT with jose
+    const { payload } = await jose.jwtVerify(token, getSecret());
+    const userId = payload.userId as string;
+
+    // Get user
+    const user = await db.users.get(userId);
+    return user || null;
+  } catch (error) {
+    console.error("Session validation error:", error);
+    return null;
+  }
+};
+
+export const logout = async (token: string): Promise<void> => {
+  await db.sessions.where("token").equals(token).delete();
+};
+
+export const clearExpiredSessions = async (): Promise<void> => {
+  const now = new Date().toISOString();
+  await db.sessions.where("expiresAt").below(now).delete();
+};
+
+export const getUserById = async (id: string): Promise<User | undefined> => {
+  return await db.users.get(id);
+};
+
+export const updateUserSettings = async (
+  userId: string,
+  settings: Partial<User["settings"]>
+): Promise<void> => {
+  const user = await db.users.get(userId);
+  if (user) {
+    await db.users.update(userId, {
+      settings: { ...user.settings, ...settings },
+    });
+  }
 };

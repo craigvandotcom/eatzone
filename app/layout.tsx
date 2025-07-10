@@ -4,17 +4,19 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/features/auth/components/auth-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Health Tracker",
-  description: "Track your meals and symptoms to identify patterns",
+  title: "Puls - Your Body's Compass",
+  description:
+    "Private health tracking with AI-powered insights. Your data stays on your device.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Health Tracker",
+    title: "Puls",
   },
   generator: "v0.dev",
 };
@@ -46,8 +48,10 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

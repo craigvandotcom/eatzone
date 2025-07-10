@@ -33,15 +33,17 @@ import {
   Moon,
   Sun,
   Info,
+  TestTube,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { exportAllData, importAllData, clearAllData } from "@/lib/db";
+import { exportAllData, importAllData, clearAllData, addFood } from "@/lib/db";
 
 export default function SettingsPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isAddingTest, setIsAddingTest] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -146,6 +148,55 @@ export default function SettingsPage() {
       title: "Logged out",
       description: "You have been logged out successfully.",
     });
+  };
+
+  const handleAddTestData = async () => {
+    setIsAddingTest(true);
+    try {
+      // Add a test food with organic and non-organic ingredients
+      await addFood({
+        name: "Test Organic Meal",
+        ingredients: [
+          {
+            name: "organic spinach",
+            isOrganic: true,
+            zone: "green",
+            foodGroup: "vegetable",
+            cookingMethod: "raw"
+          },
+          {
+            name: "organic quinoa",
+            isOrganic: true,
+            zone: "green", 
+            foodGroup: "grain",
+            cookingMethod: "boiled"
+          },
+          {
+            name: "salmon",
+            isOrganic: false,
+            zone: "green",
+            foodGroup: "protein",
+            cookingMethod: "grilled"
+          }
+        ],
+        status: "processed",
+        notes: "Test data to verify organic tracking"
+      });
+
+      toast({
+        title: "Test data added",
+        description: "Added a test meal with 2/3 organic ingredients to verify the organic tracking works.",
+      });
+    } catch (error) {
+      console.error("Failed to add test data:", error);
+      toast({
+        title: "Test data failed",
+        description: "There was an error adding test data.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingTest(false);
+    }
   };
 
   return (
@@ -261,6 +312,33 @@ export default function SettingsPage() {
                 </AlertDialogContent>
               </AlertDialog>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Debug Tools */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TestTube className="h-5 w-5" />
+              Debug Tools
+            </CardTitle>
+            <CardDescription>
+              Tools for testing and debugging the organic tracking system.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={handleAddTestData}
+              disabled={isAddingTest}
+              className="w-full"
+              variant="outline"
+            >
+              <TestTube className="h-4 w-4 mr-2" />
+              {isAddingTest ? "Adding..." : "Add Test Organic Food"}
+            </Button>
+            <p className="text-sm text-gray-600">
+              This will add a test meal with 2/3 organic ingredients to help you verify the organic tracking bars are working.
+            </p>
           </CardContent>
         </Card>
 

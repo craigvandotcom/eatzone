@@ -77,13 +77,13 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 **Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the core MVP.
 
-- [ ] **Task 1: Migrate to IndexedDB (`indexeddb-migration`)**
+- [x] **Task 1: Migrate to IndexedDB (`indexeddb-migration`)**
   - **Action:** Replace `localStorage` with `IndexedDB` for data storage.
   - **Technology:** Implement `Dexie.js` with `dexie-react-hooks` for reactive state management.
   - **Dependencies:** Install `dexie`, `dexie-react-hooks`, and `zod` for data validation.
   - **Outcome:** A robust, scalable, and high-performance local database with automatic UI updates.
 
-- [ ] **Task 2: Refactor Data Logic (`refactor-page-tsx`)**
+- [x] **Task 2: Refactor Data Logic (`refactor-page-tsx`)**
   - **Action:** Create `lib/db.ts` with centralized database operations and refactor `app/page.tsx` to use the new data layer.
   - **Implementation:**
     - Implement data structures from PRD (unified `timestamp`).
@@ -98,7 +98,7 @@ This document outlines the development roadmap to build the Health Tracker appli
       - Create Zod validation schemas in `lib/validations/` for all data types
   - **Outcome:** Clean separation of concerns with reactive state management, proper folder structure, and no "God component" anti-pattern.
 
-- [ ] **Task 3: Implement Export/Import (`data-export-import`)**
+- [x] **Task 3: Implement Export/Import (`data-export-import`)**
   - **Action:** Build the data export/import feature, positioning it as the primary user-managed backup system.
   - **Implementation:**
     - Allow users to export their complete IndexedDB data to a single JSON file.
@@ -106,7 +106,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - Add user education within the UI explaining this is the ONLY way to back up data and migrate between devices.
   - **Outcome:** A robust backup system that empowers users with full data ownership, aligned with the PRD's local-first principles.
 
-- [ ] **Task 4: Wire Up UI Components (`wire-up-ui`)**
+- [x] **Task 4: Wire Up UI Components (`wire-up-ui`)**
   - **Action:** Connect all existing forms, dialogs, and visualizations to the new data layer.
   - **Implementation:**
     - Connect all forms and dialogs to centralized database functions
@@ -124,7 +124,7 @@ This document outlines the development roadmap to build the Health Tracker appli
       - `organic-composition-bar.tsx` → `features/foods/components/`
   - **Outcome:** The UI is fully interactive, reflects the state of the local database, and follows proper feature-based component organization.
 
-- [ ] **Task 4.5: Implement Core Visualizations (`implement-visualizations`)**
+- [x] **Task 4.5: Implement Core Visualizations (`implement-visualizations`)**
   - **Action:** Build the key data visualization components defined in the PRD.
   - **Components to Build:**
     - `split-circular-progress.tsx` for the Liquids view.

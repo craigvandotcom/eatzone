@@ -138,66 +138,116 @@ export const useRecentStools = (limit: number = 5) => {
 // ANALYTICS HOOKS
 export const useWaterStats = () => {
   return useLiveQuery(async () => {
-    const todaysLiquids = await getTodaysLiquids();
-    const waterGoal = 2000; // 2L in ml
-    const waterTypes = ["water"];
+    try {
+      const todaysLiquids = await getTodaysLiquids();
+      const waterGoal = 2000; // 2L in ml
+      const otherGoal = 1000; // 1L additional liquids goal
+      const waterTypes = ["water"];
 
-    const waterAmount = todaysLiquids
-      .filter(liquid => waterTypes.includes(liquid.type.toLowerCase()))
-      .reduce((sum, liquid) => sum + liquid.amount, 0);
+      if (!todaysLiquids) {
+        return {
+          waterAmount: 0,
+          otherAmount: 0,
+          waterPercentage: 0,
+          otherPercentage: 0,
+          waterGoal,
+          otherGoal,
+          totalAmount: 0,
+        };
+      }
 
-    const otherAmount = todaysLiquids
-      .filter(liquid => !waterTypes.includes(liquid.type.toLowerCase()))
-      .reduce((sum, liquid) => sum + liquid.amount, 0);
+      const waterAmount = todaysLiquids
+        .filter(liquid => waterTypes.includes(liquid.type.toLowerCase()))
+        .reduce((sum, liquid) => sum + liquid.amount, 0);
 
-    const waterPercentage = Math.min((waterAmount / waterGoal) * 100, 100);
-    const otherPercentage =
-      waterAmount > 0 ? Math.min((otherAmount / waterAmount) * 100, 100) : 0;
+      const otherAmount = todaysLiquids
+        .filter(liquid => !waterTypes.includes(liquid.type.toLowerCase()))
+        .reduce((sum, liquid) => sum + liquid.amount, 0);
 
-    return {
-      waterAmount,
-      otherAmount,
-      waterPercentage,
-      otherPercentage,
-      waterGoal,
-      totalAmount: waterAmount + otherAmount,
-    };
+      const waterPercentage = Math.min((waterAmount / waterGoal) * 100, 100);
+      const otherPercentage = Math.min((otherAmount / otherGoal) * 100, 100);
+
+      return {
+        waterAmount,
+        otherAmount,
+        waterPercentage,
+        otherPercentage,
+        waterGoal,
+        otherGoal,
+        totalAmount: waterAmount + otherAmount,
+      };
+    } catch (error) {
+      console.error("Error calculating water stats:", error);
+      return {
+        waterAmount: 0,
+        otherAmount: 0,
+        waterPercentage: 0,
+        otherPercentage: 0,
+        waterGoal: 2000,
+        otherGoal: 1000,
+        totalAmount: 0,
+      };
+    }
   }, []);
 };
 
 export const useFoodStats = () => {
   return useLiveQuery(async () => {
-    const todaysFoods = await getTodaysFoods();
-    const todaysIngredients = todaysFoods.flatMap(
-      food => food.ingredients || []
-    );
+    try {
+      const todaysFoods = await getTodaysFoods();
 
-    const greenIngredients = todaysIngredients.filter(
-      ing => ing.zone === "green"
-    ).length;
-    const yellowIngredients = todaysIngredients.filter(
-      ing => ing.zone === "yellow"
-    ).length;
-    const redIngredients = todaysIngredients.filter(
-      ing => ing.zone === "red"
-    ).length;
+      if (!todaysFoods || todaysFoods.length === 0) {
+        return {
+          greenIngredients: 0,
+          yellowIngredients: 0,
+          redIngredients: 0,
+          totalIngredients: 0,
+          organicCount: 0,
+          totalOrganicPercentage: 0,
+        };
+      }
 
-    const organicIngredientsCount = todaysIngredients.filter(
-      ing => ing.isOrganic
-    ).length;
-    const totalOrganicPercentage =
-      todaysIngredients.length > 0
-        ? (organicIngredientsCount / todaysIngredients.length) * 100
-        : 0;
+      const todaysIngredients = todaysFoods.flatMap(
+        food => food.ingredients || []
+      );
 
-    return {
-      greenIngredients,
-      yellowIngredients,
-      redIngredients,
-      totalIngredients: todaysIngredients.length,
-      organicCount: organicIngredientsCount,
-      totalOrganicPercentage,
-    };
+      const greenIngredients = todaysIngredients.filter(
+        ing => ing.zone === "green"
+      ).length;
+      const yellowIngredients = todaysIngredients.filter(
+        ing => ing.zone === "yellow"
+      ).length;
+      const redIngredients = todaysIngredients.filter(
+        ing => ing.zone === "red"
+      ).length;
+
+      const organicIngredientsCount = todaysIngredients.filter(
+        ing => ing.isOrganic === true
+      ).length;
+      const totalOrganicPercentage =
+        todaysIngredients.length > 0
+          ? (organicIngredientsCount / todaysIngredients.length) * 100
+          : 0;
+
+      return {
+        greenIngredients,
+        yellowIngredients,
+        redIngredients,
+        totalIngredients: todaysIngredients.length,
+        organicCount: organicIngredientsCount,
+        totalOrganicPercentage,
+      };
+    } catch (error) {
+      console.error("Error calculating food stats:", error);
+      return {
+        greenIngredients: 0,
+        yellowIngredients: 0,
+        redIngredients: 0,
+        totalIngredients: 0,
+        organicCount: 0,
+        totalOrganicPercentage: 0,
+      };
+    }
   }, []);
 };
 

@@ -402,49 +402,57 @@ export default function Dashboard() {
                     </p>
                   </div>
                 ) : (
-                  recentFoods.map(food => (
-                    <button
-                      key={food.id}
-                      onClick={() => handleEditFood(food)}
-                      className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        {food.image ? (
-                          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                            <img
-                              src={food.image || "/placeholder.svg"}
-                              alt={food.name}
-                              className="w-full h-full object-cover"
-                            />
+                  <div>
+                    {/* Temporary debug info */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4 text-xs">
+                      <strong>Debug Info:</strong>
+                      <pre>{JSON.stringify(recentFoods, null, 2)}</pre>
+                    </div>
+
+                    {recentFoods.map(food => (
+                      <button
+                        key={food.id}
+                        onClick={() => handleEditFood(food)}
+                        className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          {food.image ? (
+                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                              <img
+                                src={food.image || "/placeholder.svg"}
+                                alt={food.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-lg">🍽️</span>
+                            </div>
+                          )}
+                          <div className="text-left flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 truncate">
+                              {food.status === "analyzing"
+                                ? "New Food"
+                                : food.name}
+                            </p>
+                            <p className="text-sm text-gray-500 truncate">
+                              {food.ingredients
+                                ?.map(ing => ing.name)
+                                .join(", ") || "No ingredients"}
+                            </p>
                           </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-white text-lg">🍽️</span>
-                          </div>
-                        )}
-                        <div className="text-left flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">
-                            {food.status === "analyzing"
-                              ? "New Food"
-                              : food.name}
-                          </p>
-                          <p className="text-sm text-gray-500 truncate">
-                            {food.ingredients
-                              ?.map(ing => ing.name)
-                              .join(", ") || "No ingredients"}
-                          </p>
                         </div>
-                      </div>
-                      <div className="flex-shrink-0 w-24 ml-2 space-y-1.5">
-                        <FoodCompositionBar
-                          ingredients={food.ingredients || []}
-                        />
-                        <OrganicCompositionBar
-                          ingredients={food.ingredients || []}
-                        />
-                      </div>
-                    </button>
-                  ))
+                        <div className="flex-shrink-0 w-24 ml-2 space-y-1.5">
+                          <FoodCompositionBar
+                            ingredients={food.ingredients || []}
+                          />
+                          <OrganicCompositionBar
+                            ingredients={food.ingredients || []}
+                          />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

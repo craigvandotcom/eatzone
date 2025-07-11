@@ -427,3 +427,73 @@ export const updateUserSettings = async (
     });
   }
 };
+
+// DEVELOPMENT HELPERS
+export const createDevUser = async (): Promise<{ user: User; token: string }> => {
+  const DEV_EMAIL = "dev@test.com";
+  const DEV_PASSWORD = "password";
+
+  try {
+    // Check if dev user already exists
+    const existingUser = await db.users.where("email").equals(DEV_EMAIL).first();
+    
+    if (existingUser) {
+      // Clear any existing sessions for this user to avoid conflicts
+      await db.sessions.where("userId").equals(existingUser.id).delete();
+      
+      // Dev user exists, just authenticate
+      return await authenticateUser(DEV_EMAIL, DEV_PASSWORD);
+    }
+
+    // Create dev user
+    const user = await createUser(DEV_EMAIL, DEV_PASSWORD);
+    
+    // Authenticate and return token
+    return await authenticateUser(DEV_EMAIL, DEV_PASSWORD);
+  } catch (error) {
+    console.error("Error creating dev user:", error);
+    throw error;
+  }
+};
+
+export const isDevelopment = (): boolean => {
+  return process.env.NODE_ENV === "development";
+};
+
+// Quick login function for development
+export const quickDevLogin = async (): Promise<{ user: User; token: string } | null> => {
+  if (!isDevelopment()) {
+    return null;
+  }
+  
+  try {
+    return await createDevUser();
+  } catch (error) {
+    console.error("Quick dev login failed:", error);
+    return null;
+  }
+};
+
+// Helper to reset dev user completely (for debugging)
+export const resetDevUser = async (): Promise<void> => {
+  if (!isDevelopment()) {
+    return;
+  }
+  
+  const DEV_EMAIL = "dev@test.com";
+  
+  try {
+    // Find and delete dev user
+    const existingUser = await db.users.where("email").equals(DEV_EMAIL).first();
+    if (existingUser) {
+      // Delete all sessions for this user
+      await db.sessions.where("userId").equals(existingUser.id).delete();
+      // Delete the user
+      await db.users.delete(existingUser.id);
+    }
+    
+    console.log("🔧 Dev user reset complete");
+  } catch (error) {
+    console.error("Error resetting dev user:", error);
+  }
+};

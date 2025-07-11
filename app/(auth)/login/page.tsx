@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, ArrowLeft, Shield, Loader2 } from "lucide-react";
-import { authenticateUser } from "@/lib/db";
+import { Eye, EyeOff, ArrowLeft, Shield, Loader2, Zap, RotateCcw } from "lucide-react";
+import { authenticateUser, isDevelopment, quickDevLogin, resetDevUser } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
 
 export default function LoginPage() {
@@ -28,205 +28,242 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isDevLoginLoading, setIsDevLoginLoading] = useState(false);
+  const [devLoginError, setDevLoginError] = useState("");
+  const [isResetLoading, setIsResetLoading] = useState(false);
 
-  // Check for redirect parameter and session expiry
-  const redirectTo = searchParams.get("redirect");
-  const isExpired = searchParams.get("expired") === "true";
+  // Check for redirect message
+  const redirectMessage = searchParams.get("message");
 
   useEffect(() => {
-    if (isExpired) {
-      setError("Your session has expired. Please sign in again.");
+    if (redirectMessage === "signup_success") {
+      setError("");
     }
-  }, [isExpired]);
+  }, [redirectMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
+    setError("");
 
     try {
-      const { user, token } = await authenticateUser(email, password);
-
-      // Use auth context to handle login
-      login(token, user);
-
-      // Redirect to intended page or dashboard
-      router.push(redirectTo || "/app");
+      const result = await authenticateUser(email, password);
+      login(result.token, result.user);
+      router.push("/app");
     } catch (err) {
-      // Safe error handling - check if error has a message property
-      setError(
-        err &&
-          typeof err === "object" &&
-          "message" in err &&
-          typeof err.message === "string"
-          ? err.message
-          : "Login failed"
-      );
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isFormValid = email.length > 0 && password.length > 0;
+  const handleDevLogin = async () => {
+    setIsDevLoginLoading(true);
+    setDevLoginError("");
+
+    try {
+      const result = await quickDevLogin();
+      if (result) {
+        login(result.token, result.user);
+        router.push("/app");
+      } else {
+        setDevLoginError("Development login failed");
+      }
+    } catch (err) {
+      setDevLoginError(err instanceof Error ? err.message : "Development login failed");
+    } finally {
+      setIsDevLoginLoading(false);
+    }
+  };
+
+  const handleResetDevUser = async () => {
+    setIsResetLoading(true);
+    setDevLoginError("");
+
+    try {
+      await resetDevUser();
+      setDevLoginError("Dev user reset successfully! Try logging in again.");
+    } catch (err) {
+      setDevLoginError(err instanceof Error ? err.message : "Reset failed");
+    } finally {
+      setIsResetLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Link>
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded"></div>
-              <span className="text-lg font-bold text-gray-900">Puls</span>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/signup">Sign Up</Link>
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center space-x-2">
+            <Shield className="h-8 w-8 text-blue-600" />
+            <h1 className="text-2xl font-bold text-gray-900">Body Compass</h1>
           </div>
+          <p className="text-gray-600">Sign in to your account</p>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md space-y-6">
-          {/* Privacy Badge */}
-          <div className="text-center">
-            <Badge variant="secondary" className="mb-4">
-              <Shield className="h-3 w-3 mr-1" />
-              Your data stays on this device
-            </Badge>
-          </div>
+        {/* Success Message */}
+        {redirectMessage === "signup_success" && (
+          <Alert className="border-green-200 bg-green-50">
+            <AlertDescription className="text-green-800">
+              Account created successfully! Please sign in.
+            </AlertDescription>
+          </Alert>
+        )}
 
-          {/* Login Card */}
-          <Card className="border-0 shadow-xl">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-              <CardDescription>
-                Sign in to access your private health tracker
-              </CardDescription>
+        {/* Development Mode Card */}
+        {isDevelopment() && (
+          <Card className="border-orange-200 bg-orange-50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                  Development Mode
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-3">
+              <p className="text-sm text-orange-700">
+                Quick login for testing: <strong>dev@test.com</strong> / <strong>password</strong>
+              </p>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleDevLogin}
+                  disabled={isDevLoginLoading}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+                  size="sm"
+                >
+                  {isDevLoginLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Zap className="h-4 w-4" />
+                  )}
+                  Quick Dev Login
+                </Button>
+                <Button
+                  onClick={handleResetDevUser}
+                  disabled={isResetLoading}
+                  variant="outline"
+                  className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                  size="sm"
+                >
+                  {isResetLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="h-4 w-4" />
+                  )}
+                  Reset
+                </Button>
+              </div>
+              {devLoginError && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-800 text-sm">
+                    {devLoginError}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Login Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign In</CardTitle>
+            <CardDescription>
+              Enter your email and password to access your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
               {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-800">
+                    {error}
+                  </AlertDescription>
                 </Alert>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                    className="h-12"
-                  />
-                </div>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      required
-                      disabled={isLoading}
-                      className="h-12 pr-10"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-12 px-3 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={isLoading}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
+        {/* Sign Up Link */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
+              Sign up
+            </Link>
+          </p>
+        </div>
 
-                <Button
-                  type="submit"
-                  className="w-full h-12"
-                  disabled={!isFormValid || isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing In...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-              </form>
-
-              <div className="text-center">
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <Link
-                    href="/signup"
-                    className="text-blue-600 hover:text-blue-500 font-medium"
-                  >
-                    Create one here
-                  </Link>
-                </p>
-              </div>
-
-              {/* Privacy Note */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">
-                  Privacy Notice
-                </h4>
-                <p className="text-xs text-blue-700 leading-relaxed">
-                  Your account and all health data are stored locally on this
-                  device only. If you forget your password or lose this device,
-                  there is no way to recover your data.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Desktop-specific content */}
-          <div className="hidden md:block text-center">
-            <div className="text-sm text-gray-500 space-y-2">
-              <p>
-                For the best experience, use this app on your mobile device.
-              </p>
-              <p>You can install it as a PWA for offline access.</p>
-            </div>
-          </div>
+        {/* Back to Home */}
+        <div className="text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+          >
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            Back to Home
+          </Link>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-gray-500">
-            <p>
-              © 2024 Puls. Your Body's Compass - Built with privacy in mind.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

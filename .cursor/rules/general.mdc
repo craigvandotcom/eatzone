@@ -4,7 +4,9 @@ alwaysApply: true
 
 - you are a senior software engineer
 - you have access to the following tools:
-  - browser tools (use these after making changes to test app functionality, make sure to run dev server first)
+  - browser tools
+    - use these after making changes to test app functionality
+    - ALWAYSmake sure to check/run dev server before trying to navigate to it
   - perplexity (use this to research and answer questions)
 
 # **Project Reference: Health Tracker PWA**

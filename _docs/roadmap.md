@@ -1,6 +1,19 @@
-# Project Roadmap: Health Tracker PWA to Native App
+# MVP Roadmap: Health Tracker PWA (v0.1)
 
-This document outlines the development roadmap to build the Health Tracker application, starting from a Progressive Web App (PWA) with a local-first architecture and evolving into a native mobile application using Capacitor.
+This document outlines the development roadmap for the MVP (v0.1) of the Health Tracker application - a Progressive Web App (PWA) with a local-first architecture focused on core health tracking functionality.
+
+## MVP Scope (v0.1)
+
+The MVP focuses on delivering a fully functional, offline-capable PWA with robust local data storage and essential health tracking features. This version provides the foundation for user validation and feedback collection.
+
+### Core MVP Features:
+
+- **Local-First Architecture**: Complete offline functionality with IndexedDB storage
+- **Health Data Tracking**: Food, liquid, stool, and symptom logging
+- **Camera Integration**: Photo capture for food logging
+- **Data Visualization**: Core charts and progress indicators
+- **Data Ownership**: Export/import functionality for user data control
+- **PWA Compliance**: Installable, offline-capable application
 
 ## Engineering Principles
 
@@ -73,9 +86,9 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 ---
 
-### Phase 1: Foundational PWA - The Local-First Core
+### Phase 1: Core MVP Implementation
 
-**Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the core MVP.
+**Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the complete MVP.
 
 - [x] **Task 1: Migrate to IndexedDB (`indexeddb-migration`)**
   - **Action:** Replace `localStorage` with `IndexedDB` for data storage.
@@ -147,17 +160,17 @@ This document outlines the development roadmap to build the Health Tracker appli
     - **Important:** No cloud-based password reset or account recovery. Align with PRD's device-bound account model.
   - **Outcome:** Complete public-facing experience with a secure, privacy-preserving, local-first authentication system.
 
-- [x] **Task 6: Implement Route Protection (`implement-route-protection`)**
+- [ ] **Task 6: Implement Route Protection (`implement-route-protection`)**
   - **Action:** Set up authentication-based route protection and user session management.
   - **Implementation:**
-    - Create authentication context and hooks ✅
-    - Implement route guards for protected pages ✅
-    - Add session timeout and auto-logout functionality ✅
-    - Create user profile and settings management ✅
+    - Create authentication context and hooks
+    - Implement route guards for protected pages
+    - Add session timeout and auto-logout functionality
+    - Create user profile and settings management
     - **Structural Alignments:**
-      - Create `middleware.ts` for Next.js route protection ✅
+      - Create `middleware.ts` for Next.js route protection
       - Enhance `lib/validations/` with authentication schemas (if not done in Task 2)
-      - Set up proper TypeScript types for authentication in `lib/types/` ✅
+      - Set up proper TypeScript types for authentication in `lib/types/`
   - **Outcome:** Secure application structure with proper access control and middleware-based route protection.
 
 - [ ] **Task 6.5: Build Settings Page (`build-settings-page`)**
@@ -168,7 +181,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - **Appearance:** Add a theme toggle for switching between light and dark modes.
   - **Outcome:** A centralized and user-friendly page for managing account, data, and app preferences as specified in the PRD.
 
-- [x] **Task 7: Restructure App Navigation (`restructure-app-navigation`)**
+- [ ] **Task 7: Restructure App Navigation (`restructure-app-navigation`)**
   - **Action:** Refactor the main application structure to work with the new authentication flow.
   - **Implementation:**
     - Move current `app/page.tsx` to `app/app/page.tsx` (protected route)

@@ -168,7 +168,7 @@ This document outlines the development roadmap to build the Health Tracker appli
     - **Appearance:** Add a theme toggle for switching between light and dark modes.
   - **Outcome:** A centralized and user-friendly page for managing account, data, and app preferences as specified in the PRD.
 
-- [ ] **Task 7: Restructure App Navigation (`restructure-app-navigation`)**
+- [x] **Task 7: Restructure App Navigation (`restructure-app-navigation`)**
   - **Action:** Refactor the main application structure to work with the new authentication flow.
   - **Implementation:**
     - Move current `app/page.tsx` to `app/app/page.tsx` (protected route)

@@ -1,6 +1,10 @@
+---
+alwaysApply: true
+---
+
 - you are a senior software engineer
 - you have access to the following tools:
-  - browser tools (use these after making changes to test app functionality, make sure to run dev server first)
+  - browser tools (use these after making changes to test app functionality)
   - perplexity (use this to research and answer questions)
 
 # **Project Reference: Health Tracker PWA**

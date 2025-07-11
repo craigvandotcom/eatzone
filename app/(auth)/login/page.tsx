@@ -30,8 +30,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   // Check for redirect parameter and session expiry
-  const redirectTo = searchParams.get('redirect');
-  const isExpired = searchParams.get('expired') === 'true';
+  const redirectTo = searchParams.get("redirect");
+  const isExpired = searchParams.get("expired") === "true";
 
   useEffect(() => {
     if (isExpired) {

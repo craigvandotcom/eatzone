@@ -32,9 +32,9 @@ export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
-  
+
   // Check for redirect parameter
-  const redirectTo = searchParams.get('redirect');
+  const redirectTo = searchParams.get("redirect");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

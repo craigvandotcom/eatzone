@@ -1,6 +1,18 @@
-# Project Roadmap: Health Tracker PWA to Native App
+# MVP Roadmap: Health Tracker PWA (v0.1)
 
-This document outlines the development roadmap to build the Health Tracker application, starting from a Progressive Web App (PWA) with a local-first architecture and evolving into a native mobile application using Capacitor.
+This document outlines the development roadmap for the MVP (v0.1) of the Health Tracker application - a Progressive Web App (PWA) with a local-first architecture focused on core health tracking functionality.
+
+## MVP Scope (v0.1)
+
+The MVP focuses on delivering a fully functional, offline-capable PWA with robust local data storage and essential health tracking features. This version provides the foundation for user validation and feedback collection.
+
+### Core MVP Features:
+- **Local-First Architecture**: Complete offline functionality with IndexedDB storage
+- **Health Data Tracking**: Food, liquid, stool, and symptom logging
+- **Camera Integration**: Photo capture for food logging
+- **Data Visualization**: Core charts and progress indicators
+- **Data Ownership**: Export/import functionality for user data control
+- **PWA Compliance**: Installable, offline-capable application
 
 ## Engineering Principles
 
@@ -73,9 +85,9 @@ This document outlines the development roadmap to build the Health Tracker appli
 
 ---
 
-### Phase 1: Foundational PWA - The Local-First Core
+### Phase 1: Core MVP Implementation
 
-**Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the core MVP.
+**Goal:** Create a fully functional, offline-capable PWA with a robust, private, on-device database. This phase delivers the complete MVP.
 
 - [x] **Task 1: Migrate to IndexedDB (`indexeddb-migration`)**
   - **Action:** Replace `localStorage` with `IndexedDB` for data storage.

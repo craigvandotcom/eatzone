@@ -201,18 +201,14 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 
 - [ ] **Task 8: Optimize Desktop Experience (`optimize-desktop-experience`)**
   - **Action:** Enhance the desktop experience while maintaining mobile-first design.
-  - **Desktop Enhancements:**
-    - Responsive layout with sidebar navigation.
-    - Keyboard shortcuts for power users.
-    - Implement file upload with drag-and-drop as a fallback for camera capture.
-    - Enhanced data visualization with hover details.
-    - Multi-window support for data analysis.
+  - **High Priority Desktop Enhancements (MVP):**
+    - Implement desktop sidebar navigation using existing sidebar component
+    - Add file upload with drag-and-drop fallback for camera capture
+    - Responsive layout adjustments for desktop (sidebar vs bottom tabs)
   - **Mobile Optimizations:**
     - Touch-friendly interface with appropriate target sizes
-    - Swipe gestures for navigation
-    - Pull-to-refresh functionality
     - Optimized viewport and PWA behavior
-  - **Outcome:** Cohesive cross-device experience that works well on both mobile and desktop.
+  - **Outcome:** Essential desbktop functionality that provides a professional experience while maintaining mobile-first design principles.
 
 - [ ] **Task 9: Finalize PWA Functionality (`finalize-pwa`)**
   - **Action:** Ensure the service worker (`sw.js`) correctly caches all necessary assets for a seamless offline experience.

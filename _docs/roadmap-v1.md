@@ -289,7 +289,28 @@ Building on the MVP principles, v1.0 adds:
 
 **Goal:** Implement advanced features that create a comprehensive health tracking ecosystem.
 
-### Task 26: Final Structural Cleanup (`final-structural-cleanup`)
+### Task 26: Advanced Desktop Enhancements (`advanced-desktop-enhancements`)
+
+- **Action:** Implement advanced desktop-specific features that enhance the user experience for power users.
+- **Implementation:**
+  - **Enhanced Data Visualization:**
+    - Add hover details and tooltips to all charts and visualizations
+    - Implement desktop-optimized chart sizes and layouts
+    - Create responsive visualization components that adapt to screen size
+    - Add interactive features like zoom, pan, and drill-down capabilities
+  - **Advanced Interaction Patterns:**
+    - Implement additional keyboard shortcuts for core actions
+    - Add multi-column layouts for larger screens
+    - Create desktop-specific menu structures and navigation patterns
+    - Add context menus and right-click interactions
+  - **Power User Features:**
+    - Implement advanced gesture support (swipe gestures for navigation)
+    - Add pull-to-refresh functionality for data updates
+    - Create multi-window support for data analysis
+    - Add advanced filtering and sorting capabilities
+- **Outcome:** Comprehensive desktop experience that leverages the full capabilities of larger screens while maintaining usability.
+
+### Task 27: Final Structural Cleanup (`final-structural-cleanup`)
 
 - **Action:** Complete remaining architectural alignments and codebase organization improvements.
 - **Implementation:**
@@ -306,7 +327,7 @@ Building on the MVP principles, v1.0 adds:
     - Ensure all features have proper TypeScript interfaces and exports
 - **Outcome:** Complete architectural alignment with PRD specifications and a fully organized, maintainable codebase.
 
-### Task 27: Implement E2EE Sync (`e2ee-sync`)
+### Task 28: Implement E2EE Sync (`e2ee-sync`)
 
 - **Action:** As an opt-in feature, build an end-to-end encrypted synchronization system.
 - **Implementation:**
@@ -316,7 +337,7 @@ Building on the MVP principles, v1.0 adds:
   - Create sync status indicators and controls
 - **Outcome:** Users can securely sync their data across multiple devices while maintaining privacy.
 
-### Task 28: Implement Secure Sharing (`secure-sharing`)
+### Task 29: Implement Secure Sharing (`secure-sharing`)
 
 - **Action:** Create a feature allowing users to securely share a snapshot of their data with healthcare providers.
 - **Implementation:**
@@ -326,7 +347,7 @@ Building on the MVP principles, v1.0 adds:
   - Implement audit logs for data access
 - **Outcome:** Users can grant temporary, controlled access to their health information.
 
-### Task 29: Build Community Features (`build-community`)
+### Task 30: Build Community Features (`build-community`)
 
 - **Action:** Create optional community features that respect privacy while enabling collaboration.
 - **Implementation:**

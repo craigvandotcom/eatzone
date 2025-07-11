@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +21,23 @@ import { useAuth } from "@/features/auth/components/auth-provider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Check for redirect parameter and session expiry
+  const redirectTo = searchParams.get('redirect');
+  const isExpired = searchParams.get('expired') === 'true';
+
+  useEffect(() => {
+    if (isExpired) {
+      setError("Your session has expired. Please sign in again.");
+    }
+  }, [isExpired]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,8 +50,8 @@ export default function LoginPage() {
       // Use auth context to handle login
       login(token, user);
 
-      // Redirect to dashboard
-      router.push("/app");
+      // Redirect to intended page or dashboard
+      router.push(redirectTo || "/app");
     } catch (err) {
       // Safe error handling - check if error has a message property
       setError(

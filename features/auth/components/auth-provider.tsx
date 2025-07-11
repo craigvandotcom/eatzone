@@ -26,8 +26,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = !!user;
 
   const login = (token: string, userData: User) => {
+    // Store in localStorage for client-side access
     localStorage.setItem("auth_token", token);
     localStorage.setItem("user_id", userData.id);
+
+    // Also set as httpOnly cookie for middleware access
+    document.cookie = `auth_token=${token}; Path=/; SameSite=strict; Secure=${window.location.protocol === "https:"}; Max-Age=604800`; // 7 days
+
     setUser(userData);
   };
 
@@ -43,6 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user_id");
+
+    // Clear the cookie as well
+    document.cookie = "auth_token=; Path=/; SameSite=strict; Max-Age=0";
+
     setUser(null);
   };
 
@@ -68,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Invalid session, clean up
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user_id");
+        document.cookie = "auth_token=; Path=/; SameSite=strict; Max-Age=0";
         setUser(null);
       }
     } catch (error) {
@@ -75,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clean up on error
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user_id");
+      document.cookie = "auth_token=; Path=/; SameSite=strict; Max-Age=0";
       setUser(null);
     } finally {
       setIsLoading(false);

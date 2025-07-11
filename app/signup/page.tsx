@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,11 @@ import { useAuth } from "@/features/auth/components/auth-provider";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
+  
+  // Check for redirect parameter
+  const redirectTo = searchParams.get('redirect');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -71,8 +75,8 @@ export default function SignupPage() {
       // Use auth context to handle login
       login(token, user);
 
-      // Redirect to dashboard
-      router.push("/app");
+      // Redirect to intended page or dashboard
+      router.push(redirectTo || "/app");
     } catch (err) {
       // Safe error handling - check if error has a message property
       setError(

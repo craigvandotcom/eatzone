@@ -11,8 +11,6 @@
 
 ## Table of Contents
 
-
-
 ### 1. Project Overview
 
 #### 1.1. Core Concept
@@ -475,7 +473,64 @@ Current PWA can be enhanced with **Capacitor** if native device integration is n
 
 **Important:** Capacitor packages the PWA as a static web app. The native app will make network requests to the deployed Vercel API endpoints (e.g., `https://your-app.vercel.app/api/analyze`) for AI functionality. This maintains the client-server separation while enabling native distribution.
 
-### 4. Data Structures (TypeScript Interfaces)
+### 4. Design System & UI Standards
+
+A consistent and thoughtful design system is critical for creating a professional, intuitive, and scalable application. The following standards should guide all UI/UX development.
+
+#### 4.1. Color Palette
+
+Colors are based on HSL values defined in `app/globals.css` and `tailwind.config.ts`. The palette should be used consistently to create a clear visual hierarchy.
+
+- **Primary UI:**
+  - `background`: `hsl(var(--background))`
+  - `foreground`: `hsl(var(--foreground))`
+  - `card`: `hsl(var(--card))`
+  - `primary`: `hsl(var(--primary))` (for primary actions)
+  - `secondary`: `hsl(var(--secondary))` (for secondary elements)
+  - `accent`: `hsl(var(--accent))` (for highlights and active states)
+- **Health "Zone" Colors:** These are critical for at-a-glance insights.
+  - **Green (Good):** `hsl(142.1 76.2% 36.3%)` - Represents healthy, whole foods.
+  - **Yellow (Maybe):** `hsl(47.9 95.8% 53.1%)` - Represents processed foods or items to be consumed in moderation.
+  - **Red (Bad):** `hsl(0 84.2% 60.2%)` - Represents unhealthy items or potential triggers.
+- **Category-Specific Colors:**
+  - **Liquids:** Blue/Cyan gradient (`from-blue-400 to-cyan-500`)
+  - **Foods:** Green/Emerald gradient (`from-green-400 to-emerald-500`)
+  - **Stools:** Amber/Yellow gradient (`from-amber-400 to-yellow-500`)
+  - **Symptoms:** Red/Pink gradient (`from-red-400 to-pink-500`)
+
+#### 4.2. Typography
+
+- **Font:** The primary font is system-ui (`-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`) for a native feel.
+- **Hierarchy:**
+  - **Page Titles:** `text-xl` (20px), `font-semibold`
+  - **Section Headers:** `text-lg` (18px), `font-semibold`
+  - **Body/Paragraphs:** `text-base` (16px), `font-normal`
+  - **Labels/Metadata:** `text-sm` (14px), `font-medium`
+  - **Small/Helper Text:** `text-xs` (12px), `text-gray-500`
+
+#### 4.3. Spacing & Sizing
+
+- **Spacing Unit:** Follow a 4px grid system. Use Tailwind's spacing scale (e.g., `p-2` for 8px, `p-4` for 16px).
+- **Layout:** Main content areas should have a horizontal padding of `px-4`.
+- **Touch Targets:** All interactive elements (buttons, list items) must have a minimum height of `44px` to meet accessibility standards on mobile.
+- **Radius:** Use consistent border-radius values. `rounded-lg` (0.5rem) for cards and containers, `rounded-full` for circular elements.
+
+#### 4.4. Component Standards
+
+- **Buttons:**
+  - **Primary:** Solid background, for main CTAs.
+  - **Secondary/Outline:** Transparent background with a border, for less prominent actions.
+  - **Ghost:** No background or border, for tertiary actions or icon buttons.
+- **Inputs:** Use `Input` from `components/ui/input` with a corresponding `Label`.
+- **Dialogs:** All modals should use the `Dialog` component and be dismissible by clicking the overlay or pressing Escape.
+
+#### 4.5. Animation & Transitions
+
+- **Standard Duration:** `150ms` for all standard transitions (color, background, opacity).
+- **Easing:** Use `cubic-bezier(0.4, 0, 0.2, 1)` (Tailwind's `ease-in-out`) for a smooth, natural feel.
+- **Complex Animations:** For more significant animations (e.g., dialogs opening), a duration of `200-300ms` may be used.
+
+### 5. Data Structures (TypeScript Interfaces)
 
 The following interfaces define the shape of the data stored in the application.
 
@@ -541,20 +596,20 @@ interface Stool {
 }
 ```
 
-### 5. Key Component Breakdown
+### 6. Key Component Breakdown
 
-#### 5.1. Data Layer Architecture
+#### 6.1. Data Layer Architecture
 
 - **`lib/db.ts`**: **Centralized Data Layer** - Contains all Dexie.js database operations (`addFood`, `getSymptoms`, `updateLiquid`, etc.). Components interact with data through these functions, not directly with Dexie.
 - **`lib/hooks/`**: **Custom React Hooks** - Data-specific hooks that encapsulate `useLiveQuery` calls and business logic (e.g., `useTodaysFoods`, `useSymptomTrends`).
 
-#### 5.2. UI Components
+#### 6.2. UI Components
 
 - **`app/page.tsx`**: **Main Layout Component** - Orchestrates the overall UI layout and handles routing between different views. Data operations are delegated to the data layer.
 - **Dialogs (`components/add-*-dialog.tsx`)**: A suite of four highly specialized forms for manual data entry. They manage their own internal form state and call back to the data layer with complete data objects upon submission.
 - **`components/camera-capture.tsx`**: A reusable, self-contained camera module. It handles the complexities of accessing the device camera, displaying the video stream, and capturing a frame. It is agnostic about _what_ is being captured, simply returning a base64 image string to the parent.
 
-#### 5.3. Visualization Components
+#### 6.3. Visualization Components
 
 - `split-circular-progress.tsx`: Renders the two-part circle for the Liquids view.
 - `food-category-progress.tsx`: Renders the three-part pie chart for the Foods view.

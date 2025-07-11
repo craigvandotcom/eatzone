@@ -146,7 +146,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - `food-composition-bar.tsx` for visualizing individual food entry health.
   - **Outcome:** The core, high-impact visualizations that form the heart of the user's "Body Compass" dashboard are implemented and ready for data binding.
 
-- [ ] **Task 5: Build Landing Page & Authentication (`build-landing-auth`)**
+- [x] **Task 5: Build Landing Page & Authentication (`build-landing-auth`)**
   - **Action:** Create the public-facing landing page and local-first authentication system.
   - **Landing Page (`/`):**
     - Desktop: Comprehensive overview with app screenshots, QR code for mobile access.
@@ -160,7 +160,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - **Important:** No cloud-based password reset or account recovery. Align with PRD's device-bound account model.
   - **Outcome:** Complete public-facing experience with a secure, privacy-preserving, local-first authentication system.
 
-- [ ] **Task 6: Implement Route Protection (`implement-route-protection`)**
+- [x] **Task 6: Implement Route Protection (`implement-route-protection`)**
   - **Action:** Set up authentication-based route protection and user session management.
   - **Implementation:**
     - Create authentication context and hooks
@@ -173,7 +173,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
       - Set up proper TypeScript types for authentication in `lib/types/`
   - **Outcome:** Secure application structure with proper access control and middleware-based route protection.
 
-- [ ] **Task 6.5: Build Settings Page (`build-settings-page`)**
+- [x] **Task 6.5: Build Settings Page (`build-settings-page`)**
   - **Action:** Create the `/app/settings` page as the central hub for account and data controls.
   - **Implementation:**
     - **Account Management:** Implement a "Logout" button to end the current session.
@@ -181,7 +181,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - **Appearance:** Add a theme toggle for switching between light and dark modes.
   - **Outcome:** A centralized and user-friendly page for managing account, data, and app preferences as specified in the PRD.
 
-- [ ] **Task 7: Restructure App Navigation (`restructure-app-navigation`)**
+- [x] **Task 7: Restructure App Navigation (`restructure-app-navigation`)**
   - **Action:** Refactor the main application structure to work with the new authentication flow.
   - **Implementation:**
     - Move current `app/page.tsx` to `app/app/page.tsx` (protected route)

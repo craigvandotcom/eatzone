@@ -12,6 +12,7 @@ import {
   Plus,
   Leaf,
   Settings,
+  BarChart3,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddFoodDialog } from "@/features/foods/components/add-food-dialog";
@@ -26,6 +27,18 @@ import { FoodCompositionBar } from "@/features/foods/components/food-composition
 import { OrganicCompositionBar } from "@/features/foods/components/organic-composition-bar";
 import { VerticalProgressBar } from "@/features/foods/components/vertical-progress-bar";
 import { AuthGuard } from "@/features/auth/components/auth-guard";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarInset,
+  SidebarHeader,
+} from "@/components/ui/sidebar";
 
 // Import types and database functions
 import { Food, Liquid, Symptom, Stool } from "@/lib/types";
@@ -70,6 +83,7 @@ function Dashboard() {
   const waterStats = useWaterStats();
   const foodStats = useFoodStats();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   // Dialog state
   const [showAddFood, setShowAddFood] = useState(false);
@@ -272,402 +286,484 @@ function Dashboard() {
     setEditingStool(null);
   };
 
+  // Desktop sidebar navigation
+  const DesktopSidebar = () => (
+    <Sidebar side="left" variant="sidebar" collapsible="icon">
+      <SidebarHeader>
+        <h2 className="text-lg font-semibold text-sidebar-foreground">
+          Body Compass
+        </h2>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === "liquids"}
+                onClick={() => setCurrentView("liquids")}
+              >
+                <Droplets className="h-4 w-4" />
+                <span>Liquids</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === "food"}
+                onClick={() => setCurrentView("food")}
+              >
+                <Utensils className="h-4 w-4" />
+                <span>Foods</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === "stool"}
+                onClick={() => setCurrentView("stool")}
+              >
+                <Atom className="h-4 w-4" />
+                <span>Stools</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === "symptoms"}
+                onClick={() => setCurrentView("symptoms")}
+              >
+                <Activity className="h-4 w-4" />
+                <span>Symptoms</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => router.push("/app/insights")}>
+                <BarChart3 className="h-4 w-4" />
+                <span>Insights</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => router.push("/settings")}>
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-40">
-      {/* Header */}
-      <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100">
-        <ChevronLeft className="h-6 w-6 text-gray-600" />
-        <h1 className="text-xl font-semibold text-gray-900">
-          Your Body Compass
-        </h1>
-        <button
-          onClick={() => router.push("/settings")}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-        >
-          <Settings className="h-6 w-6 text-gray-600" />
-        </button>
-      </div>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <SidebarProvider>
+          <DesktopSidebar />
+        </SidebarProvider>
+      )}
 
-      <div className="px-4 py-6 space-y-6">
-        {currentView === "liquids" && (
-          <>
-            {/* Split Liquids Progress */}
-            <div className="flex flex-col items-center space-y-4 h-64">
-              <SplitCircularProgress
-                waterPercentage={waterStats?.waterPercentage || 0}
-                otherPercentage={waterStats?.otherPercentage || 0}
-                size={200}
-                strokeWidth={12}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
-              </div>
-              <div className="space-y-3">
-                {!recentLiquids || recentLiquids.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Droplets className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No liquids logged yet
-                    </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the drink icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  recentLiquids.map(liquid => (
-                    <button
-                      key={liquid.id}
-                      onClick={() => handleEditLiquid(liquid)}
-                      className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        {liquid.image ? (
-                          <div className="w-12 h-12 rounded-full overflow-hidden">
-                            <img
-                              src={liquid.image || "/placeholder.svg"}
-                              alt={liquid.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-lg">💧</span>
-                          </div>
-                        )}
-                        <div className="text-left">
-                          <p className="font-medium text-gray-900 capitalize">
-                            {liquid.type}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {liquid.amount}ml
-                          </p>
-                        </div>
-                      </div>
-                      <span className="font-semibold text-gray-900">
-                        {liquid.amount}ml
-                      </span>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </>
+      {/* Main Content */}
+      <div className={`flex-1 ${isMobile ? "pb-40" : ""}`}>
+        {/* Header - Mobile Only */}
+        {isMobile && (
+          <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100">
+            <ChevronLeft className="h-6 w-6 text-gray-600" />
+            <h1 className="text-xl font-semibold text-gray-900">
+              Your Body Compass
+            </h1>
+            <button
+              onClick={() => router.push("/settings")}
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <Settings className="h-6 w-6 text-gray-600" />
+            </button>
+          </div>
         )}
 
-        {currentView === "food" && (
-          <>
-            {/* Food Category Progress */}
-            <div className="relative flex flex-col items-center h-64">
-              <FoodCategoryProgress
-                greenCount={foodStats?.greenIngredients || 0}
-                yellowCount={foodStats?.yellowIngredients || 0}
-                redCount={foodStats?.redIngredients || 0}
-                size={200}
-                strokeWidth={12}
-              />
-              <div className="absolute right-0 top-0 flex flex-col items-center space-y-2">
-                <VerticalProgressBar
-                  percentage={foodStats?.totalOrganicPercentage || 0}
-                  height={200}
+        <div className="px-4 py-6 space-y-6">
+          {currentView === "liquids" && (
+            <>
+              {/* Split Liquids Progress */}
+              <div className="flex flex-col items-center space-y-4 h-64">
+                <SplitCircularProgress
+                  waterPercentage={waterStats?.waterPercentage || 0}
+                  otherPercentage={waterStats?.otherPercentage || 0}
+                  size={200}
+                  strokeWidth={12}
                 />
-                <Leaf className="h-5 w-5 text-green-600" />
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
-              </div>
-              <div className="space-y-3">
-                {!recentFoods || recentFoods.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Utensils className="h-8 w-8 text-gray-400" />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Recent Entries
+                  </h2>
+                  <button className="text-gray-500 text-sm">View more</button>
+                </div>
+                <div className="space-y-3">
+                  {!recentLiquids || recentLiquids.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Droplets className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 text-lg font-medium">
+                        No liquids logged yet
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Tap the drink icon below to get started
+                      </p>
                     </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No foods logged yet
-                    </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the eat icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    {/* Temporary debug info */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4 text-xs">
-                      <strong>Debug Info:</strong>
-                      <pre>{JSON.stringify(recentFoods, null, 2)}</pre>
-                    </div>
-
-                    {recentFoods.map(food => (
+                  ) : (
+                    recentLiquids.map(liquid => (
                       <button
-                        key={food.id}
-                        onClick={() => handleEditFood(food)}
+                        key={liquid.id}
+                        onClick={() => handleEditLiquid(liquid)}
                         className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
                       >
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          {food.image ? (
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <div className="flex items-center space-x-3">
+                          {liquid.image ? (
+                            <div className="w-12 h-12 rounded-full overflow-hidden">
                               <img
-                                src={food.image || "/placeholder.svg"}
-                                alt={food.name}
+                                src={liquid.image || "/placeholder.svg"}
+                                alt={liquid.name}
                                 className="w-full h-full object-cover"
                               />
                             </div>
                           ) : (
-                            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-white text-lg">🍽️</span>
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center">
+                              <span className="text-white text-lg">💧</span>
                             </div>
                           )}
-                          <div className="text-left flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
-                              {food.status === "analyzing"
-                                ? "New Food"
-                                : food.name}
+                          <div className="text-left">
+                            <p className="font-medium text-gray-900 capitalize">
+                              {liquid.type}
                             </p>
-                            <p className="text-sm text-gray-500 truncate">
-                              {food.ingredients
-                                ?.map(ing => ing.name)
-                                .join(", ") || "No ingredients"}
+                            <p className="text-sm text-gray-500">
+                              {liquid.amount}ml
                             </p>
                           </div>
                         </div>
-                        <div className="flex-shrink-0 w-24 ml-2 space-y-1.5">
-                          <FoodCompositionBar
-                            ingredients={food.ingredients || []}
-                          />
-                          <OrganicCompositionBar
-                            ingredients={food.ingredients || []}
-                          />
-                        </div>
+                        <span className="font-semibold text-gray-900">
+                          {liquid.amount}ml
+                        </span>
                       </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {currentView === "stool" && (
-          <>
-            <div className="flex flex-col items-center space-y-4 h-64">
-              <div className="w-48 h-48 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-full flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">
-                    {todaysStools?.length || 0}
-                  </p>
-                  <p className="text-sm text-gray-600">Movements Today</p>
+                    ))
+                  )}
                 </div>
               </div>
-            </div>
+            </>
+          )}
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
+          {currentView === "food" && (
+            <>
+              {/* Food Category Progress */}
+              <div className="relative flex flex-col items-center h-64">
+                <FoodCategoryProgress
+                  greenCount={foodStats?.greenIngredients || 0}
+                  yellowCount={foodStats?.yellowIngredients || 0}
+                  redCount={foodStats?.redIngredients || 0}
+                  size={200}
+                  strokeWidth={12}
+                />
+                <div className="absolute right-0 top-0 flex flex-col items-center space-y-2">
+                  <VerticalProgressBar
+                    percentage={foodStats?.totalOrganicPercentage || 0}
+                    height={200}
+                  />
+                  <Leaf className="h-5 w-5 text-green-600" />
+                </div>
               </div>
-              <div className="space-y-3">
-                {!recentStools || recentStools.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Atom className="h-8 w-8 text-gray-400" />
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Recent Entries
+                  </h2>
+                  <button className="text-gray-500 text-sm">View more</button>
+                </div>
+                <div className="space-y-3">
+                  {!recentFoods || recentFoods.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Utensils className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 text-lg font-medium">
+                        No foods logged yet
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Tap the eat icon below to get started
+                      </p>
                     </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No movements logged yet
-                    </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the move icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  recentStools.map(stool => (
-                    <button
-                      key={stool.id}
-                      onClick={() => handleEditStool(stool)}
-                      className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        {stool.image ? (
-                          <div className="w-12 h-12 rounded-full overflow-hidden">
-                            <img
-                              src={stool.image || "/placeholder.svg"}
-                              alt="Stool"
-                              className="w-full h-full object-cover"
+                  ) : (
+                    <div>
+                      {/* Temporary debug info */}
+                      <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4 text-xs">
+                        <strong>Debug Info:</strong>
+                        <pre>{JSON.stringify(recentFoods, null, 2)}</pre>
+                      </div>
+
+                      {recentFoods.map(food => (
+                        <button
+                          key={food.id}
+                          onClick={() => handleEditFood(food)}
+                          className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center space-x-3 flex-1 min-w-0">
+                            {food.image ? (
+                              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                                <img
+                                  src={food.image || "/placeholder.svg"}
+                                  alt={food.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-white text-lg">🍽️</span>
+                              </div>
+                            )}
+                            <div className="text-left flex-1 min-w-0">
+                              <p className="font-medium text-gray-900 truncate">
+                                {food.status === "analyzing"
+                                  ? "New Food"
+                                  : food.name}
+                              </p>
+                              <p className="text-sm text-gray-500 truncate">
+                                {food.ingredients
+                                  ?.map(ing => ing.name)
+                                  .join(", ") || "No ingredients"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 w-24 ml-2 space-y-1.5">
+                            <FoodCompositionBar
+                              ingredients={food.ingredients || []}
+                            />
+                            <OrganicCompositionBar
+                              ingredients={food.ingredients || []}
                             />
                           </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-lg">💩</span>
-                          </div>
-                        )}
-                        <div className="text-left">
-                          <p className="font-medium text-gray-900">
-                            {getStoolTypeDescription(stool.bristolScale)}
-                          </p>
-                          <p className="text-sm text-gray-500 capitalize">
-                            {stool.color}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="text-xs">
-                          {stool.bristolScale}
-                        </Badge>
-                        {stool.hasBlood && (
-                          <Badge variant="destructive" className="text-xs">
-                            Blood
-                          </Badge>
-                        )}
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {currentView === "symptoms" && (
-          <>
-            <div className="flex flex-col items-center space-y-4 h-64">
-              <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">
-                    {todaysSymptoms?.length || 0}
-                  </p>
-                  <p className="text-sm text-gray-600">Symptoms Today</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
+            </>
+          )}
+
+          {currentView === "stool" && (
+            <>
+              <div className="flex flex-col items-center space-y-4 h-64">
+                <div className="w-48 h-48 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-full flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-gray-900">
+                      {todaysStools?.length || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">Movements Today</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Recent Entries
+                  </h2>
+                  <button className="text-gray-500 text-sm">View more</button>
+                </div>
+                <div className="space-y-3">
+                  {!recentStools || recentStools.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Atom className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 text-lg font-medium">
+                        No movements logged yet
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Tap the move icon below to get started
+                      </p>
+                    </div>
+                  ) : (
+                    recentStools.map(stool => (
+                      <button
+                        key={stool.id}
+                        onClick={() => handleEditStool(stool)}
+                        className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          {stool.image ? (
+                            <div className="w-12 h-12 rounded-full overflow-hidden">
+                              <img
+                                src={stool.image || "/placeholder.svg"}
+                                alt="Stool"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                              <span className="text-white text-lg">💩</span>
+                            </div>
+                          )}
+                          <div className="text-left">
+                            <p className="font-medium text-gray-900">
+                              {getStoolTypeDescription(stool.bristolScale)}
+                            </p>
+                            <p className="text-sm text-gray-500 capitalize">
+                              {stool.color}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-xs">
+                            {stool.bristolScale}
+                          </Badge>
+                          {stool.hasBlood && (
+                            <Badge variant="destructive" className="text-xs">
+                              Blood
+                            </Badge>
+                          )}
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {currentView === "symptoms" && (
+            <>
+              <div className="flex flex-col items-center space-y-4 h-64">
+                <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-gray-900">
+                      {todaysSymptoms?.length || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">Symptoms Today</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Recent Entries
+                  </h2>
+                  <button className="text-gray-500 text-sm">View more</button>
+                </div>
+                <div className="space-y-3">
+                  {!recentSymptoms || recentSymptoms.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Activity className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 text-lg font-medium">
+                        No symptoms logged yet
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Tap the symptom icon below to get started
+                      </p>
+                    </div>
+                  ) : (
+                    recentSymptoms.map(symptom => (
+                      <button
+                        key={symptom.id}
+                        onClick={() => handleEditSymptom(symptom)}
+                        className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-lg">⚡</span>
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-gray-900">
+                              {symptom.name}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Severity: {symptom.severity}/5
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {symptom.severity}/5
+                        </Badge>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Mobile Bottom Navigation */}
+        {isMobile && (
+          <>
+            {/* Tab Navigation */}
+            <div className="fixed bottom-20 left-0 right-0 bg-white px-4 py-4">
+              <div className="bg-gray-100 rounded-full p-1 flex justify-around space-x-1">
+                <button
+                  onClick={() => setCurrentView("liquids")}
+                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("liquids")}`}
+                >
+                  Liquids
+                </button>
+                <button
+                  onClick={() => setCurrentView("food")}
+                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("food")}`}
+                >
+                  Foods
+                </button>
+                <button
+                  onClick={() => setCurrentView("stool")}
+                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("stool")}`}
+                >
+                  Stools
+                </button>
+                <button
+                  onClick={() => setCurrentView("symptoms")}
+                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("symptoms")}`}
+                >
+                  Symptoms
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Entries
-                </h2>
-                <button className="text-gray-500 text-sm">View more</button>
-              </div>
-              <div className="space-y-3">
-                {!recentSymptoms || recentSymptoms.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Activity className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 text-lg font-medium">
-                      No symptoms logged yet
-                    </p>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Tap the symptom icon below to get started
-                    </p>
-                  </div>
-                ) : (
-                  recentSymptoms.map(symptom => (
-                    <button
-                      key={symptom.id}
-                      onClick={() => handleEditSymptom(symptom)}
-                      className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-lg">⚡</span>
-                        </div>
-                        <div className="text-left">
-                          <p className="font-medium text-gray-900">
-                            {symptom.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Severity: {symptom.severity}/5
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {symptom.severity}/5
-                      </Badge>
-                    </button>
-                  ))
-                )}
+            {/* Floating Action Buttons */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white px-4 py-4">
+              <div className="flex justify-around space-x-4">
+                <button
+                  onClick={() => handleQuickCapture("drink")}
+                  className="relative w-14 h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Droplets className="h-6 w-6" />
+                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-blue-500 rounded-full" />
+                </button>
+                <button
+                  onClick={() => handleQuickCapture("eat")}
+                  className="relative w-14 h-14 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Utensils className="h-6 w-6" />
+                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-green-500 rounded-full" />
+                </button>
+                <button
+                  onClick={() => handleQuickCapture("move")}
+                  className="relative w-14 h-14 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Atom className="h-6 w-6" />
+                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-amber-500 rounded-full" />
+                </button>
+                <button
+                  onClick={() => setShowAddSymptom(true)}
+                  className="relative w-14 h-14 bg-gradient-to-r from-red-400 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Activity className="h-6 w-6" />
+                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-red-500 rounded-full" />
+                </button>
               </div>
             </div>
           </>
         )}
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="fixed bottom-20 left-0 right-0 bg-white px-4 py-4">
-        <div className="bg-gray-100 rounded-full p-1 flex justify-around space-x-1">
-          <button
-            onClick={() => setCurrentView("liquids")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("liquids")}`}
-          >
-            Liquids
-          </button>
-          <button
-            onClick={() => setCurrentView("food")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("food")}`}
-          >
-            Foods
-          </button>
-          <button
-            onClick={() => setCurrentView("stool")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("stool")}`}
-          >
-            Stools
-          </button>
-          <button
-            onClick={() => setCurrentView("symptoms")}
-            className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("symptoms")}`}
-          >
-            Symptoms
-          </button>
-        </div>
-      </div>
-
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white px-4 py-4">
-        <div className="flex justify-around space-x-4">
-          <button
-            onClick={() => handleQuickCapture("drink")}
-            className="relative w-14 h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Droplets className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-blue-500 rounded-full" />
-          </button>
-          <button
-            onClick={() => handleQuickCapture("eat")}
-            className="relative w-14 h-14 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Utensils className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-green-500 rounded-full" />
-          </button>
-          <button
-            onClick={() => handleQuickCapture("move")}
-            className="relative w-14 h-14 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Atom className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-amber-500 rounded-full" />
-          </button>
-          <button
-            onClick={() => setShowAddSymptom(true)}
-            className="relative w-14 h-14 bg-gradient-to-r from-red-400 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Activity className="h-6 w-6" />
-            <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-red-500 rounded-full" />
-          </button>
-        </div>
       </div>
 
       {/* Camera Capture Modal */}

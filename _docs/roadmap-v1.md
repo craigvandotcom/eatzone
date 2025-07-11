@@ -299,16 +299,19 @@ Building on the MVP principles, v1.0 adds:
     - Create responsive visualization components that adapt to screen size
     - Add interactive features like zoom, pan, and drill-down capabilities
   - **Advanced Interaction Patterns:**
-    - Implement additional keyboard shortcuts for core actions
+    - Implement comprehensive keyboard shortcuts for all core actions
     - Add multi-column layouts for larger screens
     - Create desktop-specific menu structures and navigation patterns
     - Add context menus and right-click interactions
   - **Power User Features:**
-    - Implement advanced gesture support (swipe gestures for navigation)
+    - Implement drag-and-drop functionality for file uploads
     - Add pull-to-refresh functionality for data updates
     - Create multi-window support for data analysis
     - Add advanced filtering and sorting capabilities
+    - Implement desktop-specific gesture support
 - **Outcome:** Comprehensive desktop experience that leverages the full capabilities of larger screens while maintaining usability.
+
+**Note:** Basic desktop functionality (responsive sidebar, file upload fallback, touch targets) was implemented in MVP Task 8.
 
 ### Task 27: Final Structural Cleanup (`final-structural-cleanup`)
 

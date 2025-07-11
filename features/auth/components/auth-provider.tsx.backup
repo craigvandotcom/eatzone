@@ -6,8 +6,6 @@ import {
   validateSession,
   logout as dbLogout,
   clearExpiredSessions,
-  quickDevLogin,
-  isDevelopment,
 } from "@/lib/db";
 
 interface AuthContextType {
@@ -66,16 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const token = localStorage.getItem("auth_token");
       if (!token) {
-        // In development, auto-login if no session exists
-        if (isDevelopment()) {
-          console.log("🔧 Development mode: Auto-logging in with dev user");
-          const devLogin = await quickDevLogin();
-          if (devLogin) {
-            login(devLogin.token, devLogin.user);
-            return;
-          }
-        }
-        
         setUser(null);
         setIsLoading(false);
         return;
@@ -90,17 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user_id");
         document.cookie = "auth_token=; Path=/; SameSite=strict; Max-Age=0";
-        
-        // In development, try auto-login after cleanup
-        if (isDevelopment()) {
-          console.log("🔧 Development mode: Session invalid, auto-logging in with dev user");
-          const devLogin = await quickDevLogin();
-          if (devLogin) {
-            login(devLogin.token, devLogin.user);
-            return;
-          }
-        }
-        
         setUser(null);
       }
     } catch (error) {

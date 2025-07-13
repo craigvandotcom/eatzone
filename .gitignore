@@ -169,5 +169,4 @@ capacitor.config.ts
 # Temporary files
 *.tmp
 *.temp 
-# Sentry Config File
-.env.sentry-build-plugin
+# Monitoring config removed (using Vercel built-in monitoring)

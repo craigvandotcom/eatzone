@@ -25,13 +25,10 @@ N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/analyze
 N8N_WEBHOOK_TOKEN=your_secure_webhook_token_here
 
 # ======================
-# Error Tracking (Sentry)
+# Error Tracking
 # ======================
 
-# Sentry Authentication Token (for CI/CD builds)
-# Get from: https://sentry.io/settings/account/api/auth-tokens/
-# Only needed for production builds with source maps
-SENTRY_AUTH_TOKEN=your_sentry_auth_token_here
+# Using Vercel's built-in monitoring (no additional configuration required)
 
 # ======================
 # Rate Limiting (Upstash)
@@ -81,7 +78,6 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 - **OpenRouter**: Keep your API key secure, monitor usage
 - **n8n**: Use strong webhook tokens, consider IP whitelisting
 - **Upstash**: Use separate Redis instances for dev/prod
-- **Sentry**: Auth token only needed for production builds with source maps
 
 ## Environment Variable Types
 
@@ -92,7 +88,6 @@ These are only available in API routes and server components:
 - `OPENROUTER_API_KEY`
 - `N8N_WEBHOOK_TOKEN`
 - `UPSTASH_REDIS_REST_TOKEN`
-- `SENTRY_AUTH_TOKEN`
 
 ### Client-Side (Public)
 
@@ -104,9 +99,7 @@ These are exposed to the browser (prefix with `NEXT_PUBLIC_`):
 
 ### Build-Time Only
 
-These are only used during the build process:
-
-- `SENTRY_AUTH_TOKEN` (for uploading source maps)
+No build-time environment variables are required (monitoring is handled by Vercel).
 
 ## Vercel Deployment
 
@@ -124,12 +117,11 @@ When deploying to Vercel, add these environment variables in the dashboard:
 - **API calls failing**: Check if environment variables are set correctly
 - **Build errors**: Ensure all required variables are defined
 - **CORS issues**: Verify `NEXT_PUBLIC_API_BASE_URL` is correct
-- **Sentry source maps not uploading**: Check `SENTRY_AUTH_TOKEN` is set in CI/CD
 
 ### Testing Environment Variables
 
 ```bash
 # Check if variables are loaded (in API route)
 console.log('OpenRouter Key:', process.env.OPENROUTER_API_KEY ? 'Set' : 'Missing');
-console.log('Sentry Auth Token:', process.env.SENTRY_AUTH_TOKEN ? 'Set' : 'Missing');
+console.log('n8n Webhook Token:', process.env.N8N_WEBHOOK_TOKEN ? 'Set' : 'Missing');
 ```

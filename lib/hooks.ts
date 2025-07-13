@@ -2,7 +2,7 @@
 // Uses useLiveQuery from dexie-react-hooks for automatic UI updates
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { Food, Liquid, Symptom, Stool } from "./types";
+import { Symptom, Stool } from "./types";
 import {
   getAllFoods,
   getAllLiquids,
@@ -17,8 +17,6 @@ import {
   getLiquidById,
   getSymptomById,
   getStoolById,
-  getTodayDate,
-  isToday,
 } from "./db";
 
 // FOOD HOOKS

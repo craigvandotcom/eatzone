@@ -21,14 +21,11 @@ import {
   Atom,
   CheckCircle,
   ArrowRight,
-  Download,
   QrCode,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
-  const router = useRouter();
   const [showQR, setShowQR] = useState(false);
 
   const features = [
@@ -119,7 +116,7 @@ export default function LandingPage() {
               Private • Offline-First • AI-Powered
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Your Body's{" "}
+              Your Body&apos;s{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500">
                 Compass
               </span>
@@ -325,7 +322,7 @@ export default function LandingPage() {
             Start Understanding Your Body Today
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands who've discovered patterns in their health with
+            Join thousands who&apos;ve discovered patterns in their health with
             completely private tracking.
           </p>
 
@@ -361,7 +358,7 @@ export default function LandingPage() {
                 <span className="text-lg font-bold text-white">Puls</span>
               </div>
               <p className="text-gray-400">
-                Your Body's Compass - Private health tracking with AI insights.
+                Your Body&apos;s Compass - Private health tracking with AI insights.
               </p>
             </div>
 

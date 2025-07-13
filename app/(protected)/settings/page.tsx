@@ -187,7 +187,7 @@ function SettingsPage() {
             isOrganic: true,
             zone: "green",
             foodGroup: "grain",
-            cookingMethod: "boiled",
+            cookingMethod: "steamed",
           },
           {
             name: "salmon",
@@ -478,7 +478,7 @@ function SettingsPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to log out? You'll need to sign in
+                    Are you sure you want to log out? You&apos;ll need to sign in
                     again to access your health data.
                   </AlertDialogDescription>
                 </AlertDialogHeader>

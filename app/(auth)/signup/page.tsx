@@ -351,7 +351,7 @@ function SignupForm() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-sm text-gray-500">
             <p>
-              © 2024 Puls. Your Body's Compass - Built with privacy in mind.
+              © 2024 Puls. Your Body&apos;s Compass - Built with privacy in mind.
             </p>
           </div>
         </div>

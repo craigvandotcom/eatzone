@@ -52,10 +52,10 @@ Sentry.init({
     if (event.request?.data) {
       const data = event.request.data;
       if (typeof data === "object" && data !== null) {
-        delete data.ingredients;
-        delete data.symptoms;
-        delete data.password;
-        delete data.email;
+        delete (data as any).ingredients;
+        delete (data as any).symptoms;
+        delete (data as any).password;
+        delete (data as any).email;
       }
     }
 

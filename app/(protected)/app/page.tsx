@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
-  User,
   Utensils,
   Droplets,
   Activity,
@@ -22,7 +21,6 @@ import { AddStoolDialog } from "@/features/stools/components/add-stool-dialog";
 import { CameraCapture } from "@/features/camera/components/camera-capture";
 import { SplitCircularProgress } from "@/features/liquids/components/split-circular-progress";
 import { FoodCategoryProgress } from "@/features/foods/components/food-category-progress";
-import { format } from "date-fns";
 import { FoodCompositionBar } from "@/features/foods/components/food-composition-bar";
 import { OrganicCompositionBar } from "@/features/foods/components/organic-composition-bar";
 import { VerticalProgressBar } from "@/features/foods/components/vertical-progress-bar";
@@ -36,7 +34,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarProvider,
-  SidebarInset,
   SidebarHeader,
 } from "@/components/ui/sidebar";
 
@@ -51,13 +48,10 @@ import {
   updateLiquid as dbUpdateLiquid,
   updateSymptom as dbUpdateSymptom,
   updateStool as dbUpdateStool,
-  generateTimestamp,
 } from "@/lib/db";
 
 // Import custom hooks
 import {
-  useTodaysFoods,
-  useTodaysLiquids,
   useTodaysSymptoms,
   useTodaysStools,
   useRecentFoods,
@@ -72,8 +66,6 @@ type ViewType = "liquids" | "food" | "stool" | "symptoms";
 
 function Dashboard() {
   // Use custom hooks for reactive data binding
-  const todaysFoods = useTodaysFoods();
-  const todaysLiquids = useTodaysLiquids();
   const todaysSymptoms = useTodaysSymptoms();
   const todaysStools = useTodaysStools();
   const recentFoods = useRecentFoods();

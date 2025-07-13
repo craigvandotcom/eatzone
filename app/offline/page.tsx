@@ -19,7 +19,7 @@ export default function OfflinePage() {
             <WifiOff className="h-8 w-8 text-blue-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            You're Offline
+            You&apos;re Offline
           </CardTitle>
           <CardDescription className="text-gray-600">
             Your health data is safe and stored locally. Some features may be

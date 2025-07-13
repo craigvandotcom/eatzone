@@ -1,7 +1,6 @@
 import Dexie, { Table } from "dexie";
 import {
   Food,
-  Ingredient,
   Liquid,
   Symptom,
   Stool,
@@ -422,8 +421,17 @@ export const updateUserSettings = async (
 ): Promise<void> => {
   const user = await db.users.get(userId);
   if (user) {
+    const currentSettings = user.settings || {
+      theme: "system" as const,
+      waterGoal: 2000,
+      notifications: {
+        reminders: true,
+        dailySummary: true,
+      },
+    };
+    
     await db.users.update(userId, {
-      settings: { ...user.settings, ...settings },
+      settings: { ...currentSettings, ...settings },
     });
   }
 };
@@ -446,7 +454,7 @@ export const createDevUser = async (): Promise<{ user: User; token: string }> =>
     }
 
     // Create dev user
-    const user = await createUser(DEV_EMAIL, DEV_PASSWORD);
+    await createUser(DEV_EMAIL, DEV_PASSWORD);
     
     // Authenticate and return token
     return await authenticateUser(DEV_EMAIL, DEV_PASSWORD);

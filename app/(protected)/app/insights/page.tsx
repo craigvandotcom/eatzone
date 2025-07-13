@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -55,7 +54,7 @@ function InsightsPage() {
           <CardContent className="space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-blue-900 mb-2">
-                What's Coming
+                What&apos;s Coming
               </h4>
               <p className="text-xs text-blue-700">
                 This section will provide deep insights into your health

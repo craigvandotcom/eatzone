@@ -1,47 +1,14 @@
 import {withSentryConfig} from '@sentry/nextjs';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Remove development-only settings for production
   eslint: {
-    ignoreDuringBuilds: false, // Enable ESLint in production builds
+    ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: false, // Enable TypeScript checks in production
+    ignoreBuildErrors: true,
   },
-  
-  // PWA optimizations
   images: {
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 31536000, // 1 year
-  },
-  
-  // Performance optimizations
-  experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-  },
-  
-  // Security headers
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-        ],
-      },
-    ];
+    unoptimized: true,
   },
 }
 

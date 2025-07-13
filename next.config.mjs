@@ -17,10 +17,10 @@ const nextConfig = {
     // Removed unoptimized: true for production optimization
   },
 
-  // PERFORMANCE: Bundle and build optimizations
+  // PERFORMANCE: Conservative optimizations (removed experimental features that cause webpack issues)
   experimental: {
-    optimizeCss: true, // Optimize CSS delivery
-    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"], // Tree-shake large icon libraries
+    optimizeCss: true, // Safe CSS optimization
+    // Removed optimizePackageImports - causes module resolution errors
   },
 
   // SECURITY: Essential security headers for production

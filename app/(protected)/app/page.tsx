@@ -503,9 +503,9 @@ function Dashboard() {
                           Tap the eat icon below to get started
                         </p>
                       </div>
-                                      ) : (
-                    <div>
-                      {recentFoods.map(food => (
+                    ) : (
+                      <div>
+                        {recentFoods.map(food => (
                           <button
                             key={food.id}
                             onClick={() => handleEditFood(food)}
@@ -740,7 +740,7 @@ function Dashboard() {
               </div>
 
               {/* Floating Action Buttons */}
-              <div className="px-4 py-6">
+              <div className="px-4 pt-1 pb-6">
                 <div className="flex justify-around space-x-4">
                   <div className="relative">
                     <MetallicButton

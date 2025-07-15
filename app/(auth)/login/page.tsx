@@ -15,14 +15,52 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, ArrowLeft, Shield, Loader2, Zap, RotateCcw } from "lucide-react";
-import { authenticateUser, isDevelopment, quickDevLogin, resetDevUser } from "@/lib/db";
+import {
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Shield,
+  Loader2,
+  Zap,
+  RotateCcw,
+} from "lucide-react";
+import {
+  authenticateUser,
+  isDevelopment,
+  quickDevLogin,
+  resetDevUser,
+} from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Redirect authenticated users to app
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push("/app");
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render login form if user is authenticated
+  if (isAuthenticated) {
+    return null;
+  }
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -70,7 +108,9 @@ function LoginForm() {
         setDevLoginError("Development login failed");
       }
     } catch (err) {
-      setDevLoginError(err instanceof Error ? err.message : "Development login failed");
+      setDevLoginError(
+        err instanceof Error ? err.message : "Development login failed"
+      );
     } finally {
       setIsDevLoginLoading(false);
     }
@@ -116,14 +156,18 @@ function LoginForm() {
           <Card className="border-orange-200 bg-orange-50">
             <CardHeader className="pb-3">
               <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                <Badge
+                  variant="outline"
+                  className="bg-orange-100 text-orange-800 border-orange-300"
+                >
                   Development Mode
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-orange-700">
-                Quick login for testing: <strong>dev@test.com</strong> / <strong>password</strong>
+                Quick login for testing: <strong>dev@test.com</strong> /{" "}
+                <strong>password</strong>
               </p>
               <div className="flex space-x-2">
                 <Button
@@ -182,7 +226,7 @@ function LoginForm() {
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   className="w-full"
                 />
@@ -196,7 +240,7 @@ function LoginForm() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     required
                     className="w-full pr-10"
                   />

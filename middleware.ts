@@ -64,6 +64,41 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Get token from multiple sources
+  let token: string | null = null;
+
+  // 1. Check Authorization header
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    token = authHeader.substring(7);
+  }
+
+  // 2. Check cookies (fallback for browser requests)
+  if (!token) {
+    token = request.cookies.get("auth_token")?.value || null;
+  }
+
+  // 3. Check custom header (for SPA requests)
+  if (!token) {
+    token = request.headers.get("x-auth-token");
+  }
+
+  // Validate token if it exists
+  const isValidToken = token ? await validateToken(token) : false;
+
+  // Handle auth pages - redirect authenticated users to app
+  if (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.includes("(auth)")
+  ) {
+    if (isValidToken) {
+      return NextResponse.redirect(new URL("/app", request.url));
+    }
+    // Allow unauthenticated users to access auth pages
+    return NextResponse.next();
+  }
+
   // Allow public routes to pass through
   if (isPublicRoute(pathname)) {
     return NextResponse.next();
@@ -71,34 +106,12 @@ export async function middleware(request: NextRequest) {
 
   // Check if this is a protected route
   if (isProtectedRoute(pathname)) {
-    // Try to get token from multiple sources
-    let token: string | null = null;
-
-    // 1. Check Authorization header
-    const authHeader = request.headers.get("authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    }
-
-    // 2. Check cookies (fallback for browser requests)
-    if (!token) {
-      token = request.cookies.get("auth_token")?.value || null;
-    }
-
-    // 3. Check custom header (for SPA requests)
-    if (!token) {
-      token = request.headers.get("x-auth-token");
-    }
-
     // If no token found, redirect to login
     if (!token) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
-
-    // Validate the token
-    const isValidToken = await validateToken(token);
 
     if (!isValidToken) {
       // Token is invalid/expired, redirect to login

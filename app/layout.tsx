@@ -58,7 +58,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} h-full overflow-hidden`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -66,8 +66,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
-            <Toaster />
+            <div className="h-full overflow-hidden">
+              {children}
+              <Toaster />
+            </div>
           </AuthProvider>
         </ThemeProvider>
       </body>

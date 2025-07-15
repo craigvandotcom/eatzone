@@ -121,16 +121,18 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# PWA files
-**/sw.js
+# PWA files (auto-generated only)
+# Note: Custom service workers like public/sw.js should be tracked
 **/workbox-*.js
-**/worker-*.js
-**/fallback-*.js
 **/precache-manifest.*.js
 **/sw.js.map
 **/workbox-*.js.map
-**/worker-*.js.map
 **/precache-manifest.*.js.map
+
+# Auto-generated workers (but not custom ones)
+**/workbox-sw.js
+**/sw-*.js
+**/precache-*.js
 
 # Local Netlify folder
 .netlify

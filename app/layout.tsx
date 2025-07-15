@@ -47,6 +47,7 @@ export default function RootLayout({
         {/* 
           All PWA and icon meta tags are now handled by the Next.js Metadata API above.
           This prevents conflicts and ensures the correct tags are rendered.
+          The manual tags that were here have been removed.
         */}
         <script
           dangerouslySetInnerHTML={{

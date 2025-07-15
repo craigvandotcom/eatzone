@@ -45,6 +45,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
 
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* Vercel build trigger */}
         <link rel="shortcut icon" href="/favicon.ico" />
 
         <script

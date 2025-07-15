@@ -16,7 +16,14 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Puls",
+    title: "Puls", // This is the name shown on the home screen
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png", // This is the icon for the home screen
   },
   generator: "v0.dev",
 };
@@ -37,21 +44,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="192x192"
-          href="/icon-192.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="512x512"
-          href="/icon-512.png"
-        />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        {/* 
+          All PWA and icon meta tags are now handled by the Next.js Metadata API above.
+          This prevents conflicts and ensures the correct tags are rendered.
+        */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

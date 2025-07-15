@@ -19,6 +19,7 @@ import { AddLiquidDialog } from "@/features/liquids/components/add-liquid-dialog
 import { AddSymptomDialog } from "@/features/symptoms/components/add-symptom-dialog";
 import { AddStoolDialog } from "@/features/stools/components/add-stool-dialog";
 import { CameraCapture } from "@/features/camera/components/camera-capture";
+import { MetallicButton } from "@/components/ui/metallic-button";
 import { SplitCircularProgress } from "@/features/liquids/components/split-circular-progress";
 import { FoodCategoryProgress } from "@/features/foods/components/food-category-progress";
 import { FoodCompositionBar } from "@/features/foods/components/food-composition-bar";
@@ -209,17 +210,18 @@ function Dashboard() {
 
   // Get the active tab styling based on current view
   const getActiveTabStyle = (view: ViewType) => {
-    if (currentView !== view) return "text-gray-600";
+    if (currentView !== view)
+      return "text-gray-600 hover:text-gray-800 hover:bg-white/30";
 
     switch (view) {
       case "liquids":
-        return "bg-gradient-to-r from-blue-400 to-cyan-500 text-white shadow-lg";
+        return "bg-gradient-to-r from-blue-400 to-cyan-500 text-white shadow-lg shadow-blue-400/25";
       case "food":
-        return "bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg";
+        return "bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-400/25";
       case "stool":
-        return "bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow-lg";
+        return "bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-400/25";
       case "symptoms":
-        return "bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg";
+        return "bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg shadow-red-400/25";
       default:
         return "bg-white text-gray-900 shadow-sm";
     }
@@ -343,6 +345,21 @@ function Dashboard() {
     </Sidebar>
   );
 
+  const getTopGlowStyle = (view: ViewType) => {
+    switch (view) {
+      case "liquids":
+        return "shadow-[0_-4px_20px_rgba(59,130,246,0.15)]";
+      case "food":
+        return "shadow-[0_-4px_20px_rgba(34,197,94,0.15)]";
+      case "stool":
+        return "shadow-[0_-4px_20px_rgba(245,158,11,0.15)]";
+      case "symptoms":
+        return "shadow-[0_-4px_20px_rgba(239,68,68,0.15)]";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
@@ -353,7 +370,7 @@ function Dashboard() {
       )}
 
       {/* Main Content */}
-      <div className={`flex-1 ${isMobile ? "pb-40" : ""}`}>
+      <div className={`flex-1 ${isMobile ? "pb-48" : ""}`}>
         {/* Header - Mobile Only */}
         {isMobile && (
           <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100">
@@ -691,67 +708,97 @@ function Dashboard() {
         {/* Mobile Bottom Navigation */}
         {isMobile && (
           <>
-            {/* Tab Navigation */}
-            <div className="fixed bottom-20 left-0 right-0 bg-white px-4 py-4">
-              <div className="bg-gray-100 rounded-full p-1 flex justify-around space-x-1">
-                <button
-                  onClick={() => setCurrentView("liquids")}
-                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("liquids")}`}
-                >
-                  Liquids
-                </button>
-                <button
-                  onClick={() => setCurrentView("food")}
-                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("food")}`}
-                >
-                  Foods
-                </button>
-                <button
-                  onClick={() => setCurrentView("stool")}
-                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("stool")}`}
-                >
-                  Stools
-                </button>
-                <button
-                  onClick={() => setCurrentView("symptoms")}
-                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("symptoms")}`}
-                >
-                  Symptoms
-                </button>
+            {/* Unified Background Container */}
+            <div className={`fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-50/95 via-white/95 to-white/80 backdrop-blur-md ${getTopGlowStyle(currentView)}`}>
+              {/* Tab Navigation */}
+              <div className="px-4 py-4">
+                <div className="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 rounded-full p-1 flex justify-around space-x-1 shadow-[0_-2px_8px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] border border-slate-200/40">
+                  <button
+                    onClick={() => setCurrentView("liquids")}
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("liquids")}`}
+                  >
+                    Liquids
+                  </button>
+                  <button
+                    onClick={() => setCurrentView("food")}
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("food")}`}
+                  >
+                    Foods
+                  </button>
+                  <button
+                    onClick={() => setCurrentView("stool")}
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("stool")}`}
+                  >
+                    Stools
+                  </button>
+                  <button
+                    onClick={() => setCurrentView("symptoms")}
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("symptoms")}`}
+                  >
+                    Symptoms
+                  </button>
+                </div>
               </div>
-            </div>
+              
+              {/* Floating Action Buttons */}
+              <div className="px-4 py-6">
+                <div className="flex justify-around space-x-4">
+                  <div className="relative">
+                    <MetallicButton
+                      accent="liquid"
+                      size="lg"
+                      onClick={() => handleQuickCapture("drink")}
+                      className="group"
+                    >
+                      <Droplets className="h-6 w-6 text-gray-600 group-hover:text-blue-500 transition-colors" />
+                    </MetallicButton>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Plus className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
 
-            {/* Floating Action Buttons */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white px-4 py-4">
-              <div className="flex justify-around space-x-4">
-                <button
-                  onClick={() => handleQuickCapture("drink")}
-                  className="relative w-14 h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Droplets className="h-6 w-6" />
-                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-blue-500 rounded-full" />
-                </button>
-                <button
-                  onClick={() => handleQuickCapture("eat")}
-                  className="relative w-14 h-14 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Utensils className="h-6 w-6" />
-                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-green-500 rounded-full" />
-                </button>
-                <button
-                  onClick={() => handleQuickCapture("move")}
-                  className="relative w-14 h-14 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Atom className="h-6 w-6" />
-                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-amber-500 rounded-full" />
-                </button>
-                <button
-                  onClick={() => setShowAddSymptom(true)}
-                  className="relative w-14 h-14 bg-gradient-to-r from-red-400 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Activity className="h-6 w-6" />
-                  <Plus className="absolute -top-1 -right-1 h-4 w-4 bg-white text-red-500 rounded-full" />
-                </button>
+                  <div className="relative">
+                    <MetallicButton
+                      accent="food"
+                      size="lg"
+                      onClick={() => handleQuickCapture("eat")}
+                      className="group"
+                    >
+                      <Utensils className="h-6 w-6 text-gray-600 group-hover:text-green-500 transition-colors" />
+                    </MetallicButton>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Plus className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <MetallicButton
+                      accent="stool"
+                      size="lg"
+                      onClick={() => handleQuickCapture("move")}
+                      className="group"
+                    >
+                      <Atom className="h-6 w-6 text-gray-600 group-hover:text-amber-500 transition-colors" />
+                    </MetallicButton>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Plus className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <MetallicButton
+                      accent="symptom"
+                      size="lg"
+                      onClick={() => setShowAddSymptom(true)}
+                      className="group"
+                    >
+                      <Activity className="h-6 w-6 text-gray-600 group-hover:text-red-500 transition-colors" />
+                    </MetallicButton>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Plus className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </>

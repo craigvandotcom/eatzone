@@ -363,7 +363,7 @@ export const authenticateUser = async (
     createdAt: generateTimestamp(),
   };
 
-  await db.sessions.put(session);
+  await db.sessions.add(session);
 
   return { user, token };
 };

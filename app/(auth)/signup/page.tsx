@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,31 @@ import { useAuth } from "@/features/auth/components/auth-provider";
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Redirect authenticated users to app
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push("/app");
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render signup form if user is authenticated
+  if (isAuthenticated) {
+    return null;
+  }
 
   // Check for redirect parameter
   const redirectTo = searchParams.get("redirect");
@@ -351,7 +375,8 @@ function SignupForm() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-sm text-gray-500">
             <p>
-              © 2024 Puls. Your Body&apos;s Compass - Built with privacy in mind.
+              © 2024 Puls. Your Body&apos;s Compass - Built with privacy in
+              mind.
             </p>
           </div>
         </div>

@@ -8,24 +8,12 @@ import { AuthProvider } from "@/features/auth/components/auth-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// Simplified metadata object - PWA tags are now manual
 export const metadata: Metadata = {
   title: "Puls - Your Body's Compass",
   description:
     "Private health tracking with AI-powered insights. Your data stays on your device.",
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Puls", // This is the name shown on the home screen
-  },
-  icons: {
-    icon: [
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: "/apple-touch-icon.png", // This is the icon for the home screen
-  },
-  generator: "v0.dev",
 };
 
 export const viewport: Viewport = {
@@ -44,11 +32,21 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* 
-          All PWA and icon meta tags are now handled by the Next.js Metadata API above.
-          This prevents conflicts and ensures the correct tags are rendered.
-          The manual tags that were here have been removed.
+        {/*
+          MANUAL PWA META TAGS FOR MAXIMUM IOS COMPATIBILITY
+          This section gives us direct control over the rendered HTML,
+          bypassing the Next.js metadata API for these critical tags.
         */}
+        <meta name="application-name" content="Puls" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Puls" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+
         <script
           dangerouslySetInnerHTML={{
             __html: `

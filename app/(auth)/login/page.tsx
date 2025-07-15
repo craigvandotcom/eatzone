@@ -37,12 +37,31 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
+  // All hooks must be called before any conditional returns
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [isDevLoginLoading, setIsDevLoginLoading] = useState(false);
+  const [devLoginError, setDevLoginError] = useState("");
+  const [isResetLoading, setIsResetLoading] = useState(false);
+
+  // Check for redirect message
+  const redirectMessage = searchParams.get("message");
+
   // Redirect authenticated users to app
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       router.push("/app");
     }
   }, [isAuthenticated, authLoading, router]);
+
+  useEffect(() => {
+    if (redirectMessage === "signup_success") {
+      setError("");
+    }
+  }, [redirectMessage]);
 
   // Show loading while checking auth state
   if (authLoading) {
@@ -60,24 +79,6 @@ function LoginForm() {
   if (isAuthenticated) {
     return null;
   }
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isDevLoginLoading, setIsDevLoginLoading] = useState(false);
-  const [devLoginError, setDevLoginError] = useState("");
-  const [isResetLoading, setIsResetLoading] = useState(false);
-
-  // Check for redirect message
-  const redirectMessage = searchParams.get("message");
-
-  useEffect(() => {
-    if (redirectMessage === "signup_success") {
-      setError("");
-    }
-  }, [redirectMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

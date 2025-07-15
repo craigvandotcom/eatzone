@@ -33,6 +33,18 @@ function SignupForm() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
+  // All hooks must be called before any conditional returns
+  // Check for redirect parameter
+  const redirectTo = searchParams.get("redirect");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
   // Redirect authenticated users to app
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -56,17 +68,6 @@ function SignupForm() {
   if (isAuthenticated) {
     return null;
   }
-
-  // Check for redirect parameter
-  const redirectTo = searchParams.get("redirect");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

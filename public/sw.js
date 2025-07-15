@@ -1,7 +1,7 @@
 // A minimal service worker to satisfy PWA installation requirements on iOS.
 // This service worker properly handles fetch events, which is mandatory for installability.
 
-const CACHE_NAME = "puls-v1";
+const CACHE_NAME = "puls-v2";
 
 // Install event - immediately activate
 self.addEventListener("install", event => {

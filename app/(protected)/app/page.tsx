@@ -714,25 +714,25 @@ function Dashboard() {
                 <div className="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 rounded-full p-1 flex justify-around space-x-1 shadow-[0_-2px_8px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] border border-slate-200/40">
                   <button
                     onClick={() => setCurrentView("liquids")}
-                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("liquids")}`}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-0 ${getActiveTabStyle("liquids")}`}
                   >
                     Liquids
                   </button>
                   <button
                     onClick={() => setCurrentView("food")}
-                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("food")}`}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-0 ${getActiveTabStyle("food")}`}
                   >
                     Foods
                   </button>
                   <button
                     onClick={() => setCurrentView("stool")}
-                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("stool")}`}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-0 ${getActiveTabStyle("stool")}`}
                   >
                     Stools
                   </button>
                   <button
                     onClick={() => setCurrentView("symptoms")}
-                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-full transition-colors ${getActiveTabStyle("symptoms")}`}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-0 ${getActiveTabStyle("symptoms")}`}
                   >
                     Symptoms
                   </button>

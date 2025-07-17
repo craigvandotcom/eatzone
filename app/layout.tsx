@@ -8,12 +8,23 @@ import { AuthProvider } from "@/features/auth/components/auth-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// Simplified metadata object - PWA tags are now manual
+// Centralized metadata using Next.js App Router conventions
 export const metadata: Metadata = {
   title: "Puls - Your Body's Compass",
   description:
     "Private health tracking with AI-powered insights. Your data stays on your device.",
   manifest: "/manifest.json",
+  applicationName: "Puls",
+  appleWebApp: {
+    capable: true,
+    title: "Puls",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  // The 'apple-icon.png' in the 'app/' directory is automatically detected.
+  // No need to add it to the 'icons' array here for the apple-touch-icon link.
 };
 
 export const viewport: Viewport = {
@@ -31,41 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/*
-          MANUAL PWA META TAGS FOR MAXIMUM IOS COMPATIBILITY
-          This section gives us direct control over the rendered HTML,
-          bypassing the Next.js metadata API for these critical tags.
-        */}
-        <meta name="application-name" content="Puls" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Puls" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        {/* Vercel build trigger */}
-        <link rel="shortcut icon" href="/favicon.ico" />
-
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(function(error) {
-                      console.log('ServiceWorker registration failed: ', error);
-                    });
-                });
-              }
-            `,
-          }}
-        />
-      </head>
+      <head />
       <body className={`${inter.className} h-full overflow-hidden`}>
         <ThemeProvider
           attribute="class"

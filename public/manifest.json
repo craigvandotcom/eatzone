@@ -2,7 +2,7 @@
   "name": "Puls - Your Body's Compass",
   "short_name": "Puls",
   "description": "Private health tracking with AI-powered insights. Your data stays on your device.",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",

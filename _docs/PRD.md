@@ -1,4 +1,4 @@
-- you are a senior software engineer
+- I am a solo engineer working on solo projects, you are my senior AI software engineer assistant
 - you have access to the following tools:
   - browser tools
     - use these after making changes to test app functionality

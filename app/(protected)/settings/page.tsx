@@ -34,12 +34,19 @@ import {
   Sun,
   Info,
   TestTube,
+  Database,
   User,
   Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { exportAllData, importAllData, clearAllData, addFood } from "@/lib/db";
+import {
+  exportAllData,
+  importAllData,
+  clearAllData,
+  resetDatabase,
+  addFood,
+} from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { AuthGuard } from "@/features/auth/components/auth-guard";
 
@@ -47,6 +54,7 @@ function SettingsPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isResettingDatabase, setIsResettingDatabase] = useState(false);
   const [isAddingTest, setIsAddingTest] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { toast } = useToast();
@@ -74,7 +82,7 @@ function SettingsPage() {
 
       toast({
         title: "Data exported successfully",
-        description: `Exported ${data.foods.length} foods, ${data.liquids.length} liquids, ${data.symptoms.length} symptoms, and ${data.stools.length} stools.`,
+        description: `Exported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
       });
     } catch (error) {
       console.error("Export failed:", error);
@@ -101,7 +109,7 @@ function SettingsPage() {
       const data = JSON.parse(text);
 
       // Validate the data structure
-      if (!data.foods || !data.liquids || !data.symptoms || !data.stools) {
+      if (!data.foods || !data.symptoms) {
         throw new Error("Invalid backup file format");
       }
 
@@ -109,7 +117,7 @@ function SettingsPage() {
 
       toast({
         title: "Data imported successfully",
-        description: `Imported ${data.foods.length} foods, ${data.liquids.length} liquids, ${data.symptoms.length} symptoms, and ${data.stools.length} stools.`,
+        description: `Imported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
       });
     } catch (error) {
       console.error("Import failed:", error);
@@ -144,6 +152,30 @@ function SettingsPage() {
       });
     } finally {
       setIsClearing(false);
+    }
+  };
+
+  const handleDatabaseReset = async () => {
+    setIsResettingDatabase(true);
+    try {
+      await resetDatabase();
+      toast({
+        title: "Database reset successfully",
+        description:
+          "Your database has been reset. You can now use the app normally.",
+      });
+      // Refresh the page to ensure clean state
+      window.location.reload();
+    } catch (error) {
+      console.error("Database reset failed:", error);
+      toast({
+        title: "Database reset failed",
+        description:
+          "There was an error resetting your database. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResettingDatabase(false);
     }
   };
 
@@ -365,7 +397,7 @@ function SettingsPage() {
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete
-                      all your foods, liquids, symptoms, and stools data.
+                      all your foods and symptoms data.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -375,6 +407,66 @@ function SettingsPage() {
                       className="bg-red-600 hover:bg-red-700"
                     >
                       Delete Everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Database Reset */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Database Reset
+            </CardTitle>
+            <CardDescription>
+              Reset your database if you're experiencing issues after an app
+              update.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+                  When to use this:
+                </h4>
+                <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                  <li>• Getting database errors after an app update</li>
+                  <li>• "Primary key" or "schema" related errors</li>
+                  <li>• App won't load due to database issues</li>
+                </ul>
+              </div>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-900/20"
+                  >
+                    <Database className="h-4 w-4 mr-2" />
+                    Reset Database
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reset Database?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will reset your database to fix any migration or
+                      schema issues. All your health data will be permanently
+                      deleted. Make sure to export your data first if you want
+                      to keep it.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDatabaseReset}
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      {isResettingDatabase ? "Resetting..." : "Reset Database"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -478,8 +570,8 @@ function SettingsPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to log out? You&apos;ll need to sign in
-                    again to access your health data.
+                    Are you sure you want to log out? You&apos;ll need to sign
+                    in again to access your health data.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

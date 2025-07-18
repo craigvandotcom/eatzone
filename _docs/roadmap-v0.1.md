@@ -255,7 +255,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 
 **Goal:** Implement a two-step, privacy-preserving AI analysis flow to provide intelligent food logging, with a human-in-the-loop validation step to ensure accuracy.
 
-- [ ] **Task 11: Set Up OpenRouter AI Infrastructure (`setup-openrouter`)**
+- [x] **Task 11: Set Up OpenRouter AI Infrastructure (`setup-openrouter`)**
   - **Action:** Establish a unified, cost-effective AI gateway using **OpenRouter** to access multiple large language models (LLMs) through a single API key.
   - **Implementation:**
     - Create an OpenRouter account and purchase initial credits (free-tier is acceptable for development).

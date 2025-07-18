@@ -71,6 +71,9 @@ function Dashboard() {
   // Edit state
   const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [editingSymptom, setEditingSymptom] = useState<Symptom | null>(null);
+  
+  // Image analysis state
+  const [pendingImageData, setPendingImageData] = useState<string | null>(null);
 
   // Database operations
   const addFood = async (food: Omit<Food, "id" | "timestamp">) => {
@@ -79,8 +82,11 @@ function Dashboard() {
       await dbUpdateFood(editingFood.id, food);
       setEditingFood(null);
     } else {
-      // Add new food
-      await dbAddFood(food);
+      // Add new food - include image data if available
+      const foodWithImage = pendingImageData 
+        ? { ...food, image: pendingImageData }
+        : food;
+      await dbAddFood(foodWithImage);
     }
   };
 
@@ -96,17 +102,9 @@ function Dashboard() {
   };
 
   const handleCameraCapture = async (imageData: string) => {
-    const newFood: Omit<Food, "id" | "timestamp"> = {
-      name: "Photo captured",
-      ingredients: [], // Will be updated by AI analysis
-      status: "analyzing",
-      image: imageData,
-      notes: "Analyzing image...",
-    };
-    await dbAddFood(newFood);
-
-    // TODO: Send to AI for analysis
-    console.log("Analyzing food image...");
+    // Store the image data and open the food dialog for AI analysis
+    setPendingImageData(imageData);
+    setShowAddFood(true);
   };
 
   const handleManualEntry = () => {
@@ -145,6 +143,7 @@ function Dashboard() {
   const handleCloseFoodDialog = () => {
     setShowAddFood(false);
     setEditingFood(null);
+    setPendingImageData(null);
   };
 
   const handleCloseSymptomDialog = () => {
@@ -478,6 +477,7 @@ function Dashboard() {
         onAddFood={addFood}
         onClose={handleCloseFoodDialog}
         editingFood={editingFood}
+        imageData={pendingImageData || undefined}
       />
 
       <AddSymptomDialog

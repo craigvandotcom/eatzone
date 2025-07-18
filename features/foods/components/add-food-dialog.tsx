@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Edit2,
   Trash2,
@@ -21,8 +22,11 @@ import {
   ChevronDown,
   ChevronUp,
   Flame,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface AddFoodDialogProps {
   open: boolean;
@@ -30,6 +34,7 @@ interface AddFoodDialogProps {
   onAddFood: (food: Omit<Food, "id" | "timestamp">) => void;
   onClose: () => void;
   editingFood?: Food | null;
+  imageData?: string; // Base64 image data for AI analysis
 }
 
 const cookingMethods = [
@@ -67,6 +72,7 @@ export function AddFoodDialog({
   onAddFood,
   onClose,
   editingFood,
+  imageData,
 }: AddFoodDialogProps) {
   const [name, setName] = useState("");
   const [currentIngredient, setCurrentIngredient] = useState("");
@@ -78,21 +84,81 @@ export function AddFoodDialog({
   >(null);
   const [notes, setNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
+  
+  // AI Analysis state
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
-  // Pre-populate form when editing
+  // AI Analysis function
+  const analyzeImage = async (imageData: string) => {
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    
+    try {
+      const response = await fetch("/api/analyze-image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image: imageData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Analysis failed");
+      }
+
+      const data = await response.json();
+      
+      // Convert AI ingredient strings to full Ingredient objects
+      const aiIngredients: Ingredient[] = data.ingredients.map((name: string) => ({
+        name,
+        isOrganic: false,
+        cookingMethod: "raw" as const,
+        foodGroup: "other" as const,
+        zone: "yellow" as const,
+      }));
+
+      // Pre-populate the ingredients list
+      setIngredients(aiIngredients);
+      setHasAnalyzed(true);
+      
+      // Show success toast
+      toast.success(`Found ${aiIngredients.length} ingredients! Review and adjust as needed.`);
+      
+    } catch (error) {
+      console.error("Image analysis failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Analysis failed";
+      setAnalysisError(errorMessage);
+      toast.error(`Analysis failed: ${errorMessage}. Please add ingredients manually.`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Pre-populate form when editing or analyze image when provided
   useEffect(() => {
     if (editingFood) {
       setName(editingFood.name || "");
       setIngredients(editingFood.ingredients || []);
       setNotes(editingFood.notes || "");
       setShowNotes(!!editingFood.notes);
+      setHasAnalyzed(false);
     } else {
       setName("");
       setIngredients([]);
       setNotes("");
       setShowNotes(false);
+      setHasAnalyzed(false);
+      setAnalysisError(null);
+      
+      // Trigger AI analysis if image data is provided
+      if (imageData && !hasAnalyzed) {
+        analyzeImage(imageData);
+      }
     }
-  }, [editingFood]);
+  }, [editingFood, imageData, hasAnalyzed]);
 
   const handleIngredientKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && currentIngredient.trim()) {
@@ -244,24 +310,56 @@ export function AddFoodDialog({
 
           <div>
             <Label htmlFor="ingredient-input">Ingredients</Label>
-            <Input
-              id="ingredient-input"
-              value={currentIngredient}
-              onChange={e => setCurrentIngredient(e.target.value)}
-              onKeyPress={handleIngredientKeyPress}
-              placeholder="Type ingredient and press Enter"
-              autoFocus
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Press Enter to add each ingredient
-            </p>
+            {isAnalyzing ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="text-sm text-blue-700">Analyzing image...</span>
+                </div>
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : (
+              <>
+                <Input
+                  id="ingredient-input"
+                  value={currentIngredient}
+                  onChange={e => setCurrentIngredient(e.target.value)}
+                  onKeyPress={handleIngredientKeyPress}
+                  placeholder="Type ingredient and press Enter"
+                  autoFocus={!imageData} // Don't autofocus if we're analyzing an image
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {hasAnalyzed 
+                    ? "AI analysis complete! Add more ingredients or edit existing ones."
+                    : "Press Enter to add each ingredient"}
+                </p>
+              </>
+            )}
+            
+            {analysisError && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 rounded-md mt-2">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <span className="text-sm text-red-700">{analysisError}</span>
+              </div>
+            )}
           </div>
 
           {/* Ingredients List */}
-          {ingredients.length > 0 && (
+          {(ingredients.length > 0 || isAnalyzing) && (
             <div>
-              <Label>Added Ingredients ({ingredients.length})</Label>
-              <div className="space-y-2 mt-2 max-h-40 overflow-y-auto">
+              <Label>
+                {isAnalyzing 
+                  ? "Analyzing ingredients..." 
+                  : `Added Ingredients (${ingredients.length})`}
+              </Label>
+              {isAnalyzing ? (
+                <div className="space-y-2 mt-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : (
+                <div className="space-y-2 mt-2 max-h-40 overflow-y-auto">
                 {ingredients.map((ingredient, index) => (
                   <div
                     key={index}
@@ -377,6 +475,7 @@ export function AddFoodDialog({
                   </div>
                 ))}
               </div>
+              )}
             </div>
           )}
 
@@ -417,12 +516,19 @@ export function AddFoodDialog({
             </Button>
             <Button
               type="submit"
-              disabled={ingredients.length === 0}
+              disabled={ingredients.length === 0 || isAnalyzing}
               className="flex-1"
             >
-              {editingFood
-                ? `Update Food (${ingredients.length} ingredients)`
-                : `Add Food (${ingredients.length} ingredients)`}
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Analyzing...
+                </>
+              ) : editingFood ? (
+                `Update Food (${ingredients.length} ingredients)`
+              ) : (
+                `Add Food (${ingredients.length} ingredients)`
+              )}
             </Button>
           </div>
         </form>

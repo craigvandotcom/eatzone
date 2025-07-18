@@ -39,6 +39,16 @@ export function CameraCapture({
     };
   }, [open]);
 
+  // Attach video stream to video element when stream is available
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(err => {
+        console.error("Error playing video:", err);
+      });
+    }
+  }, [stream]);
+
   const startCamera = async () => {
     try {
       setIsLoading(true);
@@ -53,12 +63,6 @@ export function CameraCapture({
       });
 
       setStream(mediaStream);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
-      }
-
       setIsLoading(false);
     } catch (err) {
       console.error("Error accessing camera:", err);

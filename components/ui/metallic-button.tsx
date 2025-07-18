@@ -27,23 +27,11 @@ const metallicButtonVariants = cva(
         ],
       },
       accent: {
-        liquid: [
-          "ring-2 ring-offset-2 ring-offset-white",
-          "ring-blue-400/30 hover:ring-blue-400/50",
-          "hover:bg-gradient-to-br hover:from-blue-50 hover:via-slate-50 hover:to-blue-50",
-          "after:absolute after:inset-0 after:rounded-full after:bg-gradient-to-br after:from-blue-400/5 after:to-transparent after:pointer-events-none",
-        ],
         food: [
           "ring-2 ring-offset-2 ring-offset-white",
           "ring-green-400/30 hover:ring-green-400/50",
           "hover:bg-gradient-to-br hover:from-green-50 hover:via-slate-50 hover:to-green-50",
           "after:absolute after:inset-0 after:rounded-full after:bg-gradient-to-br after:from-green-400/5 after:to-transparent after:pointer-events-none",
-        ],
-        stool: [
-          "ring-2 ring-offset-2 ring-offset-white",
-          "ring-amber-400/30 hover:ring-amber-400/50",
-          "hover:bg-gradient-to-br hover:from-amber-50 hover:via-slate-50 hover:to-amber-50",
-          "after:absolute after:inset-0 after:rounded-full after:bg-gradient-to-br after:from-amber-400/5 after:to-transparent after:pointer-events-none",
         ],
         symptom: [
           "ring-2 ring-offset-2 ring-offset-white",

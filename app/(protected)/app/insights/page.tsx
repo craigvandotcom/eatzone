@@ -138,18 +138,10 @@ function InsightsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">--</div>
-                <div className="text-sm text-gray-600">Total Liquids</div>
-              </div>
+            <div className="grid grid-cols-2 gap-4 text-center">
               <div className="p-4 bg-green-50 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">--</div>
                 <div className="text-sm text-gray-600">Total Foods</div>
-              </div>
-              <div className="p-4 bg-amber-50 rounded-lg">
-                <div className="text-2xl font-bold text-amber-600">--</div>
-                <div className="text-sm text-gray-600">Total Stools</div>
               </div>
               <div className="p-4 bg-red-50 rounded-lg">
                 <div className="text-2xl font-bold text-red-600">--</div>

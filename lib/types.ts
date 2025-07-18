@@ -59,16 +59,6 @@ export interface Ingredient {
   zone: "green" | "yellow" | "red";
 }
 
-export interface Liquid {
-  id: string;
-  name: string; // e.g. "Morning Coffee"
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  amount: number; // in ml
-  type: "water" | "coffee" | "tea" | "juice" | "soda" | "dairy" | "other";
-  notes?: string;
-  image?: string;
-}
-
 export interface Symptom {
   id: string;
   name: string;
@@ -77,18 +67,6 @@ export interface Symptom {
   notes?: string;
 }
 
-export interface Stool {
-  id: string;
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  bristolScale: number; // 1-7
-  color: "brown" | "green" | "yellow" | "black" | "white" | "red" | "other";
-  hasBlood: boolean;
-  notes?: string;
-  image?: string;
-}
-
 // Export types for backward compatibility with existing imports
-export type { Liquid as LiquidType };
-export type { Stool as StoolType };
 export type { Symptom as SymptomType };
 export type { Ingredient as IngredientType };

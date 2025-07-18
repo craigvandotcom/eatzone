@@ -15,10 +15,8 @@ import {
   Shield,
   BarChart3,
   Camera,
-  Droplets,
   Utensils,
   Activity,
-  Atom,
   CheckCircle,
   ArrowRight,
   QrCode,
@@ -51,32 +49,20 @@ export default function LandingPage() {
       color: "from-purple-400 to-pink-500",
     },
     {
-      icon: Droplets,
+      icon: BarChart3,
       title: "Comprehensive Tracking",
       description:
-        "Monitor liquids, foods, symptoms, and more in one unified app",
+        "Monitor foods, symptoms, and more in one unified app",
       color: "from-amber-400 to-orange-500",
     },
   ];
 
   const trackingCategories = [
     {
-      icon: Droplets,
-      name: "Liquids",
-      color: "text-blue-500",
-      description: "Hydration tracking",
-    },
-    {
       icon: Utensils,
       name: "Foods",
       color: "text-green-500",
       description: "Ingredient analysis",
-    },
-    {
-      icon: Atom,
-      name: "Stools",
-      color: "text-amber-500",
-      description: "Digestive health",
     },
     {
       icon: Activity,

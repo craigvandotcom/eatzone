@@ -1,26 +1,55 @@
 import Dexie, { Table } from "dexie";
-import { Food, Liquid, Symptom, Stool, User, AuthSession } from "./types";
+import { Food, Symptom, User, AuthSession } from "./types";
 import bcrypt from "bcryptjs";
 import * as jose from "jose";
 
 export class HealthTrackerDB extends Dexie {
   foods!: Table<Food, string>;
-  liquids!: Table<Liquid, string>;
   symptoms!: Table<Symptom, string>;
-  stools!: Table<Stool, string>;
   users!: Table<User, string>;
   sessions!: Table<AuthSession, string>;
 
   constructor() {
     super("HealthTrackerDB");
-    this.version(2).stores({
+
+    // Version 3 - Original schema with liquids and stools (deprecated)
+    this.version(3).stores({
       foods: "id, timestamp",
-      liquids: "id, timestamp, type",
       symptoms: "id, timestamp",
-      stools: "id, timestamp",
       users: "id, email",
       sessions: "userId, token, expiresAt",
+      liquids: "id, timestamp", // Deprecated - will be removed
+      stools: "id, timestamp", // Deprecated - will be removed
     });
+
+    // Version 4 - Simplified schema (Foods + Symptoms only)
+    this.version(4)
+      .stores({
+        foods: "id, timestamp",
+        symptoms: "id, timestamp",
+        users: "id, email",
+        sessions: "userId, token, expiresAt",
+        liquids: null, // Remove liquids table
+        stools: null, // Remove stools table
+      })
+      .upgrade(async tx => {
+        // Clean migration - remove deprecated tables
+        console.log(
+          "Migrating database to v4: Removing liquids and stools tables"
+        );
+
+        // The tables will be automatically removed by setting them to null
+        // We can optionally log the migration
+        try {
+          const liquidCount = await tx.table("liquids").count();
+          const stoolCount = await tx.table("stools").count();
+          console.log(
+            `Migration: Removed ${liquidCount} liquid entries and ${stoolCount} stool entries`
+          );
+        } catch (error) {
+          console.log("Migration: Clean slate - no existing deprecated data");
+        }
+      });
   }
 }
 
@@ -95,53 +124,6 @@ export const getTodaysFoods = async (): Promise<Food[]> => {
     .toArray();
 };
 
-// LIQUID OPERATIONS
-export const addLiquid = async (
-  liquid: Omit<Liquid, "id" | "timestamp">
-): Promise<string> => {
-  const newLiquid: Liquid = {
-    ...liquid,
-    id: generateId(),
-    timestamp: generateTimestamp(),
-  };
-  await db.liquids.add(newLiquid);
-  return newLiquid.id;
-};
-
-export const updateLiquid = async (
-  id: string,
-  updates: Partial<Omit<Liquid, "id">>
-): Promise<void> => {
-  await db.liquids.update(id, updates);
-};
-
-export const deleteLiquid = async (id: string): Promise<void> => {
-  await db.liquids.delete(id);
-};
-
-export const getLiquidById = async (
-  id: string
-): Promise<Liquid | undefined> => {
-  return await db.liquids.get(id);
-};
-
-export const getAllLiquids = async (): Promise<Liquid[]> => {
-  return await db.liquids.orderBy("timestamp").reverse().toArray();
-};
-
-export const getTodaysLiquids = async (): Promise<Liquid[]> => {
-  const today = getTodayDate();
-  return await db.liquids
-    .where("timestamp")
-    .between(today + "T00:00:00.000Z", today + "T23:59:59.999Z")
-    .reverse()
-    .toArray();
-};
-
-export const getLiquidsByType = async (type: string): Promise<Liquid[]> => {
-  return await db.liquids.where("type").equals(type).reverse().toArray();
-};
-
 // SYMPTOM OPERATIONS
 export const addSymptom = async (
   symptom: Omit<Symptom, "id" | "timestamp">
@@ -185,111 +167,61 @@ export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
     .toArray();
 };
 
-// STOOL OPERATIONS
-export const addStool = async (
-  stool: Omit<Stool, "id" | "timestamp">
-): Promise<string> => {
-  const newStool: Stool = {
-    ...stool,
-    id: generateId(),
-    timestamp: generateTimestamp(),
-  };
-  await db.stools.add(newStool);
-  return newStool.id;
-};
-
-export const updateStool = async (
-  id: string,
-  updates: Partial<Omit<Stool, "id">>
-): Promise<void> => {
-  await db.stools.update(id, updates);
-};
-
-export const deleteStool = async (id: string): Promise<void> => {
-  await db.stools.delete(id);
-};
-
-export const getStoolById = async (id: string): Promise<Stool | undefined> => {
-  return await db.stools.get(id);
-};
-
-export const getAllStools = async (): Promise<Stool[]> => {
-  return await db.stools.orderBy("timestamp").reverse().toArray();
-};
-
-export const getTodaysStools = async (): Promise<Stool[]> => {
-  const today = getTodayDate();
-  return await db.stools
-    .where("timestamp")
-    .between(today + "T00:00:00.000Z", today + "T23:59:59.999Z")
-    .reverse()
-    .toArray();
-};
-
 // UTILITY OPERATIONS
 export const clearAllData = async (): Promise<void> => {
-  await db.transaction(
-    "rw",
-    db.foods,
-    db.liquids,
-    db.symptoms,
-    db.stools,
-    async () => {
-      await db.foods.clear();
-      await db.liquids.clear();
-      await db.symptoms.clear();
-      await db.stools.clear();
-    }
-  );
+  await db.transaction("rw", db.foods, db.symptoms, async () => {
+    await db.foods.clear();
+    await db.symptoms.clear();
+  });
+};
+
+// Database reset utility - useful for handling migration issues
+export const resetDatabase = async (): Promise<void> => {
+  try {
+    // Close the database first
+    db.close();
+    
+    // Delete the entire database
+    await db.delete();
+    
+    // Reopen the database (will create fresh with latest schema)
+    await db.open();
+    
+    console.log("Database reset successfully");
+  } catch (error) {
+    console.error("Failed to reset database:", error);
+    throw error;
+  }
 };
 
 export const exportAllData = async (): Promise<{
   foods: Food[];
-  liquids: Liquid[];
   symptoms: Symptom[];
-  stools: Stool[];
   exportedAt: string;
 }> => {
-  const [foods, liquids, symptoms, stools] = await Promise.all([
+  const [foods, symptoms] = await Promise.all([
     getAllFoods(),
-    getAllLiquids(),
     getAllSymptoms(),
-    getAllStools(),
   ]);
 
   return {
     foods,
-    liquids,
     symptoms,
-    stools,
     exportedAt: generateTimestamp(),
   };
 };
 
 export const importAllData = async (data: {
   foods: Food[];
-  liquids: Liquid[];
   symptoms: Symptom[];
-  stools: Stool[];
 }): Promise<void> => {
-  await db.transaction(
-    "rw",
-    db.foods,
-    db.liquids,
-    db.symptoms,
-    db.stools,
-    async () => {
-      await db.foods.clear();
-      await db.liquids.clear();
-      await db.symptoms.clear();
-      await db.stools.clear();
+  await db.transaction("rw", db.foods, db.symptoms, async () => {
+    await db.foods.clear();
+    await db.symptoms.clear();
 
-      await db.foods.bulkAdd(data.foods);
-      await db.liquids.bulkAdd(data.liquids);
-      await db.symptoms.bulkAdd(data.symptoms);
-      await db.stools.bulkAdd(data.stools);
-    }
-  );
+    await db.foods.bulkAdd(data.foods);
+    await db.symptoms.bulkAdd(data.symptoms);
+  });
 };
 
 // AUTHENTICATION OPERATIONS

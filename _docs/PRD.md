@@ -4,6 +4,7 @@
     - use these after making changes to test app functionality
     - ALWAYSmake sure to check/run dev server before trying to navigate to it
   - perplexity (use this to research and answer questions)
+- before committing any change, make sure to run pnp build and check for errors
 
 # **Project Reference: Health Tracker PWA**
 

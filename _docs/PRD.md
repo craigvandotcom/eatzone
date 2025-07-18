@@ -17,7 +17,7 @@
 
 #### 1.1. Core Concept
 
-The Health Tracker is a mobile-first Progressive Web App (PWA) designed to be a "Body Compass." It allows users to perform high-speed, low-friction logging of daily inputs (liquids, food) and outputs (stools, symptoms). The primary goal is to empower users to identify patterns and correlations between their lifestyle choices and their physical well-being.
+The Health Tracker is a mobile-first Progressive Web App (PWA) designed to be a "Body Compass." It allows users to perform high-speed, low-friction logging of food and symptoms. The primary goal is to empower users to identify patterns and correlations between their dietary choices and their physical well-being.
 
 #### 1.2. Guiding Philosophy
 
@@ -27,14 +27,12 @@ The Health Tracker is a mobile-first Progressive Web App (PWA) designed to be a 
 
 ### 2. Core Features & Functionality
 
-The application is organized into four primary tracking categories, accessible via a main tab bar.
+The application is organized into two primary tracking categories, accessible via a main tab bar.
 
-| Category     | Icon | Purpose                                                             | Key Visualizations                                                                                                                                                                                                                                                                                                                                       |
-| ------------ | ---- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Liquids**  | 💧   | Track hydration, differentiating between water and other beverages. | - **Split Circular Progress:** Shows progress towards a daily water goal vs. total intake of other liquids.                                                                                                                                                                                                                                              |
-| **Foods**    | 🍽️   | Log foods and their constituent ingredients.                        | - **Food Category Pie Chart:** Shows the daily ratio of "Good" (green), "Maybe" (yellow), and "Bad" (red) ingredients. `<br>` - **Vertical Organic "Battery":** Shows the percentage of daily ingredients that were organic. `<br>` - **Dual-Bar System (per food entry):** Visualizes the health and organic composition of each individual food entry. |
-| **Stools**   | 💩   | Record bowel movements for digestive health tracking.               | - **Daily Count:** A simple, large number showing total movements for the day.                                                                                                                                                                                                                                                                           |
-| **Symptoms** | ⚡   | Log physical or emotional symptoms and their severity.              | - **Daily Count:** A simple, large number showing total symptoms logged for the day.                                                                                                                                                                                                                                                                     |
+| Category     | Icon | Purpose                                                | Key Visualizations                                                                                                                                                                                                                                                                                                                                       |
+| ------------ | ---- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Foods**    | 🍽️   | Log foods and their constituent ingredients.           | - **Food Category Pie Chart:** Shows the daily ratio of "Good" (green), "Maybe" (yellow), and "Bad" (red) ingredients. `<br>` - **Vertical Organic "Battery":** Shows the percentage of daily ingredients that were organic. `<br>` - **Dual-Bar System (per food entry):** Visualizes the health and organic composition of each individual food entry. |
+| **Symptoms** | ⚡   | Log physical or emotional symptoms and their severity. | - **Daily Count:** A simple, large number showing total symptoms logged for the day.                                                                                                                                                                                                                                                                     |
 
 #### 2.1. Data Entry Methods
 
@@ -498,12 +496,14 @@ The application follows a **structured logging approach** that maintains user pr
 **3.7.2. Privacy-First Logging Rules**
 
 **CRITICAL - Never Log:**
+
 - User health data (food entries, symptoms, liquids, stools)
 - Personal information (names, emails in production logs)
 - IndexedDB content or user-generated content
 - Authentication tokens or session data
 
 **Safe to Log:**
+
 - Operation IDs and timestamps
 - System events (login attempts, export requests)
 - Technical errors with sanitized messages
@@ -513,17 +513,20 @@ The application follows a **structured logging approach** that maintains user pr
 **3.7.3. Error Handling Patterns**
 
 **Global Error Handling:**
+
 - `app/global-error.tsx` - Catches unhandled React exceptions
 - `middleware.ts` - Handles authentication and routing errors
 - Console logging for development debugging
 
 **User-Facing Error Handling:**
+
 - **Form Validation:** Real-time validation with Zod schemas + user-friendly error messages
 - **API Errors:** Consistent JSON error responses with proper HTTP status codes
 - **User Feedback:** Toast notifications (Sonner) for non-blocking alerts, inline alerts for form errors
 - **Graceful Degradation:** Fallback UI states when features are unavailable
 
 **Error Response Format:**
+
 ```typescript
 // Standard API error response
 {
@@ -538,12 +541,14 @@ The application follows a **structured logging approach** that maintains user pr
 **3.7.4. Development vs Production Logging**
 
 **Development Environment:**
+
 - Verbose console logging with full stack traces
 - Detailed API request/response logging
 - Database operation logging
 - Performance timing information
 
 **Production Environment:**
+
 - Sanitized error messages only
 - No sensitive data in logs
 - Vercel Function logs for API routes
@@ -553,18 +558,21 @@ The application follows a **structured logging approach** that maintains user pr
 **3.7.5. Monitoring & Observability**
 
 **Vercel Built-in Monitoring:**
+
 - Function performance and error rates
 - Core Web Vitals (LCP, FID, CLS)
 - Real User Monitoring (RUM)
 - Deployment and build monitoring
 
 **Client-Side Monitoring:**
+
 - Performance API for page load times
 - Navigator.onLine for offline detection
 - localStorage size monitoring
 - Camera/device capability detection
 
 **Key Metrics to Track:**
+
 - Page load performance
 - API response times
 - IndexedDB operation performance
@@ -574,11 +582,12 @@ The application follows a **structured logging approach** that maintains user pr
 **3.7.6. Implementation Guidelines**
 
 **Logging Utility Functions:**
+
 ```typescript
 // lib/logger.ts
 export const logger = {
   error: (message: string, context?: Record<string, any>) => {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       // Send to Vercel monitoring (sanitized)
       console.error(message, sanitizeContext(context));
     } else {
@@ -586,19 +595,21 @@ export const logger = {
       console.error(message, context);
     }
   },
-  
+
   info: (message: string, context?: Record<string, any>) => {
     console.info(message, context);
-  }
+  },
 };
 ```
 
 **Error Boundary Implementation:**
+
 - Global error boundary in `app/global-error.tsx`
 - Feature-specific error boundaries for complex components
 - Graceful fallback UI components
 
 **API Error Handling:**
+
 - Centralized API client in `lib/api/client.ts`
 - Consistent error response parsing
 - Automatic retry logic for transient failures

@@ -252,7 +252,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 
 **Goal:** Implement the privacy-preserving AI analysis flow to bring "smart" features online.
 
-- [ ] **Task 11: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)**
+- [x] **Task 11: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)**
   - **Action:** Implement the hybrid workflow approach using n8n + OpenRouter for maximum iteration speed.
   - **Implementation Steps:**
     - Deploy n8n (start with cloud version for simplicity)
@@ -321,19 +321,17 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - Implement retry logic for failed analyses.
   - **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling and a complete status lifecycle.
 
-- [ ] **Task 16: Build Insights Page (`build-insights-page`)**
-  - **Action:** Create the "Insights & Analytics" page that performs all calculations and visualizations on the client-side using data from IndexedDB.
+- [ ] **Task 16: Build MVP Insights Page (`build-mvp-insights-page`)**
+  - **Action:** Create the initial "Insights & Analytics" page that performs all calculations on the client-side, focusing on a simple heuristic-based correlation approach.
   - **Implementation:**
-    - Build comprehensive analytics and trend visualization components
-    - Implement correlation analysis between different health metrics
-    - Create time-based trend charts and pattern recognition
+    - Implement the core analysis using a **heuristic/rule-based approach** (e.g., time-windowed co-occurrence counting).
+    - Allow users to select either a **food/ingredient** or a **symptom type**.
+    - Display a list of **correlated items** based on the selection.
+    - Provide a simple UI for users to select a **time window of association** (e.g., "within 6 hours").
     - **Structural Alignments:**
-      - Create `features/analytics/` folder with complete feature structure
-      - Add `features/analytics/components/` for trend charts, correlation matrices, health score cards
-      - Add `features/analytics/hooks/` for trend analysis and correlation calculations
-      - Add `features/analytics/types/` for analytics-specific TypeScript types
-      - Implement the actual `app/(protected)/app/insights/page.tsx` with full functionality
-  - **Outcome:** Users can see trends and correlations in their health data without it ever leaving their device, supported by a complete analytics feature architecture.
+      - Create `features/analytics/` folder with a basic structure for components and hooks.
+      - Implement `app/(protected)/app/insights/page.tsx` with this initial functionality.
+  - **Outcome:** A functional MVP insights page that provides users with direct, actionable heuristic correlations from their local data, delivering on the core "Body Compass" promise.
 
 ---
 

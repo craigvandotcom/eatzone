@@ -250,76 +250,55 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 
 ### Phase 2: AI Integration & Intelligence
 
-**Goal:** Implement the privacy-preserving AI analysis flow to bring "smart" features online.
+- debug pwa scrolling
+- setup bug bot 
 
-- [x] **Task 11: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)**
-  - **Action:** Implement the hybrid workflow approach using n8n + OpenRouter for maximum iteration speed.
-  - **Implementation Steps:**
-    - Deploy n8n (start with cloud version for simplicity)
-    - Set up OpenRouter account and configure API access
-    - Create authentication tokens for webhook security
-    - Test basic webhook connectivity
-  - **Outcome:** Visual workflow platform ready for AI logic development.
+**Goal:** Implement a two-step, privacy-preserving AI analysis flow to provide intelligent food logging, with a human-in-the-loop validation step to ensure accuracy.
 
-- [ ] **Task 11.5: Design & Build Curated Ingredient Database (`build-ingredient-db`)**
-  - **Action:** Create the backend database (e.g., Supabase table, Vercel KV) to act as the source of truth for ingredient classifications.
+- [ ] **Task 11: Set Up OpenRouter AI Infrastructure (`setup-openrouter`)**
+  - **Action:** Establish a unified, cost-effective AI gateway using **OpenRouter** to access multiple large language models (LLMs) through a single API key.
   - **Implementation:**
-    - Define schema: `ingredientName`, `foodGroup`, `defaultZone`, `zoneModifiers`.
-    - Populate with an initial set of common ingredients (e.g., 200+ items).
-    - Create an interface or API for the n8n workflow to query this database.
-  - **Outcome:** A consistent, curated reference for core ingredient data that underpins the app's intelligence.
+    - Create an OpenRouter account and purchase initial credits (free-tier is acceptable for development).
+    - Store the `OPENROUTER_API_KEY` in `.env.local` (and `.env.example`) and expose it to Vercel for production builds.
+    - Add a thin `lib/ai/openrouter.ts` helper that wraps the OpenRouter-compatible `OpenAI` client and sets `baseURL = "https://openrouter.ai/api/v1"`.
+    - Document routing shortcuts (`:floor` for cheapest, `:nitro` for fastest) and the free-model policy in `README`.
+    - Implement a simple health-check endpoint (`/api/ai-status`) that pings OpenRouter and returns model availability so we can surface downtime gracefully in the UI.
+  - **Outcome:** A single, flexible entry point for all AI calls, allowing us to experiment with GPT-4o, Claude 3.5 Sonnet, Gemini Flash, etc., without changing code paths.
 
-- [ ] **Task 12: Build AI Analysis Workflow (`build-ai-workflow`)**
-  - **Action:** Create the visual workflow in n8n that handles the two-stage ingredient processing pipeline.
-  - **Workflow Components:**
-    - **Stage 1 (Identification):**
-      - Webhook trigger for receiving image data or manual ingredient list.
-      - Multimodal AI call for image-to-text ingredient identification.
-    - **Stage 2 (Enrichment):**
-      - Database lookup node to query the **Curated Ingredient Database**.
-      - Conditional logic: if ingredient is found, use curated data.
-      - If not found, use a second AI call (fallback) to classify `foodGroup` and `zone`.
-      - Implement a "learning loop" by logging AI-classified ingredients for future review and addition to the curated database.
-    - **Output & Error Handling:**
-      - Data transformation nodes for final JSON formatting.
-      - Error handling and validation nodes.
-  - **Outcome:** A robust AI analysis workflow that combines the consistency of a curated database with the scalability of AI, capable of turning a photo or text into structured, intelligent data.
-
-- [ ] **Task 13: Create Simple API Route (`create-api-route`)**
-  - **Action:** Build a lightweight Next.js API route that forwards requests to the n8n workflow.
-  - **Security Implementation:**
-    - Implement rate limiting using `@upstash/ratelimit`
-    - Add input validation and sanitization
-    - Secure webhook authentication with tokens
-    - Implement proper error handling and timeouts
-    - **Structural Alignments:**
-      - Create `app/api/` folder structure with proper route organization
-      - Add `app/api/analyze/route.ts` for AI analysis endpoint
-      - Add `app/api/auth/route.ts` for authentication API (if needed)
-      - Enhance `lib/api/` with client utilities and endpoint definitions
-      - Add API-specific validation schemas to `lib/validations/`
-  - **Outcome:** Secure API endpoint infrastructure that acts as a bridge between client and AI workflow.
-
-- [ ] **Task 14: Integrate Camera with Workflow (`integrate-camera`)**
-  - **Action:** Connect the UI to the AI workflow, ensuring a clean separation of concerns.
+- [ ] **Task 12: Implement Vision-Based Ingredient Identification (`implement-vision-identification`)**
+  - **Action:** Build the first stage of the AI pipeline. The user captures a photo, and a vision model identifies potential ingredients.
   - **Implementation:**
-    - The _parent component_ that invokes `<CameraCapture>` will be responsible for handling the API call to `/api/analyze`.
-    - The `<CameraCapture>` component itself remains agnostic, only returning an image string via a callback.
-    - This preserves the reusability of the camera component as per the PRD.
-    - Handle workflow response timing (may be slower than direct API calls) with proper loading states and error handling in the parent component.
-  - **Outcome:** Photos taken in the app are sent through the AI workflow for processing, while maintaining a clean component architecture.
+    - Create a secure API route (`/api/analyze-image`) that accepts an image.
+    - This route calls a multimodal vision model (e.g., GPT-4o) with a prompt to extract a list of ingredient names from the image.
+    - The API route will return a simple JSON array of ingredient strings.
+    - Implement loading and error states on the client-side for this process.
+  - **Outcome:** A functional "scan-to-text" feature where a food photo is converted into a preliminary list of ingredients.
 
-- [ ] **Task 15: Handle AI Analysis in UI (`update-ui-for-ai`)**
-  - **Action:** Implement UI states to handle "Analyzing..." placeholders and display the structured data returned by the AI workflow.
+- [ ] **Task 13: Integrate Vision Analysis with Food Dialog (`integrate-vision-with-dialog`)**
+  - **Action:** Connect the camera capture flow to the ingredient identification API and populate the `AddFoodDialog` for user review.
   - **Implementation:**
-    - Add loading states for workflow processing.
-    - Design and implement UI states for all three food statuses:
-      - `analyzing`: Show a loading indicator or placeholder.
-      - `pending_review`: Allow the user to view AI results and require confirmation before saving.
-      - `processed`: Display the final, confirmed data.
-    - Handle workflow timeouts and errors gracefully.
-    - Implement retry logic for failed analyses.
-  - **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling and a complete status lifecycle.
+    - After the user captures a photo, call the `/api/analyze-image` endpoint.
+    - Take the returned list of ingredient strings and use it to pre-populate the ingredient list within the `AddFoodDialog`.
+    - The UI must clearly indicate that these are AI suggestions, and the user has full control to add, edit, or remove ingredients before submission. This fulfills the "human-in-the-loop" requirement.
+  - **Outcome:** A seamless user flow from photo capture to an editable list of AI-suggested ingredients, ready for user validation.
+
+- [ ] **Task 14: Implement AI-Powered Ingredient Zoning (`implement-ai-zoning`)**
+  - **Action:** Build the second stage of the AI pipeline. Once the user confirms the ingredient list, send it to another AI for classification based on the Body Compass zoning rules.
+  - **Implementation:**
+    - Create a second secure API route (`/api/zone-ingredients`) that accepts a JSON array of ingredient strings.
+    - This route calls a powerful language model with a detailed system prompt containing the "Instructions for Food & Ingredient Zoning".
+    - The AI will return a structured JSON object for each ingredient, including its assigned `zone` and `foodGroup`.
+    - Implement robust Zod validation on the API response to ensure data integrity before saving to the database.
+  - **Outcome:** An intelligent zoning engine that can classify any list of ingredients according to the project's specific nutritional philosophy.
+
+- [ ] **Task 15: Finalize AI Data Flow and UI (`finalize-ai-flow`)**
+  - **Action:** Connect the full AI pipeline to the database and update the UI to handle the final, enriched data.
+  - **Implementation:**
+    - When the user submits the `AddFoodDialog`, the confirmed ingredient list is sent to the `/api/zone-ingredients` endpoint.
+    - A loading state will be shown while the ingredients are being zoned.
+    - Upon receiving the zoned ingredients, the complete `Food` object is assembled on the client and saved to IndexedDB using the existing data layer functions.
+    - Ensure all statuses (`analyzing`, `processed`) are correctly managed in the UI and the database.
+  - **Outcome:** A complete, end-to-end AI-powered food logging experience, from photo capture to storing fully analyzed and zoned ingredient data.
 
 - [ ] **Task 16: Build MVP Insights Page (`build-mvp-insights-page`)**
   - **Action:** Create the initial "Insights & Analytics" page that performs all calculations on the client-side, focusing on a simple heuristic-based correlation approach.
@@ -393,28 +372,3 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - **Outcome:** Users can grant temporary, controlled access to their health information.
 
 ---
-
-## AI Architecture Migration Path
-
-As the application matures, there's an optional migration path for the AI architecture:
-
-### **Phase 1: n8n + OpenRouter (Recommended Start)**
-
-- **Benefits:** Maximum iteration speed, model flexibility, visual development
-- **Trade-offs:** Additional service dependency, slightly higher latency
-- **When to use:** During development and early user testing
-
-### **Phase 2: Direct API Integration (Optional Optimization)**
-
-- **Benefits:** Lower latency, fewer dependencies, potentially lower costs
-- **Trade-offs:** Reduced iteration speed, more complex code changes
-- **When to migrate:** When AI logic is proven and stable, performance becomes critical
-
-### **Decision Criteria for Migration:**
-
-- **Performance:** If workflow latency becomes unacceptable (>5-10 seconds)
-- **Cost:** If n8n + OpenRouter costs exceed direct API costs significantly
-- **Complexity:** If visual workflow becomes harder to manage than code
-- **Scale:** If request volume requires more optimized architecture
-
-**Important:** Only migrate when you have a clear performance or cost issue. The n8n approach provides significant development velocity advantages for solo developers.

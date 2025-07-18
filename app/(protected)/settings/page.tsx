@@ -34,7 +34,6 @@ import {
   Sun,
   Info,
   TestTube,
-  Database,
   User,
   Loader2,
 } from "lucide-react";
@@ -44,7 +43,6 @@ import {
   exportAllData,
   importAllData,
   clearAllData,
-  resetDatabase,
   addFood,
 } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
@@ -54,7 +52,6 @@ function SettingsPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
-  const [isResettingDatabase, setIsResettingDatabase] = useState(false);
   const [isAddingTest, setIsAddingTest] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { toast } = useToast();
@@ -155,29 +152,7 @@ function SettingsPage() {
     }
   };
 
-  const handleDatabaseReset = async () => {
-    setIsResettingDatabase(true);
-    try {
-      await resetDatabase();
-      toast({
-        title: "Database reset successfully",
-        description:
-          "Your database has been reset. You can now use the app normally.",
-      });
-      // Refresh the page to ensure clean state
-      window.location.reload();
-    } catch (error) {
-      console.error("Database reset failed:", error);
-      toast({
-        title: "Database reset failed",
-        description:
-          "There was an error resetting your database. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsResettingDatabase(false);
-    }
-  };
+
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -415,65 +390,7 @@ function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Database Reset */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Database Reset
-            </CardTitle>
-            <CardDescription>
-              Reset your database if you&apos;re experiencing issues after an app
-              update.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
-                  When to use this:
-                </h4>
-                <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                  <li>• Getting database errors after an app update</li>
-                  <li>• &quot;Primary key&quot; or &quot;schema&quot; related errors</li>
-                  <li>• App won&apos;t load due to database issues</li>
-                </ul>
-              </div>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-900/20"
-                  >
-                    <Database className="h-4 w-4 mr-2" />
-                    Reset Database
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Reset Database?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will reset your database to fix any migration or
-                      schema issues. All your health data will be permanently
-                      deleted. Make sure to export your data first if you want
-                      to keep it.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDatabaseReset}
-                      className="bg-orange-600 hover:bg-orange-700"
-                    >
-                      {isResettingDatabase ? "Resetting..." : "Reset Database"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Debug Tools */}
         <Card>

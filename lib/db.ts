@@ -12,44 +12,13 @@ export class HealthTrackerDB extends Dexie {
   constructor() {
     super("HealthTrackerDB");
 
-    // Version 3 - Original schema with liquids and stools (deprecated)
-    this.version(3).stores({
+    // Current schema - Foods + Symptoms only
+    this.version(4).stores({
       foods: "id, timestamp",
       symptoms: "id, timestamp",
       users: "id, email",
       sessions: "userId, token, expiresAt",
-      liquids: "id, timestamp", // Deprecated - will be removed
-      stools: "id, timestamp", // Deprecated - will be removed
     });
-
-    // Version 4 - Simplified schema (Foods + Symptoms only)
-    this.version(4)
-      .stores({
-        foods: "id, timestamp",
-        symptoms: "id, timestamp",
-        users: "id, email",
-        sessions: "userId, token, expiresAt",
-        liquids: null, // Remove liquids table
-        stools: null, // Remove stools table
-      })
-      .upgrade(async tx => {
-        // Clean migration - remove deprecated tables
-        console.log(
-          "Migrating database to v4: Removing liquids and stools tables"
-        );
-
-        // The tables will be automatically removed by setting them to null
-        // We can optionally log the migration
-        try {
-          const liquidCount = await tx.table("liquids").count();
-          const stoolCount = await tx.table("stools").count();
-          console.log(
-            `Migration: Removed ${liquidCount} liquid entries and ${stoolCount} stool entries`
-          );
-        } catch {
-          console.log("Migration: Clean slate - no existing deprecated data");
-        }
-      });
   }
 }
 
@@ -175,24 +144,7 @@ export const clearAllData = async (): Promise<void> => {
   });
 };
 
-// Database reset utility - useful for handling migration issues
-export const resetDatabase = async (): Promise<void> => {
-  try {
-    // Close the database first
-    db.close();
-    
-    // Delete the entire database
-    await db.delete();
-    
-    // Reopen the database (will create fresh with latest schema)
-    await db.open();
-    
-    console.log("Database reset successfully");
-  } catch (error) {
-    console.error("Failed to reset database:", error);
-    throw error;
-  }
-};
+
 
 export const exportAllData = async (): Promise<{
   foods: Food[];

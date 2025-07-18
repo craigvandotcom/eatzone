@@ -250,8 +250,8 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 
 ### Phase 2: AI Integration & Intelligence
 
-- debug pwa scrolling
-- setup bug bot 
+- [x] debug pwa scrolling
+- [x] setup bug bot 
 
 **Goal:** Implement a two-step, privacy-preserving AI analysis flow to provide intelligent food logging, with a human-in-the-loop validation step to ensure accuracy.
 

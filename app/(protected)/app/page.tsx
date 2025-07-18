@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
@@ -290,10 +291,12 @@ function Dashboard() {
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
                               {food.image ? (
                                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                  <img
+                                  <Image
                                     src={food.image || "/placeholder.svg"}
                                     alt={food.name}
                                     className="w-full h-full object-cover"
+                                    width={48}
+                                    height={48}
                                   />
                                 </div>
                               ) : (

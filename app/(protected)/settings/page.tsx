@@ -423,7 +423,7 @@ function SettingsPage() {
               Database Reset
             </CardTitle>
             <CardDescription>
-              Reset your database if you're experiencing issues after an app
+              Reset your database if you&apos;re experiencing issues after an app
               update.
             </CardDescription>
           </CardHeader>
@@ -435,8 +435,8 @@ function SettingsPage() {
                 </h4>
                 <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
                   <li>• Getting database errors after an app update</li>
-                  <li>• "Primary key" or "schema" related errors</li>
-                  <li>• App won't load due to database issues</li>
+                  <li>• &quot;Primary key&quot; or &quot;schema&quot; related errors</li>
+                  <li>• App won&apos;t load due to database issues</li>
                 </ul>
               </div>
 

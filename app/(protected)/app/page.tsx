@@ -370,7 +370,7 @@ function Dashboard() {
       )}
 
       {/* Main Content Wrapper */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col">
         {/* Header - Mobile Only */}
         {isMobile && (
           <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100 z-10">

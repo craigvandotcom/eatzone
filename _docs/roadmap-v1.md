@@ -106,21 +106,6 @@ Building on the MVP principles, v1.0 adds:
   - Implement retry logic for failed analyses.
 - **Outcome:** A seamless user experience from capture to categorized data entry with proper error handling and a complete status lifecycle.
 
-### Task 16: Build Insights Page (`build-insights-page`)
-
-- **Action:** Create the "Insights & Analytics" page that performs all calculations and visualizations on the client-side using data from IndexedDB.
-- **Implementation:**
-  - Build comprehensive analytics and trend visualization components
-  - Implement correlation analysis between different health metrics
-  - Create time-based trend charts and pattern recognition
-  - **Structural Alignments:**
-    - Create `features/analytics/` folder with complete feature structure
-    - Add `features/analytics/components/` for trend charts, correlation matrices, health score cards
-    - Add `features/analytics/hooks/` for trend analysis and correlation calculations
-    - Add `features/analytics/types/` for analytics-specific TypeScript types
-    - Implement the actual `app/(protected)/app/insights/page.tsx` with full functionality
-- **Outcome:** Users can see trends and correlations in their health data without it ever leaving their device, supported by a complete analytics feature architecture.
-
 ---
 
 ## Phase 3: Vision Model Finetuning & Learning System
@@ -330,6 +315,16 @@ Building on the MVP principles, v1.0 adds:
     - Ensure all features have proper TypeScript interfaces and exports
 - **Outcome:** Complete architectural alignment with PRD specifications and a fully organized, maintainable codebase.
 
+### Task 27.5: Implement Privacy-Focused Usage Analytics (`implement-usage-analytics`)
+
+- **Action:** Integrate a privacy-respecting analytics service to gather anonymous usage data. This addresses the need to monitor app impact and user engagement over time.
+- **Implementation:**
+  - Select and configure a privacy-first analytics platform (e.g., Plausible, Fathom).
+  - Define and implement tracking for high-level, anonymous events (e.g., `food_log_created`, `symptom_log_added`, `data_exported`).
+  - **Crucially:** Ensure no PII or specific health data (e.g., the name of a symptom) is ever transmitted.
+  - Create a dashboard to monitor app health and feature adoption.
+- **Outcome:** The ability to make data-driven decisions about feature development and app improvements while fully respecting user privacy.
+
 ### Task 28: Implement E2EE Sync (`e2ee-sync`)
 
 - **Action:** As an opt-in feature, build an end-to-end encrypted synchronization system.
@@ -339,6 +334,16 @@ Building on the MVP principles, v1.0 adds:
   - Add sync conflict resolution
   - Create sync status indicators and controls
 - **Outcome:** Users can securely sync their data across multiple devices while maintaining privacy.
+
+### Task 28.5: Establish Anonymized Research Database (`setup-research-db`)
+
+- **Action:** Build the pipeline for users to opt-in to contributing fully anonymized data for large-scale research and model training.
+- **Implementation:**
+  - **User Consent:** Create a clear, compelling opt-in flow in the settings, explaining what data will be used for and how it is anonymized.
+  - **On-Device Anonymization:** Develop a script that runs locally on the user's device to scrub all PII, generalize timestamps, and remove free-text notes before any data is sent.
+  - **Secure Backend:** Set up a cloud database (e.g., Supabase) designed to receive only these pre-anonymized data packets.
+  - **Distinction:** This is separate from E2EE sync; its purpose is to create an aggregate dataset for research, not sync personal data across devices.
+- **Outcome:** A powerful, ethical dataset for uncovering broad health insights and training future AI models, built on a foundation of user trust and consent.
 
 ### Task 29: Implement Secure Sharing (`secure-sharing`)
 

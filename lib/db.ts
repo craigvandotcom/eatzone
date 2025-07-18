@@ -46,7 +46,7 @@ export class HealthTrackerDB extends Dexie {
           console.log(
             `Migration: Removed ${liquidCount} liquid entries and ${stoolCount} stool entries`
           );
-        } catch (error) {
+        } catch {
           console.log("Migration: Clean slate - no existing deprecated data");
         }
       });

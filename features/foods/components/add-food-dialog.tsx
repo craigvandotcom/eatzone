@@ -158,7 +158,7 @@ export function AddFoodDialog({
         analyzeImage(imageData);
       }
     }
-  }, [editingFood, imageData, hasAnalyzed]);
+  }, [editingFood, imageData]);
 
   const handleIngredientKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && currentIngredient.trim()) {

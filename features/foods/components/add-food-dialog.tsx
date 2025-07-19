@@ -74,7 +74,7 @@ export function AddFoodDialog({
           onClose={handleClose}
           editingFood={editingFood}
           imageData={imageData}
-        />
+                />
       </DialogContent>
     </Dialog>
   );

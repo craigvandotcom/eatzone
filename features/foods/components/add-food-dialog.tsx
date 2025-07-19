@@ -2,6 +2,7 @@
 
 import type { Food } from "@/lib/types";
 
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FoodEntryForm } from "./food-entry-form";
 
@@ -36,6 +36,11 @@ export function AddFoodDialog({
   imageData,
 }: AddFoodDialogProps) {
   const isMobile = useIsMobile();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [availableHeight, setAvailableHeight] = useState(
+    typeof window !== "undefined" ? window.innerHeight : 0
+  );
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleClose = () => {
     onOpenChange(false);
@@ -44,23 +49,105 @@ export function AddFoodDialog({
 
   const title = editingFood ? "Edit Food" : "Add Food";
 
+  // Handle viewport changes and keyboard detection
+  useEffect(() => {
+    if (!isMobile || !open) return;
+
+    const updateHeights = () => {
+      // Use visualViewport API for accurate keyboard detection
+      const viewport = window.visualViewport;
+      if (viewport) {
+        const keyboardOffset = window.innerHeight - viewport.height;
+        setKeyboardHeight(keyboardOffset);
+        setAvailableHeight(viewport.height);
+      } else {
+        // Fallback for browsers without visualViewport
+        setAvailableHeight(window.innerHeight);
+      }
+    };
+
+    // Initial setup
+    updateHeights();
+
+    // Listen for viewport changes
+    const handleResize = () => updateHeights();
+    const handleScroll = () => updateHeights();
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      window.visualViewport.addEventListener("scroll", handleScroll);
+    }
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+        window.visualViewport.removeEventListener("scroll", handleScroll);
+      }
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [isMobile, open]);
+
+  // Ensure active input stays visible when keyboard appears
+  useEffect(() => {
+    if (!isMobile || !open) return;
+
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+        // Small delay to ensure keyboard is fully shown
+        setTimeout(() => {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+      }
+    };
+
+    document.addEventListener("focusin", handleFocusIn);
+    return () => document.removeEventListener("focusin", handleFocusIn);
+  }, [isMobile, open]);
+
   if (isMobile) {
+    // Calculate dynamic max height based on available space
+    const maxDrawerHeight =
+      keyboardHeight > 0
+        ? `${availableHeight - 20}px` // Leave small gap when keyboard is visible
+        : "90vh"; // Use most of screen when keyboard is hidden
+
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader className="text-left flex-shrink-0">
+        <DrawerContent
+          className="flex flex-col drawer-content"
+          style={
+            {
+              maxHeight: maxDrawerHeight,
+              // Override base drawer styles
+              marginTop: 0,
+              height: "auto",
+            } as React.CSSProperties
+          }
+        >
+          <DrawerHeader className="flex-shrink-0 text-left">
             <DrawerTitle>{title}</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="flex-1 px-4">
-            <div className="pb-4">
-              <FoodEntryForm
-                onAddFood={onAddFood}
-                onClose={handleClose}
-                editingFood={editingFood}
-                imageData={imageData}
-              />
-            </div>
-          </ScrollArea>
+          <div
+            ref={contentRef}
+            className="flex-1 overflow-y-auto px-4 pb-4 drawer-scrollable"
+            style={
+              {
+                // Ensure smooth scrolling
+                WebkitOverflowScrolling: "touch",
+                // Prevent overscroll bounce that can interfere with drawer
+                overscrollBehavior: "contain",
+              } as React.CSSProperties
+            }
+          >
+            <FoodEntryForm
+              onAddFood={onAddFood}
+              onClose={handleClose}
+              editingFood={editingFood}
+              imageData={imageData}
+            />
+          </div>
         </DrawerContent>
       </Drawer>
     );

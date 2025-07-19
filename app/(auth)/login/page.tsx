@@ -29,8 +29,6 @@ import {
 } from "lucide-react";
 import {
   authenticateUser,
-  isDevelopment,
-  isPreviewDeployment,
   isDemoMode,
   getEnvironmentType,
   quickDemoLogin,

@@ -93,6 +93,10 @@ export const getTodaysFoods = async (): Promise<Food[]> => {
     .toArray();
 };
 
+export const getFoodById = async (id: string): Promise<Food | undefined> => {
+  return await db.foods.get(id);
+};
+
 // SYMPTOM OPERATIONS
 export const addSymptom = async (
   symptom: Omit<Symptom, "id" | "timestamp">
@@ -138,6 +142,12 @@ export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
     .between(today + "T00:00:00.000Z", today + "T23:59:59.999Z")
     .reverse()
     .toArray();
+};
+
+export const getSymptomById = async (
+  id: string
+): Promise<Symptom | undefined> => {
+  return await db.symptoms.get(id);
 };
 
 // UTILITY OPERATIONS

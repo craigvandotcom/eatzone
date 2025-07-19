@@ -665,7 +665,11 @@ Colors are based on HSL values defined in `app/globals.css` and `tailwind.config
   - **Secondary/Outline:** Transparent background with a border, for less prominent actions.
   - **Ghost:** No background or border, for tertiary actions or icon buttons.
 - **Inputs:** Use `Input` from `components/ui/input` with a corresponding `Label`.
-- **Dialogs:** All modals should use the `Dialog` component and be dismissible by clicking the overlay or pressing Escape.
+- **Responsive Data Entry Modals:** All data entry forms use responsive containers:
+  - **Desktop:** `Dialog` component for traditional modal experience
+  - **Mobile:** `Drawer` component (bottom sheet) for native mobile feel and keyboard compatibility
+  - **Implementation:** Use `useIsMobile` hook to conditionally render appropriate container
+  - **Form Logic:** Extracted into separate form components (e.g., `FoodEntryForm`, `SymptomEntryForm`) for reusability
 
 #### 4.5. Animation & Transitions
 

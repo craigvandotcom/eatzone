@@ -125,3 +125,151 @@ select {
     min-width: 44px;
   }
 }
+
+/* ===== MOBILE DRAWER IMPROVEMENTS ===== */
+
+/* Mobile drawer improvements with modern CSS support */
+@supports (height: 100dvh) {
+  .drawer-content {
+    max-height: calc(100dvh - env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent body scroll when drawer is open */
+body:has([data-state="open"]) {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Smooth drawer transitions */
+[data-vaul-drawer] {
+  transition: transform 0.2s ease-out;
+}
+
+[data-vaul-overlay] {
+  transition: opacity 0.2s ease-out;
+}
+
+/* Enhanced scrollable areas in drawers */
+.drawer-scrollable {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Better momentum scrolling on iOS */
+  -webkit-scroll-behavior: smooth;
+  scroll-behavior: smooth;
+}
+
+/* Drawer content optimizations */
+.drawer-content {
+  /* Remove default margin and padding conflicts */
+  margin-top: 0 !important;
+  /* Ensure proper flex behavior */
+  display: flex;
+  flex-direction: column;
+  /* Handle safe areas */
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Enhanced input handling on mobile */
+@media (max-width: 768px) {
+  /* Ensure inputs don't zoom on iOS - enhanced version */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    /* Prevent input zoom bounce */
+    transform: translateZ(0);
+    /* Better input rendering */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Better textarea behavior */
+  textarea {
+    resize: vertical;
+    min-height: 44px;
+  }
+
+  /* Enhanced focus states for mobile */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    /* Smooth focus transition */
+    transition: all 0.2s ease-in-out;
+    /* Prevent layout shift on focus */
+    transform: translateZ(0);
+  }
+}
+
+/* Fix for iOS rubber band scrolling in drawers */
+@supports (-webkit-touch-callout: none) {
+  .drawer-scrollable {
+    /* iOS-specific scroll optimization */
+    -webkit-overflow-scrolling: touch;
+    /* Prevent bounce at scroll boundaries */
+    overscroll-behavior-y: contain;
+  }
+
+  /* Better iOS drawer behavior */
+  .drawer-content {
+    /* Prevent iOS scroll weirdness */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Keyboard-aware spacing */
+@media (max-width: 768px) {
+  /* Add extra padding when keyboard might be visible */
+  .drawer-scrollable:has(input:focus),
+  .drawer-scrollable:has(textarea:focus) {
+    padding-bottom: 2rem;
+  }
+
+  /* Better button spacing on mobile in drawers */
+  .drawer-content button {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+/* Enhanced visual feedback */
+.drawer-content {
+  /* Better shadows and borders */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  border-top: 1px solid hsl(var(--border));
+
+  /* Smooth drawer handle */
+  position: relative;
+}
+
+/* Drawer handle improvements */
+.drawer-content::before {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2rem;
+  height: 0.25rem;
+  background: hsl(var(--muted-foreground));
+  border-radius: 9999px;
+  opacity: 0.3;
+}
+
+/* Better performance for drawer animations */
+[data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}

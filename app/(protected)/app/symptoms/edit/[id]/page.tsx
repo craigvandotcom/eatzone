@@ -65,7 +65,7 @@ export default function EditSymptomPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
         <div className="flex items-center px-4 py-3">

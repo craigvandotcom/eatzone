@@ -8,7 +8,11 @@ import { FoodEntryForm } from "@/features/foods/components/food-entry-form";
 import { getFoodById, updateFood as dbUpdateFood } from "@/lib/db";
 import type { Food } from "@/lib/types";
 
-export default function EditFoodPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditFoodPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
   const [food, setFood] = useState<Food | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +65,7 @@ export default function EditFoodPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
         <div className="flex items-center px-4 py-3">

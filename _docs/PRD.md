@@ -62,6 +62,32 @@ The application is organized into two primary tracking categories, accessible vi
 - `public/sw.js`: A basic service worker that caches core application assets for offline access.
 - `app/layout.tsx`: Contains the necessary `<meta>` and `<link>` tags to ensure proper PWA behavior, including the viewport settings and Apple-specific tags for a native feel on iOS.
 
+### 3.8. Vercel Preview Authentication System
+
+**Problem Solved**: Branch deployments create Vercel preview URLs (e.g., `puls-git-feature-abc123.vercel.app`) that would normally require creating new accounts for testing. This system provides instant access while maintaining security.
+
+**Auto-Detection**: The application automatically detects three environments:
+
+- **Development** (`localhost:3000`): Auto-login with `dev@test.com` / `password`
+- **Preview** (`.vercel.app`, `netlify.app`, etc.): Shows blue demo mode with 3 test accounts
+- **Production**: Standard authentication only
+
+**Demo Accounts for Preview Deployments**:
+
+- `demo@puls.app` / `demo123` (Demo User)
+- `preview@puls.app` / `preview123` (Preview User)
+- `test@puls.app` / `test123` (Test User)
+
+**Security**: All demo accounts are created locally in IndexedDB. No server-side demo accounts or security vulnerabilities in production.
+
+**Usage**:
+
+- Push any branch → Vercel creates preview URL → Visit URL → Auto-login or click demo account buttons
+- Manual activation: Add `?preview=true` to any URL
+- See detailed documentation: `_docs/vercel-preview-authentication.md`
+
+This eliminates the friction of testing preview deployments while maintaining the local-first, privacy-focused architecture.
+
 #### 3.6. Project Structure
 
 The application follows a **feature-based architecture** organized around the four core tracking categories, with clear separation between shared and domain-specific code:

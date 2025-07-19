@@ -6,8 +6,9 @@ import {
   validateSession,
   logout as dbLogout,
   clearExpiredSessions,
-  quickDevLogin,
-  isDevelopment,
+  quickDemoLogin,
+  isDemoMode,
+  getEnvironmentType,
 } from "@/lib/db";
 
 interface AuthContextType {
@@ -66,16 +67,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const token = localStorage.getItem("auth_token");
       if (!token) {
-        // In development, auto-login if no session exists
-        if (isDevelopment()) {
-          console.log("🔧 Development mode: Auto-logging in with dev user");
-          const devLogin = await quickDevLogin();
-          if (devLogin) {
-            login(devLogin.token, devLogin.user);
+        // In demo mode (development or preview), auto-login if no session exists
+        if (isDemoMode()) {
+          const envType = getEnvironmentType();
+          console.log(
+            `🚀 ${envType.charAt(0).toUpperCase() + envType.slice(1)} mode: Auto-logging in with demo user`
+          );
+          const demoLogin = await quickDemoLogin();
+          if (demoLogin) {
+            login(demoLogin.token, demoLogin.user);
             return;
           }
         }
-        
+
         setUser(null);
         setIsLoading(false);
         return;
@@ -90,17 +94,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user_id");
         document.cookie = "auth_token=; Path=/; SameSite=strict; Max-Age=0";
-        
-        // In development, try auto-login after cleanup
-        if (isDevelopment()) {
-          console.log("🔧 Development mode: Session invalid, auto-logging in with dev user");
-          const devLogin = await quickDevLogin();
-          if (devLogin) {
-            login(devLogin.token, devLogin.user);
+
+        // In demo mode, try auto-login after cleanup
+        if (isDemoMode()) {
+          const envType = getEnvironmentType();
+          console.log(
+            `🔧 ${envType.charAt(0).toUpperCase() + envType.slice(1)} mode: Session invalid, auto-logging in with demo user`
+          );
+          const demoLogin = await quickDemoLogin();
+          if (demoLogin) {
+            login(demoLogin.token, demoLogin.user);
             return;
           }
         }
-        
+
         setUser(null);
       }
     } catch (error) {

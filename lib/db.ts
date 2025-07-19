@@ -76,12 +76,12 @@ export const deleteFood = async (id: string): Promise<void> => {
   await db.foods.delete(id);
 };
 
-export const getFoodById = async (id: string): Promise<Food | undefined> => {
-  return await db.foods.get(id);
-};
-
 export const getAllFoods = async (): Promise<Food[]> => {
   return await db.foods.orderBy("timestamp").reverse().toArray();
+};
+
+export const getRecentFoods = async (limit: number = 10): Promise<Food[]> => {
+  return await db.foods.orderBy("timestamp").reverse().limit(limit).toArray();
 };
 
 export const getTodaysFoods = async (): Promise<Food[]> => {
@@ -117,14 +117,18 @@ export const deleteSymptom = async (id: string): Promise<void> => {
   await db.symptoms.delete(id);
 };
 
-export const getSymptomById = async (
-  id: string
-): Promise<Symptom | undefined> => {
-  return await db.symptoms.get(id);
-};
-
 export const getAllSymptoms = async (): Promise<Symptom[]> => {
   return await db.symptoms.orderBy("timestamp").reverse().toArray();
+};
+
+export const getRecentSymptoms = async (
+  limit: number = 10
+): Promise<Symptom[]> => {
+  return await db.symptoms
+    .orderBy("timestamp")
+    .reverse()
+    .limit(limit)
+    .toArray();
 };
 
 export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
@@ -143,8 +147,6 @@ export const clearAllData = async (): Promise<void> => {
     await db.symptoms.clear();
   });
 };
-
-
 
 export const exportAllData = async (): Promise<{
   foods: Food[];
@@ -313,7 +315,135 @@ export const updateUserSettings = async (
   }
 };
 
-// DEVELOPMENT HELPERS
+// ===== ENHANCED ENVIRONMENT DETECTION & DEMO MODE =====
+
+/**
+ * Detects if the app is running in development mode
+ */
+export const isDevelopment = (): boolean => {
+  return process.env.NODE_ENV === "development";
+};
+
+/**
+ * Detects if the app is running in a preview deployment (Vercel, Netlify, etc.)
+ * This function checks various deployment platform patterns and URL parameters.
+ */
+export const isPreviewDeployment = (): boolean => {
+  if (typeof window === "undefined") return false;
+
+  const hostname = window.location.hostname;
+  const searchParams = new URLSearchParams(window.location.search);
+
+  return (
+    // Vercel preview deployments
+    hostname.includes(".vercel.app") ||
+    // Netlify preview deployments
+    hostname.includes("netlify.app") ||
+    hostname.includes("netlify.live") ||
+    // GitHub Codespaces
+    hostname.includes("github.dev") ||
+    hostname.includes("githubpreview.dev") ||
+    // Other common preview platforms
+    hostname.includes("surge.sh") ||
+    hostname.includes("now.sh") ||
+    // Explicit preview mode via URL parameter
+    searchParams.has("preview") ||
+    searchParams.has("demo")
+  );
+};
+
+/**
+ * Checks if the app should run in demo mode (development OR preview deployment)
+ */
+export const isDemoMode = (): boolean => {
+  return isDevelopment() || isPreviewDeployment();
+};
+
+/**
+ * Gets the current environment type for logging and UI display
+ */
+export const getEnvironmentType = ():
+  | "development"
+  | "preview"
+  | "production" => {
+  if (isDevelopment()) return "development";
+  if (isPreviewDeployment()) return "preview";
+  return "production";
+};
+
+// Demo accounts for preview deployments
+const DEMO_ACCOUNTS = [
+  {
+    email: "demo@puls.app",
+    password: "demo123",
+    name: "Demo User",
+    description: "General demo account for testing",
+  },
+  {
+    email: "preview@puls.app",
+    password: "preview123",
+    name: "Preview User",
+    description: "Preview deployment testing account",
+  },
+  {
+    email: "test@puls.app",
+    password: "test123",
+    name: "Test User",
+    description: "Testing and QA account",
+  },
+] as const;
+
+/**
+ * Creates or retrieves a demo user account for preview deployments
+ * @param accountIndex - Index of the demo account to use (0-2)
+ * @returns User and authentication token
+ */
+export const createDemoUser = async (
+  accountIndex: number = 0
+): Promise<{
+  user: User;
+  token: string;
+}> => {
+  const account = DEMO_ACCOUNTS[accountIndex] || DEMO_ACCOUNTS[0];
+  const { email, password, name } = account;
+
+  try {
+    console.log(`🚀 Creating/retrieving demo user: ${name} (${email})`);
+
+    // Check if demo user already exists
+    const existingUser = await db.users.where("email").equals(email).first();
+
+    if (existingUser) {
+      // Clear any existing sessions to avoid conflicts
+      await db.sessions.where("userId").equals(existingUser.id).delete();
+      console.log(`✅ Found existing demo user: ${existingUser.email}`);
+
+      // Demo user exists, just authenticate
+      return await authenticateUser(email, password);
+    }
+
+    console.log(`🔧 Creating new demo user: ${email}`);
+
+    // Create demo user
+    await createUser(email, password);
+
+    // Authenticate and return token
+    const result = await authenticateUser(email, password);
+    console.log(`✅ Demo user created and authenticated: ${result.user.email}`);
+
+    return result;
+  } catch (error) {
+    console.error("Error creating demo user:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get available demo accounts information
+ */
+export const getDemoAccounts = () => DEMO_ACCOUNTS;
+
+// DEVELOPMENT HELPERS (existing functions maintained for backward compatibility)
 export const createDevUser = async (): Promise<{
   user: User;
   token: string;
@@ -347,26 +477,47 @@ export const createDevUser = async (): Promise<{
   }
 };
 
-export const isDevelopment = (): boolean => {
-  return process.env.NODE_ENV === "development";
-};
-
-// Quick login function for development
-export const quickDevLogin = async (): Promise<{
+/**
+ * Enhanced quick login function that works for both development and preview modes
+ * @param accountIndex - Optional demo account index (only used for preview mode)
+ * @returns User and authentication token, or null if not in demo mode
+ */
+export const quickDemoLogin = async (
+  accountIndex?: number
+): Promise<{
   user: User;
   token: string;
 } | null> => {
-  if (!isDevelopment()) {
+  if (!isDemoMode()) {
+    console.log("❌ Not in demo mode - quick login disabled");
     return null;
   }
 
+  const envType = getEnvironmentType();
+  console.log(`🚀 Quick ${envType} login initiated`);
+
   try {
-    return await createDevUser();
+    if (isDevelopment()) {
+      // Use existing dev user in development
+      console.log("🔧 Development mode: Using dev@test.com");
+      return await createDevUser();
+    } else {
+      // Use demo account for preview deployments
+      const selectedAccount = accountIndex ?? 0;
+      console.log(`🌐 Preview mode: Using demo account ${selectedAccount}`);
+      return await createDemoUser(selectedAccount);
+    }
   } catch (error) {
-    console.error("Quick dev login failed:", error);
+    console.error(`Quick ${envType} login failed:`, error);
     return null;
   }
 };
+
+/**
+ * Legacy function maintained for backward compatibility
+ * @deprecated Use quickDemoLogin() instead
+ */
+export const quickDevLogin = quickDemoLogin;
 
 // Helper to reset dev user completely (for debugging)
 export const resetDevUser = async (): Promise<void> => {

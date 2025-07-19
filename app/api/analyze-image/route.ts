@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "text",
-              text: "You are an expert food ingredient analyst. Your task is to analyze the provided image and return a list of ingredients as a JSON array of strings. The image could be a photo of a MEAL or a photo of a TEXT-BASED INGREDIENT LIST. INSTRUCTIONS: If the image shows a MEAL, identify the primary food items. If the image shows a TEXT-BASED INGREDIENT LIST, extract every ingredient from the text, cleaning them up. All ingredients in the final array must be singular and in lowercase. CRITICAL: You MUST respond with ONLY a JSON array of strings. If the image is unclear or you cannot identify ingredients, return an empty JSON array: []. Do not include any explanation.",
+              text: "You are an expert food ingredient analyst. Your task is to analyze the provided image and return a list of ingredients as a JSON array of strings. The image could be a photo of a MEAL or a photo of a TEXT-BASED INGREDIENT LABEL/LIST. INSTRUCTIONS: If the image shows a MEAL, identify the primary food items/ingredients. If the image shows a TEXT-BASED INGREDIENT LABEL/LIST, extract every ingredient from the text, cleaning them up. All ingredients in the final array must be singular and in lowercase. CRITICAL: You MUST respond with ONLY a JSON array of strings. If the image is unclear or you cannot identify ingredients, return an empty JSON array: []. Do not include any explanation. Example output: ['chicken', 'rice', 'broccoli']",
             },
             {
               type: "image_url",

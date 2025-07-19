@@ -14,6 +14,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FoodEntryForm } from "./food-entry-form";
 
@@ -46,18 +47,20 @@ export function AddFoodDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader className="text-left">
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader className="text-left flex-shrink-0">
             <DrawerTitle>{title}</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-4">
-            <FoodEntryForm
-              onAddFood={onAddFood}
-              onClose={handleClose}
-              editingFood={editingFood}
-              imageData={imageData}
-            />
-          </div>
+          <ScrollArea className="flex-1 px-4">
+            <div className="pb-4">
+              <FoodEntryForm
+                onAddFood={onAddFood}
+                onClose={handleClose}
+                editingFood={editingFood}
+                imageData={imageData}
+              />
+            </div>
+          </ScrollArea>
         </DrawerContent>
       </Drawer>
     );
@@ -74,7 +77,7 @@ export function AddFoodDialog({
           onClose={handleClose}
           editingFood={editingFood}
           imageData={imageData}
-                />
+        />
       </DialogContent>
     </Dialog>
   );

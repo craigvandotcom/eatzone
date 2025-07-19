@@ -13,8 +13,6 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AddFoodDialog } from "@/features/foods/components/add-food-dialog";
-import { AddSymptomDialog } from "@/features/symptoms/components/add-symptom-dialog";
 import { CameraCapture } from "@/features/camera/components/camera-capture";
 import { MetallicButton } from "@/components/ui/metallic-button";
 import { FoodCategoryProgress } from "@/features/foods/components/food-category-progress";
@@ -34,14 +32,8 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 
-// Import types and database functions
+// Import types
 import { Food, Symptom } from "@/lib/types";
-import {
-  addFood as dbAddFood,
-  addSymptom as dbAddSymptom,
-  updateFood as dbUpdateFood,
-  updateSymptom as dbUpdateSymptom,
-} from "@/lib/db";
 
 // Import custom hooks
 import {
@@ -62,53 +54,20 @@ function Dashboard() {
   const router = useRouter();
   const isMobile = useIsMobile();
 
-  // Dialog state
-  const [showAddFood, setShowAddFood] = useState(false);
-  const [showAddSymptom, setShowAddSymptom] = useState(false);
+  // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>("food");
 
-  // Edit state
-  const [editingFood, setEditingFood] = useState<Food | null>(null);
-  const [editingSymptom, setEditingSymptom] = useState<Symptom | null>(null);
-  
-  // Image analysis state
-  const [pendingImageData, setPendingImageData] = useState<string | null>(null);
 
-  // Database operations
-  const addFood = async (food: Omit<Food, "id" | "timestamp">) => {
-    if (editingFood) {
-      // Update existing food
-      await dbUpdateFood(editingFood.id, food);
-      setEditingFood(null);
-    } else {
-      // Add new food - include image data if available
-      const foodWithImage = pendingImageData 
-        ? { ...food, image: pendingImageData }
-        : food;
-      await dbAddFood(foodWithImage);
-    }
-  };
-
-  const addSymptom = async (symptom: Omit<Symptom, "id" | "timestamp">) => {
-    if (editingSymptom) {
-      // Update existing symptom
-      await dbUpdateSymptom(editingSymptom.id, symptom);
-      setEditingSymptom(null);
-    } else {
-      // Add new symptom
-      await dbAddSymptom(symptom);
-    }
-  };
 
   const handleCameraCapture = async (imageData: string) => {
-    // Store the image data and open the food dialog for AI analysis
-    setPendingImageData(imageData);
-    setShowAddFood(true);
+    // Store the image data temporarily in sessionStorage for the add food page
+    sessionStorage.setItem("pendingFoodImage", imageData);
+    router.push("/app/foods/add");
   };
 
   const handleManualEntry = () => {
-    setShowAddFood(true);
+    router.push("/app/foods/add");
   };
 
   const handleQuickCapture = () => {
@@ -131,24 +90,15 @@ function Dashboard() {
   };
 
   const handleEditFood = (food: Food) => {
-    setEditingFood(food);
-    setShowAddFood(true);
+    router.push(`/app/foods/edit/${food.id}`);
   };
 
   const handleEditSymptom = (symptom: Symptom) => {
-    setEditingSymptom(symptom);
-    setShowAddSymptom(true);
+    router.push(`/app/symptoms/edit/${symptom.id}`);
   };
 
-  const handleCloseFoodDialog = () => {
-    setShowAddFood(false);
-    setEditingFood(null);
-    setPendingImageData(null);
-  };
-
-  const handleCloseSymptomDialog = () => {
-    setShowAddSymptom(false);
-    setEditingSymptom(null);
+  const handleAddSymptom = () => {
+    router.push("/app/symptoms/add");
   };
 
   // Desktop sidebar navigation
@@ -445,7 +395,7 @@ function Dashboard() {
                     <MetallicButton
                       accent="symptom"
                       size="lg"
-                      onClick={() => setShowAddSymptom(true)}
+                      onClick={handleAddSymptom}
                       className="group"
                     >
                       <Activity className="h-6 w-6 text-gray-600 group-hover:text-red-500 transition-colors" />
@@ -470,23 +420,7 @@ function Dashboard() {
         title="Capture Food"
       />
 
-      {/* Add Dialogs */}
-      <AddFoodDialog
-        open={showAddFood}
-        onOpenChange={setShowAddFood}
-        onAddFood={addFood}
-        onClose={handleCloseFoodDialog}
-        editingFood={editingFood}
-        imageData={pendingImageData || undefined}
-      />
 
-      <AddSymptomDialog
-        open={showAddSymptom}
-        onOpenChange={setShowAddSymptom}
-        onAddSymptom={addSymptom}
-        onClose={handleCloseSymptomDialog}
-        editingSymptom={editingSymptom}
-      />
     </div>
   );
 }

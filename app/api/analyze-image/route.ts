@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "text",
-              text: "List the primary ingredients in this food. Return as a JSON array of strings. Each ingredient must be singular and in lowercase. Only include actual food ingredients, not cooking methods or preparation details.",
+              text: "You are an expert food ingredient analyst. Your task is to analyze the provided image and return a list of ingredients as a JSON array of strings. The image could be a photo of a MEAL or a photo of a TEXT-BASED INGREDIENT LIST. INSTRUCTIONS: If the image shows a MEAL, identify the primary food items. If the image shows a TEXT-BASED INGREDIENT LIST, extract every ingredient from the text, cleaning them up. All ingredients in the final array must be singular and in lowercase. CRITICAL: You MUST respond with ONLY a JSON array of strings. If the image is unclear or you cannot identify ingredients, return an empty JSON array: []. Do not include any explanation.",
             },
             {
               type: "image_url",
@@ -65,6 +65,9 @@ export async function POST(request: NextRequest) {
     });
 
     const aiResponse = response.choices[0]?.message?.content;
+
+    // Log the actual AI response for debugging
+    console.log("AI Response:", aiResponse);
     if (!aiResponse) {
       throw new Error("No response from AI model");
     }
@@ -75,8 +78,8 @@ export async function POST(request: NextRequest) {
       rawIngredients = JSON.parse(aiResponse);
     } catch {
       // If JSON parsing fails, try to extract ingredients from text
-      console.error("Failed to parse AI response as JSON:", aiResponse);
-      throw new Error("AI response was not valid JSON");
+      console.error("Failed to parse AI response as JSON. Raw response:", aiResponse);
+      throw new Error(`AI response was not valid JSON. Response: "${aiResponse}"`);
     }
 
     // Validate that we got an array

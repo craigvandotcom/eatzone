@@ -43,7 +43,6 @@ You are an expert food ingredient analyst for a health tracking app. Analyze the
 
 Return ONLY a valid JSON array of objects with this exact structure:
 
-```json
 [
   {
     "name": "chicken breast",
@@ -58,7 +57,6 @@ Return ONLY a valid JSON array of objects with this exact structure:
     "isOrganic": false
   }
 ]
-```
 
 ## Important Rules
 

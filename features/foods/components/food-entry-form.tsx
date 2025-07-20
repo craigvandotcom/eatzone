@@ -97,11 +97,11 @@ export function FoodEntryForm({
 
       if (!response.ok) throw new Error("Analysis failed");
 
-      const { ingredients: ingredientNames } = await response.json();
+      const { ingredients: ingredientData } = await response.json();
 
-      const aiIngredients: Ingredient[] = ingredientNames.map((name: string) => ({
-        name,
-        isOrganic: false,
+      const aiIngredients: Ingredient[] = ingredientData.map((ingredient: { name: string; isOrganic: boolean }) => ({
+        name: ingredient.name,
+        isOrganic: ingredient.isOrganic,
         cookingMethod: "raw" as const,
         foodGroup: "other" as const, // Default value
         zone: "yellow" as const, // Default value
@@ -109,7 +109,7 @@ export function FoodEntryForm({
 
       setIngredients(aiIngredients);
       setHasAnalyzed(true);
-      toast.success(`Found ${ingredientNames.length} ingredients for review.`);
+      toast.success(`Found ${ingredientData.length} ingredients for review.`);
 
     } catch (error) {
       console.error("Image analysis failed:", error);

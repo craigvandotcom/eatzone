@@ -10,7 +10,10 @@ const analyzeImageSchema = z.object({
 
 // Type for the API response
 interface AnalyzeImageResponse {
-  ingredients: string[];
+  ingredients: {
+    name: string;
+    isOrganic: boolean;
+  }[];
 }
 
 interface AnalyzeImageErrorResponse {
@@ -74,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse the AI response as JSON
-    let rawIngredients: string[];
+    let rawIngredients: { name: string; isOrganic: boolean }[];
     try {
       rawIngredients = JSON.parse(aiResponse);
     } catch {
@@ -93,21 +96,31 @@ export async function POST(request: NextRequest) {
       throw new Error("AI response was not an array");
     }
 
-    // Server-side normalization process
+    // Server-side validation and normalization process
     const normalizedIngredients = rawIngredients
       .map(ingredient => {
-        if (typeof ingredient !== "string") {
+        if (
+          typeof ingredient !== "object" ||
+          typeof ingredient.name !== "string" ||
+          typeof ingredient.isOrganic !== "boolean"
+        ) {
           return null;
         }
-        return ingredient.trim().toLowerCase();
+        return {
+          name: ingredient.name.trim().toLowerCase(),
+          isOrganic: ingredient.isOrganic,
+        };
       })
       .filter(
-        (ingredient): ingredient is string =>
-          ingredient !== null && ingredient.length > 0
+        (ingredient): ingredient is { name: string; isOrganic: boolean } =>
+          ingredient !== null && ingredient.name.length > 0
       );
 
-    // Remove duplicates
-    const uniqueIngredients = [...new Set(normalizedIngredients)];
+    // Remove duplicates based on name
+    const uniqueIngredients = normalizedIngredients.filter(
+      (ingredient, index, array) =>
+        array.findIndex(item => item.name === ingredient.name) === index
+    );
 
     // Return standardized response
     return NextResponse.json(

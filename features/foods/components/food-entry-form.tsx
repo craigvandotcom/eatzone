@@ -81,6 +81,7 @@ export function FoodEntryForm({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // AI Analysis function
   const analyzeImage = async (imageData: string) => {
@@ -90,46 +91,30 @@ export function FoodEntryForm({
     try {
       const response = await fetch("/api/analyze-image", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: imageData }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Analysis failed");
-      }
+      if (!response.ok) throw new Error("Analysis failed");
 
-      const data = await response.json();
+      const { ingredients: ingredientNames } = await response.json();
 
-      // Convert AI ingredient strings to full Ingredient objects
-      const aiIngredients: Ingredient[] = data.ingredients.map(
-        (name: string) => ({
-          name,
-          isOrganic: false,
-          cookingMethod: "raw" as const,
-          foodGroup: "other" as const,
-          zone: "yellow" as const,
-        })
-      );
+      const aiIngredients: Ingredient[] = ingredientNames.map((name: string) => ({
+        name,
+        isOrganic: false,
+        cookingMethod: "raw" as const,
+        foodGroup: "other" as const, // Default value
+        zone: "yellow" as const, // Default value
+      }));
 
-      // Pre-populate the ingredients list
       setIngredients(aiIngredients);
       setHasAnalyzed(true);
+      toast.success(`Found ${ingredientNames.length} ingredients for review.`);
 
-      // Show success toast
-      toast.success(
-        `Found ${aiIngredients.length} ingredients! Review and adjust as needed.`
-      );
     } catch (error) {
       console.error("Image analysis failed:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Analysis failed";
-      setAnalysisError(errorMessage);
-      toast.error(
-        `Analysis failed: ${errorMessage}. Please add ingredients manually.`
-      );
+      setAnalysisError("AI analysis failed. Please add ingredients manually.");
+      toast.error("AI analysis failed. Please add ingredients manually.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -239,40 +224,67 @@ export function FoodEntryForm({
     return cookingMethod?.label || method;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (ingredients.length === 0) return;
+    if (isSubmitting) return;
 
-    // Create food name from ingredients if not provided
-    const foodName =
-      name.trim() ||
-      (() => {
-        const ingredientNames = ingredients.map(ing => ing.name);
-        return ingredientNames.length > 3
-          ? `${ingredientNames.slice(0, 3).join(", ")} + ${ingredientNames.length - 3} more`
-          : ingredientNames.join(", ");
-      })();
+    const finalIngredientsList = [...ingredients];
+    if (currentIngredient.trim()) {
+      finalIngredientsList.push({
+        name: currentIngredient.trim(),
+        isOrganic: false, cookingMethod: "raw", foodGroup: "other", zone: "yellow",
+      });
+    }
 
-    const food: Omit<Food, "id" | "timestamp"> = {
-      name: foodName,
-      ingredients,
-      notes: notes.trim() || undefined,
-      status: editingFood ? editingFood.status : "pending_review",
-      image: editingFood?.image,
-    };
+    if (finalIngredientsList.length === 0) {
+      toast.error("Please add at least one ingredient.");
+      return;
+    }
 
-    onAddFood(food);
+    setIsSubmitting(true);
 
-    // Reset form
-    setName("");
-    setCurrentIngredient("");
-    setIngredients([]);
-    setNotes("");
-    setShowNotes(false);
-    setEditingIndex(null);
-    setEditingValue("");
-    setCookingSelectionIndex(null);
-    onClose();
+    try {
+      const ingredientNames = finalIngredientsList.map(ing => ing.name);
+      
+      const zoneResponse = await fetch("/api/zone-ingredients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ingredients: ingredientNames }),
+      });
+
+      let enrichedIngredients = finalIngredientsList;
+
+      if (zoneResponse.ok) {
+        const { ingredients: zonedData } = await zoneResponse.json();
+        const zonedMap = new Map(zonedData.map((item: any) => [item.name, item]));
+        enrichedIngredients = finalIngredientsList.map(ing => {
+          const zonedData = zonedMap.get(ing.name);
+          return {
+            ...ing,
+            ...(zonedData || {}),
+          };
+        });
+      } else {
+        toast.warning("Could not zone ingredients. Saving with default values.");
+      }
+
+      const foodName = name.trim() || `Meal with ${enrichedIngredients[0].name}`;
+
+      onAddFood({
+        name: foodName,
+        ingredients: enrichedIngredients,
+        notes: notes.trim(),
+        status: "processed",
+      });
+
+      onClose();
+
+    } catch (error) {
+      console.error("Submission failed:", error);
+      toast.error("Failed to save food entry.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -498,21 +510,8 @@ export function FoodEntryForm({
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={ingredients.length === 0 || isAnalyzing}
-            className="flex-1"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Analyzing...
-              </>
-            ) : editingFood ? (
-              `Update Food (${ingredients.length} ingredients)`
-            ) : (
-              `Add Food (${ingredients.length} ingredients)`
-            )}
+          <Button type="submit" disabled={isSubmitting || isAnalyzing}>
+            {isSubmitting ? "Saving..." : "Save Food"}
           </Button>
         </div>
       </form>

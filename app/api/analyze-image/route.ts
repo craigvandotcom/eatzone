@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { openrouter } from "@/lib/ai/openrouter";
 import { z } from "zod";
+import { prompts } from "@/lib/prompts"; // Import from our new module
 
 // Zod schema for request validation
 const analyzeImageSchema = z.object({
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "text",
-              text: `You are an expert food ingredient analyst. Your task is to analyze the provided image and return a list of ingredients as a JSON array of strings. The image could be a photo of a MEAL or a photo of a TEXT-BASED INGREDIENT LABEL/LIST. INSTRUCTIONS: If the image shows a MEAL, identify the primary food items/ingredients. If the image shows a TEXT-BASED INGREDIENT LABEL/LIST, extract every ingredient from the text, cleaning them up. All ingredients in the final array must be singular and in lowercase US English (translate if necessary). CRITICAL: You MUST respond with ONLY a JSON array of strings. If the image is unclear or you cannot identify ingredients, return an empty JSON array: []. Do not include any explanation. Example: ["apple","banana","carrot"]`,
+              text: prompts.imageAnalysis, // Use the imported prompt
             },
             {
               type: "image_url",

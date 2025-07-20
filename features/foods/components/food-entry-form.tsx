@@ -16,40 +16,10 @@ import {
   Leaf,
   ChevronDown,
   ChevronUp,
-  Flame,
   Loader2,
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-
-const cookingMethods = [
-  { value: "raw", label: "Raw", color: "bg-green-100 text-green-700" },
-  { value: "steamed", label: "Steamed", color: "bg-blue-100 text-blue-700" },
-  { value: "boiled", label: "Boiled", color: "bg-cyan-100 text-cyan-700" },
-  {
-    value: "grilled",
-    label: "Grilled",
-    color: "bg-orange-100 text-orange-700",
-  },
-  { value: "fried", label: "Fried", color: "bg-red-100 text-red-700" },
-  {
-    value: "sauteed",
-    label: "Sautéed",
-    color: "bg-yellow-100 text-yellow-700",
-  },
-  { value: "baked", label: "Baked", color: "bg-amber-100 text-amber-700" },
-  {
-    value: "roasted",
-    label: "Roasted",
-    color: "bg-orange-100 text-orange-800",
-  },
-  { value: "poached", label: "Poached", color: "bg-teal-100 text-teal-700" },
-  {
-    value: "braised",
-    label: "Braised",
-    color: "bg-purple-100 text-purple-700",
-  },
-];
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, "id" | "timestamp">) => void;
@@ -71,9 +41,6 @@ export function FoodEntryForm({
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState("");
-  const [cookingSelectionIndex, setCookingSelectionIndex] = useState<
-    number | null
-  >(null);
   const [notes, setNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
 
@@ -99,18 +66,18 @@ export function FoodEntryForm({
 
       const { ingredients: ingredientData } = await response.json();
 
-      const aiIngredients: Ingredient[] = ingredientData.map((ingredient: { name: string; isOrganic: boolean }) => ({
-        name: ingredient.name,
-        isOrganic: ingredient.isOrganic,
-        cookingMethod: "raw" as const,
-        foodGroup: "other" as const, // Default value
-        zone: "yellow" as const, // Default value
-      }));
+      const aiIngredients: Ingredient[] = ingredientData.map(
+        (ingredient: { name: string; isOrganic: boolean }) => ({
+          name: ingredient.name,
+          isOrganic: ingredient.isOrganic,
+          foodGroup: "other" as const, // Default value
+          zone: "yellow" as const, // Default value
+        })
+      );
 
       setIngredients(aiIngredients);
       setHasAnalyzed(true);
       toast.success(`Found ${ingredientData.length} ingredients for review.`);
-
     } catch (error) {
       console.error("Image analysis failed:", error);
       setAnalysisError("AI analysis failed. Please add ingredients manually.");
@@ -151,7 +118,6 @@ export function FoodEntryForm({
         {
           name: currentIngredient.trim(),
           isOrganic: false,
-          cookingMethod: "raw",
           foodGroup: "other",
           zone: "yellow",
         },
@@ -162,31 +128,17 @@ export function FoodEntryForm({
 
   const handleDeleteIngredient = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
-    setCookingSelectionIndex(null);
   };
 
   const handleEditIngredient = (index: number) => {
     setEditingIndex(index);
     setEditingValue(ingredients[index].name);
-    setCookingSelectionIndex(null);
   };
 
   const handleToggleOrganic = (index: number) => {
     const updatedIngredients = [...ingredients];
     updatedIngredients[index].isOrganic = !updatedIngredients[index].isOrganic;
     setIngredients(updatedIngredients);
-  };
-
-  const handleToggleCookingSelection = (index: number) => {
-    setCookingSelectionIndex(cookingSelectionIndex === index ? null : index);
-  };
-
-  const handleSelectCookingMethod = (index: number, method: string) => {
-    const updatedIngredients = [...ingredients];
-    updatedIngredients[index].cookingMethod =
-      method as Ingredient["cookingMethod"];
-    setIngredients(updatedIngredients);
-    setCookingSelectionIndex(null);
   };
 
   const handleSaveEdit = (index: number) => {
@@ -214,16 +166,6 @@ export function FoodEntryForm({
     }
   };
 
-  const getCookingMethodStyle = (method?: string) => {
-    const cookingMethod = cookingMethods.find(m => m.value === method);
-    return cookingMethod?.color || "bg-gray-100 text-gray-700";
-  };
-
-  const getCookingMethodLabel = (method?: string) => {
-    const cookingMethod = cookingMethods.find(m => m.value === method);
-    return cookingMethod?.label || method;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -232,7 +174,9 @@ export function FoodEntryForm({
     if (currentIngredient.trim()) {
       finalIngredientsList.push({
         name: currentIngredient.trim(),
-        isOrganic: false, cookingMethod: "raw", foodGroup: "other", zone: "yellow",
+        isOrganic: false,
+        foodGroup: "other",
+        zone: "yellow",
       });
     }
 
@@ -245,7 +189,7 @@ export function FoodEntryForm({
 
     try {
       const ingredientNames = finalIngredientsList.map(ing => ing.name);
-      
+
       const zoneResponse = await fetch("/api/zone-ingredients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -256,7 +200,9 @@ export function FoodEntryForm({
 
       if (zoneResponse.ok) {
         const { ingredients: zonedData } = await zoneResponse.json();
-        const zonedMap = new Map(zonedData.map((item: any) => [item.name, item]));
+        const zonedMap = new Map(
+          zonedData.map((item: any) => [item.name, item])
+        );
         enrichedIngredients = finalIngredientsList.map(ing => {
           const zonedData = zonedMap.get(ing.name);
           return {
@@ -265,10 +211,13 @@ export function FoodEntryForm({
           };
         });
       } else {
-        toast.warning("Could not zone ingredients. Saving with default values.");
+        toast.warning(
+          "Could not zone ingredients. Saving with default values."
+        );
       }
 
-      const foodName = name.trim() || `Meal with ${enrichedIngredients[0].name}`;
+      const foodName =
+        name.trim() || `Meal with ${enrichedIngredients[0].name}`;
 
       onAddFood({
         name: foodName,
@@ -278,7 +227,6 @@ export function FoodEntryForm({
       });
 
       onClose();
-
     } catch (error) {
       console.error("Submission failed:", error);
       toast.error("Failed to save food entry.");
@@ -306,7 +254,9 @@ export function FoodEntryForm({
             <div className="space-y-2">
               <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
                 <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                <span className="text-sm text-blue-700">Analyzing image...</span>
+                <span className="text-sm text-blue-700">
+                  Analyzing image...
+                </span>
               </div>
               <Skeleton className="h-10 w-full" />
             </div>
@@ -358,115 +308,62 @@ export function FoodEntryForm({
                       key={index}
                       className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
                     >
-                      {/* Normal Ingredient Row */}
-                      {cookingSelectionIndex !== index && (
-                        <>
-                          {editingIndex === index ? (
-                            <Input
-                              value={editingValue}
-                              onChange={e => setEditingValue(e.target.value)}
-                              onKeyPress={e => handleEditKeyPress(e, index)}
-                              onBlur={() => handleSaveEdit(index)}
-                              className="flex-1 h-8 mx-2"
-                              autoFocus
-                            />
-                          ) : (
-                            <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
-                              <span className="text-sm font-medium">
-                                {ingredient.name}
-                              </span>
-                              {ingredient.isOrganic && (
-                                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
-                                  organic
-                                </span>
-                              )}
-                              {ingredient.cookingMethod &&
-                                ingredient.cookingMethod !== "raw" && (
-                                  <span
-                                    className={`text-xs px-1.5 py-0.5 rounded-full ${getCookingMethodStyle(
-                                      ingredient.cookingMethod
-                                    )}`}
-                                  >
-                                    {getCookingMethodLabel(
-                                      ingredient.cookingMethod
-                                    )}
-                                  </span>
-                                )}
-                            </div>
+                      {/* Ingredient Row */}
+                      {editingIndex === index ? (
+                        <Input
+                          value={editingValue}
+                          onChange={e => setEditingValue(e.target.value)}
+                          onKeyPress={e => handleEditKeyPress(e, index)}
+                          onBlur={() => handleSaveEdit(index)}
+                          className="flex-1 h-8 mx-2"
+                          autoFocus
+                        />
+                      ) : (
+                        <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium">
+                            {ingredient.name}
+                          </span>
+                          {ingredient.isOrganic && (
+                            <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+                              organic
+                            </span>
                           )}
-                          <div className="flex gap-1 px-2">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleCookingSelection(index)}
-                              className={`p-1 transition-colors ${
-                                ingredient.cookingMethod &&
-                                ingredient.cookingMethod !== "raw"
-                                  ? "text-orange-600 hover:text-orange-700"
-                                  : "text-gray-400 hover:text-orange-600"
-                              }`}
-                              title="Select cooking method"
-                            >
-                              <Flame className="h-3 w-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleOrganic(index)}
-                              className={`p-1 transition-colors ${
-                                ingredient.isOrganic
-                                  ? "text-green-600 hover:text-green-700"
-                                  : "text-gray-400 hover:text-green-600"
-                              }`}
-                              title={
-                                ingredient.isOrganic
-                                  ? "Mark as non-organic"
-                                  : "Mark as organic"
-                              }
-                            >
-                              <Leaf className="h-3 w-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleEditIngredient(index)}
-                              className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                              title="Edit ingredient"
-                            >
-                              <Edit2 className="h-3 w-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteIngredient(index)}
-                              className="p-1 text-gray-500 hover:text-red-600 transition-colors"
-                              title="Delete ingredient"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Cooking Method Selection Row - Same Height, Pure Focus */}
-                      {cookingSelectionIndex === index && (
-                        <div className="flex-1 min-w-0 px-2 flex items-center overflow-hidden">
-                          <div className="flex gap-2 overflow-x-auto scrollbar-none min-w-0 max-w-full">
-                            {cookingMethods.map(method => (
-                              <button
-                                key={method.value}
-                                type="button"
-                                onClick={() =>
-                                  handleSelectCookingMethod(index, method.value)
-                                }
-                                className={`flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full transition-all duration-200 hover:scale-110 whitespace-nowrap ${
-                                  ingredient.cookingMethod === method.value
-                                    ? `${method.color} ring-2 ring-blue-300 scale-110`
-                                    : `${method.color} hover:ring-1 hover:ring-gray-300`
-                                }`}
-                              >
-                                {method.label}
-                              </button>
-                            ))}
-                          </div>
                         </div>
                       )}
+                      <div className="flex gap-1 px-2">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleOrganic(index)}
+                          className={`p-1 transition-colors ${
+                            ingredient.isOrganic
+                              ? "text-green-600 hover:text-green-700"
+                              : "text-gray-400 hover:text-green-600"
+                          }`}
+                          title={
+                            ingredient.isOrganic
+                              ? "Mark as non-organic"
+                              : "Mark as organic"
+                          }
+                        >
+                          <Leaf className="h-3 w-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEditIngredient(index)}
+                          className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Edit ingredient"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteIngredient(index)}
+                          className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                          title="Delete ingredient"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -517,4 +414,4 @@ export function FoodEntryForm({
       </form>
     </div>
   );
-} 
+}

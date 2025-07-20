@@ -39,12 +39,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import {
-  exportAllData,
-  importAllData,
-  clearAllData,
-  addFood,
-} from "@/lib/db";
+import { exportAllData, importAllData, clearAllData, addFood } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { AuthGuard } from "@/features/auth/components/auth-guard";
 
@@ -152,8 +147,6 @@ function SettingsPage() {
     }
   };
 
-
-
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -187,21 +180,18 @@ function SettingsPage() {
             isOrganic: true,
             zone: "green",
             foodGroup: "vegetable",
-            cookingMethod: "raw",
           },
           {
             name: "organic quinoa",
             isOrganic: true,
             zone: "green",
             foodGroup: "grain",
-            cookingMethod: "steamed",
           },
           {
             name: "salmon",
             isOrganic: false,
             zone: "green",
             foodGroup: "protein",
-            cookingMethod: "grilled",
           },
         ],
         status: "processed",
@@ -389,8 +379,6 @@ function SettingsPage() {
             </div>
           </CardContent>
         </Card>
-
-
 
         {/* Debug Tools */}
         <Card>

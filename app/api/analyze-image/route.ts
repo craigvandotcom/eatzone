@@ -76,19 +76,29 @@ export async function POST(request: NextRequest) {
       throw new Error("No response from AI model");
     }
 
-    // Parse the AI response as JSON
+    // Parse the AI response as JSON with markdown fallback
     let rawIngredients: { name: string; isOrganic: boolean }[];
     try {
       rawIngredients = JSON.parse(aiResponse);
     } catch {
-      // If JSON parsing fails, try to extract ingredients from text
-      console.error(
-        "Failed to parse AI response as JSON. Raw response:",
-        aiResponse
-      );
-      throw new Error(
-        `AI response was not valid JSON. Response: "${aiResponse}"`
-      );
+      // If direct JSON parsing fails, try to extract JSON from markdown
+      try {
+        const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+          rawIngredients = JSON.parse(jsonMatch[1]);
+          console.log("Successfully extracted JSON from markdown wrapper");
+        } else {
+          throw new Error("No JSON found in response");
+        }
+      } catch {
+        console.error(
+          "Failed to parse AI response as JSON. Raw response:",
+          aiResponse
+        );
+        throw new Error(
+          `AI response was not valid JSON. Response: "${aiResponse}"`
+        );
+      }
     }
 
     // Validate that we got an array

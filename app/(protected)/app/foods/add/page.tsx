@@ -34,9 +34,9 @@ export default function AddFoodPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen-dynamic bg-background flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background border-b">
+      <header className="flex-shrink-0 z-10 bg-background border-b">
         <div className="flex items-center px-4 py-3">
           <Button
             variant="ghost"
@@ -51,7 +51,7 @@ export default function AddFoodPage() {
       </header>
 
       {/* Form Content */}
-      <main className="px-4 py-6">
+      <main className="flex-1 overflow-y-auto px-4 py-6">
         <FoodEntryForm
           onAddFood={handleAddFood}
           onClose={handleClose}

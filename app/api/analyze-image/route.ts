@@ -10,6 +10,7 @@ const analyzeImageSchema = z.object({
 
 // Type for the API response
 interface AnalyzeImageResponse {
+  mealSummary: string;
   ingredients: {
     name: string;
     isOrganic: boolean;
@@ -68,46 +69,50 @@ export async function POST(request: NextRequest) {
       temperature: 0.1, // Low temperature for more consistent results
     });
 
-    const aiResponse = response.choices[0]?.message?.content;
+    const aiResponseText = response.choices[0]?.message?.content;
 
     // Log the actual AI response for debugging
-    console.log("AI Response:", aiResponse);
-    if (!aiResponse) {
+    console.log("AI Response:", aiResponseText);
+    if (!aiResponseText) {
       throw new Error("No response from AI model");
     }
 
     // Parse the AI response as JSON with markdown fallback
-    let rawIngredients: { name: string; isOrganic: boolean }[];
+    let aiResponse: { mealSummary: string; ingredients: { name: string; isOrganic: boolean }[] };
     try {
-      rawIngredients = JSON.parse(aiResponse);
-    } catch {
-      // If direct JSON parsing fails, try to extract JSON from markdown
-      try {
-        const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          rawIngredients = JSON.parse(jsonMatch[1]);
-          console.log("Successfully extracted JSON from markdown wrapper");
-        } else {
-          throw new Error("No JSON found in response");
+      aiResponse = JSON.parse(aiResponseText);
+          } catch {
+        // If direct JSON parsing fails, try to extract JSON from markdown
+        try {
+          const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)\s*```/);
+          if (jsonMatch) {
+            aiResponse = JSON.parse(jsonMatch[1]);
+            console.log("Successfully extracted JSON from markdown wrapper");
+          } else {
+            throw new Error("No JSON found in response");
+          }
+        } catch {
+          console.error(
+            "Failed to parse AI response as JSON. Raw response:",
+            aiResponseText
+          );
+          throw new Error(
+            `AI response was not valid JSON. Response: "${aiResponseText}"`
+          );
         }
-      } catch {
-        console.error(
-          "Failed to parse AI response as JSON. Raw response:",
-          aiResponse
-        );
-        throw new Error(
-          `AI response was not valid JSON. Response: "${aiResponse}"`
-        );
       }
-    }
 
-    // Validate that we got an array
-    if (!Array.isArray(rawIngredients)) {
-      throw new Error("AI response was not an array");
+    // Validate that we got the expected structure
+    if (
+      typeof aiResponse !== "object" ||
+      typeof aiResponse.mealSummary !== "string" ||
+      !Array.isArray(aiResponse.ingredients)
+    ) {
+      throw new Error("AI response was not in the expected format");
     }
 
     // Server-side validation and normalization process
-    const normalizedIngredients = rawIngredients
+    const normalizedIngredients = aiResponse.ingredients
       .map(ingredient => {
         if (
           typeof ingredient !== "object" ||
@@ -135,6 +140,7 @@ export async function POST(request: NextRequest) {
     // Return standardized response
     return NextResponse.json(
       {
+        mealSummary: aiResponse.mealSummary.trim(),
         ingredients: uniqueIngredients,
       } as AnalyzeImageResponse,
       { status: 200 }

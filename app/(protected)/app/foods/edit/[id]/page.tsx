@@ -44,7 +44,7 @@ export default function EditFoodPage({
   ) => {
     if (food) {
       await dbUpdateFood(food.id, updatedFood);
-      router.back();
+      router.push("/app");
     }
   };
 

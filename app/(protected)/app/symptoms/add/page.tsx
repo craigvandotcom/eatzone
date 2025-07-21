@@ -14,7 +14,7 @@ export default function AddSymptomPage() {
     symptom: Omit<Symptom, "id" | "timestamp">
   ) => {
     await dbAddSymptom(symptom);
-    router.back();
+    router.push("/app");
   };
 
   const handleClose = () => {

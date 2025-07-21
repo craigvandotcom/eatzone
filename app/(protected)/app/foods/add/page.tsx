@@ -26,7 +26,7 @@ export default function AddFoodPage() {
     // Include image data if available
     const foodWithImage = imageData ? { ...food, image: imageData } : food;
     await dbAddFood(foodWithImage);
-    router.back();
+    router.push("/app");
   };
 
   const handleClose = () => {

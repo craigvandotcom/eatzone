@@ -187,8 +187,8 @@ function Dashboard() {
         )}
 
         {/* Scrollable Content Area */}
-        <div className={`flex-1 overflow-y-auto ${isMobile ? 'main-content-mobile' : ''}`}>
-          <div className="px-4 py-6 space-y-6">
+        <div className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'main-content-mobile' : ''}`}>
+          <div className="px-4 py-6 space-y-6 max-w-full">
             {currentView === "food" && (
               <>
                 {/* Food Category Progress */}
@@ -230,14 +230,14 @@ function Dashboard() {
                         </p>
                       </div>
                     ) : (
-                      <div>
+                      <div className="space-y-3 overflow-hidden">
                         {recentFoods.map(food => (
                           <button
                             key={food.id}
                             onClick={() => handleEditFood(food)}
-                            className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors overflow-hidden"
                           >
-                            <div className="flex items-center space-x-3 flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                               {food.image ? (
                                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                                   <Image
@@ -266,7 +266,7 @@ function Dashboard() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex-shrink-0 w-24 ml-2 space-y-1.5">
+                            <div className="flex-shrink-0 w-16 sm:w-20 md:w-24 ml-1 sm:ml-2 space-y-1.5">
                               <FoodCompositionBar
                                 ingredients={food.ingredients || []}
                               />

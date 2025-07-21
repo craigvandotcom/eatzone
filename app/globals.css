@@ -156,6 +156,23 @@ select {
     max-width: 100vw;
     overflow-x: hidden;
   }
+
+  /* Prevent any child elements from causing horizontal overflow */
+  .mobile-container * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Specific fix for flex containers on mobile */
+  .mobile-container .flex {
+    min-width: 0;
+  }
+
+  /* Ensure buttons with flex layout don't overflow */
+  .mobile-container button.flex {
+    max-width: 100%;
+    width: 100%;
+  }
 }
 
 /* ===== MOBILE DRAWER IMPROVEMENTS ===== */

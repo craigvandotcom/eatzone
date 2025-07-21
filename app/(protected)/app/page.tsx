@@ -160,7 +160,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex bg-gray-50 ${isMobile ? 'mobile-container h-[100dvh]' : 'h-[100dvh]'}`}>
       {/* Desktop Sidebar */}
       {!isMobile && (
         <SidebarProvider>
@@ -169,10 +169,10 @@ function Dashboard() {
       )}
 
       {/* Main Content Wrapper */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-h-0">
         {/* Header - Mobile Only */}
         {isMobile && (
-          <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100 z-10">
+          <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100 z-10 flex-shrink-0">
             <ChevronLeft className="h-6 w-6 text-gray-600" />
             <h1 className="text-xl font-semibold text-gray-900">
               Your Body Compass
@@ -187,7 +187,7 @@ function Dashboard() {
         )}
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className={`flex-1 overflow-y-auto ${isMobile ? 'main-content-mobile' : ''}`}>
           <div className="px-4 py-6 space-y-6">
             {currentView === "food" && (
               <>
@@ -354,20 +354,20 @@ function Dashboard() {
           <>
             {/* Unified Background Container */}
             <div
-              className={`fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-50/95 via-white/95 to-white/80 backdrop-blur-md ${getTopGlowStyle(currentView)}`}
+              className={`fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-50/95 via-white/95 to-white/80 backdrop-blur-md ${getTopGlowStyle(currentView)} safe-area-pb z-50`}
             >
               {/* Tab Navigation */}
               <div className="px-4 py-4">
                 <div className="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 rounded-full p-1 flex justify-around space-x-1 shadow-[0_-2px_8px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] border border-slate-200/40">
                   <button
                     onClick={() => setCurrentView("food")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-0 ${getActiveTabStyle("food")}`}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle("food")}`}
                   >
                     Foods
                   </button>
                   <button
                     onClick={() => setCurrentView("symptoms")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-0 ${getActiveTabStyle("symptoms")}`}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle("symptoms")}`}
                   >
                     Symptoms
                   </button>
@@ -382,7 +382,7 @@ function Dashboard() {
                       accent="food"
                       size="lg"
                       onClick={handleQuickCapture}
-                      className="group"
+                      className="group min-h-[44px] min-w-[44px]"
                     >
                       <Utensils className="h-6 w-6 text-gray-600 group-hover:text-green-500 transition-colors" />
                     </MetallicButton>
@@ -396,7 +396,7 @@ function Dashboard() {
                       accent="symptom"
                       size="lg"
                       onClick={handleAddSymptom}
-                      className="group"
+                      className="group min-h-[44px] min-w-[44px]"
                     >
                       <Activity className="h-6 w-6 text-gray-600 group-hover:text-red-500 transition-colors" />
                     </MetallicButton>

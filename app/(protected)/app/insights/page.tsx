@@ -24,9 +24,9 @@ function InsightsPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen-dynamic bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100">
+      <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100 flex-shrink-0">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
@@ -39,7 +39,7 @@ function InsightsPage() {
         <div className="w-6" /> {/* Spacer */}
       </div>
 
-      <div className="px-4 py-6 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {/* Coming Soon Notice */}
         <Card>
           <CardHeader>

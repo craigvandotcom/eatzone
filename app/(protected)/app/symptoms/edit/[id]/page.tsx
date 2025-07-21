@@ -44,7 +44,7 @@ export default function EditSymptomPage({
   ) => {
     if (symptom) {
       await dbUpdateSymptom(symptom.id, updatedSymptom);
-      router.back();
+      router.push("/app");
     }
   };
 

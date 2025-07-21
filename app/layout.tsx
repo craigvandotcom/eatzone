@@ -43,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${inter.className} h-full`}>
+      <body className={`${inter.className} h-full overflow-x-hidden`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -51,7 +51,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <div className="h-full">
+            <div className="h-full min-h-0">
               {children}
               <Toaster />
             </div>

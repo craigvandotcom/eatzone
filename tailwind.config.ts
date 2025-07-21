@@ -90,6 +90,21 @@ const config: Config = {
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
+  		},
+  		height: {
+  			'screen-dynamic': '100dvh',
+  			'screen-small': '100svh',
+  			'screen-large': '100lvh'
+  		},
+  		minHeight: {
+  			'screen-dynamic': '100dvh',
+  			'screen-small': '100svh',
+  			'screen-large': '100lvh'
+  		},
+  		maxHeight: {
+  			'screen-dynamic': '100dvh',
+  			'screen-small': '100svh',
+  			'screen-large': '100lvh'
   		}
   	}
   },

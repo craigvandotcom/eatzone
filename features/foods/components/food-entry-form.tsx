@@ -64,7 +64,7 @@ export function FoodEntryForm({
 
       if (!response.ok) throw new Error("Analysis failed");
 
-      const { ingredients: ingredientData } = await response.json();
+      const { mealSummary, ingredients: ingredientData } = await response.json();
 
       const aiIngredients: Ingredient[] = ingredientData.map(
         (ingredient: { name: string; isOrganic: boolean }) => ({
@@ -76,6 +76,10 @@ export function FoodEntryForm({
       );
 
       setIngredients(aiIngredients);
+      // Set the meal summary as the default name if not already set
+      if (!name && mealSummary) {
+        setName(mealSummary);
+      }
       setHasAnalyzed(true);
       toast.success(`Found ${ingredientData.length} ingredients for review.`);
     } catch (error) {
@@ -239,12 +243,12 @@ export function FoodEntryForm({
     <div className={className}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="food-name">Food Name (optional)</Label>
+          <Label htmlFor="meal-summary">Meal Summary (optional)</Label>
           <Input
-            id="food-name"
+            id="meal-summary"
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="e.g., Lunch, Breakfast (auto-generated if empty)"
+            placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
           />
         </div>
 

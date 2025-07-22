@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { openrouter } from "@/lib/ai/openrouter";
 import { prompts } from "@/lib/prompts";
 import { z } from "zod";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Rate limiting setup using Vercel's Upstash integration env vars
+let ratelimit: Ratelimit | null = null;
+
+if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  ratelimit = new Ratelimit({
+    redis: new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    }),
+    limiter: Ratelimit.slidingWindow(20, "60 s"), // 20 requests per minute
+  });
+}
 
 const zoneIngredientsSchema = z.object({
   ingredients: z.array(z.string()).min(1),
@@ -10,13 +25,35 @@ const zoneIngredientsSchema = z.object({
 const zonedIngredientSchema = z.object({
   name: z.string(),
   zone: z.enum(["green", "yellow", "red"]),
-  foodGroup: z.enum([
-    "vegetable", "fruit", "protein", "grain", "dairy", "fat", "other"
-  ]),
+  foodGroup: z.string(), // Accept any string from AI
 });
+
+// No mapping needed - use AI categories directly
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check - only if Redis is configured
+    if (ratelimit) {
+      const forwardedFor = request.headers.get("x-forwarded-for");
+      const realIp = request.headers.get("x-real-ip");
+      const ip = forwardedFor?.split(",")[0] ?? realIp ?? "127.0.0.1";
+
+      const { success } = await ratelimit.limit(ip);
+
+      if (!success) {
+        return NextResponse.json(
+          {
+            error: {
+              message: "Too many requests. Please wait before trying again.",
+              code: "RATE_LIMIT_EXCEEDED",
+              statusCode: 429,
+            },
+          },
+          { status: 429 }
+        );
+      }
+    }
+
     const body = await request.json();
     const { ingredients } = zoneIngredientsSchema.parse(body);
 
@@ -34,11 +71,21 @@ export async function POST(request: NextRequest) {
     if (!aiResponse) throw new Error("No response from AI model");
 
     const parsedResponse = JSON.parse(aiResponse);
-    // Assuming the AI returns an object like { ingredients: [...] }
-    const validatedIngredients = z.array(zonedIngredientSchema).parse(parsedResponse.ingredients);
+
+    // Normalize AI response - only convert zone to lowercase
+    const normalizedIngredients = parsedResponse.ingredients?.map(
+      (ingredient: any) => ({
+        name: ingredient.name,
+        zone: ingredient.zone?.toLowerCase(), // Convert to lowercase
+        foodGroup: ingredient.foodGroup, // Use AI category directly
+      })
+    );
+
+    const validatedIngredients = z
+      .array(zonedIngredientSchema)
+      .parse(normalizedIngredients);
 
     return NextResponse.json({ ingredients: validatedIngredients });
-
   } catch (error) {
     console.error("Error in zone-ingredients API:", error);
     // Add robust error handling here

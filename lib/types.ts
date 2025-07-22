@@ -48,14 +48,7 @@ export interface Ingredient {
     | "grilled"
     | "roasted"
     | "other";
-  foodGroup:
-    | "vegetable"
-    | "fruit"
-    | "protein"
-    | "grain"
-    | "dairy"
-    | "fat"
-    | "other";
+  foodGroup: string; // AI-provided category (flexible for MVP)
   zone: "green" | "yellow" | "red";
 }
 

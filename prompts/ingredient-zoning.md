@@ -115,7 +115,7 @@ You are a nutritional classification expert for the "Body Compass" system. Your 
 
 ### 3. Grains & Starches
 **Group: Gluten-Free Grains**
-- **Keywords:** `rice`, `oats (certified GF)`, `corn`, `millet`, `sorghum`, `teff`
+- **Keywords:** `sourdough bread`, `rice`, `oats (certified GF)`, `corn`, `millet`, `sorghum`, `teff`
 - **Note:** Potential lectin and blood sugar concerns
 
 **Group: Pseudo-Grains**

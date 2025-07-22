@@ -49,6 +49,7 @@ export function FoodEntryForm({
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isZoning, setIsZoning] = useState(false);
 
   // AI Analysis function
   const analyzeImage = async (imageData: string) => {
@@ -64,7 +65,8 @@ export function FoodEntryForm({
 
       if (!response.ok) throw new Error("Analysis failed");
 
-      const { mealSummary, ingredients: ingredientData } = await response.json();
+      const { mealSummary, ingredients: ingredientData } =
+        await response.json();
 
       const aiIngredients: Ingredient[] = ingredientData.map(
         (ingredient: { name: string; isOrganic: boolean }) => ({
@@ -190,6 +192,7 @@ export function FoodEntryForm({
     }
 
     setIsSubmitting(true);
+    setIsZoning(true);
 
     try {
       const ingredientNames = finalIngredientsList.map(ing => ing.name);
@@ -214,10 +217,30 @@ export function FoodEntryForm({
             ...(zonedData || {}),
           };
         });
+        setIsZoning(false);
+        toast.success("Ingredients successfully analyzed and zoned!");
       } else {
-        toast.warning(
-          "Could not zone ingredients. Saving with default values."
-        );
+        setIsZoning(false);
+        // Handle specific error responses
+        try {
+          const errorData = await zoneResponse.json();
+          const errorMessage =
+            errorData?.error?.message || "Could not zone ingredients";
+
+          if (zoneResponse.status === 429) {
+            toast.error(
+              "Too many requests. Please wait a moment and try again."
+            );
+          } else if (zoneResponse.status === 400) {
+            toast.error("Invalid ingredients data. Please check your input.");
+          } else {
+            toast.warning(errorMessage + ". Saving with default values.");
+          }
+        } catch {
+          toast.warning(
+            "Could not zone ingredients. Saving with default values."
+          );
+        }
       }
 
       const foodName =
@@ -236,6 +259,7 @@ export function FoodEntryForm({
       toast.error("Failed to save food entry.");
     } finally {
       setIsSubmitting(false);
+      setIsZoning(false);
     }
   };
 
@@ -412,7 +436,11 @@ export function FoodEntryForm({
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting || isAnalyzing}>
-            {isSubmitting ? "Saving..." : "Save Food"}
+            {isSubmitting
+              ? isZoning
+                ? "Zoning ingredients..."
+                : "Saving..."
+              : "Save Food"}
           </Button>
         </div>
       </form>

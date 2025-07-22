@@ -265,7 +265,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - Implement a simple health-check endpoint (`/api/ai-status`) that pings OpenRouter and returns model availability so we can surface downtime gracefully in the UI.
   - **Outcome:** A single, flexible entry point for all AI calls, allowing us to experiment with GPT-4o, Claude 3.5 Sonnet, Gemini Flash, etc., without changing code paths.
 
-- [ ] **Task 12: Implement Vision-Based Ingredient Identification (`implement-vision-identification`)**
+- [x] **Task 12: Implement Vision-Based Ingredient Identification (`implement-vision-identification`)**
   - **Action:** Build the first stage of the AI pipeline. The user captures a photo, and a vision model identifies potential ingredients.
   - **Implementation:**
     - Create a secure API route (`/api/analyze-image`) that accepts an image.
@@ -274,7 +274,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - Implement loading and error states on the client-side for this process.
   - **Outcome:** A functional "scan-to-text" feature where a food photo is converted into a preliminary list of ingredients.
 
-- [ ] **Task 13: Integrate Vision Analysis with Food Dialog (`integrate-vision-with-dialog`)**
+- [x] **Task 13: Integrate Vision Analysis with Food Dialog (`integrate-vision-with-dialog`)**
   - **Action:** Connect the camera capture flow to the ingredient identification API and populate the `AddFoodDialog` for user review.
   - **Implementation:**
     - After the user captures a photo, call the `/api/analyze-image` endpoint.
@@ -372,3 +372,41 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - **Outcome:** Users can grant temporary, controlled access to their health information.
 
 ---
+
+
+----
+
+#### **2. Implement the Simplified API Route**
+**File:** `app/api/zone-ingredients/route.ts`
+
+**Action:** This API route will be straightforward. It receives a list of ingredients, sends them all to the AI with the rubric, and returns the result.
+
+**Engineer's Checklist:**
+1.  **Receive Request:** Get the `ingredients` array from the request body.
+2.  **Validate Input:** Use a Zod schema to ensure the request body is an object with an `ingredients` key that is an array of strings.
+3.  **Construct Prompt:** Create the full prompt string to send to the AI, combining the static rubric from `prompts.ingredientZoning` with the dynamic list of ingredients from the user.
+4.  **Call AI:** Make a single API call to OpenRouter with the complete prompt. Ensure the `response_format` is set to `json_object`.
+5.  **Validate AI Response:** When the response comes back, parse the JSON and validate its structure using another Zod schema. This is critical to prevent malformed data from crashing the app.
+6.  **Return Response:** If validation passes, return the zoned ingredients to the client. If anything fails, return a structured error.
+
+#### **3. Implement Security: Rate Limiting**
+**File:** `app/api/zone-ingredients/route.ts`
+
+**Action:** Before any logic runs, implement IP-based rate limiting to prevent abuse of this potentially expensive endpoint.
+
+**Engineer's Checklist:**
+1.  **Integrate Upstash:** Use the `@upstash/ratelimit` package.
+2.  **Set Limit:** Configure a reasonable limit (e.g., 20 requests per minute) for the MVP.
+3.  **Return Error:** If the rate limit is exceeded, immediately return a `429 Too Many Requests` error.
+
+#### **4. Finalize Client-Side Integration**
+**File:** `features/foods/components/food-entry-form.tsx`
+
+**Action:** The existing client-side logic is already well-suited for this simplified flow.
+
+**Engineer's Checklist:**
+1.  **Verify API Call:** In the `handleSubmit` function, ensure the `fetch` call to `/api/zone-ingredients` correctly sends the `ingredients` array in the request body.
+2.  **Handle States:** Maintain the existing loading and error states. When the user submits, the UI should show a "Zoning ingredients..." message.
+3.  **Process Data:** The existing logic that maps the API response back to the ingredients list before saving to the database is correct and should be kept.
+
+This plan delivers a functional, secure, and testable AI zoning feature for the MVP, giving you maximum exposure to the AI's performance so you can refine the rubric and prompts effectively.

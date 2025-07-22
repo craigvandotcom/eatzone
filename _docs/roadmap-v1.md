@@ -31,41 +31,24 @@ Building on the MVP principles, v1.0 adds:
 
 **Goal:** Implement the privacy-preserving AI analysis flow to bring "smart" features online.
 
-### Task 11: Setup AI Workflow Infrastructure (`setup-ai-infrastructure`)
+### Task 12: Implement Human-in-the-Loop Review System (`implement-review-system`)
 
-- **Action:** Implement the hybrid workflow approach using n8n + OpenRouter for maximum iteration speed.
-- **Implementation Steps:**
-  - Deploy n8n (start with cloud version for simplicity)
-  - Set up OpenRouter account and configure API access
-  - Create authentication tokens for webhook security
-  - Test basic webhook connectivity
-- **Outcome:** Visual workflow platform ready for AI logic development.
-
-### Task 11.5: Design & Build Curated Ingredient Database (`build-ingredient-db`)
-
-- **Action:** Create the backend database (e.g., Supabase table, Vercel KV) to act as the source of truth for ingredient classifications.
+- **Action:** Create a backend system to log all ingredients classified by the AI that are not in our curated database. This system will provide a simple interface for human review and approval of AI suggestions, allowing our master ingredient list to grow systematically.
 - **Implementation:**
-  - Define schema: `ingredientName`, `foodGroup`, `defaultZone`, `zoneModifiers`.
-  - Populate with an initial set of common ingredients (e.g., 200+ items).
-  - Create an interface or API for the n8n workflow to query this database.
-- **Outcome:** A consistent, curated reference for core ingredient data that underpins the app's intelligence.
-
-### Task 12: Build AI Analysis Workflow (`build-ai-workflow`)
-
-- **Action:** Create the visual workflow in n8n that handles the two-stage ingredient processing pipeline.
-- **Workflow Components:**
-  - **Stage 1 (Identification):**
-    - Webhook trigger for receiving image data or manual ingredient list.
-    - Multimodal AI call for image-to-text ingredient identification.
-  - **Stage 2 (Enrichment):**
-    - Database lookup node to query the **Curated Ingredient Database**.
-    - Conditional logic: if ingredient is found, use curated data.
-    - If not found, use a second AI call (fallback) to classify `foodGroup` and `zone`.
-    - Implement a "learning loop" by logging AI-classified ingredients for future review and addition to the curated database.
-  - **Output & Error Handling:**
-    - Data transformation nodes for final JSON formatting.
-    - Error handling and validation nodes.
-- **Outcome:** A robust AI analysis workflow that combines the consistency of a curated database with the scalability of AI, capable of turning a photo or text into structured, intelligent data.
+  - **Technology Selection:** Evaluate and choose between Supabase, Google Sheets, Airtable, or other solutions based on cost-benefit analysis of development speed vs. scalability.
+  - **Data Collection Pipeline:**
+    - Log all AI-classified ingredients with their suggested zones and food groups
+    - Track frequency of ingredient requests to prioritize review
+    - Store classification context (original user input, confidence scores)
+  - **Review Interface:**
+    - Create simple interface for reviewing AI suggestions
+    - Implement approval/rejection workflow for classifications
+    - Add bulk operations for common ingredient patterns
+  - **Integration Pipeline:**
+    - Develop process for "graduating" approved ingredients into the curated database
+    - Create documentation workflow for adding new ingredients to `food-zone-decision-matrix.md`
+    - Implement cleanup procedures for processed suggestions
+- **Outcome:** A systematic, scalable process for improving our ingredient database through real-world usage data and expert human review, creating a continuous improvement loop for AI accuracy.
 
 ### Task 13: Create Simple API Route (`create-api-route`)
 

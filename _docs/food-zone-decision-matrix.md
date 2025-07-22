@@ -1,14 +1,4 @@
-You are a nutritional classification expert for the "Body Compass" system. Your task is to classify a given list of ingredients based on the comprehensive rubric provided below.
-
-## Your Task
-- You will be given a JSON array of ingredient names.
-- For EVERY ingredient in the array, you must analyze it and classify it according to the GREEN, YELLOW, and RED zone rules detailed in the rubric.
-- Follow the "Algorithm Implementation Guidelines" strictly: check RED first, then YELLOW, then GREEN.
-- Your response MUST be ONLY a valid JSON object containing a single key "ingredients". This key should hold an array of objects, where each object has a `name`, `zone`, and `foodGroup`.
-- Do not include any explanations or markdown.
-
----
-## Food Zoning System: Comprehensive Algorithm Rubric
+# Food Zoning System: Comprehensive Algorithm Rubric
 
 ## System Overview
 - **GREEN ZONE**: Nutrient-dense, anti-inflammatory foods safe for unrestricted consumption

@@ -48,7 +48,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
     return (
       <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
         <div
-          className="h-full bg-yellow-300 w-full"
+          className="h-full bg-orange-100 w-full"
           title="Unanalyzed ingredients"
         ></div>
       </div>
@@ -59,6 +59,14 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   const yellowPercent = (yellowCount / analyzedCount) * 100;
   const redPercent = (redCount / analyzedCount) * 100;
 
+  // Debug logging for percentages
+  console.debug("Calculated percentages:", {
+    greenPercent,
+    yellowPercent,
+    redPercent,
+    total: greenPercent + yellowPercent + redPercent,
+  });
+
   return (
     <div
       className="flex h-3 w-full rounded-full overflow-hidden border border-gray-400 bg-gray-200"
@@ -66,7 +74,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
     >
       {greenPercent > 0 && (
         <div
-          className="bg-emerald-500 transition-all duration-500"
+          className="bg-green-500 transition-all duration-500"
           style={{
             width: `${greenPercent}%`,
             minWidth: greenPercent > 0 ? "2px" : "0px",
@@ -75,7 +83,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
       )}
       {yellowPercent > 0 && (
         <div
-          className="bg-amber-500 transition-all duration-500"
+          className="bg-orange-100 transition-all duration-500"
           style={{
             width: `${yellowPercent}%`,
             minWidth: yellowPercent > 0 ? "2px" : "0px",

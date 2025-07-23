@@ -223,6 +223,14 @@ export function FoodEntryForm({
 
         enrichedIngredients = finalIngredientsList.map(ing => {
           const zonedData = zonedMap.get(ing.name);
+
+          // Debug logging for name matching
+          console.debug(`Matching ingredient "${ing.name}":`, {
+            found: !!zonedData,
+            zonedData,
+            availableNames: Array.from(zonedMap.keys()),
+          });
+
           const enriched = {
             ...ing,
             ...(zonedData || {}),

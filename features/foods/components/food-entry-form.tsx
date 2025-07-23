@@ -182,7 +182,7 @@ export function FoodEntryForm({
         name: currentIngredient.trim(),
         isOrganic: false,
         foodGroup: "other",
-        zone: "yellow",
+        zone: "yellow", // Default zone
       });
     }
 
@@ -197,6 +197,12 @@ export function FoodEntryForm({
     try {
       const ingredientNames = finalIngredientsList.map(ing => ing.name);
 
+      // Debug logging
+      console.debug("Submitting ingredients for zoning:", {
+        ingredientNames,
+        finalIngredientsList,
+      });
+
       const zoneResponse = await fetch("/api/zone-ingredients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -207,16 +213,33 @@ export function FoodEntryForm({
 
       if (zoneResponse.ok) {
         const { ingredients: zonedData } = await zoneResponse.json();
+
+        // Debug logging
+        console.debug("Received zoned data:", { zonedData });
+
         const zonedMap = new Map(
           zonedData.map((item: any) => [item.name, item])
         );
+
         enrichedIngredients = finalIngredientsList.map(ing => {
           const zonedData = zonedMap.get(ing.name);
-          return {
+          const enriched = {
             ...ing,
             ...(zonedData || {}),
           };
+
+          // Ensure required fields have defaults if API didn't provide them
+          if (!enriched.foodGroup) enriched.foodGroup = "other";
+          if (!enriched.zone) enriched.zone = "yellow";
+          if (typeof enriched.isOrganic !== "boolean")
+            enriched.isOrganic = false;
+
+          return enriched;
         });
+
+        // Debug logging
+        console.debug("Enriched ingredients:", { enrichedIngredients });
+
         setIsZoning(false);
         toast.success("Ingredients successfully analyzed and zoned!");
       } else {
@@ -226,6 +249,11 @@ export function FoodEntryForm({
           const errorData = await zoneResponse.json();
           const errorMessage =
             errorData?.error?.message || "Could not zone ingredients";
+
+          console.error("Zoning API error:", {
+            status: zoneResponse.status,
+            errorData,
+          });
 
           if (zoneResponse.status === 429) {
             toast.error(
@@ -237,6 +265,7 @@ export function FoodEntryForm({
             toast.warning(errorMessage + ". Saving with default values.");
           }
         } catch {
+          console.error("Failed to parse error response from zoning API");
           toast.warning(
             "Could not zone ingredients. Saving with default values."
           );
@@ -246,9 +275,25 @@ export function FoodEntryForm({
       const foodName =
         name.trim() || `Meal with ${enrichedIngredients[0].name}`;
 
+      // Final validation of enriched ingredients
+      const validatedIngredients = enrichedIngredients.map(ing => ({
+        name: ing.name,
+        isOrganic: typeof ing.isOrganic === "boolean" ? ing.isOrganic : false,
+        foodGroup: ing.foodGroup || "other",
+        zone: ing.zone || "yellow",
+      }));
+
+      // Debug logging
+      console.debug("Saving food entry:", {
+        name: foodName,
+        ingredients: validatedIngredients,
+        notes: notes.trim(),
+        status: "processed",
+      });
+
       onAddFood({
         name: foodName,
-        ingredients: enrichedIngredients,
+        ingredients: validatedIngredients,
         notes: notes.trim(),
         status: "processed",
       });

@@ -1,10 +1,6 @@
 "use client";
 
-interface Ingredient {
-  name: string;
-  zone?: "green" | "yellow" | "red";
-  isOrganic?: boolean;
-}
+import type { Ingredient } from "@/lib/types";
 
 interface FoodCompositionBarProps {
   ingredients: Ingredient[];
@@ -13,6 +9,14 @@ interface FoodCompositionBarProps {
 export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   const safeIngredients = ingredients || [];
   const totalIngredients = safeIngredients.length;
+
+  // Debug logging
+  console.debug("FoodCompositionBar Debug:", {
+    totalIngredients,
+    firstIngredient: safeIngredients[0],
+    hasZoneProperty: safeIngredients[0]?.zone !== undefined,
+    ingredients: safeIngredients,
+  });
 
   if (totalIngredients === 0) {
     // Still analyzing or no ingredients
@@ -30,6 +34,14 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   ).length;
   const redCount = safeIngredients.filter(ing => ing.zone === "red").length;
   const analyzedCount = greenCount + yellowCount + redCount;
+
+  // Debug logging for zone counts
+  console.debug("Zone counts:", {
+    greenCount,
+    yellowCount,
+    redCount,
+    analyzedCount,
+  });
 
   if (analyzedCount === 0) {
     // No zone data, show default state

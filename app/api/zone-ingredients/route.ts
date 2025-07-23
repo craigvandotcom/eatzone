@@ -57,7 +57,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { ingredients } = zoneIngredientsSchema.parse(body);
 
+    console.log("Zoning request received for ingredients:", ingredients);
+
     const fullPrompt = `${prompts.ingredientZoning}\n\nInput: ${JSON.stringify(ingredients)}`;
+
+    console.log("Calling OpenRouter for ingredient zoning...");
 
     const response = await openrouter.chat.completions.create({
       model: "anthropic/claude-3.5-sonnet", // Better for structured JSON
@@ -70,7 +74,12 @@ export async function POST(request: NextRequest) {
     const aiResponse = response.choices[0]?.message?.content;
     if (!aiResponse) throw new Error("No response from AI model");
 
+    // Log the actual AI response for debugging
+    console.log("AI Response:", aiResponse);
+
     const parsedResponse = JSON.parse(aiResponse);
+
+    console.log("Parsed AI response:", parsedResponse);
 
     // Normalize AI response - only convert zone to lowercase
     const normalizedIngredients = parsedResponse.ingredients?.map(
@@ -84,6 +93,10 @@ export async function POST(request: NextRequest) {
     const validatedIngredients = z
       .array(zonedIngredientSchema)
       .parse(normalizedIngredients);
+
+    console.log("Final validated response:", {
+      ingredients: validatedIngredients,
+    });
 
     return NextResponse.json({ ingredients: validatedIngredients });
   } catch (error) {

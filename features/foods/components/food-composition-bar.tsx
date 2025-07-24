@@ -1,6 +1,11 @@
 "use client";
 
 import type { Ingredient } from "@/lib/types";
+import {
+  getZoneColor,
+  getZoneBgClass,
+  getZoneBgStyle,
+} from "@/lib/utils/zone-colors";
 
 interface FoodCompositionBarProps {
   ingredients: Ingredient[];
@@ -50,7 +55,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
         <div
           className="transition-all duration-500"
           style={{
-            backgroundColor: "#f59e0b",
+            backgroundColor: getZoneColor("yellow"),
             width: "100%",
             height: "100%",
           }}
@@ -79,29 +84,31 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
     >
       {greenPercent > 0 && (
         <div
-          className="bg-green-500 transition-all duration-500"
+          className={`${getZoneBgClass("green")} transition-all duration-500`}
           style={{
             width: `${greenPercent}%`,
             minWidth: greenPercent > 0 ? "2px" : "0px",
+            ...getZoneBgStyle("green"), // Fallback inline style
           }}
         />
       )}
       {yellowPercent > 0 && (
         <div
-          className="transition-all duration-500"
+          className={`${getZoneBgClass("yellow")} transition-all duration-500`}
           style={{
-            backgroundColor: "#f59e0b",
             width: `${yellowPercent}%`,
             minWidth: yellowPercent > 0 ? "2px" : "0px",
+            ...getZoneBgStyle("yellow"), // Fallback inline style
           }}
         />
       )}
       {redPercent > 0 && (
         <div
-          className="bg-red-500 transition-all duration-500"
+          className={`${getZoneBgClass("red")} transition-all duration-500`}
           style={{
             width: `${redPercent}%`,
             minWidth: redPercent > 0 ? "2px" : "0px",
+            ...getZoneBgStyle("red"), // Fallback inline style
           }}
         />
       )}

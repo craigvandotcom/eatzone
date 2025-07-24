@@ -86,9 +86,12 @@ export const getRecentFoods = async (limit: number = 10): Promise<Food[]> => {
 
 export const getTodaysFoods = async (): Promise<Food[]> => {
   const today = getTodayDate();
+  const startRange = today + "T00:00:00.000Z";
+  const endRange = today + "T23:59:59.999Z";
+
   return await db.foods
     .where("timestamp")
-    .between(today + "T00:00:00.000Z", today + "T23:59:59.999Z")
+    .between(startRange, endRange)
     .reverse()
     .toArray();
 };

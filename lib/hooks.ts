@@ -70,48 +70,61 @@ export const useRecentSymptoms = (limit: number = 5) => {
 export const useFoodStats = () => {
   return useLiveQuery(async () => {
     try {
-      const todaysFoods = await getTodaysFoods();
+      let foodsToAnalyze = await getTodaysFoods();
 
-      if (!todaysFoods || todaysFoods.length === 0) {
-        return {
-          greenIngredients: 0,
-          yellowIngredients: 0,
-          redIngredients: 0,
-          totalIngredients: 0,
-          organicCount: 0,
-          totalOrganicPercentage: 0,
-        };
+      // If no foods today, fallback to recent foods for better UX
+      if (!foodsToAnalyze || foodsToAnalyze.length === 0) {
+        const recentFoods = await getAllFoods();
+        foodsToAnalyze = recentFoods.slice(0, 5); // Get the 5 most recent foods
+
+        // If still no foods, return empty stats
+        if (!foodsToAnalyze || foodsToAnalyze.length === 0) {
+          return {
+            greenIngredients: 0,
+            yellowIngredients: 0,
+            redIngredients: 0,
+            totalIngredients: 0,
+            organicCount: 0,
+            totalOrganicPercentage: 0,
+            isFromToday: false,
+          };
+        }
       }
 
-      const todaysIngredients = todaysFoods.flatMap(
+      // Check if we're analyzing today's foods or recent foods
+      const todaysFoods = await getTodaysFoods();
+      const isFromToday = todaysFoods.length > 0;
+
+      const ingredients = foodsToAnalyze.flatMap(
         food => food.ingredients || []
       );
 
-      const greenIngredients = todaysIngredients.filter(
+      const greenIngredients = ingredients.filter(
         ing => ing.zone === "green"
       ).length;
-      const yellowIngredients = todaysIngredients.filter(
+      const yellowIngredients = ingredients.filter(
         ing => ing.zone === "yellow"
       ).length;
-      const redIngredients = todaysIngredients.filter(
+      const redIngredients = ingredients.filter(
         ing => ing.zone === "red"
       ).length;
 
-      const organicIngredientsCount = todaysIngredients.filter(
+      const organicIngredientsCount = ingredients.filter(
         ing => ing.isOrganic === true
       ).length;
       const totalOrganicPercentage =
-        todaysIngredients.length > 0
-          ? (organicIngredientsCount / todaysIngredients.length) * 100
+        ingredients.length > 0
+          ? (organicIngredientsCount / ingredients.length) * 100
           : 0;
 
       return {
         greenIngredients,
         yellowIngredients,
         redIngredients,
-        totalIngredients: todaysIngredients.length,
+        totalIngredients: ingredients.length,
         organicCount: organicIngredientsCount,
         totalOrganicPercentage,
+        isFromToday,
       };
     } catch (error) {
       console.error("Error calculating food stats:", error);
@@ -122,6 +135,7 @@ export const useFoodStats = () => {
         totalIngredients: 0,
         organicCount: 0,
         totalOrganicPercentage: 0,
+        isFromToday: false,
       };
     }
   }, []);

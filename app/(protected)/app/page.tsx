@@ -31,6 +31,7 @@ import {
   SidebarProvider,
   SidebarHeader,
 } from "@/components/ui/sidebar";
+import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
 
 // Import types
 import { Food, Symptom } from "@/lib/types";
@@ -57,8 +58,6 @@ function Dashboard() {
   // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>("food");
-
-
 
   const handleCameraCapture = async (imageData: string) => {
     // Store the image data temporarily in sessionStorage for the add food page
@@ -160,7 +159,9 @@ function Dashboard() {
   };
 
   return (
-    <div className={`flex bg-gray-50 ${isMobile ? 'mobile-container h-[100dvh]' : 'h-[100dvh]'}`}>
+    <div
+      className={`flex bg-gray-50 ${isMobile ? "mobile-container h-[100dvh]" : "h-[100dvh]"}`}
+    >
       {/* Desktop Sidebar */}
       {!isMobile && (
         <SidebarProvider>
@@ -187,7 +188,9 @@ function Dashboard() {
         )}
 
         {/* Scrollable Content Area */}
-        <div className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'main-content-mobile' : ''}`}>
+        <div
+          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? "main-content-mobile" : ""}`}
+        >
           <div className="px-4 py-6 space-y-6 max-w-full">
             {currentView === "food" && (
               <>
@@ -199,6 +202,7 @@ function Dashboard() {
                     redCount={foodStats?.redIngredients || 0}
                     size={200}
                     strokeWidth={12}
+                    isFromToday={foodStats?.isFromToday ?? true}
                   />
                   <div className="absolute right-0 top-0 flex flex-col items-center space-y-2">
                     <VerticalProgressBar
@@ -384,9 +388,13 @@ function Dashboard() {
                       onClick={handleQuickCapture}
                       className="group min-h-[44px] min-w-[44px]"
                     >
-                      <Utensils className="h-6 w-6 text-gray-600 group-hover:text-green-500 transition-colors" />
+                      <Utensils
+                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass("green")} transition-colors`}
+                      />
                     </MetallicButton>
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                    <div
+                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass("green")} rounded-full flex items-center justify-center shadow-lg`}
+                    >
                       <Plus className="h-3 w-3 text-white" />
                     </div>
                   </div>
@@ -398,9 +406,13 @@ function Dashboard() {
                       onClick={handleAddSymptom}
                       className="group min-h-[44px] min-w-[44px]"
                     >
-                      <Activity className="h-6 w-6 text-gray-600 group-hover:text-red-500 transition-colors" />
+                      <Activity
+                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass("red")} transition-colors`}
+                      />
                     </MetallicButton>
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+                    <div
+                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass("red")} rounded-full flex items-center justify-center shadow-lg`}
+                    >
                       <Plus className="h-3 w-3 text-white" />
                     </div>
                   </div>
@@ -419,8 +431,6 @@ function Dashboard() {
         onManualEntry={handleManualEntry}
         title="Capture Food"
       />
-
-
     </div>
   );
 }

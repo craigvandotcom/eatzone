@@ -20,6 +20,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  getZoneColor,
+  getZoneBgClass,
+  getZoneTextClass,
+} from "@/lib/utils/zone-colors";
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, "id" | "timestamp">) => void;
@@ -395,11 +400,11 @@ export function FoodEntryForm({
                         style={{
                           backgroundColor:
                             ingredient.zone === "green"
-                              ? "#10b981"
+                              ? getZoneColor("green", "hex")
                               : ingredient.zone === "yellow"
-                                ? "#f59e0b"
+                                ? getZoneColor("yellow", "hex")
                                 : ingredient.zone === "red"
-                                  ? "#ef4444"
+                                  ? getZoneColor("red", "hex")
                                   : "#9ca3af",
                         }}
                         title={`Zone: ${ingredient.zone || "unzoned"}`}
@@ -421,7 +426,9 @@ export function FoodEntryForm({
                             {ingredient.name}
                           </span>
                           {ingredient.isOrganic && (
-                            <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+                            <span
+                              className={`text-xs ${getZoneBgClass("green", "light")} ${getZoneTextClass("green")} px-1.5 py-0.5 rounded-full`}
+                            >
                               organic
                             </span>
                           )}

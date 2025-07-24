@@ -8,7 +8,37 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./features/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/**/*.{js,ts,jsx,tsx,mdx}",
     "*.{js,ts,jsx,tsx,mdx}",
+  ],
+  safelist: [
+    // Zone color classes - ensure they're always generated
+    "bg-zone-green",
+    "bg-zone-yellow",
+    "bg-zone-red",
+    "text-zone-green",
+    "text-zone-yellow",
+    "text-zone-red",
+    "border-zone-green",
+    "border-zone-yellow",
+    "border-zone-red",
+    // With opacity variants
+    "bg-zone-green/10",
+    "bg-zone-green/50",
+    "bg-zone-green/80",
+    "bg-zone-yellow/10",
+    "bg-zone-yellow/50",
+    "bg-zone-yellow/80",
+    "bg-zone-red/10",
+    "bg-zone-red/50",
+    "bg-zone-red/80",
+    "text-zone-green/70",
+    "text-zone-yellow/70",
+    "text-zone-red/70",
+    "border-zone-green/30",
+    "border-zone-yellow/30",
+    "border-zone-red/30",
   ],
   theme: {
     extend: {
@@ -70,6 +100,30 @@ const config: Config = {
           300: "#fcd34d",
           500: "#f59e0b",
           700: "#b45309",
+        },
+        // Zone colors using CSS variables for automatic light/dark mode support
+        zone: {
+          green: {
+            DEFAULT: "hsl(var(--zone-green))",
+            rgb: "rgb(var(--zone-green-rgb))",
+            light: "hsl(var(--zone-green) / 0.1)",
+            medium: "hsl(var(--zone-green) / 0.5)",
+            dark: "hsl(var(--zone-green) / 0.8)",
+          },
+          yellow: {
+            DEFAULT: "hsl(var(--zone-yellow))",
+            rgb: "rgb(var(--zone-yellow-rgb))",
+            light: "hsl(var(--zone-yellow) / 0.1)",
+            medium: "hsl(var(--zone-yellow) / 0.5)",
+            dark: "hsl(var(--zone-yellow) / 0.8)",
+          },
+          red: {
+            DEFAULT: "hsl(var(--zone-red))",
+            rgb: "rgb(var(--zone-red-rgb))",
+            light: "hsl(var(--zone-red) / 0.1)",
+            medium: "hsl(var(--zone-red) / 0.5)",
+            dark: "hsl(var(--zone-red) / 0.8)",
+          },
         },
       },
       borderRadius: {

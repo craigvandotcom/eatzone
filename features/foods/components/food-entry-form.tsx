@@ -387,8 +387,24 @@ export function FoodEntryForm({
                   {ingredients.map((ingredient, index) => (
                     <div
                       key={index}
-                      className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
+                      className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
                     >
+                      {/* Zone color indicator bar */}
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-1"
+                        style={{
+                          backgroundColor:
+                            ingredient.zone === "green"
+                              ? "#10b981"
+                              : ingredient.zone === "yellow"
+                                ? "#f59e0b"
+                                : ingredient.zone === "red"
+                                  ? "#ef4444"
+                                  : "#9ca3af",
+                        }}
+                        title={`Zone: ${ingredient.zone || "unzoned"}`}
+                      />
+
                       {/* Ingredient Row */}
                       {editingIndex === index ? (
                         <Input
@@ -396,11 +412,11 @@ export function FoodEntryForm({
                           onChange={e => setEditingValue(e.target.value)}
                           onKeyPress={e => handleEditKeyPress(e, index)}
                           onBlur={() => handleSaveEdit(index)}
-                          className="flex-1 h-8 mx-2"
+                          className="flex-1 h-8 mx-2 ml-3"
                           autoFocus
                         />
                       ) : (
-                        <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
+                        <div className="flex-1 pl-3 pr-2 flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-medium">
                             {ingredient.name}
                           </span>

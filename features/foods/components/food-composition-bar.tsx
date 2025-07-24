@@ -48,7 +48,12 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
     return (
       <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
         <div
-          className="h-full bg-orange-100 w-full"
+          className="transition-all duration-500"
+          style={{
+            backgroundColor: "#f59e0b",
+            width: "100%",
+            height: "100%",
+          }}
           title="Unanalyzed ingredients"
         ></div>
       </div>
@@ -83,8 +88,9 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
       )}
       {yellowPercent > 0 && (
         <div
-          className="bg-orange-100 transition-all duration-500"
+          className="transition-all duration-500"
           style={{
+            backgroundColor: "#f59e0b",
             width: `${yellowPercent}%`,
             minWidth: yellowPercent > 0 ? "2px" : "0px",
           }}

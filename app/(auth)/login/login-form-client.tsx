@@ -27,6 +27,7 @@ import {
   Globe,
   Monitor,
   Users,
+  Smartphone,
 } from "lucide-react";
 import {
   authenticateUser,
@@ -37,6 +38,7 @@ import {
   resetDevUser,
 } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
+import { isPWAContext, isIOSDevice } from "@/lib/pwa-storage";
 
 export function LoginFormClient() {
   const router = useRouter();
@@ -55,11 +57,16 @@ export function LoginFormClient() {
   const [selectedDemoAccount, setSelectedDemoAccount] = useState<number | null>(
     null
   );
+  const [showPWAInfo, setShowPWAInfo] = useState(false);
 
   // Get environment info
   const envType =
     typeof window !== "undefined" ? getEnvironmentType() : "production";
   const demoAccounts = getDemoAccounts();
+  
+  // PWA detection
+  const isPWA = typeof window !== "undefined" ? isPWAContext() : false;
+  const isIOS = typeof window !== "undefined" ? isIOSDevice() : false;
 
   // Check for redirect message
   const redirectMessage = searchParams.get("message");
@@ -101,7 +108,7 @@ export function LoginFormClient() {
 
     try {
       const result = await authenticateUser(email, password);
-      login(result.token, result.user);
+      await login(result.token, result.user);
       router.push("/app");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -124,7 +131,7 @@ export function LoginFormClient() {
             ? "Dev User"
             : demoAccounts[targetAccount]?.name || "Demo User";
         console.log(`✅ Logged in as: ${accountName} (${result.user.email})`);
-        login(result.token, result.user);
+        await login(result.token, result.user);
         router.push("/app");
       } else {
         setDemoLoginError("Demo login failed - not in demo mode");
@@ -196,6 +203,14 @@ export function LoginFormClient() {
               <span>Running in {envType} mode</span>
             </div>
           )}
+          
+          {/* PWA Status indicator */}
+          {isPWA && (
+            <div className="flex items-center justify-center space-x-1 text-xs text-blue-600">
+              <Smartphone className="h-3 w-3" />
+              <span>PWA Mode {isIOS ? "(iOS)" : ""}</span>
+            </div>
+          )}
         </div>
 
         {/* Success Message */}
@@ -205,6 +220,40 @@ export function LoginFormClient() {
               Account created successfully! Please sign in.
             </AlertDescription>
           </Alert>
+        )}
+
+        {/* PWA Information Card for iOS users */}
+        {isPWA && isIOS && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <div className="flex items-center space-x-1">
+                    <Smartphone className="h-3 w-3" />
+                    <span>iOS PWA</span>
+                  </div>
+                </Badge>
+                <button
+                  onClick={() => setShowPWAInfo(!showPWAInfo)}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  {showPWAInfo ? "Hide" : "Info"}
+                </button>
+              </div>
+            </CardHeader>
+            {showPWAInfo && (
+              <CardContent className="space-y-2">
+                <p className="text-sm text-blue-700">
+                  <strong>iOS PWA Detected:</strong> Enhanced storage is active for better app experience.
+                </p>
+                <ul className="text-xs text-blue-600 space-y-1 ml-4">
+                  <li>• Your login will persist across app launches</li>
+                  <li>• Data is stored securely in multiple locations</li>
+                  <li>• If login issues occur, try closing and reopening the app</li>
+                </ul>
+              </CardContent>
+            )}
+          </Card>
         )}
 
         {/* Demo Mode Card */}

@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DayTimePickerProps {
@@ -14,6 +16,7 @@ interface DayTimePickerProps {
 export function DayTimePicker({ value, onChange, className }: DayTimePickerProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(value || new Date());
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [isOpen, setIsOpen] = useState(false);
   const timeScrollRef = useRef<HTMLDivElement>(null);
 
   // Generate the last 14 days for selection
@@ -94,6 +97,7 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
   const handleDaySelect = (date: Date) => {
     setSelectedDate(date);
     updateDateTime(date, selectedTime);
+    // Keep popover open for time selection after day selection
   };
 
   // Handle time selection
@@ -102,12 +106,29 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
     updateDateTime(selectedDate, timeValue);
   };
 
+  // Handle keyboard navigation
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
   // Update the combined date-time and call onChange
   const updateDateTime = (date: Date, time: string) => {
     const [hours, minutes] = time.split(':').map(Number);
     const newDateTime = new Date(date);
     newDateTime.setHours(hours, minutes, 0, 0);
     onChange(newDateTime);
+  };
+
+  // Format display text for compact state
+  const formatCompactDisplay = () => {
+    const dateDisplay = formatDayDisplay(selectedDate);
+    const timeDisplay = selectedTime ? formatTime(
+      parseInt(selectedTime.split(':')[0]), 
+      parseInt(selectedTime.split(':')[1])
+    ) : formatTime(new Date().getHours(), Math.floor(new Date().getMinutes() / 30) * 30);
+    return `${dateDisplay} • ${timeDisplay}`;
   };
 
   // Scroll to selected time on mount
@@ -126,54 +147,83 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
   const timeSlots = generateTimeSlots();
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Day Picker */}
-      <div>
-        <h3 className="text-sm font-medium mb-2">Select Date</h3>
-        <ScrollArea className="w-full">
-          <div className="flex gap-2 pb-2">
-            {days.map((day, dayIndex) => (
-              <Button
-                key={dayIndex}
-                type="button"
-                variant={isSameDate(day, selectedDate) ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleDaySelect(day)}
-                className="whitespace-nowrap min-w-[80px] h-11"
-              >
-                {formatDayDisplay(day)}
-              </Button>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
-
-      {/* Time Picker */}
-      <div>
-        <h3 className="text-sm font-medium mb-2">Select Time</h3>
-        <ScrollArea 
-          className="h-48 border rounded-md"
-          ref={timeScrollRef}
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !value && "text-muted-foreground",
+            className
+          )}
+          aria-label={`Select date and time. Current: ${formatCompactDisplay()}`}
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
         >
-          <div className="p-1">
-            {timeSlots.map((slot) => (
-              <Button
-                key={slot.value}
-                type="button"
-                variant={selectedTime === slot.value ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handleTimeSelect(slot.value)}
-                className={cn(
-                  "w-full justify-center h-12 mb-1 text-sm",
-                  selectedTime === slot.value && "font-medium"
-                )}
-              >
-                {slot.display}
-              </Button>
-            ))}
+          <Calendar className="mr-2 h-4 w-4" />
+          <Clock className="mr-2 h-4 w-4" />
+          {formatCompactDisplay()}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent 
+        className="w-80 p-4" 
+        align="start"
+        onKeyDown={handleKeyDown}
+      >
+        <div className="space-y-4" role="dialog" aria-label="Date and time picker">
+          {/* Day Picker */}
+          <div>
+            <h3 className="text-sm font-medium mb-2">Select Date</h3>
+            <ScrollArea className="w-full whitespace-nowrap" type="scroll">
+              <div className="flex gap-2 pb-4 px-1">
+                {days.map((day, dayIndex) => (
+                  <Button
+                    key={dayIndex}
+                    type="button"
+                    variant={isSameDate(day, selectedDate) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleDaySelect(day)}
+                    className="whitespace-nowrap min-w-[80px] h-11 flex-shrink-0"
+                  >
+                    {formatDayDisplay(day)}
+                  </Button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
-        </ScrollArea>
-      </div>
-    </div>
+
+          {/* Time Picker */}
+          <div>
+            <h3 className="text-sm font-medium mb-2">Select Time</h3>
+            <ScrollArea 
+              className="h-48 border rounded-md"
+              ref={timeScrollRef}
+            >
+              <div className="p-1">
+                {timeSlots.map((slot) => (
+                  <Button
+                    key={slot.value}
+                    type="button"
+                    variant={selectedTime === slot.value ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => {
+                      handleTimeSelect(slot.value);
+                      setIsOpen(false);
+                    }}
+                    className={cn(
+                      "w-full justify-center h-12 mb-1 text-sm",
+                      selectedTime === slot.value && "font-medium"
+                    )}
+                  >
+                    {slot.display}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

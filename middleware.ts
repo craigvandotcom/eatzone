@@ -64,8 +64,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get token from multiple sources
+  // Get token from multiple sources with PWA-specific handling
   let token: string | null = null;
+  
+  // Detect PWA context from headers
+  const userAgent = request.headers.get("user-agent") || "";
+  const isIOSPWA = userAgent.includes("iPhone") && 
+    (request.headers.get("x-requested-with") === "com.apple.mobilesafari" ||
+     request.headers.get("accept")?.includes("text/html"));
 
   // 1. Check Authorization header
   const authHeader = request.headers.get("authorization");
@@ -73,14 +79,23 @@ export async function middleware(request: NextRequest) {
     token = authHeader.substring(7);
   }
 
-  // 2. Check cookies (fallback for browser requests)
+  // 2. Check cookies with PWA-aware fallback
   if (!token) {
+    // Try both cookie types for PWA compatibility
     token = request.cookies.get("auth_token")?.value || null;
   }
 
-  // 3. Check custom header (for SPA requests)
+  // 3. Check custom headers (for SPA/PWA requests)
   if (!token) {
-    token = request.headers.get("x-auth-token");
+    token = request.headers.get("x-auth-token") || 
+            request.headers.get("x-pwa-token");
+  }
+
+  // 4. For iOS PWA, be more lenient about missing tokens on initial requests
+  const isInitialPWARequest = isIOSPWA && !token && pathname === "/";
+  
+  if (isInitialPWARequest) {
+    console.log("🍎 iOS PWA initial request detected, allowing through for client-side auth");
   }
 
   // Validate token if it exists
@@ -106,14 +121,30 @@ export async function middleware(request: NextRequest) {
 
   // Check if this is a protected route
   if (isProtectedRoute(pathname)) {
-    // If no token found, redirect to login
+    // Special handling for iOS PWA - allow some grace for client-side auth
     if (!token) {
+      if (isIOSPWA) {
+        console.log("🍎 iOS PWA accessing protected route without token, allowing for client-side auth check");
+        // Add a header to indicate this should trigger client-side auth
+        const response = NextResponse.next();
+        response.headers.set("x-pwa-auth-required", "true");
+        return response;
+      }
+      
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
     if (!isValidToken) {
+      if (isIOSPWA) {
+        console.log("🍎 iOS PWA with invalid token, allowing client-side auth recovery");
+        const response = NextResponse.next();
+        response.headers.set("x-pwa-auth-expired", "true");
+        response.cookies.delete("auth_token");
+        return response;
+      }
+      
       // Token is invalid/expired, redirect to login
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);

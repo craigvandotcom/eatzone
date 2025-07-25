@@ -225,6 +225,23 @@ export function CameraCapture({
             Cancel
           </Button>
 
+          <div className="relative flex-1">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              size="lg"
+            >
+              <Upload className="h-5 w-5 mr-2" />
+              Upload
+            </Button>
+          </div>
+
           <Button
             onClick={handleManualEntry}
             variant="outline"

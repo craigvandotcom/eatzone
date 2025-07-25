@@ -217,16 +217,16 @@ function SettingsPage() {
   };
 
   return (
-    <div className="h-screen-dynamic bg-gray-50 flex flex-col">
+    <div className="h-screen-dynamic bg-background flex flex-col">
       {/* Header */}
-      <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100 flex-shrink-0">
+      <div className="bg-card px-4 py-4 flex items-center justify-between border-b border-border flex-shrink-0">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
-        <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
+        <h1 className="text-xl font-semibold text-foreground">Settings</h1>
         <div className="w-6" /> {/* Spacer */}
       </div>
 
@@ -245,13 +245,13 @@ function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Email</Label>
-              <p className="text-sm text-gray-900">
+              <p className="text-sm text-foreground">
                 {user?.email || "Loading..."}
               </p>
             </div>
             <div className="space-y-2">
               <Label>Account Created</Label>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {user?.createdAt
                   ? new Date(user.createdAt).toLocaleDateString()
                   : "Loading..."}
@@ -259,7 +259,7 @@ function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label>Last Login</Label>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {user?.lastLoginAt
                   ? new Date(user.lastLoginAt).toLocaleDateString()
                   : "N/A"}
@@ -295,7 +295,7 @@ function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Export Data</Label>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Download all your data as a JSON file. This is your primary
                 backup method.
               </p>
@@ -314,7 +314,7 @@ function SettingsPage() {
 
             <div className="space-y-2">
               <Label>Import Data</Label>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Upload a previously exported JSON file to restore your data.
                 This will replace all current data.
               </p>
@@ -341,7 +341,7 @@ function SettingsPage() {
 
             <div className="space-y-2">
               <Label className={getZoneTextClass("red")}>Danger Zone</Label>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Permanently delete all your health tracking data. This cannot be
                 undone.
               </p>
@@ -428,7 +428,7 @@ function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Dark Mode</Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Switch between light and dark themes.
                 </p>
               </div>

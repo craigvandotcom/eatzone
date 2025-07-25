@@ -293,7 +293,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 
 - [x] make sure that rate limiting is also configured for image analysis calls
 - [x] add time edit to entry edit page
-- [ ] change capture photo screen to look like dribble FULL screen concept
+- [x] change capture photo screen to look like dribble FULL screen concept
 - [ ] add upload photo option alongside capture
 - [x] in manual entry page: show image of food too
 

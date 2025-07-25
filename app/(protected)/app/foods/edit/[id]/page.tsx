@@ -40,7 +40,7 @@ export default function EditFoodPage({
   }, [params, router]);
 
   const handleUpdateFood = async (
-    updatedFood: Omit<Food, "id" | "timestamp">
+    updatedFood: Omit<Food, "id">
   ) => {
     if (food) {
       await dbUpdateFood(food.id, updatedFood);

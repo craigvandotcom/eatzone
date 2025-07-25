@@ -294,10 +294,10 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 - [x] make sure that rate limiting is also configured for image analysis calls
 - [x] add time edit to entry edit page
 - [x] change capture photo screen to look like dribble FULL screen concept
-- [ ] add upload photo option alongside capture
+- [x] add upload photo option alongside capture
 - [x] in manual entry page: show image of food too
 
-- [ ] **Task 15: Finalize AI Data Flow and UI (`finalize-ai-flow`)**
+- [x] **Task 15: Finalize AI Data Flow and UI (`finalize-ai-flow`)**
   - **Action:** Connect the full AI pipeline to the database and update the UI to handle the final, enriched data.
   - **Implementation:**
     - When the user submits the `AddFoodDialog`, the confirmed ingredient list is sent to the `/api/zone-ingredients` endpoint.
@@ -305,6 +305,11 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - Upon receiving the zoned ingredients, the complete `Food` object is assembled on the client and saved to IndexedDB using the existing data layer functions.
     - Ensure all statuses (`analyzing`, `processed`) are correctly managed in the UI and the database.
   - **Outcome:** A complete, end-to-end AI-powered food logging experience, from photo capture to storing fully analyzed and zoned ingredient data.
+
+- [ ] Task 15.5: Review complete symptoms logging flow
+  - [ ] manual capture
+  - [ ] recent entries
+  - [ ] etc
 
 - [ ] **Task 16: Build MVP Insights Page (`build-mvp-insights-page`)**
   - **Action:** Create the initial "Insights & Analytics" page that performs all calculations on the client-side, focusing on a simple heuristic-based correlation approach.

@@ -2,6 +2,7 @@
 
 import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getZoneTextClass } from "@/lib/utils/zone-colors";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -193,7 +194,7 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {isValidEmail ? (
                         <>
-                          <CheckCircle className="h-3 w-3 text-green-500 mr-1" />{" "}
+                          <CheckCircle className={`h-3 w-3 ${getZoneTextClass("green")} mr-1`} />{" "}
                           Valid email format
                         </>
                       ) : (
@@ -238,7 +239,7 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {isPasswordStrong ? (
                         <>
-                          <CheckCircle className="h-3 w-3 text-green-500 mr-1" />{" "}
+                          <CheckCircle className={`h-3 w-3 ${getZoneTextClass("green")} mr-1`} />{" "}
                           Strong password
                         </>
                       ) : (
@@ -285,12 +286,12 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {passwordsMatch ? (
                         <>
-                          <CheckCircle className="h-3 w-3 text-green-500 mr-1" />{" "}
+                          <CheckCircle className={`h-3 w-3 ${getZoneTextClass("green")} mr-1`} />{" "}
                           Passwords match
                         </>
                       ) : (
                         <>
-                          <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />{" "}
+                          <AlertTriangle className={`h-3 w-3 ${getZoneTextClass("red")} mr-1`} />{" "}
                           Passwords do not match
                         </>
                       )}

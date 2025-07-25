@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
 import { Camera, Edit3, Upload } from "lucide-react";
 
 interface CameraCaptureProps {
@@ -219,7 +220,7 @@ export function CameraCapture({
               <Button
                 onClick={handleClose}
                 variant="outline"
-                className="w-16 h-12 bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300"
+                className={`w-16 h-12 ${getZoneBgClass("red", "light")} border-zone-red/30 ${getZoneTextClass("red")} hover:${getZoneBgClass("red", "medium")} hover:border-zone-red/50`}
                 size="lg"
               >
                 Cancel

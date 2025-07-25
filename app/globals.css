@@ -50,12 +50,12 @@
   .dark {
     /* Zone colors - Dark mode */
     --zone-green: 122 39% 19%; /* #2f7d31 */
-    --zone-yellow: 173 61% 51%; /* #27a69a */
-    --zone-red: 0 50% 46%; /* #c62828 */
+    --zone-yellow: 45 95% 55%; /* #f9a825 */
+    --zone-red: 0 65% 36%; /* #c62828 */
 
     /* Zone colors RGB values for dark mode */
     --zone-green-rgb: 47 125 49;
-    --zone-yellow-rgb: 39 166 154;
+    --zone-yellow-rgb: 249 168 37;
     --zone-red-rgb: 198 40 40;
   }
 }

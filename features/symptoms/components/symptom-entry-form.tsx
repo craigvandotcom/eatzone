@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from "lucide-react";
+import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
+import type { ZoneType } from "@/lib/utils/zone-colors";
 
 interface LocalSymptom {
   name: string;
@@ -120,10 +122,15 @@ export function SymptomEntryForm({
     }
   };
 
+  const getSeverityZone = (severity: number): ZoneType => {
+    if (severity <= 2) return "green";
+    if (severity <= 4) return "yellow";
+    return "red";
+  };
+
   const getSeverityColor = (severity: number) => {
-    if (severity <= 2) return "bg-green-100 text-green-700";
-    if (severity <= 4) return "bg-yellow-100 text-yellow-700";
-    return "bg-red-100 text-red-700";
+    const zone = getSeverityZone(severity);
+    return `${getZoneBgClass(zone, "light")} ${getZoneTextClass(zone)}`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -214,11 +221,11 @@ export function SymptomEntryForm({
                               }
                               className={`p-1 transition-colors ${
                                 symptom.severity >= 4
-                                  ? "text-red-600 hover:text-red-700"
+                                  ? getZoneTextClass("red")
                                   : symptom.severity >= 3
-                                    ? "text-yellow-600 hover:text-yellow-700"
-                                    : "text-green-600 hover:text-green-700"
-                              }`}
+                                    ? getZoneTextClass("yellow")
+                                    : getZoneTextClass("green")
+                              } hover:opacity-80`}
                               title="Adjust severity"
                             >
                               <Target className="h-3 w-3" />
@@ -234,7 +241,7 @@ export function SymptomEntryForm({
                             <button
                               type="button"
                               onClick={() => handleDeleteSymptom(index)}
-                              className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                              className={`p-1 text-gray-500 hover:${getZoneTextClass("red")} transition-colors`}
                               title="Delete symptom"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -254,10 +261,10 @@ export function SymptomEntryForm({
                               onClick={() => handleSelectSeverity(index, level)}
                               className={`w-10 h-8 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-110 ${
                                 level <= 2
-                                  ? "bg-green-100 text-green-700 hover:bg-green-200 border-2 border-green-300"
+                                  ? `${getZoneBgClass("green", "light")} ${getZoneTextClass("green")} hover:${getZoneBgClass("green", "medium")} border-2 border-zone-green/30`
                                   : level <= 4
-                                    ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-2 border-yellow-300"
-                                    : "bg-red-100 text-red-700 hover:bg-red-200 border-2 border-red-300"
+                                    ? `${getZoneBgClass("yellow", "light")} ${getZoneTextClass("yellow")} hover:${getZoneBgClass("yellow", "medium")} border-2 border-zone-yellow/30`
+                                    : `${getZoneBgClass("red", "light")} ${getZoneTextClass("red")} hover:${getZoneBgClass("red", "medium")} border-2 border-zone-red/30`
                               }`}
                             >
                               {level}

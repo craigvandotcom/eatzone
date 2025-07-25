@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -199,8 +200,8 @@ export function LoginFormClient() {
 
         {/* Success Message */}
         {redirectMessage === "signup_success" && (
-          <Alert className="border-green-200 bg-green-50">
-            <AlertDescription className="text-green-800">
+          <Alert className={`border-zone-green/30 ${getZoneBgClass("green", "light")}`}>
+            <AlertDescription className={getZoneTextClass("green")}>
               Account created successfully! Please sign in.
             </AlertDescription>
           </Alert>
@@ -308,8 +309,8 @@ export function LoginFormClient() {
               </div>
 
               {demoLoginError && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-800 text-sm">
+                <Alert className={`border-zone-red/30 ${getZoneBgClass("red", "light")}`}>
+                  <AlertDescription className={`${getZoneTextClass("red")} text-sm`}>
                     {demoLoginError}
                   </AlertDescription>
                 </Alert>
@@ -368,8 +369,8 @@ export function LoginFormClient() {
               </div>
 
               {error && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-800">
+                <Alert className={`border-zone-red/30 ${getZoneBgClass("red", "light")}`}>
+                  <AlertDescription className={getZoneTextClass("red")}>
                     {error}
                   </AlertDescription>
                 </Alert>

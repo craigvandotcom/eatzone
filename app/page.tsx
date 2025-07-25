@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getZoneTextClass } from "@/lib/utils/zone-colors";
 import {
   Card,
   CardContent,
@@ -61,13 +62,13 @@ export default function LandingPage() {
     {
       icon: Utensils,
       name: "Foods",
-      color: "text-green-500",
+      color: getZoneTextClass("green"),
       description: "Ingredient analysis",
     },
     {
       icon: Activity,
       name: "Symptoms",
-      color: "text-red-500",
+      color: getZoneTextClass("red"),
       description: "Health monitoring",
     },
   ];
@@ -158,11 +159,11 @@ export default function LandingPage() {
 
               <div className="flex items-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <CheckCircle className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`} />
                   No account required to try
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <CheckCircle className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`} />
                   Data stays on your device
                 </div>
               </div>
@@ -285,7 +286,7 @@ export default function LandingPage() {
                   "No tracking or analytics",
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                    <CheckCircle className={`h-5 w-5 ${getZoneTextClass("green")} mr-3`} />
                     <span className="text-gray-700">{item}</span>
                   </div>
                 ))}

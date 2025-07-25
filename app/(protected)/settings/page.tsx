@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getZoneTextClass, getZoneBgClass } from "@/lib/utils/zone-colors";
 import {
   Card,
   CardContent,
@@ -339,7 +340,7 @@ function SettingsPage() {
             <Separator />
 
             <div className="space-y-2">
-              <Label className="text-red-600">Danger Zone</Label>
+              <Label className={getZoneTextClass("red")}>Danger Zone</Label>
               <p className="text-sm text-gray-600">
                 Permanently delete all your health tracking data. This cannot be
                 undone.
@@ -369,7 +370,7 @@ function SettingsPage() {
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleClearAllData}
-                      className="bg-red-600 hover:bg-red-700"
+                      className={`${getZoneBgClass("red")} hover:${getZoneBgClass("red")}/90`}
                     >
                       Delete Everything
                     </AlertDialogAction>

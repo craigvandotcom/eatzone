@@ -209,7 +209,7 @@ function Dashboard() {
                       percentage={foodStats?.totalOrganicPercentage || 0}
                       height={200}
                     />
-                    <Leaf className="h-5 w-5 text-green-600" />
+                    <Leaf className={`h-5 w-5 ${getZoneTextClass("green")}`} />
                   </div>
                 </div>
 

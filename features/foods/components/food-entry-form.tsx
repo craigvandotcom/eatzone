@@ -365,9 +365,9 @@ export function FoodEntryForm({
           )}
 
           {analysisError && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 rounded-md mt-2">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <span className="text-sm text-red-700">{analysisError}</span>
+            <div className={`flex items-center gap-2 p-3 ${getZoneBgClass("red", "light")} rounded-md mt-2`}>
+              <AlertCircle className={`h-4 w-4 ${getZoneTextClass("red")}`} />
+              <span className={`text-sm ${getZoneTextClass("red")}`}>{analysisError}</span>
             </div>
           )}
         </div>
@@ -440,8 +440,8 @@ export function FoodEntryForm({
                           onClick={() => handleToggleOrganic(index)}
                           className={`p-1 transition-colors ${
                             ingredient.isOrganic
-                              ? "text-green-600 hover:text-green-700"
-                              : "text-gray-400 hover:text-green-600"
+                              ? `${getZoneTextClass("green")} hover:opacity-80`
+                              : `text-gray-400 hover:${getZoneTextClass("green")}`
                           }`}
                           title={
                             ingredient.isOrganic
@@ -462,7 +462,7 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleDeleteIngredient(index)}
-                          className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                          className={`p-1 text-gray-500 hover:${getZoneTextClass("red")} transition-colors`}
                           title="Delete ingredient"
                         >
                           <Trash2 className="h-3 w-3" />

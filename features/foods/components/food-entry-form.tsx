@@ -25,9 +25,10 @@ import {
   getZoneBgClass,
   getZoneTextClass,
 } from "@/lib/utils/zone-colors";
+import { DayTimePicker } from "@/components/ui/day-time-picker";
 
 interface FoodEntryFormProps {
-  onAddFood: (food: Omit<Food, "id" | "timestamp">) => void;
+  onAddFood: (food: Omit<Food, "id">) => void;
   onClose: () => void;
   editingFood?: Food | null;
   imageData?: string; // Base64 image data for AI analysis
@@ -48,6 +49,7 @@ export function FoodEntryForm({
   const [editingValue, setEditingValue] = useState("");
   const [notes, setNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
+  const [selectedDateTime, setSelectedDateTime] = useState<Date>(new Date());
 
   // AI Analysis state
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -98,6 +100,7 @@ export function FoodEntryForm({
     }
   };
 
+
   // Pre-populate form when editing or analyze image when provided
   useEffect(() => {
     if (editingFood) {
@@ -105,12 +108,14 @@ export function FoodEntryForm({
       setIngredients(editingFood.ingredients || []);
       setNotes(editingFood.notes || "");
       setShowNotes(!!editingFood.notes);
+      setSelectedDateTime(new Date(editingFood.timestamp));
       setHasAnalyzed(false);
     } else {
       setName("");
       setIngredients([]);
       setNotes("");
       setShowNotes(false);
+      setSelectedDateTime(new Date());
       setHasAnalyzed(false);
       setAnalysisError(null);
 
@@ -309,6 +314,7 @@ export function FoodEntryForm({
         ingredients: validatedIngredients,
         notes: notes.trim(),
         status: "processed",
+        timestamp: selectedDateTime.toISOString(),
       });
 
       onClose();
@@ -324,6 +330,19 @@ export function FoodEntryForm({
   return (
     <div className={className}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Image Display */}
+        {editingFood?.image && (
+          <div className="mb-4">
+            <Label>Food Image</Label>
+            <div className="mt-2 relative w-full max-w-md mx-auto">
+              <img
+                src={editingFood.image}
+                alt="Food entry"
+                className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
+              />
+            </div>
+          </div>
+        )}
         <div>
           <Label htmlFor="meal-summary">Meal Summary (optional)</Label>
           <Input
@@ -331,6 +350,15 @@ export function FoodEntryForm({
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
+          />
+        </div>
+
+        <div>
+          <Label>Date & Time</Label>
+          <DayTimePicker
+            value={selectedDateTime}
+            onChange={setSelectedDateTime}
+            className="mt-2"
           />
         </div>
 

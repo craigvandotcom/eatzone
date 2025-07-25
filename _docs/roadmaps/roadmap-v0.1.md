@@ -291,7 +291,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - Implement robust Zod validation on the API response to ensure data integrity before saving to the database.
   - **Outcome:** An intelligent zoning engine that can classify any list of ingredients according to the project's specific nutritional philosophy.
 
-- [ ] make sure that rate limiting is also configured for image analysis calls
+- [x] make sure that rate limiting is also configured for image analysis calls
 - [x] add time edit to entry edit page
 - [ ] change capture photo screen to look like dribble FULL screen concept
 - [ ] add upload photo option alongside capture

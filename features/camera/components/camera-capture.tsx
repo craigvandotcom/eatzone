@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
@@ -130,115 +129,113 @@ export function CameraCapture({
     reader.readAsDataURL(file);
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
-        <div className="relative">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
-          </div>
+    <div className="fixed inset-0 z-50 bg-black">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm">
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
+      </div>
 
-          {/* Camera View */}
-          <div className="relative bg-black">
-            {isLoading && (
-              <div className="aspect-square flex items-center justify-center bg-gray-100">
-                <div className="text-center">
-                  <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Starting camera...</p>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="aspect-square flex items-center justify-center bg-gray-100">
-                <div className="text-center p-4">
-                  <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">{error}</p>
-                  <div className="flex flex-col gap-2 mt-4">
-                    <Button variant="outline" size="sm" onClick={startCamera}>
-                      Try Again
-                    </Button>
-                    <div className="relative">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      />
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Image
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!isLoading && !error && (
-              <div className="relative aspect-square overflow-hidden">
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  playsInline
-                  muted
-                />
-
-                {/* Camera overlay grid */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="w-full h-full border-2 border-white/20">
-                    <div className="w-full h-1/3 border-b border-white/20"></div>
-                    <div className="w-full h-1/3 border-b border-white/20"></div>
-                  </div>
-                  <div className="absolute inset-0">
-                    <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
-                    <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
-                  </div>
-                </div>
-
-                {/* Transparent Capture Overlay */}
-                <div
-                  className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/10 hover:bg-black/20 transition-colors active:bg-black/30"
-                  onClick={captureImage}
-                >
-                  <div className="w-20 h-20 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                    <Camera className="h-8 w-8 text-white" />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Hidden canvas for capture */}
-            <canvas ref={canvasRef} className="hidden" />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="p-4">
-            <div className="flex gap-3">
-              <Button
-                onClick={handleClose}
-                variant="outline"
-                className={`w-16 h-12 ${getZoneBgClass("red", "light")} border-zone-red/30 ${getZoneTextClass("red")} hover:${getZoneBgClass("red", "medium")} hover:border-zone-red/50`}
-                size="lg"
-              >
-                Cancel
-              </Button>
-
-              <Button
-                onClick={handleManualEntry}
-                variant="outline"
-                className="flex-1"
-                size="lg"
-              >
-                <Edit3 className="h-5 w-5 mr-2" />
-                Manual Entry
-              </Button>
+      {/* Camera View */}
+      <div className="relative h-full bg-black">
+        {isLoading && (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-300">Starting camera...</p>
             </div>
           </div>
+        )}
+
+        {error && (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center p-4">
+              <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-300 text-sm">{error}</p>
+              <div className="flex flex-col gap-2 mt-4">
+                <Button variant="outline" size="sm" onClick={startCamera}>
+                  Try Again
+                </Button>
+                <div className="relative">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Image
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !error && (
+          <div className="relative h-full overflow-hidden">
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              autoPlay
+              playsInline
+              muted
+            />
+
+            {/* Camera overlay grid */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="w-full h-full border-2 border-white/20">
+                <div className="w-full h-1/3 border-b border-white/20"></div>
+                <div className="w-full h-1/3 border-b border-white/20"></div>
+              </div>
+              <div className="absolute inset-0">
+                <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
+                <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
+              </div>
+            </div>
+
+            {/* Transparent Capture Overlay */}
+            <div
+              className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/10 hover:bg-black/20 transition-colors active:bg-black/30"
+              onClick={captureImage}
+            >
+              <div className="w-20 h-20 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                <Camera className="h-8 w-8 text-white" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Hidden canvas for capture */}
+        <canvas ref={canvasRef} className="hidden" />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-black/50 backdrop-blur-sm">
+        <div className="flex gap-3">
+          <Button
+            onClick={handleClose}
+            variant="outline"
+            className={`w-16 h-12 ${getZoneBgClass("red", "light")} border-zone-red/30 ${getZoneTextClass("red")} hover:${getZoneBgClass("red", "medium")} hover:border-zone-red/50`}
+            size="lg"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={handleManualEntry}
+            variant="outline"
+            className="flex-1"
+            size="lg"
+          >
+            <Edit3 className="h-5 w-5 mr-2" />
+            Manual Entry
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

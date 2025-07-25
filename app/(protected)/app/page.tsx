@@ -76,7 +76,7 @@ function Dashboard() {
   // Get the active tab styling based on current view
   const getActiveTabStyle = (view: ViewType) => {
     if (currentView !== view)
-      return "text-gray-600 hover:text-gray-800 hover:bg-white/30";
+      return "text-muted-foreground hover:text-foreground hover:bg-background/30";
 
     switch (view) {
       case "food":
@@ -84,7 +84,7 @@ function Dashboard() {
       case "symptoms":
         return "bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg shadow-red-400/25";
       default:
-        return "bg-white text-gray-900 shadow-sm";
+        return "bg-card text-foreground shadow-sm";
     }
   };
 
@@ -160,7 +160,7 @@ function Dashboard() {
 
   return (
     <div
-      className={`flex bg-gray-50 ${isMobile ? "mobile-container h-[100dvh]" : "h-[100dvh]"}`}
+      className={`flex bg-background ${isMobile ? "mobile-container h-[100dvh]" : "h-[100dvh]"}`}
     >
       {/* Desktop Sidebar */}
       {!isMobile && (
@@ -173,16 +173,16 @@ function Dashboard() {
       <div className="flex flex-1 flex-col min-h-0">
         {/* Header - Mobile Only */}
         {isMobile && (
-          <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-100 z-10 flex-shrink-0">
-            <ChevronLeft className="h-6 w-6 text-gray-600" />
-            <h1 className="text-xl font-semibold text-gray-900">
+          <div className="bg-card px-4 py-4 flex items-center justify-between border-b border-border z-10 flex-shrink-0">
+            <ChevronLeft className="h-6 w-6 text-muted-foreground" />
+            <h1 className="text-xl font-semibold text-foreground">
               Your Body Compass
             </h1>
             <button
               onClick={() => router.push("/settings")}
-              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-full hover:bg-muted transition-colors"
             >
-              <Settings className="h-6 w-6 text-gray-600" />
+              <Settings className="h-6 w-6 text-muted-foreground" />
             </button>
           </div>
         )}
@@ -215,21 +215,21 @@ function Dashboard() {
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <h2 className="text-lg font-semibold text-foreground">
                       Recent Entries
                     </h2>
-                    <button className="text-gray-500 text-sm">View more</button>
+                    <button className="text-muted-foreground text-sm">View more</button>
                   </div>
                   <div className="space-y-3">
                     {!recentFoods || recentFoods.length === 0 ? (
                       <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Utensils className="h-8 w-8 text-gray-400" />
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Utensils className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <p className="text-gray-500 text-lg font-medium">
+                        <p className="text-muted-foreground text-lg font-medium">
                           No foods logged yet
                         </p>
-                        <p className="text-gray-400 text-sm mt-1">
+                        <p className="text-muted-foreground/70 text-sm mt-1">
                           Tap the eat icon below to get started
                         </p>
                       </div>
@@ -302,21 +302,21 @@ function Dashboard() {
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <h2 className="text-lg font-semibold text-foreground">
                       Recent Entries
                     </h2>
-                    <button className="text-gray-500 text-sm">View more</button>
+                    <button className="text-muted-foreground text-sm">View more</button>
                   </div>
                   <div className="space-y-3">
                     {!recentSymptoms || recentSymptoms.length === 0 ? (
                       <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Activity className="h-8 w-8 text-gray-400" />
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Activity className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <p className="text-gray-500 text-lg font-medium">
+                        <p className="text-muted-foreground text-lg font-medium">
                           No symptoms logged yet
                         </p>
-                        <p className="text-gray-400 text-sm mt-1">
+                        <p className="text-muted-foreground/70 text-sm mt-1">
                           Tap the symptom icon below to get started
                         </p>
                       </div>

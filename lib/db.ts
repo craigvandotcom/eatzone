@@ -12,12 +12,13 @@ export class HealthTrackerDB extends Dexie {
   constructor() {
     super("HealthTrackerDB");
 
-    // Current schema - Foods + Symptoms only
-    this.version(4).stores({
+    // Skip the problematic version 4 entirely and go straight to version 5
+    // This will create a fresh database with the correct schema
+    this.version(5).stores({
       foods: "id, timestamp",
-      symptoms: "id, timestamp",
+      symptoms: "id, timestamp", 
       users: "id, email",
-      sessions: "userId, token, expiresAt",
+      sessions: "token, userId, expiresAt", // token is now the primary key
     });
   }
 }
@@ -334,7 +335,10 @@ export const updateUserSettings = async (
  * Detects if the app is running in development mode
  */
 export const isDevelopment = (): boolean => {
-  return process.env.NODE_ENV === "development";
+  const nodeEnv = process.env.NODE_ENV;
+  const isDev = nodeEnv === "development";
+  console.log(`🔧 Environment check: NODE_ENV=${nodeEnv}, isDevelopment=${isDev}`);
+  return isDev;
 };
 
 /**
@@ -342,12 +346,15 @@ export const isDevelopment = (): boolean => {
  * This function checks various deployment platform patterns and URL parameters.
  */
 export const isPreviewDeployment = (): boolean => {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") {
+    console.log(`🌐 Preview check: window undefined (SSR), returning false`);
+    return false;
+  }
 
   const hostname = window.location.hostname;
   const searchParams = new URLSearchParams(window.location.search);
 
-  return (
+  const isPreview = (
     // Vercel preview deployments
     hostname.includes(".vercel.app") ||
     // Netlify preview deployments
@@ -363,13 +370,33 @@ export const isPreviewDeployment = (): boolean => {
     searchParams.has("preview") ||
     searchParams.has("demo")
   );
+
+  console.log(`🌐 Preview check: hostname=${hostname}, isPreview=${isPreview}`);
+  return isPreview;
 };
 
 /**
  * Checks if the app should run in demo mode (development OR preview deployment)
  */
 export const isDemoMode = (): boolean => {
-  return isDevelopment() || isPreviewDeployment();
+  const devMode = isDevelopment();
+  const previewMode = isPreviewDeployment();
+  const demoMode = devMode || previewMode;
+  
+  console.log(`🚀 Demo mode check: development=${devMode}, preview=${previewMode}, isDemoMode=${demoMode}`);
+  
+  // Fallback check for localhost development
+  if (!demoMode && typeof window !== "undefined") {
+    const isLocalhost = window.location.hostname === "localhost" || 
+                       window.location.hostname === "127.0.0.1" ||
+                       window.location.hostname.includes("localhost");
+    if (isLocalhost) {
+      console.log(`🚀 Fallback demo mode: detected localhost (${window.location.hostname})`);
+      return true;
+    }
+  }
+  
+  return demoMode;
 };
 
 /**
@@ -501,7 +528,10 @@ export const quickDemoLogin = async (
   user: User;
   token: string;
 } | null> => {
-  if (!isDemoMode()) {
+  const demoModeActive = isDemoMode();
+  console.log(`🚀 Quick demo login attempt - isDemoMode: ${demoModeActive}`);
+  
+  if (!demoModeActive) {
     console.log("❌ Not in demo mode - quick login disabled");
     return null;
   }
@@ -521,7 +551,16 @@ export const quickDemoLogin = async (
       return await createDemoUser(selectedAccount);
     }
   } catch (error) {
-    console.error(`Quick ${envType} login failed:`, error);
+    console.error(`❌ Quick ${envType} login failed:`, error);
+    
+    // Provide more detailed error information
+    if (error instanceof Error) {
+      console.error(`❌ Error details: ${error.message}`);
+      if (error.message.includes('Database')) {
+        console.log('🔧 Database error detected - you may need to reset IndexedDB');
+      }
+    }
+    
     return null;
   }
 };

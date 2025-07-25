@@ -282,7 +282,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - The UI must clearly indicate that these are AI suggestions, and the user has full control to add, edit, or remove ingredients before submission. This fulfills the "human-in-the-loop" requirement.
   - **Outcome:** A seamless user flow from photo capture to an editable list of AI-suggested ingredients, ready for user validation.
 
-- [ ] **Task 14: Implement AI-Powered Ingredient Zoning (`implement-ai-zoning`)**
+- [x] **Task 14: Implement AI-Powered Ingredient Zoning (`implement-ai-zoning`)**
   - **Action:** Build the second stage of the AI pipeline. Once the user confirms the ingredient list, send it to another AI for classification based on the Body Compass zoning rules.
   - **Implementation:**
     - Create a second secure API route (`/api/zone-ingredients`) that accepts a JSON array of ingredient strings.
@@ -292,10 +292,10 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - **Outcome:** An intelligent zoning engine that can classify any list of ingredients according to the project's specific nutritional philosophy.
 
 - [ ] make sure that rate limiting is also configured for image analysis calls
-- [ ] add time edit to entry edit page
+- [x] add time edit to entry edit page
 - [ ] change capture photo screen to look like dribble FULL screen concept
 - [ ] add upload photo option alongside capture
-- [ ] in manual entry page: show image of food too
+- [x] in manual entry page: show image of food too
 
 - [ ] **Task 15: Finalize AI Data Flow and UI (`finalize-ai-flow`)**
   - **Action:** Connect the full AI pipeline to the database and update the UI to handle the final, enriched data.

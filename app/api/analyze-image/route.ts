@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { openrouter } from "@/lib/ai/openrouter";
 import { z } from "zod";
 import { prompts } from "@/lib/prompts"; // Import from our new module
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Rate limiting setup using Vercel's Upstash integration env vars
+let ratelimit: Ratelimit | null = null;
+
+if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  ratelimit = new Ratelimit({
+    redis: new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    }),
+    limiter: Ratelimit.slidingWindow(10, "60 s"), // 10 requests per minute for image analysis
+  });
+}
 
 // Zod schema for request validation
 const analyzeImageSchema = z.object({
@@ -27,6 +42,28 @@ interface AnalyzeImageErrorResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check - only if Redis is configured
+    if (ratelimit) {
+      const forwardedFor = request.headers.get("x-forwarded-for");
+      const realIp = request.headers.get("x-real-ip");
+      const ip = forwardedFor?.split(",")[0] ?? realIp ?? "127.0.0.1";
+
+      const { success } = await ratelimit.limit(ip);
+
+      if (!success) {
+        return NextResponse.json(
+          {
+            error: {
+              message: "Too many requests. Please wait before trying again.",
+              code: "RATE_LIMIT_EXCEEDED",
+              statusCode: 429,
+            },
+          },
+          { status: 429 }
+        );
+      }
+    }
+
     // Parse and validate the request body
     const body = await request.json();
     const { image } = analyzeImageSchema.parse(body);

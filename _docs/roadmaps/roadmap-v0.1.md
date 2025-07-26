@@ -306,6 +306,98 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
     - Ensure all statuses (`analyzing`, `processed`) are correctly managed in the UI and the database.
   - **Outcome:** A complete, end-to-end AI-powered food logging experience, from photo capture to storing fully analyzed and zoned ingredient data.
 
+- [ ] Task 15.1: Setup Claude Code
+  - [x] repo's architecture
+  - [x] context
+  - [ ] tools
+  - [ ] ci/cd pipeline
+  - [ ] github flow
+
+- [ ] **Task 15.3: Migrate to Supabase (`migrate-to-supabase`)**
+  - **Action:** Complete migration from IndexedDB local storage to Supabase cloud database for improved development velocity and user experience during MVP phase.
+  - **Implementation:**
+    - **15.3.0: Test Suite Design & Implementation**
+      - **Action:** Create comprehensive unit tests that must pass before migration is considered complete
+      - **Test Categories:**
+        - **Authentication Tests (`__tests__/auth.test.ts`)**
+          - User registration with email/password validation
+          - User login with correct/incorrect credentials
+          - Session persistence across browser refreshes
+          - Auto-logout on session expiration
+          - Demo mode functionality in development/preview environments
+        - **Data Operations Tests (`__tests__/data-operations.test.ts`)**
+          - CRUD operations for all entities (Food, Symptom, User)
+          - Data validation using Zod schemas
+          - Timestamp generation and ISO 8601 format compliance
+          - Real-time subscriptions and live data updates
+          - Export/import functionality with data integrity
+        - **Database Schema Tests (`__tests__/database.test.ts`)**
+          - Table creation and relationships
+          - Row Level Security (RLS) policy enforcement
+          - Data isolation between users
+          - Foreign key constraints and cascade behavior
+          - Database triggers and automated timestamps
+        - **Component Integration Tests (`__tests__/components.test.ts`)**
+          - Form submissions save data correctly to Supabase
+          - Data visualization components display live data
+          - Loading states during async operations
+          - Error handling for network failures
+          - Real-time UI updates from database changes
+        - **API Routes Tests (`__tests__/api.test.ts`)**
+          - AI image analysis integration with Supabase storage
+          - Ingredient zoning API with database persistence
+          - Rate limiting functionality
+          - Authentication middleware for protected routes
+      - **Test Framework Setup:**
+        - Install Jest and React Testing Library
+        - Configure Supabase test database and test user accounts
+        - Set up CI/CD pipeline to run tests on every commit
+        - Create test data fixtures and cleanup utilities
+      - **Success Criteria:** All tests must pass before proceeding to production deployment
+    - **15.3.1: Project Setup & Configuration**
+      - Create new Supabase project and configure database
+      - Install Supabase dependencies (`@supabase/supabase-js`, `@supabase/auth-js`)
+      - Set up environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
+      - Configure Supabase client in `lib/supabase/client.ts` and `lib/supabase/server.ts`
+    - **15.3.2: Database Schema Design & Migration**
+      - Design PostgreSQL schema matching existing TypeScript interfaces (`User`, `Food`, `Ingredient`, `Symptom`)
+      - Create Supabase tables with proper relationships and constraints
+      - Set up Row Level Security (RLS) policies for data isolation
+      - Create database functions and triggers for automated timestamps
+      - Export existing IndexedDB data for migration (development utility)
+    - **15.3.3: Authentication System Migration**
+      - Replace custom IndexedDB auth with Supabase Auth
+      - Update `features/auth/components/auth-provider.tsx` to use Supabase sessions
+      - Migrate from `bcryptjs` and `jose` to Supabase's built-in auth
+      - Replace PWA storage auth tokens with Supabase session management
+      - Update middleware.ts for Supabase session validation
+      - Maintain demo mode functionality with Supabase test users
+    - **15.3.4: Data Layer Refactoring**
+      - Replace `lib/db.ts` Dexie operations with Supabase queries
+      - Update all CRUD operations (`addFood`, `getSymptoms`, etc.) to use Supabase
+      - Replace `useLiveQuery` hooks with Supabase real-time subscriptions
+      - Migrate data export/import functionality to work with Supabase
+      - Update type definitions for Supabase auto-generated types
+    - **15.3.5: Component Updates & Testing**
+      - Update all components using database operations to work with new async patterns
+      - Replace Dexie reactive queries with Supabase real-time subscriptions
+      - Test all forms, dialogs, and data visualization components
+      - Ensure proper loading states and error handling for network operations
+      - Update development and testing scripts for Supabase environment
+    - **15.3.6: Production Deployment & Cleanup**
+      - Configure Supabase production environment and connection pooling
+      - Update Vercel environment variables for production
+      - Remove IndexedDB dependencies (`dexie`, `dexie-react-hooks`, `bcryptjs`, `jose`)
+      - Remove PWA storage system (`lib/pwa-storage.ts`) as no longer needed
+      - Update documentation and development workflow for Supabase
+      - Create data migration script for existing users (if any)
+  - **Benefits:**
+    - **Development Velocity:** Instant schema changes, real-time data sync, no IndexedDB migration issues
+    - **User Experience:** Cross-device access, data persistence, account recovery, no demo mode complexity
+    - **Maintenance:** Simplified auth system, automatic backups, better debugging capabilities
+  - **Migration Strategy:** Phase out IndexedDB gradually with feature flags, maintain data export for user safety
+  - **Outcome:** Complete cloud-based data architecture with improved development experience and user capabilities, eliminating IndexedDB storage issues and enabling rapid MVP iteration.
+
 - [ ] Task 15.5: Review complete symptoms logging flow
   - [ ] manual capture
   - [ ] recent entries

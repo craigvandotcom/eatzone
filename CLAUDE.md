@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Context Files
+See @package.json for available npm commands and dependencies
+See @.env.example for required environment variables
+See @app/globals.css for CSS variables and theming system
+
 ## Project Overview
 
 This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis while keeping all data local via IndexedDB.
@@ -23,6 +28,9 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 
 ### Testing
 - `pnpm test:pwa` - Build and serve for PWA testing (offline, installability)
+- **No unit test framework configured** - manual testing via browser and DevTools
+- **PWA testing**: Use `pnpm test:pwa` then test offline mode, installation
+- **Database testing**: Clear IndexedDB in DevTools between tests
 
 ### Database
 - `pnpm run db:reset` - Manual task: Clear IndexedDB via DevTools → Application → Storage → IndexedDB → Delete "HealthTrackerDB"
@@ -87,7 +95,13 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 - **Image analysis** via API routes for food photo processing
 - **Prompts** stored in `/prompts/` directory as markdown files
 
-## Development Guidelines
+## Development Workflow
+
+### Git Conventions
+- **Branch naming**: `feature/description`, `fix/issue-description`, `refactor/component-name`
+- **Commit format**: `type: brief description` (feat, fix, docs, style, refactor, test, chore)
+- **Before pushing**: Always run `pnpm build:check` (includes build + lint)
+- **PR requirements**: Lint pass, type check, manual testing confirmation
 
 ### Code Quality Requirements
 Always run these commands before committing:
@@ -97,6 +111,46 @@ pnpm lint
 pnpm type-check
 pnpm build:check
 ```
+
+### Error Prevention
+- **Always use `pnpm`** not `npm` for this project
+- **Run `pnpm type-check`** before `pnpm build` to catch errors early
+- **Use absolute paths** with `@/` aliases, avoid unnecessary `cd` commands
+- **Check IndexedDB state** via DevTools before debugging database issues
+- **Verify environment variables** in `.env.local` if API calls fail
+
+### HTML & Accessibility Best Practices
+- **Semantic HTML First**: Use appropriate semantic elements (`<header>`, `<nav>`, `<main>`, `<button>`, `<h1>-<h6>`) over generic `<div>`/`<span>`
+- **Accessible Forms**: Always use `<label>` elements with `for` attributes linked to input `id`s
+- **Alt Text**: Provide meaningful `alt` attributes for images; use `alt=""` for decorative images
+- **ARIA Usage**: Use ARIA attributes surgically to enhance semantics, not replace proper HTML structure
+- **Test Accessibility**: Use keyboard navigation, screen readers (VoiceOver), and tools like Lighthouse accessibility audits
+
+### TypeScript Best Practices  
+- **Strict Configuration**: Enable `strictNullChecks` and all strict compiler options
+- **Avoid `any`**: Never use `any` type - use proper interfaces, unions, or utility types instead
+- **Type Inference**: Leverage TypeScript's type inference; add explicit types only when needed for clarity
+- **Component Typing**: Define clear interfaces for React component props and state
+- **Utility Types**: Use built-in utility types (`Partial<T>`, `Pick<T>`, `Omit<T>`, `NonNullable<T>`)
+
+### React Component Architecture
+- **Functional Components**: Use functional components with Hooks as the default pattern
+- **State Colocation**: Keep state as close as possible to where it's used to minimize re-renders
+- **Derived State**: Compute values from existing state/props rather than storing redundant data
+- **Custom Hooks**: Extract reusable logic into custom hooks for better code organization
+- **Component Composition**: Prefer composition over inheritance; use compound components for complex UI
+
+### Performance Optimization
+- **Code Splitting**: Use `React.lazy()` and `Suspense` for route-based and component-based splitting
+- **Memoization**: Apply `React.memo`, `useMemo`, `useCallback` judiciously after profiling performance issues
+- **Image Optimization**: Use Next.js Image component with proper sizing and lazy loading
+- **Bundle Analysis**: Monitor bundle size and eliminate unused dependencies
+
+### Styling Guidelines
+- **Tailwind Consistency**: Use Tailwind utility classes consistently; avoid mixing with custom CSS
+- **Component-Scoped Styles**: Keep styles close to components; use CSS modules for component-specific styles
+- **Mobile-First**: Design and develop with mobile-first responsive approach
+- **Design System**: Follow shadcn/ui patterns and maintain consistent spacing/typography scales
 
 ### Component Patterns
 - Use existing shadcn/ui components when possible
@@ -144,5 +198,19 @@ pnpm build:check
 - iOS Safari compatibility with specific viewport and theme settings
 - Camera integration for food photo capture
 - Background sync capabilities (future feature)
+
+## Troubleshooting
+
+### Common Issues
+- **Build fails**: Run `pnpm type-check` first, then check for missing dependencies
+- **PWA not installing**: Verify manifest.json and service worker registration
+- **Database not persisting**: Check IndexedDB permissions and clear browser data
+- **AI API errors**: Verify OpenRouter API key in `.env.local`
+- **iOS Safari issues**: Test with iOS viewport settings and PWA-specific CSS
+
+### Debug Commands
+- `pnpm dev:clean` - Hard reset when development server acts unexpectedly
+- `pnpm db:reset` - Clear all local data when database state is corrupted
+- Check console for hydration errors on page refresh
 
 When working with this codebase, prioritize maintaining the local-first architecture, PWA compatibility, and type safety throughout all changes.

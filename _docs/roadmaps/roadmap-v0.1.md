@@ -310,6 +310,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - [x] repo's architecture
   - [x] context
   - [ ] tools
+    - [ ] MCPs (playwright)
   - [ ] ci/cd pipeline
   - [ ] github flow
 

@@ -1,45 +1,12 @@
-import Dexie, { Table } from "dexie";
-import { Food, Symptom, User, AuthSession } from "./types";
-import bcrypt from "bcryptjs";
-import * as jose from "jose";
+import { createClient } from "@/lib/supabase/client";
+import { Food, Symptom, User } from "./types";
 
-export class HealthTrackerDB extends Dexie {
-  foods!: Table<Food, string>;
-  symptoms!: Table<Symptom, string>;
-  users!: Table<User, string>;
-  sessions!: Table<AuthSession, string>;
-
-  constructor() {
-    super("HealthTrackerDB");
-
-    // Skip the problematic version 4 entirely and go straight to version 5
-    // This will create a fresh database with the correct schema
-    this.version(5).stores({
-      foods: "id, timestamp",
-      symptoms: "id, timestamp", 
-      users: "id, email",
-      sessions: "token, userId, expiresAt", // token is now the primary key
-    });
-  }
-}
-
-export const db = new HealthTrackerDB();
-
-// Constants
-const JWT_SECRET = "health-tracker-local-secret-key"; // For local storage only
-const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
-// Helper function to encode the secret for jose
-const getSecret = () => new TextEncoder().encode(JWT_SECRET);
+// Get Supabase client
+const supabase = createClient();
 
 // Helper function to generate ISO timestamp
 export const generateTimestamp = (): string => {
   return new Date().toISOString();
-};
-
-// Helper function to generate unique ID
-export const generateId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 };
 
 // Helper function to get today's date in YYYY-MM-DD format
@@ -57,32 +24,65 @@ export const isToday = (timestamp: string): boolean => {
 export const addFood = async (
   food: Omit<Food, "id" | "timestamp">
 ): Promise<string> => {
-  const newFood: Food = {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error("User not authenticated");
+
+  const newFood = {
     ...food,
-    id: generateId(),
+    user_id: user.user.id,
     timestamp: generateTimestamp(),
   };
-  await db.foods.add(newFood);
-  return newFood.id;
+
+  const { data, error } = await supabase
+    .from("foods")
+    .insert(newFood)
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id;
 };
 
 export const updateFood = async (
   id: string,
   updates: Partial<Omit<Food, "id">>
 ): Promise<void> => {
-  await db.foods.update(id, updates);
+  const { error } = await supabase
+    .from("foods")
+    .update(updates)
+    .eq("id", id);
+
+  if (error) throw error;
 };
 
 export const deleteFood = async (id: string): Promise<void> => {
-  await db.foods.delete(id);
+  const { error } = await supabase
+    .from("foods")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
 };
 
 export const getAllFoods = async (): Promise<Food[]> => {
-  return await db.foods.orderBy("timestamp").reverse().toArray();
+  const { data, error } = await supabase
+    .from("foods")
+    .select("*")
+    .order("timestamp", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
 };
 
 export const getRecentFoods = async (limit: number = 10): Promise<Food[]> => {
-  return await db.foods.orderBy("timestamp").reverse().limit(limit).toArray();
+  const { data, error } = await supabase
+    .from("foods")
+    .select("*")
+    .order("timestamp", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
 };
 
 export const getTodaysFoods = async (): Promise<Food[]> => {
@@ -90,76 +90,146 @@ export const getTodaysFoods = async (): Promise<Food[]> => {
   const startRange = today + "T00:00:00.000Z";
   const endRange = today + "T23:59:59.999Z";
 
-  return await db.foods
-    .where("timestamp")
-    .between(startRange, endRange)
-    .reverse()
-    .toArray();
+  const { data, error } = await supabase
+    .from("foods")
+    .select("*")
+    .gte("timestamp", startRange)
+    .lte("timestamp", endRange)
+    .order("timestamp", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
 };
 
 export const getFoodById = async (id: string): Promise<Food | undefined> => {
-  return await db.foods.get(id);
+  const { data, error } = await supabase
+    .from("foods")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return undefined; // No rows returned
+    throw error;
+  }
+  return data;
 };
 
 // SYMPTOM OPERATIONS
 export const addSymptom = async (
   symptom: Omit<Symptom, "id" | "timestamp">
 ): Promise<string> => {
-  const newSymptom: Symptom = {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error("User not authenticated");
+
+  const newSymptom = {
     ...symptom,
-    id: generateId(),
+    user_id: user.user.id,
     timestamp: generateTimestamp(),
   };
-  await db.symptoms.add(newSymptom);
-  return newSymptom.id;
+
+  const { data, error } = await supabase
+    .from("symptoms")
+    .insert(newSymptom)
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id;
 };
 
 export const updateSymptom = async (
   id: string,
   updates: Partial<Omit<Symptom, "id">>
 ): Promise<void> => {
-  await db.symptoms.update(id, updates);
+  const { error } = await supabase
+    .from("symptoms")
+    .update(updates)
+    .eq("id", id);
+
+  if (error) throw error;
 };
 
 export const deleteSymptom = async (id: string): Promise<void> => {
-  await db.symptoms.delete(id);
+  const { error } = await supabase
+    .from("symptoms")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
 };
 
 export const getAllSymptoms = async (): Promise<Symptom[]> => {
-  return await db.symptoms.orderBy("timestamp").reverse().toArray();
+  const { data, error } = await supabase
+    .from("symptoms")
+    .select("*")
+    .order("timestamp", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
 };
 
 export const getRecentSymptoms = async (
   limit: number = 10
 ): Promise<Symptom[]> => {
-  return await db.symptoms
-    .orderBy("timestamp")
-    .reverse()
-    .limit(limit)
-    .toArray();
+  const { data, error } = await supabase
+    .from("symptoms")
+    .select("*")
+    .order("timestamp", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
 };
 
 export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
   const today = getTodayDate();
-  return await db.symptoms
-    .where("timestamp")
-    .between(today + "T00:00:00.000Z", today + "T23:59:59.999Z")
-    .reverse()
-    .toArray();
+  const startRange = today + "T00:00:00.000Z";
+  const endRange = today + "T23:59:59.999Z";
+
+  const { data, error } = await supabase
+    .from("symptoms")
+    .select("*")
+    .gte("timestamp", startRange)
+    .lte("timestamp", endRange)
+    .order("timestamp", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
 };
 
 export const getSymptomById = async (
   id: string
 ): Promise<Symptom | undefined> => {
-  return await db.symptoms.get(id);
+  const { data, error } = await supabase
+    .from("symptoms")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return undefined; // No rows returned
+    throw error;
+  }
+  return data;
 };
 
 // UTILITY OPERATIONS
 export const clearAllData = async (): Promise<void> => {
-  await db.transaction("rw", db.foods, db.symptoms, async () => {
-    await db.foods.clear();
-    await db.symptoms.clear();
-  });
+  // Clear user's foods and symptoms
+  const { error: foodsError } = await supabase
+    .from("foods")
+    .delete()
+    .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all user's records
+
+  if (foodsError) throw foodsError;
+
+  const { error: symptomsError } = await supabase
+    .from("symptoms")
+    .delete()
+    .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all user's records
+
+  if (symptomsError) throw symptomsError;
 };
 
 export const exportAllData = async (): Promise<{
@@ -183,157 +253,128 @@ export const importAllData = async (data: {
   foods: Food[];
   symptoms: Symptom[];
 }): Promise<void> => {
-  await db.transaction("rw", db.foods, db.symptoms, async () => {
-    await db.foods.clear();
-    await db.symptoms.clear();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error("User not authenticated");
 
-    await db.foods.bulkAdd(data.foods);
-    await db.symptoms.bulkAdd(data.symptoms);
-  });
+  // Clear existing data first
+  await clearAllData();
+
+  // Import foods
+  if (data.foods.length > 0) {
+    const foodsToInsert = data.foods.map(food => ({
+      ...food,
+      user_id: user.user.id,
+    }));
+
+    const { error: foodsError } = await supabase
+      .from("foods")
+      .insert(foodsToInsert);
+
+    if (foodsError) throw foodsError;
+  }
+
+  // Import symptoms
+  if (data.symptoms.length > 0) {
+    const symptomsToInsert = data.symptoms.map(symptom => ({
+      ...symptom,
+      user_id: user.user.id,
+    }));
+
+    const { error: symptomsError } = await supabase
+      .from("symptoms")
+      .insert(symptomsToInsert);
+
+    if (symptomsError) throw symptomsError;
+  }
 };
 
-// AUTHENTICATION OPERATIONS
+// USER OPERATIONS (Simplified since Supabase handles auth)
+export const getUserById = async (id: string): Promise<User | undefined> => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", id)
+    .single();
 
+  if (error) {
+    if (error.code === 'PGRST116') return undefined; // No rows returned
+    throw error;
+  }
+  return data;
+};
+
+export const getCurrentUser = async (): Promise<User | null> => {
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return null;
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", authUser.id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null; // No rows returned
+    throw error;
+  }
+  return data;
+};
+
+// AUTHENTICATION OPERATIONS (Simplified - using Supabase Auth)
 export const createUser = async (
   email: string,
   password: string
 ): Promise<User> => {
-  // Check if user already exists
-  const existingUser = await db.users.where("email").equals(email).first();
-  if (existingUser) {
-    throw new Error("User with this email already exists");
-  }
-
-  // Hash password
-  const saltRounds = 12;
-  const passwordHash = await bcrypt.hash(password, saltRounds);
-
-  // Create user
-  const newUser: User = {
-    id: generateId(),
+  const { data, error } = await supabase.auth.signUp({
     email,
-    passwordHash,
-    createdAt: generateTimestamp(),
-    settings: {
-      theme: "system",
-      waterGoal: 2000, // 2L default
-      notifications: {
-        reminders: true,
-        dailySummary: true,
-      },
-    },
-  };
+    password,
+  });
 
-  await db.users.add(newUser);
-  return newUser;
+  if (error) throw error;
+  if (!data.user) throw new Error("Failed to create user");
+
+  // The user profile is automatically created by the trigger
+  const profile = await getUserById(data.user.id);
+  if (!profile) throw new Error("Failed to create user profile");
+
+  return profile;
 };
 
 export const authenticateUser = async (
   email: string,
   password: string
 ): Promise<{ user: User; token: string }> => {
-  // Find user by email
-  const user = await db.users.where("email").equals(email).first();
-  if (!user) {
-    throw new Error("Invalid email or password");
-  }
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  // Verify password
-  const isValid = await bcrypt.compare(password, user.passwordHash);
-  if (!isValid) {
-    throw new Error("Invalid email or password");
-  }
+  if (error) throw error;
+  if (!data.user || !data.session) throw new Error("Authentication failed");
 
-  // Update last login
-  await db.users.update(user.id, { lastLoginAt: generateTimestamp() });
+  const profile = await getUserById(data.user.id);
+  if (!profile) throw new Error("User profile not found");
 
-  // Create session with jose
-  const token = await new jose.SignJWT({ userId: user.id })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(getSecret());
-
-  const expiresAt = new Date(Date.now() + SESSION_DURATION).toISOString();
-
-  const session: AuthSession = {
-    userId: user.id,
-    token,
-    expiresAt,
-    createdAt: generateTimestamp(),
+  return {
+    user: profile,
+    token: data.session.access_token,
   };
-
-  await db.sessions.add(session);
-
-  return { user, token };
 };
 
-export const validateSession = async (token: string): Promise<User | null> => {
-  try {
-    // Find session
-    const session = await db.sessions.where("token").equals(token).first();
-    if (!session) {
-      return null;
-    }
+export const validateSession = async (token?: string): Promise<User | null> => {
+  const { data: { user } } = await supabase.auth.getUser(token);
+  if (!user) return null;
 
-    // Check if session is expired
-    if (new Date(session.expiresAt) < new Date()) {
-      await db.sessions.where("token").equals(token).delete();
-      return null;
-    }
-
-    // Verify JWT with jose
-    const { payload } = await jose.jwtVerify(token, getSecret());
-    const userId = payload.userId as string;
-
-    // Get user
-    const user = await db.users.get(userId);
-    return user || null;
-  } catch (error) {
-    console.error("Session validation error:", error);
-    return null;
-  }
+  const profile = await getUserById(user.id);
+  return profile || null;
 };
 
-export const logout = async (token: string): Promise<void> => {
-  await db.sessions.where("token").equals(token).delete();
+export const logout = async (): Promise<void> => {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 };
 
-export const clearExpiredSessions = async (): Promise<void> => {
-  const now = new Date().toISOString();
-  await db.sessions.where("expiresAt").below(now).delete();
-};
-
-export const getUserById = async (id: string): Promise<User | undefined> => {
-  return await db.users.get(id);
-};
-
-export const updateUserSettings = async (
-  userId: string,
-  settings: Partial<User["settings"]>
-): Promise<void> => {
-  const user = await db.users.get(userId);
-  if (user) {
-    const currentSettings = user.settings || {
-      theme: "system" as const,
-      waterGoal: 2000,
-      notifications: {
-        reminders: true,
-        dailySummary: true,
-      },
-    };
-
-    await db.users.update(userId, {
-      settings: { ...currentSettings, ...settings },
-    });
-  }
-};
-
-// ===== ENHANCED ENVIRONMENT DETECTION & DEMO MODE =====
-
-/**
- * Detects if the app is running in development mode
- */
+// ENVIRONMENT DETECTION & DEMO MODE (Keeping existing logic for compatibility)
 export const isDevelopment = (): boolean => {
   const nodeEnv = process.env.NODE_ENV;
   const isDev = nodeEnv === "development";
@@ -341,10 +382,6 @@ export const isDevelopment = (): boolean => {
   return isDev;
 };
 
-/**
- * Detects if the app is running in a preview deployment (Vercel, Netlify, etc.)
- * This function checks various deployment platform patterns and URL parameters.
- */
 export const isPreviewDeployment = (): boolean => {
   if (typeof window === "undefined") {
     console.log(`🌐 Preview check: window undefined (SSR), returning false`);
@@ -355,18 +392,13 @@ export const isPreviewDeployment = (): boolean => {
   const searchParams = new URLSearchParams(window.location.search);
 
   const isPreview = (
-    // Vercel preview deployments
     hostname.includes(".vercel.app") ||
-    // Netlify preview deployments
     hostname.includes("netlify.app") ||
     hostname.includes("netlify.live") ||
-    // GitHub Codespaces
     hostname.includes("github.dev") ||
     hostname.includes("githubpreview.dev") ||
-    // Other common preview platforms
     hostname.includes("surge.sh") ||
     hostname.includes("now.sh") ||
-    // Explicit preview mode via URL parameter
     searchParams.has("preview") ||
     searchParams.has("demo")
   );
@@ -375,9 +407,6 @@ export const isPreviewDeployment = (): boolean => {
   return isPreview;
 };
 
-/**
- * Checks if the app should run in demo mode (development OR preview deployment)
- */
 export const isDemoMode = (): boolean => {
   const devMode = isDevelopment();
   const previewMode = isPreviewDeployment();
@@ -385,7 +414,6 @@ export const isDemoMode = (): boolean => {
   
   console.log(`🚀 Demo mode check: development=${devMode}, preview=${previewMode}, isDemoMode=${demoMode}`);
   
-  // Fallback check for localhost development
   if (!demoMode && typeof window !== "undefined") {
     const isLocalhost = window.location.hostname === "localhost" || 
                        window.location.hostname === "127.0.0.1" ||
@@ -399,9 +427,6 @@ export const isDemoMode = (): boolean => {
   return demoMode;
 };
 
-/**
- * Gets the current environment type for logging and UI display
- */
 export const getEnvironmentType = ():
   | "development"
   | "preview"
@@ -411,7 +436,7 @@ export const getEnvironmentType = ():
   return "production";
 };
 
-// Demo accounts for preview deployments
+// DEMO ACCOUNTS (Simplified - using Supabase Auth)
 const DEMO_ACCOUNTS = [
   {
     email: "demo@puls.app",
@@ -433,11 +458,6 @@ const DEMO_ACCOUNTS = [
   },
 ] as const;
 
-/**
- * Creates or retrieves a demo user account for preview deployments
- * @param accountIndex - Index of the demo account to use (0-2)
- * @returns User and authentication token
- */
 export const createDemoUser = async (
   accountIndex: number = 0
 ): Promise<{
@@ -450,40 +470,29 @@ export const createDemoUser = async (
   try {
     console.log(`🚀 Creating/retrieving demo user: ${name} (${email})`);
 
-    // Check if demo user already exists
-    const existingUser = await db.users.where("email").equals(email).first();
-
-    if (existingUser) {
-      // Clear any existing sessions to avoid conflicts
-      await db.sessions.where("userId").equals(existingUser.id).delete();
-      console.log(`✅ Found existing demo user: ${existingUser.email}`);
-
-      // Demo user exists, just authenticate
+    // Try to sign in first (user might already exist)
+    try {
       return await authenticateUser(email, password);
+    } catch {
+      console.log(`🔧 Sign-in failed, creating new demo user: ${email}`);
+      
+      // Create demo user
+      await createUser(email, password);
+      
+      // Authenticate and return token
+      const result = await authenticateUser(email, password);
+      console.log(`✅ Demo user created and authenticated: ${result.user.email}`);
+      
+      return result;
     }
-
-    console.log(`🔧 Creating new demo user: ${email}`);
-
-    // Create demo user
-    await createUser(email, password);
-
-    // Authenticate and return token
-    const result = await authenticateUser(email, password);
-    console.log(`✅ Demo user created and authenticated: ${result.user.email}`);
-
-    return result;
   } catch (error) {
     console.error("Error creating demo user:", error);
     throw error;
   }
 };
 
-/**
- * Get available demo accounts information
- */
 export const getDemoAccounts = () => DEMO_ACCOUNTS;
 
-// DEVELOPMENT HELPERS (existing functions maintained for backward compatibility)
 export const createDevUser = async (): Promise<{
   user: User;
   token: string;
@@ -492,36 +501,22 @@ export const createDevUser = async (): Promise<{
   const DEV_PASSWORD = "password";
 
   try {
-    // Check if dev user already exists
-    const existingUser = await db.users
-      .where("email")
-      .equals(DEV_EMAIL)
-      .first();
-
-    if (existingUser) {
-      // Clear any existing sessions for this user to avoid conflicts
-      await db.sessions.where("userId").equals(existingUser.id).delete();
-
-      // Dev user exists, just authenticate
+    // Try to sign in first
+    try {
+      return await authenticateUser(DEV_EMAIL, DEV_PASSWORD);
+    } catch {
+      // Create dev user
+      await createUser(DEV_EMAIL, DEV_PASSWORD);
+      
+      // Authenticate and return token
       return await authenticateUser(DEV_EMAIL, DEV_PASSWORD);
     }
-
-    // Create dev user
-    await createUser(DEV_EMAIL, DEV_PASSWORD);
-
-    // Authenticate and return token
-    return await authenticateUser(DEV_EMAIL, DEV_PASSWORD);
   } catch (error) {
     console.error("Error creating dev user:", error);
     throw error;
   }
 };
 
-/**
- * Enhanced quick login function that works for both development and preview modes
- * @param accountIndex - Optional demo account index (only used for preview mode)
- * @returns User and authentication token, or null if not in demo mode
- */
 export const quickDemoLogin = async (
   accountIndex?: number
 ): Promise<{
@@ -541,59 +536,57 @@ export const quickDemoLogin = async (
 
   try {
     if (isDevelopment()) {
-      // Use existing dev user in development
       console.log("🔧 Development mode: Using dev@test.com");
       return await createDevUser();
     } else {
-      // Use demo account for preview deployments
       const selectedAccount = accountIndex ?? 0;
       console.log(`🌐 Preview mode: Using demo account ${selectedAccount}`);
       return await createDemoUser(selectedAccount);
     }
   } catch (error) {
     console.error(`❌ Quick ${envType} login failed:`, error);
-    
-    // Provide more detailed error information
-    if (error instanceof Error) {
-      console.error(`❌ Error details: ${error.message}`);
-      if (error.message.includes('Database')) {
-        console.log('🔧 Database error detected - you may need to reset IndexedDB');
-      }
-    }
-    
     return null;
   }
 };
 
-/**
- * Legacy function maintained for backward compatibility
- * @deprecated Use quickDemoLogin() instead
- */
 export const quickDevLogin = quickDemoLogin;
 
-// Helper to reset dev user completely (for debugging)
+// Helper to reset dev user (simplified for Supabase)
 export const resetDevUser = async (): Promise<void> => {
   if (!isDevelopment()) {
     return;
   }
 
-  const DEV_EMAIL = "dev@test.com";
-
-  try {
-    // Find and delete dev user
-    const existingUser = await db.users
-      .where("email")
-      .equals(DEV_EMAIL)
-      .first();
-    if (existingUser) {
-      // Delete all sessions for this user
-      await db.sessions.where("userId").equals(existingUser.id).delete();
-      // Delete the user
-      await db.users.delete(existingUser.id);
-    }
-
-    console.log("🔧 Dev user reset complete");
-  } catch (error) {
-    console.error("Error resetting dev user:", error);
-  }
+  console.log("🔧 Note: Dev user reset now handled by Supabase Auth");
+  // In Supabase, user management is handled differently
+  // This function is kept for backward compatibility but doesn't do anything
 };
+
+// LEGACY COMPATIBILITY EXPORTS
+export const generateId = (): string => {
+  console.warn("generateId() is deprecated with Supabase - UUIDs are auto-generated");
+  return crypto.randomUUID();
+};
+
+export const clearExpiredSessions = async (): Promise<void> => {
+  console.warn("clearExpiredSessions() is deprecated - Supabase handles session management");
+  // Supabase handles session expiration automatically
+};
+
+export const updateUserSettings = async (
+  _userId: string,
+  _settings: Partial<User["settings"]>
+): Promise<void> => {
+  console.warn("updateUserSettings() is deprecated - user settings moved to auth metadata");
+  // User settings would now be handled through Supabase user metadata
+  // This function is kept for backward compatibility but doesn't do anything
+};
+
+// Backwards compatibility - maintain the HealthTrackerDB class structure for any direct references
+export class HealthTrackerDB {
+  constructor() {
+    console.warn("HealthTrackerDB class is deprecated - now using Supabase");
+  }
+}
+
+export const db = new HealthTrackerDB();

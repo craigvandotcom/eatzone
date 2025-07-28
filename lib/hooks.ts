@@ -110,7 +110,7 @@ export const useFoodStats = () => {
       ).length;
 
       const organicIngredientsCount = ingredients.filter(
-        ing => ing.isOrganic === true
+        ing => ing.organic === true
       ).length;
       const totalOrganicPercentage =
         ingredients.length > 0

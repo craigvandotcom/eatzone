@@ -242,10 +242,10 @@ function Dashboard() {
                             className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors overflow-hidden"
                           >
                             <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                              {food.image ? (
+                              {food.photo_url ? (
                                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                                   <Image
-                                    src={food.image || "/placeholder.svg"}
+                                    src={food.photo_url || "/placeholder.svg"}
                                     alt={food.name}
                                     className="w-full h-full object-cover"
                                     width={48}

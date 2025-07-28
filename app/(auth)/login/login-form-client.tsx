@@ -30,7 +30,6 @@ import {
   Smartphone,
 } from "lucide-react";
 import {
-  authenticateUser,
   isDemoMode,
   getEnvironmentType,
   quickDemoLogin,
@@ -107,8 +106,7 @@ export function LoginFormClient() {
     setError("");
 
     try {
-      const result = await authenticateUser(email, password);
-      await login(result.token, result.user);
+      await login(email, password);
       router.push("/app");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -131,7 +129,7 @@ export function LoginFormClient() {
             ? "Dev User"
             : demoAccounts[targetAccount]?.name || "Demo User";
         console.log(`✅ Logged in as: ${accountName} (${result.user.email})`);
-        await login(result.token, result.user);
+        // Note: quickDemoLogin already handles Supabase auth, so we don't need to call login here
         router.push("/app");
       } else {
         setDemoLoginError("Demo login failed - not in demo mode");

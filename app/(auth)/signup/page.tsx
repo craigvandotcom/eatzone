@@ -26,7 +26,7 @@ import {
   CheckCircle,
   AlertTriangle,
 } from "lucide-react";
-import { createUser, authenticateUser } from "@/lib/db";
+import { createUser } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
 
 function SignupForm() {
@@ -93,13 +93,10 @@ function SignupForm() {
     setIsLoading(true);
 
     try {
-      const user = await createUser(email, password);
+      await createUser(email, password);
 
-      // Auto-login after successful signup
-      const { token } = await authenticateUser(email, password);
-
-      // Use auth context to handle login
-      login(token, user);
+      // Auto-login after successful signup using Supabase
+      await login(email, password);
 
       // Redirect to intended page or dashboard
       router.push(redirectTo || "/app");

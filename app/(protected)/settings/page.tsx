@@ -178,19 +178,19 @@ function SettingsPage() {
         ingredients: [
           {
             name: "organic spinach",
-            isOrganic: true,
+            organic: true,
             zone: "green",
             foodGroup: "vegetable",
           },
           {
             name: "organic quinoa",
-            isOrganic: true,
+            organic: true,
             zone: "green",
             foodGroup: "grain",
           },
           {
             name: "salmon",
-            isOrganic: false,
+            organic: false,
             zone: "green",
             foodGroup: "protein",
           },

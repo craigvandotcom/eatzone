@@ -11,6 +11,11 @@ See @app/globals.css for CSS variables and theming system
 
 This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis while keeping all data local via IndexedDB.
 
+**Development Context:**
+- Solo developer project (no team coordination needed)
+- Local development on macOS with VS Code
+- Deployment via Vercel (git push → auto-deploy)
+
 ## Essential Commands
 
 ### Development
@@ -27,14 +32,18 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 - `pnpm start` - Serve production build
 
 ### Testing & Pre-Commit Workflow
+- `pnpm test` - Run all unit tests
+- `pnpm test:watch` - Run tests in watch mode during development
+- `pnpm test:coverage` - Run tests with coverage report
+- `pnpm test:ci` - Run tests optimized for CI environment
 - `pnpm test:pwa` - Build and serve for PWA testing (offline, installability)
-- **No unit test framework configured** - manual testing via browser and DevTools
 
 **Pre-Commit Sequence:**
 ```bash
 pnpm format          # Auto-format code
 pnpm lint           # ESLint checks
 pnpm type-check     # TypeScript validation
+pnpm test           # Run unit tests
 pnpm build:check    # Production build + lint
 ```
 
@@ -78,10 +87,10 @@ pnpm build:check    # Production build + lint
 ## Development Guidelines
 
 ### Git & Code Quality
-- **Branches**: `feature/`, `fix/`, `refactor/` + description
+- **Branches**: `feature/`, `fix/`, `refactor/` + description (solo development)
 - **Commits**: `type: brief description` (feat, fix, docs, style, refactor, test, chore)
 - **Before pushing**: Always run `pnpm build:check`
-- **PR requirements**: Lint pass, type check, manual testing
+- **Deployment**: Direct push to main triggers Vercel auto-deployment
 
 ### Best Practices
 
@@ -103,7 +112,13 @@ pnpm build:check    # Production build + lint
 - Verify offline functionality
 - Test iOS Safari compatibility
 
-### Browser Testing with Playwright MCP
+### MCP Server Integration
+
+**Available MCP Servers:**
+- **Playwright MCP** - Browser automation and testing
+- **Context7 MCP** - Enhanced context understanding and knowledge retrieval
+
+**Browser Testing with Playwright MCP:**
 
 **When to Use:**
 - After UI/UX changes
@@ -118,16 +133,39 @@ pnpm build:check    # Production build + lint
 4. Validate offline mode and IndexedDB
 5. Check accessibility (keyboard nav, ARIA)
 
+**Context7 MCP Usage:**
+- Fetches up-to-date, version-specific documentation and code examples directly from source
+- Available via HTTP transport at `https://mcp.context7.com/mcp`
+- **How to use:** Write prompts naturally, then tell Claude to `use Context7` for current documentation
+- **Benefits:** Get working code answers with the latest API changes and best practices
+- **Use cases:** When you need current framework docs, library examples, or API references
+
 ### Error Prevention
 - Always use `pnpm` not `npm`
 - Use `@/` path aliases
 - Verify `.env.local` for API issues
 - Check IndexedDB state in DevTools
 
-## Environment Modes
-- **Development**: Auto-creates dev@test.com user
+## Environment Configuration
+
+### Environment Files
+- **`.env.local`** - Local development environment (gitignored)
+  - Uses development Supabase project
+  - No Redis rate limiting (empty Redis vars)
+  - OpenRouter API key for AI features
+- **`.env.prod`** - Production secrets (gitignored)
+  - Uses production Supabase project
+  - Upstash Redis enabled for API rate limiting
+  - Used for Vercel production deployment
+- **`.env.example`** - Template showing required variables (committed)
+  - Reference for setting up local environment
+  - Documents all required environment variables
+  - Note: Using Supabase's new API key naming (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` instead of `ANON_KEY`)
+
+### Environment Modes
+- **Development**: Auto-creates dev@test.com user, no rate limiting
 - **Preview**: Auto-creates demo accounts
-- **Production**: Full security enabled
+- **Production**: Full security enabled, Redis rate limiting active
 
 ## Troubleshooting
 

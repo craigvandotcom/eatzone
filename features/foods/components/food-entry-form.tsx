@@ -76,9 +76,9 @@ export function FoodEntryForm({
         await response.json();
 
       const aiIngredients: Ingredient[] = ingredientData.map(
-        (ingredient: { name: string; isOrganic: boolean }) => ({
+        (ingredient: { name: string; organic: boolean }) => ({
           name: ingredient.name,
-          isOrganic: ingredient.isOrganic,
+          organic: ingredient.organic || false,
           foodGroup: "other" as const, // Default value
           zone: "yellow" as const, // Default value
         })
@@ -133,7 +133,7 @@ export function FoodEntryForm({
         ...ingredients,
         {
           name: currentIngredient.trim(),
-          isOrganic: false,
+          organic: false,
           foodGroup: "other",
           zone: "yellow",
         },
@@ -153,7 +153,7 @@ export function FoodEntryForm({
 
   const handleToggleOrganic = (index: number) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index].isOrganic = !updatedIngredients[index].isOrganic;
+    updatedIngredients[index].organic = !updatedIngredients[index].organic;
     setIngredients(updatedIngredients);
   };
 
@@ -190,7 +190,7 @@ export function FoodEntryForm({
     if (currentIngredient.trim()) {
       finalIngredientsList.push({
         name: currentIngredient.trim(),
-        isOrganic: false,
+        organic: false,
         foodGroup: "other",
         zone: "yellow", // Default zone
       });
@@ -249,8 +249,8 @@ export function FoodEntryForm({
           // Ensure required fields have defaults if API didn't provide them
           if (!enriched.foodGroup) enriched.foodGroup = "other";
           if (!enriched.zone) enriched.zone = "yellow";
-          if (typeof enriched.isOrganic !== "boolean")
-            enriched.isOrganic = false;
+          if (typeof enriched.organic !== "boolean")
+            enriched.organic = false;
 
           return enriched;
         });
@@ -296,7 +296,7 @@ export function FoodEntryForm({
       // Final validation of enriched ingredients
       const validatedIngredients = enrichedIngredients.map(ing => ({
         name: ing.name,
-        isOrganic: typeof ing.isOrganic === "boolean" ? ing.isOrganic : false,
+        organic: typeof ing.organic === "boolean" ? ing.organic : false,
         foodGroup: ing.foodGroup || "other",
         zone: ing.zone || "yellow",
       }));
@@ -331,12 +331,12 @@ export function FoodEntryForm({
     <div className={className}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Image Display */}
-        {editingFood?.image && (
+        {editingFood?.photo_url && (
           <div className="mb-4">
             <Label>Food Image</Label>
             <div className="mt-2 relative w-full max-w-md mx-auto">
               <img
-                src={editingFood.image}
+                src={editingFood.photo_url}
                 alt="Food entry"
                 className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
               />
@@ -453,7 +453,7 @@ export function FoodEntryForm({
                           <span className="text-sm font-medium">
                             {ingredient.name}
                           </span>
-                          {ingredient.isOrganic && (
+                          {ingredient.organic && (
                             <span
                               className={`text-xs ${getZoneBgClass("green", "light")} ${getZoneTextClass("green")} px-1.5 py-0.5 rounded-full`}
                             >
@@ -467,12 +467,12 @@ export function FoodEntryForm({
                           type="button"
                           onClick={() => handleToggleOrganic(index)}
                           className={`p-1 transition-colors ${
-                            ingredient.isOrganic
+                            ingredient.organic
                               ? `${getZoneTextClass("green")} hover:opacity-80`
                               : `text-gray-400 hover:${getZoneTextClass("green")}`
                           }`}
                           title={
-                            ingredient.isOrganic
+                            ingredient.organic
                               ? "Mark as non-organic"
                               : "Mark as organic"
                           }

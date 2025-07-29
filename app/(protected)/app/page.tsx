@@ -32,6 +32,14 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
+import { 
+  FoodEntrySkeleton, 
+  SymptomEntrySkeleton, 
+  ProgressCircleSkeleton,
+  EmptyOrLoadingState,
+  NetworkRetryState
+} from "@/components/ui/loading-states";
+import { ErrorBoundary, SupabaseErrorFallback } from "@/components/error-boundary";
 
 // Import types
 import { Food, Symptom } from "@/lib/types";
@@ -48,10 +56,10 @@ type ViewType = "food" | "symptoms";
 
 function Dashboard() {
   // Use custom hooks for reactive data binding
-  const todaysSymptoms = useTodaysSymptoms();
-  const recentFoods = useRecentFoods();
-  const recentSymptoms = useRecentSymptoms();
-  const foodStats = useFoodStats();
+  const { data: todaysSymptoms, error: symptomsError, retry: retrySymptoms } = useTodaysSymptoms();
+  const { data: recentFoods, error: foodsError, retry: retryFoods } = useRecentFoods();
+  const { data: recentSymptoms, error: recentSymptomsError, retry: retryRecentSymptoms } = useRecentSymptoms();
+  const { data: foodStats, error: statsError, retry: retryStats } = useFoodStats();
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -193,24 +201,36 @@ function Dashboard() {
         >
           <div className="px-4 py-6 space-y-6 max-w-full">
             {currentView === "food" && (
-              <>
+              <ErrorBoundary fallback={SupabaseErrorFallback}>
                 {/* Food Category Progress */}
                 <div className="relative flex flex-col items-center h-64">
-                  <FoodCategoryProgress
-                    greenCount={foodStats?.greenIngredients || 0}
-                    yellowCount={foodStats?.yellowIngredients || 0}
-                    redCount={foodStats?.redIngredients || 0}
-                    size={200}
-                    strokeWidth={12}
-                    isFromToday={foodStats?.isFromToday ?? true}
-                  />
-                  <div className="absolute right-0 top-0 flex flex-col items-center space-y-2">
-                    <VerticalProgressBar
-                      percentage={foodStats?.totalOrganicPercentage || 0}
-                      height={200}
+                  {statsError ? (
+                    <NetworkRetryState
+                      onRetry={retryStats}
+                      message="Failed to load stats. Tap to retry."
+                      className="h-64"
                     />
-                    <Leaf className={`h-5 w-5 ${getZoneTextClass("green")}`} />
-                  </div>
+                  ) : foodStats === undefined ? (
+                    <ProgressCircleSkeleton />
+                  ) : (
+                    <>
+                      <FoodCategoryProgress
+                        greenCount={foodStats?.greenIngredients || 0}
+                        yellowCount={foodStats?.yellowIngredients || 0}
+                        redCount={foodStats?.redIngredients || 0}
+                        size={200}
+                        strokeWidth={12}
+                        isFromToday={foodStats?.isFromToday ?? true}
+                      />
+                      <div className="absolute right-0 top-0 flex flex-col items-center space-y-2">
+                        <VerticalProgressBar
+                          percentage={foodStats?.totalOrganicPercentage || 0}
+                          height={200}
+                        />
+                        <Leaf className={`h-5 w-5 ${getZoneTextClass("green")}`} />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -221,19 +241,29 @@ function Dashboard() {
                     <button className="text-muted-foreground text-sm">View more</button>
                   </div>
                   <div className="space-y-3">
-                    {!recentFoods || recentFoods.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Utensils className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                        <p className="text-muted-foreground text-lg font-medium">
-                          No foods logged yet
-                        </p>
-                        <p className="text-muted-foreground/70 text-sm mt-1">
-                          Tap the eat icon below to get started
-                        </p>
-                      </div>
+                    {foodsError ? (
+                      <NetworkRetryState
+                        onRetry={retryFoods}
+                        message="Failed to load foods. Tap to retry."
+                      />
                     ) : (
+                      <EmptyOrLoadingState
+                        isLoading={recentFoods === undefined}
+                        isEmpty={recentFoods?.length === 0}
+                        loadingMessage="Loading recent foods..."
+                        emptyTitle="No foods logged yet"
+                        emptyDescription="Tap the eat icon below to get started"
+                        emptyIcon="🍽️"
+                      />
+                    )}
+                    {recentFoods === undefined && (
+                      <div className="space-y-3">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <FoodEntrySkeleton key={i} />
+                        ))}
+                      </div>
+                    )}
+                    {recentFoods && recentFoods.length > 0 && (
                       <div className="space-y-3 overflow-hidden">
                         {recentFoods.map(food => (
                           <button
@@ -284,11 +314,11 @@ function Dashboard() {
                     )}
                   </div>
                 </div>
-              </>
+              </ErrorBoundary>
             )}
 
             {currentView === "symptoms" && (
-              <>
+              <ErrorBoundary fallback={SupabaseErrorFallback}>
                 <div className="flex flex-col items-center space-y-4 h-64">
                   <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
                     <div className="text-center">
@@ -308,19 +338,29 @@ function Dashboard() {
                     <button className="text-muted-foreground text-sm">View more</button>
                   </div>
                   <div className="space-y-3">
-                    {!recentSymptoms || recentSymptoms.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Activity className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                        <p className="text-muted-foreground text-lg font-medium">
-                          No symptoms logged yet
-                        </p>
-                        <p className="text-muted-foreground/70 text-sm mt-1">
-                          Tap the symptom icon below to get started
-                        </p>
-                      </div>
+                    {recentSymptomsError ? (
+                      <NetworkRetryState
+                        onRetry={retryRecentSymptoms}
+                        message="Failed to load symptoms. Tap to retry."
+                      />
                     ) : (
+                      <EmptyOrLoadingState
+                        isLoading={recentSymptoms === undefined}
+                        isEmpty={recentSymptoms?.length === 0}
+                        loadingMessage="Loading recent symptoms..."
+                        emptyTitle="No symptoms logged yet"
+                        emptyDescription="Tap the symptom icon below to get started"
+                        emptyIcon="⚡"
+                      />
+                    )}
+                    {recentSymptoms === undefined && (
+                      <div className="space-y-3">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <SymptomEntrySkeleton key={i} />
+                        ))}
+                      </div>
+                    )}
+                    {recentSymptoms && recentSymptoms.length > 0 && (
                       recentSymptoms.map(symptom => (
                         <button
                           key={symptom.id}
@@ -348,7 +388,7 @@ function Dashboard() {
                     )}
                   </div>
                 </div>
-              </>
+              </ErrorBoundary>
             )}
           </div>
         </div>

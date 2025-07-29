@@ -37,7 +37,19 @@ import {
   resetDevUser,
 } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
-import { isPWAContext, isIOSDevice } from "@/lib/pwa-storage";
+// Simple PWA detection utilities
+const isPWAContext = () => {
+  if (typeof window === "undefined") return false;
+  const isIOSPWA = (window.navigator as any).standalone === true;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const isMinimalUI = window.matchMedia('(display-mode: minimal-ui)').matches;
+  return isIOSPWA || isStandalone || isMinimalUI;
+};
+
+const isIOSDevice = () => {
+  if (typeof window === "undefined") return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+};
 
 export function LoginFormClient() {
   const router = useRouter();

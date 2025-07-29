@@ -365,20 +365,20 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
       - Create Supabase tables with proper relationships and constraints
       - Set up Row Level Security (RLS) policies for data isolation
       - Create database functions and triggers for automated timestamps
-- [ ] **15.3.3: Authentication System Migration**
+- [x] **15.3.3: Authentication System Migration**
       - Replace custom IndexedDB auth with Supabase Auth
       - Update `features/auth/components/auth-provider.tsx` to use Supabase sessions
       - Migrate from `bcryptjs` and `jose` to Supabase's built-in auth
       - Replace PWA storage auth tokens with Supabase session management
       - Update middleware.ts for Supabase session validation
       - Maintain demo mode functionality with Supabase test users
-- [ ] **15.3.4: Data Layer Refactoring**
+- [x] **15.3.4: Data Layer Refactoring**
       - Replace `lib/db.ts` Dexie operations with Supabase queries
       - Update all CRUD operations (`addFood`, `getSymptoms`, etc.) to use Supabase
       - Replace `useLiveQuery` hooks with Supabase real-time subscriptions
       - Migrate data export/import functionality to work with Supabase
       - Update type definitions for Supabase auto-generated types
-- [ ] **15.3.5: Component Updates & Testing**
+- [x] **15.3.5: Component Updates & Testing**
       - Update all components using database operations to work with new async patterns
       - Replace Dexie reactive queries with Supabase real-time subscriptions
       - Test all forms, dialogs, and data visualization components

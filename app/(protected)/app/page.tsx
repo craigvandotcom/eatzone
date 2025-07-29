@@ -56,7 +56,7 @@ type ViewType = "food" | "symptoms";
 
 function Dashboard() {
   // Use custom hooks for reactive data binding
-  const { data: todaysSymptoms, error: symptomsError, retry: retrySymptoms } = useTodaysSymptoms();
+  const { data: todaysSymptoms } = useTodaysSymptoms();
   const { data: recentFoods, error: foodsError, retry: retryFoods } = useRecentFoods();
   const { data: recentSymptoms, error: recentSymptomsError, retry: retryRecentSymptoms } = useRecentSymptoms();
   const { data: foodStats, error: statsError, retry: retryStats } = useFoodStats();

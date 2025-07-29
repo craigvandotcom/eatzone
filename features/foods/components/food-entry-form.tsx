@@ -26,6 +26,8 @@ import {
   getZoneTextClass,
 } from "@/lib/utils/zone-colors";
 import { DayTimePicker } from "@/components/ui/day-time-picker";
+import { FormLoadingOverlay, LoadingSpinner } from "@/components/ui/loading-states";
+import { cn } from "@/lib/utils";
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, "id">) => void;
@@ -328,7 +330,11 @@ export function FoodEntryForm({
   };
 
   return (
-    <div className={className}>
+    <div className={cn("relative", className)}>
+      <FormLoadingOverlay 
+        isVisible={isSubmitting && isZoning}
+        message="Analyzing ingredients with AI..."
+      />
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Image Display */}
         {editingFood?.photo_url && (
@@ -539,7 +545,10 @@ export function FoodEntryForm({
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting || isAnalyzing}>
+          <Button type="submit" disabled={isSubmitting || isAnalyzing} className="relative">
+            {isSubmitting && (
+              <LoadingSpinner size="sm" className="mr-2" />
+            )}
             {isSubmitting
               ? isZoning
                 ? "Zoning ingredients..."

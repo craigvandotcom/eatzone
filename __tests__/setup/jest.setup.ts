@@ -1,8 +1,9 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
 import { TextEncoder, TextDecoder } from 'util'
+import React from 'react'
 
-// Polyfill for encoding/decoding which is used by jose/bcryptjs
+// Polyfill for encoding/decoding
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder as any
 
@@ -26,13 +27,120 @@ jest.mock('next/navigation', () => ({
   },
 }))
 
-// TODO: Add Supabase client mock after migration
-// jest.mock('@/lib/supabase/client', () => ({
-//   createClient: jest.fn(() => ({
-//     auth: { ... },
-//     from: jest.fn(() => ({ ... })),
-//   })),
-// }))
+// Mock Supabase client
+const mockSupabaseClient = {
+  auth: {
+    getUser: jest.fn(),
+    signInWithPassword: jest.fn(),
+    signUp: jest.fn(),
+    signOut: jest.fn(),
+    onAuthStateChange: jest.fn(() => ({
+      data: { subscription: { unsubscribe: jest.fn() } }
+    })),
+  },
+  from: jest.fn(() => ({
+    select: jest.fn().mockReturnThis(),
+    insert: jest.fn().mockReturnThis(),
+    update: jest.fn().mockReturnThis(),
+    delete: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    single: jest.fn(),
+    then: jest.fn(),
+  })),
+  channel: jest.fn(() => ({
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn(() => ({
+      unsubscribe: jest.fn()
+    }))
+  })),
+}
+
+jest.mock('@/lib/supabase/client', () => ({
+  createClient: jest.fn(() => mockSupabaseClient),
+}))
+
+// Mock custom hooks to return test data
+jest.mock('@/lib/hooks', () => ({
+  useTodaysFoods: jest.fn(() => ({ 
+    data: [], 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useAllFoods: jest.fn(() => ({ 
+    data: [], 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useRecentFoods: jest.fn(() => ({ 
+    data: [], 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useTodaysSymptoms: jest.fn(() => ({ 
+    data: [], 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useAllSymptoms: jest.fn(() => ({ 
+    data: [], 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useRecentSymptoms: jest.fn(() => ({ 
+    data: [], 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useFoodStats: jest.fn(() => ({ 
+    data: {
+      greenIngredients: 0,
+      yellowIngredients: 0,
+      redIngredients: 0,
+      totalIngredients: 0,
+      organicCount: 0,
+      totalOrganicPercentage: 0,
+      isFromToday: true,
+    }, 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useSymptomTrends: jest.fn(() => ({ 
+    data: [], 
+    error: null, 
+    isLoading: false, 
+    retry: jest.fn() 
+  })),
+  useDailySummary: jest.fn(() => ({
+    foods: 0,
+    symptoms: 0,
+    totalEntries: 0,
+  })),
+}))
+
+// Mock ErrorBoundary component
+jest.mock('@/components/error-boundary', () => ({
+  ErrorBoundary: ({ children, fallback }: { children: React.ReactNode; fallback?: React.ComponentType<any> }) => children,
+  SupabaseErrorFallback: ({ error, resetError }: { error: Error; resetError: () => void }) => (
+    React.createElement('div', {},
+      React.createElement('div', {}, 'Error: ' + error.message),
+      React.createElement('button', { onClick: resetError }, 'Retry')
+    )
+  ),
+  withSupabaseErrorBoundary: <P extends object>(Component: React.ComponentType<P>) => Component,
+  useErrorHandler: () => ({ handleError: jest.fn(), clearError: jest.fn() }),
+}));
+
+// Export the mock for use in tests
+export { mockSupabaseClient }
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {

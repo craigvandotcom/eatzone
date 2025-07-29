@@ -37,7 +37,7 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
       </h3>
       
       <p className="text-sm text-gray-600 mb-4 max-w-md">
-        We're sorry, but something unexpected happened. Please try refreshing the page.
+        We&apos;re sorry, but something unexpected happened. Please try refreshing the page.
       </p>
 
       {isDevelopment && (

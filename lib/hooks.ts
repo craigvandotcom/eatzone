@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Food, Symptom } from "./types";
+import { Symptom } from "./types";
 import {
   getAllFoods,
   getAllSymptoms,

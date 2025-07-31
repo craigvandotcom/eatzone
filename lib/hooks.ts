@@ -1,7 +1,8 @@
-// Custom React hooks for reactive data binding with IndexedDB
-// Uses useLiveQuery from dexie-react-hooks for automatic UI updates
+// Optimized Custom React hooks for reactive data binding with Supabase
+// Uses shared subscriptions and better error handling patterns
 
-import { useLiveQuery } from "dexie-react-hooks";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { Symptom } from "./types";
 import {
   getAllFoods,
@@ -12,179 +13,376 @@ import {
   getSymptomById,
 } from "./db";
 
-// FOOD HOOKS
+// Create a shared supabase client for all hooks
+const supabase = createClient();
+
+// Shared subscription management to prevent duplicate subscriptions
+class SubscriptionManager {
+  private subscriptions = new Map<string, any>();
+  private listeners = new Map<string, Set<() => void>>();
+
+  subscribe(key: string, subscriptionConfig: any, callback: () => void) {
+    // Add callback to listeners
+    if (!this.listeners.has(key)) {
+      this.listeners.set(key, new Set());
+    }
+    this.listeners.get(key)!.add(callback);
+
+    // Create subscription if it doesn't exist
+    if (!this.subscriptions.has(key)) {
+      const subscription = supabase
+        .channel(key)
+        .on('postgres_changes', subscriptionConfig, () => {
+          // Notify all listeners
+          this.listeners.get(key)?.forEach(listener => listener());
+        })
+        .subscribe();
+      
+      this.subscriptions.set(key, subscription);
+    }
+
+    // Return unsubscribe function
+    return () => {
+      const listeners = this.listeners.get(key);
+      if (listeners) {
+        listeners.delete(callback);
+        
+        // If no more listeners, clean up subscription
+        if (listeners.size === 0) {
+          const subscription = this.subscriptions.get(key);
+          if (subscription) {
+            subscription.unsubscribe();
+            this.subscriptions.delete(key);
+            this.listeners.delete(key);
+          }
+        }
+      }
+    };
+  }
+}
+
+const subscriptionManager = new SubscriptionManager();
+
+// Enhanced hook with retry logic and better error handling
+function useSupabaseData<T>(
+  fetchFn: () => Promise<T>,
+  subscriptionKey: string,
+  subscriptionConfig: any,
+  dependencies: any[] = []
+) {
+  const [data, setData] = useState<T | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const retryCount = useRef(0);
+  const maxRetries = 3;
+
+  const fetchData = useCallback(async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await fetchFn();
+      setData(result);
+      retryCount.current = 0; // Reset retry count on success
+    } catch (error) {
+      console.error(`Error fetching data for ${subscriptionKey}:`, error);
+      
+      // Implement exponential backoff retry
+      if (retryCount.current < maxRetries) {
+        retryCount.current++;
+        const delay = Math.pow(2, retryCount.current) * 1000; // 2s, 4s, 8s
+        
+        setTimeout(() => {
+          fetchData(false);
+        }, delay);
+      } else {
+        setError(`Failed to load data after ${maxRetries} attempts`);
+        setData(undefined); // Ensure we show error state
+      }
+    } finally {
+      if (showLoading) setIsLoading(false);
+    }
+  }, [fetchFn, subscriptionKey]);
+
+  useEffect(() => {
+    // Initial fetch
+    fetchData(true);
+
+    // Set up real-time subscription through manager
+    const unsubscribe = subscriptionManager.subscribe(
+      subscriptionKey,
+      subscriptionConfig,
+      () => fetchData(false) // Don't show loading on real-time updates
+    );
+
+    return unsubscribe;
+  }, dependencies);
+
+  const retry = useCallback(() => {
+    retryCount.current = 0;
+    fetchData(true);
+  }, [fetchData]);
+
+  return { data, error, isLoading, retry };
+}
+
+// OPTIMIZED FOOD HOOKS
 export const useTodaysFoods = () => {
-  return useLiveQuery(async () => {
-    return await getTodaysFoods();
-  }, []);
+  return useSupabaseData(
+    getTodaysFoods,
+    'todays_foods',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'foods',
+    }
+  );
 };
 
 export const useAllFoods = () => {
-  return useLiveQuery(async () => {
-    return await getAllFoods();
-  }, []);
+  return useSupabaseData(
+    getAllFoods,
+    'all_foods',
+    {
+      event: '*',
+      schema: 'public', 
+      table: 'foods',
+    }
+  );
 };
 
 export const useFoodById = (id: string | null) => {
-  return useLiveQuery(async () => {
-    if (!id) return null;
-    return await getFoodById(id);
-  }, [id]);
+  return useSupabaseData(
+    () => id ? getFoodById(id) : Promise.resolve(null),
+    `food_${id}`,
+    {
+      event: '*',
+      schema: 'public',
+      table: 'foods',
+      filter: id ? `id=eq.${id}` : undefined,
+    },
+    [id]
+  );
 };
 
 export const useRecentFoods = (limit: number = 5) => {
-  return useLiveQuery(async () => {
-    const foods = await getAllFoods();
-    return foods.slice(0, limit);
-  }, [limit]);
+  return useSupabaseData(
+    async () => {
+      const data = await getAllFoods();
+      return data.slice(0, limit);
+    },
+    'recent_foods',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'foods',
+    },
+    [limit]
+  );
 };
 
-// SYMPTOM HOOKS
+// OPTIMIZED SYMPTOM HOOKS
 export const useTodaysSymptoms = () => {
-  return useLiveQuery(async () => {
-    return await getTodaysSymptoms();
-  }, []);
+  return useSupabaseData(
+    getTodaysSymptoms,
+    'todays_symptoms',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
+    }
+  );
 };
 
 export const useAllSymptoms = () => {
-  return useLiveQuery(async () => {
-    return await getAllSymptoms();
-  }, []);
+  return useSupabaseData(
+    getAllSymptoms,
+    'all_symptoms',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
+    }
+  );
 };
 
 export const useSymptomById = (id: string | null) => {
-  return useLiveQuery(async () => {
-    if (!id) return null;
-    return await getSymptomById(id);
-  }, [id]);
+  return useSupabaseData(
+    () => id ? getSymptomById(id) : Promise.resolve(null),
+    `symptom_${id}`,
+    {
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
+      filter: id ? `id=eq.${id}` : undefined,
+    },
+    [id]
+  );
 };
 
 export const useRecentSymptoms = (limit: number = 5) => {
-  return useLiveQuery(async () => {
-    const symptoms = await getAllSymptoms();
-    return symptoms.slice(0, limit);
-  }, [limit]);
+  return useSupabaseData(
+    async () => {
+      const data = await getAllSymptoms();
+      return data.slice(0, limit);
+    },
+    'recent_symptoms',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
+    },
+    [limit]
+  );
 };
 
-// ANALYTICS HOOKS
+// OPTIMIZED ANALYTICS HOOKS
 export const useFoodStats = () => {
-  return useLiveQuery(async () => {
-    try {
-      let foodsToAnalyze = await getTodaysFoods();
+  return useSupabaseData(
+    async () => {
+      try {
+        let foodsToAnalyze = await getTodaysFoods();
 
-      // If no foods today, fallback to recent foods for better UX
-      if (!foodsToAnalyze || foodsToAnalyze.length === 0) {
-        const recentFoods = await getAllFoods();
-        foodsToAnalyze = recentFoods.slice(0, 5); // Get the 5 most recent foods
-
-        // If still no foods, return empty stats
+        // If no foods today, fallback to recent foods for better UX
         if (!foodsToAnalyze || foodsToAnalyze.length === 0) {
-          return {
-            greenIngredients: 0,
-            yellowIngredients: 0,
-            redIngredients: 0,
-            totalIngredients: 0,
-            organicCount: 0,
-            totalOrganicPercentage: 0,
-            isFromToday: false,
-          };
+          const recentFoods = await getAllFoods();
+          foodsToAnalyze = recentFoods.slice(0, 5);
+
+          if (!foodsToAnalyze || foodsToAnalyze.length === 0) {
+            return {
+              greenIngredients: 0,
+              yellowIngredients: 0,
+              redIngredients: 0,
+              totalIngredients: 0,
+              organicCount: 0,
+              totalOrganicPercentage: 0,
+              isFromToday: false,
+            };
+          }
         }
+
+        const todaysFoods = await getTodaysFoods();
+        const isFromToday = todaysFoods.length > 0;
+
+        const ingredients = foodsToAnalyze.flatMap(
+          food => food.ingredients || []
+        );
+
+        const greenIngredients = ingredients.filter(
+          ing => ing.zone === "green"
+        ).length;
+        const yellowIngredients = ingredients.filter(
+          ing => ing.zone === "yellow"
+        ).length;
+        const redIngredients = ingredients.filter(
+          ing => ing.zone === "red"
+        ).length;
+
+        const organicIngredientsCount = ingredients.filter(
+          ing => ing.organic === true
+        ).length;
+        const totalOrganicPercentage =
+          ingredients.length > 0
+            ? (organicIngredientsCount / ingredients.length) * 100
+            : 0;
+
+        return {
+          greenIngredients,
+          yellowIngredients,
+          redIngredients,
+          totalIngredients: ingredients.length,
+          organicCount: organicIngredientsCount,
+          totalOrganicPercentage,
+          isFromToday,
+        };
+      } catch (error) {
+        console.error("Error calculating food stats:", error);
+        return {
+          greenIngredients: 0,
+          yellowIngredients: 0,
+          redIngredients: 0,
+          totalIngredients: 0,
+          organicCount: 0,
+          totalOrganicPercentage: 0,
+          isFromToday: false,
+        };
       }
-
-      // Check if we're analyzing today's foods or recent foods
-      const todaysFoods = await getTodaysFoods();
-      const isFromToday = todaysFoods.length > 0;
-
-      const ingredients = foodsToAnalyze.flatMap(
-        food => food.ingredients || []
-      );
-
-      const greenIngredients = ingredients.filter(
-        ing => ing.zone === "green"
-      ).length;
-      const yellowIngredients = ingredients.filter(
-        ing => ing.zone === "yellow"
-      ).length;
-      const redIngredients = ingredients.filter(
-        ing => ing.zone === "red"
-      ).length;
-
-      const organicIngredientsCount = ingredients.filter(
-        ing => ing.isOrganic === true
-      ).length;
-      const totalOrganicPercentage =
-        ingredients.length > 0
-          ? (organicIngredientsCount / ingredients.length) * 100
-          : 0;
-
-      return {
-        greenIngredients,
-        yellowIngredients,
-        redIngredients,
-        totalIngredients: ingredients.length,
-        organicCount: organicIngredientsCount,
-        totalOrganicPercentage,
-        isFromToday,
-      };
-    } catch (error) {
-      console.error("Error calculating food stats:", error);
-      return {
-        greenIngredients: 0,
-        yellowIngredients: 0,
-        redIngredients: 0,
-        totalIngredients: 0,
-        organicCount: 0,
-        totalOrganicPercentage: 0,
-        isFromToday: false,
-      };
+    },
+    'food_stats',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'foods',
     }
-  }, []);
+  );
 };
 
 export const useSymptomTrends = (days: number = 7) => {
-  return useLiveQuery(async () => {
-    const allSymptoms = await getAllSymptoms();
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
+  return useSupabaseData(
+    async () => {
+      try {
+        const allSymptoms = await getAllSymptoms();
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
 
-    const recentSymptoms = allSymptoms.filter(
-      symptom => new Date(symptom.timestamp) >= cutoffDate
-    );
+        const recentSymptoms = allSymptoms.filter(
+          symptom => new Date(symptom.timestamp) >= cutoffDate
+        );
 
-    // Group symptoms by day
-    const symptomsByDay: { [key: string]: Symptom[] } = {};
-    recentSymptoms.forEach(symptom => {
-      const day = symptom.timestamp.split("T")[0];
-      if (!symptomsByDay[day]) {
-        symptomsByDay[day] = [];
+        // Group symptoms by day
+        const symptomsByDay: { [key: string]: Symptom[] } = {};
+        recentSymptoms.forEach(symptom => {
+          const day = symptom.timestamp.split("T")[0];
+          if (!symptomsByDay[day]) {
+            symptomsByDay[day] = [];
+          }
+          symptomsByDay[day].push(symptom);
+        });
+
+        // Calculate average severity per day
+        const trendData = Object.entries(symptomsByDay).map(([day, symptoms]) => ({
+          day,
+          count: symptoms.length,
+          averageSeverity:
+            symptoms.reduce((sum, s) => sum + s.severity, 0) / symptoms.length,
+        }));
+
+        return trendData.sort((a, b) => a.day.localeCompare(b.day));
+      } catch (error) {
+        console.error("Error calculating symptom trends:", error);
+        return [];
       }
-      symptomsByDay[day].push(symptom);
-    });
-
-    // Calculate average severity per day
-    const trendData = Object.entries(symptomsByDay).map(([day, symptoms]) => ({
-      day,
-      count: symptoms.length,
-      averageSeverity:
-        symptoms.reduce((sum, s) => sum + s.severity, 0) / symptoms.length,
-    }));
-
-    return trendData.sort((a, b) => a.day.localeCompare(b.day));
-  }, [days]);
+    },
+    'symptom_trends',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
+    },
+    [days]
+  );
 };
 
-// DAILY SUMMARY HOOK
+// DAILY SUMMARY HOOK - Using shared subscription for both tables
 export const useDailySummary = () => {
-  return useLiveQuery(async () => {
-    const [foods, symptoms] = await Promise.all([
-      getTodaysFoods(),
-      getTodaysSymptoms(),
-    ]);
+  const { data: foods } = useTodaysFoods();
+  const { data: symptoms } = useTodaysSymptoms();
 
-    return {
-      foods: foods.length,
-      symptoms: symptoms.length,
-      totalEntries: foods.length + symptoms.length,
-    };
-  }, []);
+  const [summary, setSummary] = useState<{
+    foods: number;
+    symptoms: number;
+    totalEntries: number;
+  } | undefined>(undefined);
+
+  useEffect(() => {
+    if (foods !== undefined && symptoms !== undefined) {
+      setSummary({
+        foods: foods.length,
+        symptoms: symptoms.length,
+        totalEntries: foods.length + symptoms.length,
+      });
+    }
+  }, [foods, symptoms]);
+
+  return summary;
 };

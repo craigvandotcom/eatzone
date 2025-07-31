@@ -4,7 +4,7 @@ import { getZoneBgClass, getZoneBgStyle } from "@/lib/utils/zone-colors";
 
 interface Ingredient {
   name: string;
-  isOrganic: boolean;
+  organic: boolean;
 }
 
 interface OrganicCompositionBarProps {
@@ -24,7 +24,7 @@ export function OrganicCompositionBar({
   }
 
   const organicCount = safeIngredients.filter(
-    ing => ing.isOrganic === true
+    ing => ing.organic === true
   ).length;
   const organicPercent = (organicCount / totalIngredients) * 100;
 

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prompts } from "@/lib/prompts"; // Import from our new module
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { logger } from "@/lib/utils/logger";
 
 // Rate limiting setup using Vercel's Upstash integration env vars
 let ratelimit: Ratelimit | null = null;
@@ -108,11 +109,12 @@ export async function POST(request: NextRequest) {
 
     const aiResponseText = response.choices[0]?.message?.content;
 
-    // Log the actual AI response for debugging
-    console.log("AI Response:", aiResponseText);
     if (!aiResponseText) {
       throw new Error("No response from AI model");
     }
+    
+    // Log the actual AI response for debugging
+    logger.debug("AI Response received", { responseLength: aiResponseText.length });
 
     // Parse the AI response as JSON with markdown fallback
     let aiResponse: { mealSummary: string; ingredients: { name: string; isOrganic: boolean }[] };
@@ -124,15 +126,14 @@ export async function POST(request: NextRequest) {
           const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)\s*```/);
           if (jsonMatch) {
             aiResponse = JSON.parse(jsonMatch[1]);
-            console.log("Successfully extracted JSON from markdown wrapper");
+            logger.debug("Successfully extracted JSON from markdown wrapper");
           } else {
             throw new Error("No JSON found in response");
           }
         } catch {
-          console.error(
-            "Failed to parse AI response as JSON. Raw response:",
-            aiResponseText
-          );
+          logger.error("Failed to parse AI response as JSON", undefined, {
+            rawResponse: aiResponseText.substring(0, 200) + "..."
+          });
           throw new Error(
             `AI response was not valid JSON. Response: "${aiResponseText}"`
           );
@@ -183,7 +184,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error in analyze-image API:", error);
+    logger.error("Error in analyze-image API", error);
 
     // Handle different types of errors
     if (error instanceof z.ZodError) {

@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(profile);
       }
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error", error);
       throw error;
     }
   };
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       setUser(null);
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error", error);
       // Still clear the user state even if logout fails
       setUser(null);
     }

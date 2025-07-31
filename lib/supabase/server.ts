@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { logger } from '@/lib/utils/logger'
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -23,7 +24,7 @@ export async function createClient() {
             // user sessions.
             // In development, log for visibility
             if (process.env.NODE_ENV === 'development') {
-              console.debug('[Supabase Server] Cookie operation in Server Component context:', {
+              logger.debug('[Supabase Server] Cookie operation in Server Component context', {
                 error: error instanceof Error ? error.message : 'Unknown error',
                 context: 'This is expected when called from Server Components'
               });

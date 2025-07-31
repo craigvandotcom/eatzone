@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { openrouter } from "@/lib/ai/openrouter";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -22,7 +23,7 @@ export async function GET(_request: Request) {
       throw new Error("Invalid response structure from OpenRouter.");
     }
   } catch (error) {
-    console.error("OpenRouter health check failed:", error);
+    logger.error("OpenRouter health check failed", error);
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(

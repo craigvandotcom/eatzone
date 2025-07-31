@@ -12,6 +12,7 @@ import {
   getFoodById,
   getSymptomById,
 } from "./db";
+import { logger } from "./utils/logger";
 
 // Create a shared supabase client for all hooks
 const supabase = createClient();
@@ -85,7 +86,7 @@ function useSupabaseData<T>(
       setData(result);
       retryCount.current = 0; // Reset retry count on success
     } catch (error) {
-      console.error(`Error fetching data for ${subscriptionKey}:`, error);
+      logger.error(`Error fetching data for ${subscriptionKey}`, error);
       
       // Implement exponential backoff retry
       if (retryCount.current < maxRetries) {
@@ -296,7 +297,7 @@ export const useFoodStats = () => {
           isFromToday,
         };
       } catch (error) {
-        console.error("Error calculating food stats:", error);
+        logger.error("Error calculating food stats", error);
         return {
           greenIngredients: 0,
           yellowIngredients: 0,
@@ -349,7 +350,7 @@ export const useSymptomTrends = (days: number = 7) => {
 
         return trendData.sort((a, b) => a.day.localeCompare(b.day));
       } catch (error) {
-        console.error("Error calculating symptom trends:", error);
+        logger.error("Error calculating symptom trends", error);
         return [];
       }
     },

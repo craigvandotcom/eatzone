@@ -15,14 +15,6 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   const safeIngredients = ingredients || [];
   const totalIngredients = safeIngredients.length;
 
-  // Debug logging
-  console.debug("FoodCompositionBar Debug:", {
-    totalIngredients,
-    firstIngredient: safeIngredients[0],
-    hasZoneProperty: safeIngredients[0]?.zone !== undefined,
-    ingredients: safeIngredients,
-  });
-
   if (totalIngredients === 0) {
     // Still analyzing or no ingredients
     return (
@@ -39,14 +31,6 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   ).length;
   const redCount = safeIngredients.filter(ing => ing.zone === "red").length;
   const analyzedCount = greenCount + yellowCount + redCount;
-
-  // Debug logging for zone counts
-  console.debug("Zone counts:", {
-    greenCount,
-    yellowCount,
-    redCount,
-    analyzedCount,
-  });
 
   if (analyzedCount === 0) {
     // No zone data, show default state
@@ -68,14 +52,6 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   const greenPercent = (greenCount / analyzedCount) * 100;
   const yellowPercent = (yellowCount / analyzedCount) * 100;
   const redPercent = (redCount / analyzedCount) * 100;
-
-  // Debug logging for percentages
-  console.debug("Calculated percentages:", {
-    greenPercent,
-    yellowPercent,
-    redPercent,
-    total: greenPercent + yellowPercent + redPercent,
-  });
 
   return (
     <div

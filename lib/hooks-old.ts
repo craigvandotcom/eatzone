@@ -12,6 +12,7 @@ import {
   getFoodById,
   getSymptomById,
 } from "./db";
+import { logger } from "./utils/logger";
 
 // Create a shared supabase client for all hooks
 const supabase = createClient();
@@ -27,7 +28,7 @@ export const useTodaysFoods = () => {
         const data = await getTodaysFoods();
         setFoods(data);
       } catch (error) {
-        console.error("Error fetching today's foods:", error);
+        logger.error("Error fetching today's foods", error);
         setFoods([]);
       }
     };
@@ -69,7 +70,7 @@ export const useAllFoods = () => {
         const data = await getAllFoods();
         setFoods(data);
       } catch (error) {
-        console.error("Error fetching all foods:", error);
+        logger.error("Error fetching all foods", error);
         setFoods([]);
       }
     };
@@ -116,7 +117,7 @@ export const useFoodById = (id: string | null) => {
         const data = await getFoodById(id);
         setFood(data || null);
       } catch (error) {
-        console.error("Error fetching food by id:", error);
+        logger.error("Error fetching food by id", error);
         setFood(null);
       }
     };
@@ -159,7 +160,7 @@ export const useRecentFoods = (limit: number = 5) => {
         const data = await getAllFoods();
         setFoods(data.slice(0, limit));
       } catch (error) {
-        console.error("Error fetching recent foods:", error);
+        logger.error("Error fetching recent foods", error);
         setFoods([]);
       }
     };
@@ -202,7 +203,7 @@ export const useTodaysSymptoms = () => {
         const data = await getTodaysSymptoms();
         setSymptoms(data);
       } catch (error) {
-        console.error("Error fetching today's symptoms:", error);
+        logger.error("Error fetching today's symptoms", error);
         setSymptoms([]);
       }
     };
@@ -244,7 +245,7 @@ export const useAllSymptoms = () => {
         const data = await getAllSymptoms();
         setSymptoms(data);
       } catch (error) {
-        console.error("Error fetching all symptoms:", error);
+        logger.error("Error fetching all symptoms", error);
         setSymptoms([]);
       }
     };
@@ -291,7 +292,7 @@ export const useSymptomById = (id: string | null) => {
         const data = await getSymptomById(id);
         setSymptom(data || null);
       } catch (error) {
-        console.error("Error fetching symptom by id:", error);
+        logger.error("Error fetching symptom by id", error);
         setSymptom(null);
       }
     };
@@ -334,7 +335,7 @@ export const useRecentSymptoms = (limit: number = 5) => {
         const data = await getAllSymptoms();
         setSymptoms(data.slice(0, limit));
       } catch (error) {
-        console.error("Error fetching recent symptoms:", error);
+        logger.error("Error fetching recent symptoms", error);
         setSymptoms([]);
       }
     };
@@ -440,7 +441,7 @@ export const useFoodStats = () => {
           isFromToday,
         });
       } catch (error) {
-        console.error("Error calculating food stats:", error);
+        logger.error("Error calculating food stats", error);
         setStats({
           greenIngredients: 0,
           yellowIngredients: 0,
@@ -520,7 +521,7 @@ export const useSymptomTrends = (days: number = 7) => {
 
         setTrends(trendData.sort((a, b) => a.day.localeCompare(b.day)));
       } catch (error) {
-        console.error("Error calculating symptom trends:", error);
+        logger.error("Error calculating symptom trends", error);
         setTrends([]);
       }
     };
@@ -576,7 +577,7 @@ export const useDailySummary = () => {
           totalEntries: foods.length + symptoms.length,
         });
       } catch (error) {
-        console.error("Error calculating daily summary:", error);
+        logger.error("Error calculating daily summary", error);
         setSummary({
           foods: 0,
           symptoms: 0,

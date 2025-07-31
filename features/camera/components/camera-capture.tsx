@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
 import { Camera, Edit3, Upload } from "lucide-react";
+import { logger } from "@/lib/utils/logger";
 
 interface CameraCaptureProps {
   open: boolean;
@@ -44,7 +45,7 @@ export function CameraCapture({
     if (stream && videoRef.current) {
       videoRef.current.srcObject = stream;
       videoRef.current.play().catch(err => {
-        console.error("Error playing video:", err);
+        logger.error("Error playing video", err);
       });
     }
   }, [stream]);
@@ -65,7 +66,7 @@ export function CameraCapture({
       setStream(mediaStream);
       setIsLoading(false);
     } catch (err) {
-      console.error("Error accessing camera:", err);
+      logger.error("Error accessing camera", err);
       setError("Unable to access camera. Please check permissions.");
       setIsLoading(false);
     }

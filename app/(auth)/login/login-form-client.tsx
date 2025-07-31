@@ -37,6 +37,7 @@ import {
   resetDevUser,
 } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
+import { logger } from "@/lib/utils/logger";
 // Simple PWA detection utilities
 const isPWAContext = () => {
   if (typeof window === "undefined") return false;
@@ -140,7 +141,7 @@ export function LoginFormClient() {
           envType === "development"
             ? "Dev User"
             : demoAccounts[targetAccount]?.name || "Demo User";
-        console.log(`✅ Logged in as: ${accountName} (${result.user.email})`);
+        logger.demo(`Logged in as: ${accountName} (${result.user.email})`);
         // Note: quickDemoLogin already handles Supabase auth, so we don't need to call login here
         router.push("/app");
       } else {

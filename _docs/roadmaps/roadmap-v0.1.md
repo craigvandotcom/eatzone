@@ -399,11 +399,18 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - **Outcome:** Complete cloud-based data architecture with improved development experience and user capabilities, eliminating IndexedDB storage issues and enabling rapid MVP iteration.
 
 - refactor project to align with chosen design patterns
+- setup basic testing
+  - site
+  - auth
+  - user journey
+  - image analysis
+  - ingredient zoning
 
 - [ ] Task 15.5: Review complete symptoms logging flow
   - [ ] manual capture
   - [ ] recent entries
   - [ ] etc
+  - [ ] testing
 
 
 - [ ] **Task 16: Build MVP Insights Page (`build-mvp-insights-page`)**
@@ -418,6 +425,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
       - Implement `app/(protected)/app/insights/page.tsx` with this initial functionality.
   - **Outcome:** A functional MVP insights page that provides users with direct, actionable heuristic correlations from their local data, delivering on the core "Body Compass" promise.
 
+Task 16.5: Security
 
 
 ---

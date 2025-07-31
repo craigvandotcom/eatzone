@@ -43,6 +43,7 @@ import { useTheme } from "next-themes";
 import { exportAllData, importAllData, clearAllData, addFood } from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { AuthGuard } from "@/features/auth/components/auth-guard";
+import { logger } from "@/lib/utils/logger";
 
 function SettingsPage() {
   const [isExporting, setIsExporting] = useState(false);
@@ -78,7 +79,7 @@ function SettingsPage() {
         description: `Exported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
       });
     } catch (error) {
-      console.error("Export failed:", error);
+      logger.error("Export failed", error);
       toast({
         title: "Export failed",
         description:
@@ -113,7 +114,7 @@ function SettingsPage() {
         description: `Imported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
       });
     } catch (error) {
-      console.error("Import failed:", error);
+      logger.error("Import failed", error);
       toast({
         title: "Import failed",
         description:
@@ -137,7 +138,7 @@ function SettingsPage() {
           "All your health tracking data has been permanently deleted.",
       });
     } catch (error) {
-      console.error("Clear failed:", error);
+      logger.error("Clear failed", error);
       toast({
         title: "Clear failed",
         description: "There was an error clearing your data. Please try again.",
@@ -158,7 +159,7 @@ function SettingsPage() {
       });
       router.push("/");
     } catch (error) {
-      console.error("Logout failed:", error);
+      logger.error("Logout failed", error);
       toast({
         title: "Logout failed",
         description: "There was an error logging out. Please try again.",
@@ -205,7 +206,7 @@ function SettingsPage() {
           "Added a test meal with 2/3 organic ingredients to verify the organic tracking works.",
       });
     } catch (error) {
-      console.error("Failed to add test data:", error);
+      logger.error("Failed to add test data", error);
       toast({
         title: "Test data failed",
         description: "There was an error adding test data.",

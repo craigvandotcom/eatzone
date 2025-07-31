@@ -47,15 +47,54 @@ async function resetDatabase() {
       console.log('📝 Use this script after logging in to reset your personal data');
       console.log('💡 For now, this serves as a connection test...');
       
-      // Test connection
-      const { data, error } = await supabase.from('foods').select('count', { count: 'exact', head: true });
-      if (error) {
-        console.error('❌ Database connection failed:', error.message);
-        process.exit(1);
+      // Test connection with timeout and retry
+      const MAX_RETRIES = 3;
+      const TIMEOUT_MS = 5000;
+      let lastError = null;
+      
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          console.log(`🔍 Testing database connection (attempt ${attempt}/${MAX_RETRIES})...`);
+          
+          // Create a timeout promise
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Connection timeout')), TIMEOUT_MS);
+          });
+          
+          // Create the query promise
+          const queryPromise = supabase.from('foods').select('count', { count: 'exact', head: true });
+          
+          // Race between timeout and query
+          const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+          
+          if (error) {
+            throw error;
+          }
+          
+          console.log('✅ Database connection successful');
+          return;
+          
+        } catch (error) {
+          lastError = error;
+          console.error(`❌ Connection attempt ${attempt} failed:`, error.message);
+          
+          if (attempt < MAX_RETRIES) {
+            const waitTime = Math.pow(2, attempt - 1) * 1000; // Exponential backoff: 1s, 2s, 4s
+            console.log(`⏳ Waiting ${waitTime / 1000}s before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
+        }
       }
       
-      console.log('✅ Database connection successful');
-      return;
+      // All retries failed
+      console.error('\n❌ Database connection failed after all retries');
+      console.error('\n🔧 Troubleshooting tips:');
+      console.error('1. Check your internet connection');
+      console.error('2. Verify NEXT_PUBLIC_SUPABASE_URL in .env.local');
+      console.error('3. Ensure Supabase project is active');
+      console.error('4. Check if the database is paused (free tier)');
+      console.error(`\nLast error: ${lastError?.message || 'Unknown error'}`);
+      process.exit(1);
     }
 
     console.log(`👤 Resetting data for user: ${user.email}`);

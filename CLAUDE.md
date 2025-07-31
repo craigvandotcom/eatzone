@@ -9,7 +9,7 @@ See @app/globals.css for CSS variables and theming system
 
 ## Project Overview
 
-This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis while keeping all data local via IndexedDB.
+This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis using Supabase for secure cloud storage.
 
 **Development Context:**
 - Solo developer project (no team coordination needed)
@@ -76,7 +76,13 @@ pnpm build:check    # Production build + lint
 - Run accessibility checks with axe-core
 
 ### Database
-- `pnpm run db:reset` - Manual task: Clear IndexedDB via DevTools → Application → Storage → IndexedDB → Delete "HealthTrackerDB"
+- `pnpm run db:reset` - Clear all user data from current Supabase session
+- `pnpm run db:seed` - Seed database with demo data (development only)
+- `pnpm run db:status` - Check database connection and status
+- `pnpm supabase:start` - Start local Supabase instance
+- `pnpm supabase:stop` - Stop local Supabase instance
+- `pnpm supabase:reset` - Reset local Supabase database
+- `pnpm supabase:types` - Generate TypeScript types from database schema
 
 ## Architecture Overview
 
@@ -85,7 +91,7 @@ pnpm build:check    # Production build + lint
 - **React 19** with modern concurrent features
 - **TypeScript** with strict mode enabled
 - **Tailwind CSS** with shadcn/ui components
-- **IndexedDB** via Dexie for local-first data storage
+- **Supabase** for secure cloud data storage with real-time sync
 - **PWA** with full offline support and installation capabilities
 
 ### Key Directories
@@ -95,10 +101,10 @@ pnpm build:check    # Production build + lint
 - `/lib` - Core utilities (db.ts, types.ts, utils.ts, ai/)
 
 ### Data & Auth
-- **Local-first**: All user data in IndexedDB
-- **JWT auth** with jose library, bcrypt hashing
+- **Cloud-based**: Secure data storage with Supabase
+- **Supabase Auth**: Built-in authentication with session management
 - **Demo users**: dev@test.com (dev), demo/preview/test@puls.app (preview)
-- **Middleware protection** for `/app/(protected)/` routes
+- **Middleware protection** for `/app/(protected)/` routes with Supabase session validation
 
 ### AI Integration
 - **OpenRouter API** for ingredient analysis
@@ -129,9 +135,9 @@ pnpm build:check    # Production build + lint
 - Mobile-first responsive design
 
 **Database & PWA:**
-- All CRUD through `lib/db.ts`
-- Test by clearing IndexedDB
-- Verify offline functionality
+- All CRUD through `lib/db.ts` using Supabase client
+- Test with `pnpm db:reset` to clear user data
+- Verify offline functionality with service worker caching
 - Test iOS Safari compatibility
 
 **Testing Patterns:**
@@ -159,7 +165,7 @@ pnpm build:check    # Production build + lint
 1. Navigate to `http://localhost:3000`
 2. Take snapshots, check console
 3. Test critical user paths
-4. Validate offline mode and IndexedDB
+4. Validate offline mode and data sync
 5. Check accessibility (keyboard nav, ARIA)
 
 **Context7 MCP Usage:**
@@ -173,7 +179,7 @@ pnpm build:check    # Production build + lint
 - Always use `pnpm` not `npm`
 - Use `@/` path aliases
 - Verify `.env.local` for API issues
-- Check IndexedDB state in DevTools
+- Check Supabase connection in browser network tab
 
 ## Environment Configuration
 
@@ -201,11 +207,11 @@ pnpm build:check    # Production build + lint
 **Common Issues:**
 - **Build fails**: Run `pnpm type-check` first
 - **PWA not installing**: Check manifest.json and service worker
-- **Database issues**: Clear IndexedDB in DevTools
+- **Database issues**: Run `pnpm db:reset` or check Supabase dashboard
 - **API errors**: Verify OpenRouter API key in `.env.local`
 
 **Debug Commands:**
 - `pnpm dev:clean` - Hard reset development
 - `pnpm db:reset` - Clear all local data
 
-When working with this codebase, prioritize maintaining the local-first architecture, PWA compatibility, and type safety throughout all changes.
+When working with this codebase, prioritize maintaining secure cloud storage with Supabase, PWA compatibility, and type safety throughout all changes.

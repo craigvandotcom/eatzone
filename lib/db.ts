@@ -294,13 +294,10 @@ export const getUserById = async (id: string): Promise<User | undefined> => {
     .from("users")
     .select("*")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    if (error.code === 'PGRST116') return undefined; // No rows returned
-    throw error;
-  }
-  return data;
+  if (error) throw error;
+  return data || undefined;
 };
 
 export const getCurrentUser = async (): Promise<User | null> => {
@@ -311,12 +308,9 @@ export const getCurrentUser = async (): Promise<User | null> => {
     .from("users")
     .select("*")
     .eq("id", authUser.id)
-    .single();
+    .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 or 1 results
 
-  if (error) {
-    if (error.code === 'PGRST116') return null; // No rows returned
-    throw error;
-  }
+  if (error) throw error;
   return data;
 };
 

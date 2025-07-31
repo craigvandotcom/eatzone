@@ -9,7 +9,7 @@ See @app/globals.css for CSS variables and theming system
 
 ## Project Overview
 
-This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis using Supabase for secure cloud storage.
+This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis using Supabase for secure cloud storage and authentication.
 
 **Development Context:**
 - Solo developer project (no team coordination needed)
@@ -36,7 +36,7 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 **Testing Philosophy:**
 - Test user behavior and contracts, not implementation details
 - Follow testing trophy: focus on integration/component tests with unit test foundation
-- Local-first testing mirrors production Supabase integration
+- Test Supabase integration and real-time sync features
 - Reference @_docs/guidelines/testing-best-practices.md for comprehensive patterns
 
 **Commands:**
@@ -71,7 +71,7 @@ pnpm build:check    # Production build + lint
 **Browser Testing (when UI changes made):**
 - Use Playwright MCP tools for UI validation
 - Test critical workflows: auth, food/symptom tracking, camera
-- Check console for errors, test offline mode
+- Check console for errors, validate real-time sync
 - Validate PWA features and responsive design
 - Run accessibility checks with axe-core
 
@@ -92,7 +92,7 @@ pnpm build:check    # Production build + lint
 - **TypeScript** with strict mode enabled
 - **Tailwind CSS** with shadcn/ui components
 - **Supabase** for secure cloud data storage with real-time sync
-- **PWA** with full offline support and installation capabilities
+- **PWA** with installation capabilities and real-time cloud sync
 
 ### Key Directories
 - `/app` - Next.js App Router (auth pages, protected routes, API routes)
@@ -137,13 +137,13 @@ pnpm build:check    # Production build + lint
 **Database & PWA:**
 - All CRUD through `lib/db.ts` using Supabase client
 - Test with `pnpm db:reset` to clear user data
-- Verify offline functionality with service worker caching
-- Test iOS Safari compatibility
+- Verify real-time sync and cloud data persistence
+- Test iOS Safari compatibility and PWA installation
 
 **Testing Patterns:**
 - **Supabase Integration**: Use existing global mocks for consistent behavior; consider MSW for new API-heavy features
-- **Local-first Architecture**: Test data persistence, offline scenarios, and sync conflicts
-- **PWA Testing**: Verify offline mode, service worker updates, and installability
+- **Cloud-based Architecture**: Test data persistence, real-time sync, and authentication flows
+- **PWA Testing**: Verify installation process, service worker updates, and app-like experience
 - **Accessibility**: Query by role/label (Testing Library default), validate with jest-axe
 - **Component Isolation**: Test behavior, not implementation; avoid testing library internals
 
@@ -161,12 +161,26 @@ pnpm build:check    # Production build + lint
 - PWA functionality validation
 - Debugging browser-specific issues
 
+**Starting Dev Server for Playwright Testing:**
+```bash
+# Start dev server in background (returns control immediately)
+nohup pnpm dev > /tmp/puls-dev.log 2>&1 & echo $!
+
+# Wait a few seconds for server to start
+sleep 5
+
+# Verify server is running (check the log)
+tail -20 /tmp/puls-dev.log
+```
+
 **Quick Workflow:**
-1. Navigate to `http://localhost:3000`
-2. Take snapshots, check console
-3. Test critical user paths
-4. Validate offline mode and data sync
-5. Check accessibility (keyboard nav, ARIA)
+1. Start dev server in background using nohup (see above)
+2. Navigate to `http://localhost:3000` with Playwright
+3. Take snapshots, check console for errors
+4. Test critical user paths (auth, tracking, dashboard)
+5. Validate real-time data sync with Supabase
+6. Check accessibility (keyboard nav, ARIA)
+7. When done, kill the dev server: `kill <PID>` or `lsof -ti:3000 | xargs kill -9`
 
 **Context7 MCP Usage:**
 - Fetches up-to-date, version-specific documentation and code examples directly from source

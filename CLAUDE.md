@@ -32,11 +32,32 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 - `pnpm start` - Serve production build
 
 ### Testing & Pre-Commit Workflow
+
+**Testing Philosophy:**
+- Test user behavior and contracts, not implementation details
+- Follow testing trophy: focus on integration/component tests with unit test foundation
+- Local-first testing mirrors production Supabase integration
+- Reference @_docs/guidelines/testing-best-practices.md for comprehensive patterns
+
+**Commands:**
 - `pnpm test` - Run all unit tests
 - `pnpm test:watch` - Run tests in watch mode during development
 - `pnpm test:coverage` - Run tests with coverage report
 - `pnpm test:ci` - Run tests optimized for CI environment
 - `pnpm test:pwa` - Build and serve for PWA testing (offline, installability)
+
+**Testing Stack:**
+- **Jest** + **@testing-library/react** + **user-event** for component testing
+- **MSW** for API mocking (recommended over global mocks for new tests)
+- **Playwright MCP** for E2E and browser testing
+- **jest-axe** for accessibility validation
+- Global Supabase mocks in `__tests__/setup/jest.setup.ts`
+
+**Testing Layers:**
+1. **Unit tests** - Utils, hooks logic, data transformations
+2. **Component tests** - User interactions, UI state, form validation
+3. **Integration tests** - Feature slices with real routing/data flow
+4. **E2E tests** - Critical user journeys via Playwright MCP
 
 **Pre-Commit Sequence:**
 ```bash
@@ -52,6 +73,7 @@ pnpm build:check    # Production build + lint
 - Test critical workflows: auth, food/symptom tracking, camera
 - Check console for errors, test offline mode
 - Validate PWA features and responsive design
+- Run accessibility checks with axe-core
 
 ### Database
 - `pnpm run db:reset` - Manual task: Clear IndexedDB via DevTools → Application → Storage → IndexedDB → Delete "HealthTrackerDB"
@@ -111,6 +133,13 @@ pnpm build:check    # Production build + lint
 - Test by clearing IndexedDB
 - Verify offline functionality
 - Test iOS Safari compatibility
+
+**Testing Patterns:**
+- **Supabase Integration**: Use existing global mocks for consistent behavior; consider MSW for new API-heavy features
+- **Local-first Architecture**: Test data persistence, offline scenarios, and sync conflicts
+- **PWA Testing**: Verify offline mode, service worker updates, and installability
+- **Accessibility**: Query by role/label (Testing Library default), validate with jest-axe
+- **Component Isolation**: Test behavior, not implementation; avoid testing library internals
 
 ### MCP Server Integration
 

@@ -418,6 +418,8 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
       - Implement `app/(protected)/app/insights/page.tsx` with this initial functionality.
   - **Outcome:** A functional MVP insights page that provides users with direct, actionable heuristic correlations from their local data, delivering on the core "Body Compass" promise.
 
+
+
 ---
 
 ### Phase 3: Native Integration with Capacitor

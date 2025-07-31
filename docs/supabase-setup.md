@@ -49,9 +49,7 @@ pnpm dev
 
 1. Go to Authentication → Users in Supabase
 2. Click "Invite user"
-3. Create users:
-   - `dev@test.com` (password: test123)
-   - `demo@puls.app` (password: demo123)
+3. Create test users as needed for development
 
 ### Database Access
 

@@ -77,7 +77,7 @@ pnpm build:check    # Production build + lint
 
 ### Database
 - `pnpm run db:reset` - Clear all user data from current Supabase session
-- `pnpm run db:seed` - Seed database with demo data (development only)
+- `pnpm run db:seed` - Seed database with test data (development only)
 - `pnpm run db:status` - Check database connection and status
 - `pnpm supabase:start` - Start local Supabase instance
 - `pnpm supabase:stop` - Stop local Supabase instance
@@ -103,7 +103,7 @@ pnpm build:check    # Production build + lint
 ### Data & Auth
 - **Cloud-based**: Secure data storage with Supabase
 - **Supabase Auth**: Built-in authentication with session management
-- **Demo users**: dev@test.com (dev), demo/preview/test@puls.app (preview)
+- **Authentication**: Standard Supabase Auth with email/password
 - **Middleware protection** for `/app/(protected)/` routes with Supabase session validation
 
 ### AI Integration
@@ -198,8 +198,7 @@ pnpm build:check    # Production build + lint
   - Note: Using Supabase's new API key naming (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` instead of `ANON_KEY`)
 
 ### Environment Modes
-- **Development**: Auto-creates dev@test.com user, no rate limiting
-- **Preview**: Auto-creates demo accounts
+- **Development**: No rate limiting, local Supabase project
 - **Production**: Full security enabled, Redis rate limiting active
 
 ## Troubleshooting

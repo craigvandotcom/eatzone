@@ -5,8 +5,6 @@ import { User } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentUser } from "@/lib/db";
 import { logger } from "@/lib/utils/logger";
-import { handleDemoModeLogin, attemptDemoLoginWithRetry } from "@/features/auth/utils/demo-auth";
-import { isDemoMode } from "@/lib/db";
 
 interface AuthContextType {
   user: User | null;
@@ -68,15 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        // In demo mode (development or preview), auto-login if no session exists
-        if (isDemoMode()) {
-          const demoResult = await handleDemoModeLogin();
-          if (demoResult.success && demoResult.user) {
-            setUser(demoResult.user);
-            return;
-          }
-        }
-
         setUser(null);
         setIsLoading(false);
         return;
@@ -95,15 +84,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       logger.error("Session check error", error);
       
-      // In demo mode, try auto-login after error
-      if (isDemoMode()) {
-        const demoResult = await attemptDemoLoginWithRetry();
-        if (demoResult.success && demoResult.user) {
-          setUser(demoResult.user);
-          return;
-        }
-      }
-
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -116,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state changed:', event, !!session);
+        logger.debug('Auth state changed', { event, hasSession: !!session });
         
         if (event === 'SIGNED_IN' && session) {
           const profile = await getCurrentUser();

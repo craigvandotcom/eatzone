@@ -6,7 +6,7 @@
 
 -- After creating auth users, their profiles will be auto-created by the trigger
 
--- Example test data for dev@test.com user
+-- Example test data for development
 -- First, get the user ID after creating the auth user
 -- Then insert sample data:
 

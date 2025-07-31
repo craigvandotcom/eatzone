@@ -56,12 +56,6 @@ class Logger {
     }
   }
 
-  // Special method for demo mode logging (always visible in development)
-  demo(message: string, context?: LogContext): void {
-    if (this.isDevelopment) {
-      console.log(`🚀 [DEMO] ${message}`, context || '');
-    }
-  }
 
   // For CLI scripts that should always output
   cli(message: string): void {

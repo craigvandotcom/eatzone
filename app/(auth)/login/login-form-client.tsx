@@ -22,22 +22,9 @@ import {
   ArrowLeft,
   Shield,
   Loader2,
-  Zap,
-  RotateCcw,
-  Globe,
-  Monitor,
-  Users,
   Smartphone,
 } from "lucide-react";
-import {
-  isDemoMode,
-  getEnvironmentType,
-  quickDemoLogin,
-  getDemoAccounts,
-  resetDevUser,
-} from "@/lib/db";
 import { useAuth } from "@/features/auth/components/auth-provider";
-import { logger } from "@/lib/utils/logger";
 // Simple PWA detection utilities
 const isPWAContext = () => {
   if (typeof window === "undefined") return false;
@@ -63,18 +50,8 @@ export function LoginFormClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isDemoLoginLoading, setIsDemoLoginLoading] = useState(false);
-  const [demoLoginError, setDemoLoginError] = useState("");
-  const [isResetLoading, setIsResetLoading] = useState(false);
-  const [selectedDemoAccount, setSelectedDemoAccount] = useState<number | null>(
-    null
-  );
   const [showPWAInfo, setShowPWAInfo] = useState(false);
 
-  // Get environment info
-  const envType =
-    typeof window !== "undefined" ? getEnvironmentType() : "production";
-  const demoAccounts = getDemoAccounts();
   
   // PWA detection
   const isPWA = typeof window !== "undefined" ? isPWAContext() : false;
@@ -128,73 +105,6 @@ export function LoginFormClient() {
     }
   };
 
-  const handleDemoLogin = async (accountIndex?: number) => {
-    const targetAccount = accountIndex ?? selectedDemoAccount ?? 0;
-    setIsDemoLoginLoading(true);
-    setDemoLoginError("");
-    setSelectedDemoAccount(targetAccount);
-
-    try {
-      const result = await quickDemoLogin(targetAccount);
-      if (result) {
-        const accountName =
-          envType === "development"
-            ? "Dev User"
-            : demoAccounts[targetAccount]?.name || "Demo User";
-        logger.demo(`Logged in as: ${accountName} (${result.user.email})`);
-        // Note: quickDemoLogin already handles Supabase auth, so we don't need to call login here
-        router.push("/app");
-      } else {
-        setDemoLoginError("Demo login failed - not in demo mode");
-      }
-    } catch (err) {
-      setDemoLoginError(
-        err instanceof Error ? err.message : "Demo login failed"
-      );
-    } finally {
-      setIsDemoLoginLoading(false);
-    }
-  };
-
-  const handleResetDevUser = async () => {
-    setIsResetLoading(true);
-    setDemoLoginError("");
-
-    try {
-      await resetDevUser();
-      setDemoLoginError("Dev user reset successfully! Try logging in again.");
-    } catch (err) {
-      setDemoLoginError(err instanceof Error ? err.message : "Reset failed");
-    } finally {
-      setIsResetLoading(false);
-    }
-  };
-
-  const getDemoModeConfig = () => {
-    if (envType === "development") {
-      return {
-        title: "Development Mode",
-        badgeClass: "bg-orange-100 text-orange-800 border-orange-300",
-        cardClass: "border-orange-200 bg-orange-50",
-        buttonClass: "bg-orange-600 hover:bg-orange-700",
-        textClass: "text-orange-700",
-        icon: <Monitor className="h-4 w-4" />,
-        description: "Quick login for local development",
-      };
-    } else {
-      return {
-        title: "Preview Mode",
-        badgeClass: "bg-blue-100 text-blue-800 border-blue-300",
-        cardClass: "border-blue-200 bg-blue-50",
-        buttonClass: "bg-blue-600 hover:bg-blue-700",
-        textClass: "text-blue-700",
-        icon: <Globe className="h-4 w-4" />,
-        description: "Quick demo access for preview deployment",
-      };
-    }
-  };
-
-  const demoConfig = getDemoModeConfig();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -207,13 +117,6 @@ export function LoginFormClient() {
           </div>
           <p className="text-gray-600">Sign in to your account</p>
 
-          {/* Environment indicator */}
-          {envType !== "production" && (
-            <div className="flex items-center justify-center space-x-1 text-xs text-gray-500">
-              {demoConfig.icon}
-              <span>Running in {envType} mode</span>
-            </div>
-          )}
           
           {/* PWA Status indicator */}
           {isPWA && (
@@ -267,117 +170,6 @@ export function LoginFormClient() {
           </Card>
         )}
 
-        {/* Demo Mode Card */}
-        {isDemoMode() && (
-          <Card className={demoConfig.cardClass}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className={demoConfig.badgeClass}>
-                  <div className="flex items-center space-x-1">
-                    {demoConfig.icon}
-                    <span>{demoConfig.title}</span>
-                  </div>
-                </Badge>
-                {envType === "preview" && (
-                  <div className="text-xs text-gray-500 flex items-center">
-                    <Users className="h-3 w-3 mr-1" />
-                    {demoAccounts.length} accounts
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {envType === "development" ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-orange-700">
-                    Quick login for testing: <strong>dev@test.com</strong> /{" "}
-                    <strong>password</strong>
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-blue-700 font-medium">
-                    {demoConfig.description}
-                  </p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {demoAccounts.map((account, index) => (
-                      <Button
-                        key={account.email}
-                        onClick={() => handleDemoLogin(index)}
-                        disabled={isDemoLoginLoading}
-                        variant="outline"
-                        size="sm"
-                        className={`justify-start text-left h-auto p-3 ${
-                          selectedDemoAccount === index && isDemoLoginLoading
-                            ? "ring-2 ring-blue-300"
-                            : ""
-                        }`}
-                      >
-                        <div className="flex flex-col items-start space-y-1 w-full">
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-medium text-sm">
-                              {account.name}
-                            </span>
-                            {selectedDemoAccount === index &&
-                              isDemoLoginLoading && (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              )}
-                          </div>
-                          <span className="text-xs text-gray-500 font-normal">
-                            {account.email}
-                          </span>
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex space-x-2">
-                <Button
-                  onClick={() => handleDemoLogin()}
-                  disabled={isDemoLoginLoading}
-                  className={`flex-1 ${demoConfig.buttonClass} text-white`}
-                  size="sm"
-                >
-                  {isDemoLoginLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Zap className="h-4 w-4" />
-                  )}
-                  {envType === "development"
-                    ? "Quick Dev Login"
-                    : "Quick Demo Login"}
-                </Button>
-
-                {envType === "development" && (
-                  <Button
-                    onClick={handleResetDevUser}
-                    disabled={isResetLoading}
-                    variant="outline"
-                    className="border-orange-300 text-orange-700 hover:bg-orange-100"
-                    size="sm"
-                  >
-                    {isResetLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <RotateCcw className="h-4 w-4" />
-                    )}
-                    Reset
-                  </Button>
-                )}
-              </div>
-
-              {demoLoginError && (
-                <Alert className={`border-zone-red/30 ${getZoneBgClass("red", "light")}`}>
-                  <AlertDescription className={`${getZoneTextClass("red")} text-sm`}>
-                    {demoLoginError}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
         {/* Login Form */}
         <Card>

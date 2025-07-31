@@ -28,6 +28,7 @@ import {
 import { DayTimePicker } from "@/components/ui/day-time-picker";
 import { FormLoadingOverlay, LoadingSpinner } from "@/components/ui/loading-states";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/utils/logger";
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, "id">) => void;
@@ -94,7 +95,7 @@ export function FoodEntryForm({
       setHasAnalyzed(true);
       toast.success(`Found ${ingredientData.length} ingredients for review.`);
     } catch (error) {
-      console.error("Image analysis failed:", error);
+      logger.error("Image analysis failed", error);
       setAnalysisError("AI analysis failed. Please add ingredients manually.");
       toast.error("AI analysis failed. Please add ingredients manually.");
     } finally {
@@ -270,7 +271,7 @@ export function FoodEntryForm({
           const errorMessage =
             errorData?.error?.message || "Could not zone ingredients";
 
-          console.error("Zoning API error:", {
+          logger.error("Zoning API error", undefined, {
             status: zoneResponse.status,
             errorData,
           });
@@ -285,7 +286,7 @@ export function FoodEntryForm({
             toast.warning(errorMessage + ". Saving with default values.");
           }
         } catch {
-          console.error("Failed to parse error response from zoning API");
+          logger.error("Failed to parse error response from zoning API");
           toast.warning(
             "Could not zone ingredients. Saving with default values."
           );
@@ -321,7 +322,7 @@ export function FoodEntryForm({
 
       onClose();
     } catch (error) {
-      console.error("Submission failed:", error);
+      logger.error("Submission failed", error);
       toast.error("Failed to save food entry.");
     } finally {
       setIsSubmitting(false);

@@ -4,6 +4,7 @@ import { prompts } from "@/lib/prompts";
 import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { logger } from "@/lib/utils/logger";
 
 // Rate limiting setup using Vercel's Upstash integration env vars
 let ratelimit: Ratelimit | null = null;
@@ -57,11 +58,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { ingredients } = zoneIngredientsSchema.parse(body);
 
-    console.log("Zoning request received for ingredients:", ingredients);
+    logger.debug("Zoning request received", { ingredientCount: ingredients.length });
 
     const fullPrompt = `${prompts.ingredientZoning}\n\nInput: ${JSON.stringify(ingredients)}`;
 
-    console.log("Calling OpenRouter for ingredient zoning...");
+    logger.debug("Calling OpenRouter for ingredient zoning");
 
     const response = await openrouter.chat.completions.create({
       model: "anthropic/claude-3.5-sonnet", // Better for structured JSON
@@ -75,11 +76,11 @@ export async function POST(request: NextRequest) {
     if (!aiResponse) throw new Error("No response from AI model");
 
     // Log the actual AI response for debugging
-    console.log("AI Response:", aiResponse);
+    logger.debug("AI Response received", { responseLength: aiResponse.length });
 
     const parsedResponse = JSON.parse(aiResponse);
 
-    console.log("Parsed AI response:", parsedResponse);
+    logger.debug("Parsed AI response", { ingredientCount: parsedResponse.ingredients?.length });
 
     // Normalize AI response - only convert zone to lowercase
     const normalizedIngredients = parsedResponse.ingredients?.map(
@@ -94,13 +95,13 @@ export async function POST(request: NextRequest) {
       .array(zonedIngredientSchema)
       .parse(normalizedIngredients);
 
-    console.log("Final validated response:", {
-      ingredients: validatedIngredients,
+    logger.debug("Final validated response", {
+      ingredientCount: validatedIngredients.length,
     });
 
     return NextResponse.json({ ingredients: validatedIngredients });
   } catch (error) {
-    console.error("Error in zone-ingredients API:", error);
+    logger.error("Error in zone-ingredients API", error);
     // Add robust error handling here
     return NextResponse.json(
       { error: "Failed to zone ingredients" },

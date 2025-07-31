@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { Food, Symptom, User } from "./types";
+import { logger } from "./utils/logger";
 
 // Get Supabase client
 const supabase = createClient();
@@ -378,13 +379,13 @@ export const logout = async (): Promise<void> => {
 export const isDevelopment = (): boolean => {
   const nodeEnv = process.env.NODE_ENV;
   const isDev = nodeEnv === "development";
-  console.log(`🔧 Environment check: NODE_ENV=${nodeEnv}, isDevelopment=${isDev}`);
+  logger.debug("Environment check", { NODE_ENV: nodeEnv, isDevelopment: isDev });
   return isDev;
 };
 
 export const isPreviewDeployment = (): boolean => {
   if (typeof window === "undefined") {
-    console.log(`🌐 Preview check: window undefined (SSR), returning false`);
+    logger.debug("Preview check: window undefined (SSR), returning false");
     return false;
   }
 
@@ -403,7 +404,7 @@ export const isPreviewDeployment = (): boolean => {
     searchParams.has("demo")
   );
 
-  console.log(`🌐 Preview check: hostname=${hostname}, isPreview=${isPreview}`);
+  logger.debug("Preview check", { hostname, isPreview });
   return isPreview;
 };
 
@@ -412,14 +413,14 @@ export const isDemoMode = (): boolean => {
   const previewMode = isPreviewDeployment();
   const demoMode = devMode || previewMode;
   
-  console.log(`🚀 Demo mode check: development=${devMode}, preview=${previewMode}, isDemoMode=${demoMode}`);
+  logger.demo("Demo mode check", { development: devMode, preview: previewMode, isDemoMode: demoMode });
   
   if (!demoMode && typeof window !== "undefined") {
     const isLocalhost = window.location.hostname === "localhost" || 
                        window.location.hostname === "127.0.0.1" ||
                        window.location.hostname.includes("localhost");
     if (isLocalhost) {
-      console.log(`🚀 Fallback demo mode: detected localhost (${window.location.hostname})`);
+      logger.demo("Fallback demo mode: detected localhost", { hostname: window.location.hostname });
       return true;
     }
   }
@@ -468,20 +469,20 @@ export const createDemoUser = async (
   const { email, password, name } = account;
 
   try {
-    console.log(`🚀 Creating/retrieving demo user: ${name} (${email})`);
+    logger.demo(`Creating/retrieving demo user: ${name} (${email})`);
 
     // Try to sign in first (user might already exist)
     try {
       return await authenticateUser(email, password);
     } catch {
-      console.log(`🔧 Sign-in failed, creating new demo user: ${email}`);
+      logger.demo(`Sign-in failed, creating new demo user: ${email}`);
       
       // Create demo user
       await createUser(email, password);
       
       // Authenticate and return token
       const result = await authenticateUser(email, password);
-      console.log(`✅ Demo user created and authenticated: ${result.user.email}`);
+      logger.demo(`Demo user created and authenticated: ${result.user.email}`);
       
       return result;
     }

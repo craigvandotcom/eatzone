@@ -3,12 +3,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
-import {
-  getCurrentUser,
-  quickDemoLogin,
-  isDemoMode,
-  getEnvironmentType,
-} from "@/lib/db";
+import { getCurrentUser } from "@/lib/db";
+import { logger } from "@/lib/utils/logger";
+import { handleDemoModeLogin, attemptDemoLoginWithRetry } from "@/features/auth/utils/demo-auth";
+import { isDemoMode } from "@/lib/db";
 
 interface AuthContextType {
   user: User | null;
@@ -72,17 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!session) {
         // In demo mode (development or preview), auto-login if no session exists
         if (isDemoMode()) {
-          const envType = getEnvironmentType();
-          console.log(
-            `🚀 ${envType.charAt(0).toUpperCase() + envType.slice(1)} mode: Auto-logging in with demo user`
-          );
-          const demoLogin = await quickDemoLogin();
-          if (demoLogin) {
-            // The user is already authenticated through Supabase by quickDemoLogin
-            const profile = await getCurrentUser();
-            if (profile) {
-              setUser(profile);
-            }
+          const demoResult = await handleDemoModeLogin();
+          if (demoResult.success && demoResult.user) {
+            setUser(demoResult.user);
             return;
           }
         }
@@ -97,31 +87,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profile) {
         setUser(profile);
       } else {
-        console.warn("🚫 Supabase session exists but no user profile found");
+        logger.warn("Supabase session exists but no user profile found");
         // Sign out if we have a session but no profile
         await supabase.auth.signOut();
         setUser(null);
       }
     } catch (error) {
-      console.error("Session check error:", error);
+      logger.error("Session check error", error);
       
       // In demo mode, try auto-login after error
       if (isDemoMode()) {
-        const envType = getEnvironmentType();
-        console.log(
-          `🔧 ${envType.charAt(0).toUpperCase() + envType.slice(1)} mode: Session error, auto-logging in with demo user`
-        );
-        try {
-          const demoLogin = await quickDemoLogin();
-          if (demoLogin) {
-            const profile = await getCurrentUser();
-            if (profile) {
-              setUser(profile);
-              return;
-            }
-          }
-        } catch (demoError) {
-          console.error("Demo login failed:", demoError);
+        const demoResult = await attemptDemoLoginWithRetry();
+        if (demoResult.success && demoResult.user) {
+          setUser(demoResult.user);
+          return;
         }
       }
 

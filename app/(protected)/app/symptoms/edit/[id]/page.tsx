@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SymptomEntryForm } from "@/features/symptoms/components/symptom-entry-form";
 import { getSymptomById, updateSymptom as dbUpdateSymptom } from "@/lib/db";
 import type { Symptom } from "@/lib/types";
+import { logger } from "@/lib/utils/logger";
 
 export default function EditSymptomPage({
   params,
@@ -29,7 +30,7 @@ export default function EditSymptomPage({
           router.back();
         }
       } catch (error) {
-        console.error("Error loading symptom:", error);
+        logger.error("Error loading symptom", error);
         router.back();
       } finally {
         setLoading(false);

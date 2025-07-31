@@ -210,12 +210,6 @@ export function FoodEntryForm({
     try {
       const ingredientNames = finalIngredientsList.map(ing => ing.name);
 
-      // Debug logging
-      console.debug("Submitting ingredients for zoning:", {
-        ingredientNames,
-        finalIngredientsList,
-      });
-
       const zoneResponse = await fetch("/api/zone-ingredients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -227,22 +221,12 @@ export function FoodEntryForm({
       if (zoneResponse.ok) {
         const { ingredients: zonedData } = await zoneResponse.json();
 
-        // Debug logging
-        console.debug("Received zoned data:", { zonedData });
-
         const zonedMap = new Map(
           zonedData.map((item: any) => [item.name, item])
         );
 
         enrichedIngredients = finalIngredientsList.map(ing => {
           const zonedData = zonedMap.get(ing.name);
-
-          // Debug logging for name matching
-          console.debug(`Matching ingredient "${ing.name}":`, {
-            found: !!zonedData,
-            zonedData,
-            availableNames: Array.from(zonedMap.keys()),
-          });
 
           const enriched = {
             ...ing,
@@ -257,9 +241,6 @@ export function FoodEntryForm({
 
           return enriched;
         });
-
-        // Debug logging
-        console.debug("Enriched ingredients:", { enrichedIngredients });
 
         setIsZoning(false);
         toast.success("Ingredients successfully analyzed and zoned!");
@@ -303,14 +284,6 @@ export function FoodEntryForm({
         foodGroup: ing.foodGroup || "other",
         zone: ing.zone || "yellow",
       }));
-
-      // Debug logging
-      console.debug("Saving food entry:", {
-        name: foodName,
-        ingredients: validatedIngredients,
-        notes: notes.trim(),
-        status: "processed",
-      });
 
       onAddFood({
         name: foodName,

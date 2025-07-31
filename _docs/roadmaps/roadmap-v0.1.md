@@ -310,11 +310,11 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - [x] repo's architecture
   - [x] context
   - [ ] tools
-    - [ ] MCPs (playwright)
-  - [ ] ci/cd pipeline
-  - [ ] github flow
+    - [x] MCPs (playwright)
+  - [x] ci/cd pipeline
+  - [x] github flow
 
-- [ ] **Task 15.3: Migrate to Supabase (`migrate-to-supabase`)**
+- [x] **Task 15.3: Migrate to Supabase (`migrate-to-supabase`)**
   - **Action:** Complete migration from IndexedDB local storage to Supabase cloud database for improved development velocity and user experience during MVP phase.
   - **Implementation:**
     - **15.3.0: Test Suite Design & Implementation**

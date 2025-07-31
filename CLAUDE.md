@@ -53,6 +53,13 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 - **jest-axe** for accessibility validation
 - Global Supabase mocks in `__tests__/setup/jest.setup.ts`
 
+**Pre-flight Checks for Playwright Testing:**
+1. Ensure `.env.local` exists with valid Supabase credentials
+2. Run `pnpm build:check` to verify no build errors
+3. Kill any existing dev servers: `kill $(lsof -ti:3000) $(lsof -ti:3001) 2>/dev/null || true`
+4. Clear Next.js cache if needed: `rm -rf .next`
+5. For most stable results, use production build (`pnpm build && pnpm start`)
+
 **Testing Layers:**
 1. **Unit tests** - Utils, hooks logic, data transformations
 2. **Component tests** - User interactions, UI state, form validation
@@ -161,26 +168,56 @@ pnpm build:check    # Production build + lint
 - PWA functionality validation
 - Debugging browser-specific issues
 
-**Starting Dev Server for Playwright Testing:**
+**IMPORTANT - Troubleshooting Webpack/Build Issues:**
+If you encounter webpack errors (e.g., "Cannot read properties of undefined (reading 'call')") when using Playwright:
+1. **Use production build instead of dev server** - The production build is more stable
+2. Kill any existing processes on ports 3000/3001
+3. Run `pnpm build` first, then `pnpm start`
+4. Production server runs on port 3000 by default
+
+**Starting Server for Playwright Testing (Recommended Approach):**
 ```bash
-# Start dev server in background (returns control immediately)
+# OPTION 1: Production Build (More Stable - RECOMMENDED)
+# Kill any existing processes
+kill $(lsof -ti:3000) 2>/dev/null || true
+
+# Build and start production server
+pnpm build
+nohup pnpm start > /tmp/puls-prod.log 2>&1 & echo $!
+sleep 3  # Wait for server to start
+tail -20 /tmp/puls-prod.log
+
+# OPTION 2: Development Server (If needed for hot reload)
+# Only use if production build works but you need dev features
+kill $(lsof -ti:3001) 2>/dev/null || true
 nohup pnpm dev > /tmp/puls-dev.log 2>&1 & echo $!
-
-# Wait a few seconds for server to start
-sleep 5
-
-# Verify server is running (check the log)
+sleep 5  # Dev server takes longer
 tail -20 /tmp/puls-dev.log
 ```
 
+**Port Handling:**
+- Production build: Always uses port 3000
+- Dev server: Uses 3000, or 3001 if 3000 is busy
+- Check logs to confirm which port is being used
+- Navigate to the correct URL based on server output
+
 **Quick Workflow:**
-1. Start dev server in background using nohup (see above)
-2. Navigate to `http://localhost:3000` with Playwright
-3. Take snapshots, check console for errors
-4. Test critical user paths (auth, tracking, dashboard)
-5. Validate real-time data sync with Supabase
-6. Check accessibility (keyboard nav, ARIA)
-7. When done, kill the dev server: `kill <PID>` or `lsof -ti:3000 | xargs kill -9`
+1. Kill any existing processes: `kill $(lsof -ti:3000) 2>/dev/null || true`
+2. Build and start production server (see above)
+3. Navigate to `http://localhost:3000` with Playwright
+4. If you see an offline screen, click "Try Again" or check network
+5. Take snapshots, check console for errors
+6. Test critical user paths (auth, tracking, dashboard)
+7. Validate real-time data sync with Supabase
+8. Check accessibility (keyboard nav, ARIA)
+9. When done, kill the server: `kill <PID>` or `lsof -ti:3000 | xargs kill -9`
+
+**Common Playwright Issues & Solutions:**
+- **Blank page with console errors**: Use production build instead of dev server
+- **"Port in use" errors**: Kill existing processes before starting
+- **Offline state persisting**: Clear browser state or use incognito mode
+- **CSS/JS 404 errors**: Wait longer for compilation or use production build
+- **Manifest errors**: Normal in development, can be ignored
 
 **Context7 MCP Usage:**
 - Fetches up-to-date, version-specific documentation and code examples directly from source

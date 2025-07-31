@@ -171,3 +171,4 @@ capacitor.config.ts
 # Monitoring config removed (using Vercel built-in monitoring)
 .vercel
 .env*.local
+.env.prod

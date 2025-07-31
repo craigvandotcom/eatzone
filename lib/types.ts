@@ -32,14 +32,15 @@ export interface Food {
   name: string; // e.g., "Lunch" or a user-defined name
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   ingredients: Ingredient[]; // A food entry is defined by its ingredients
-  image?: string;
+  photo_url?: string; // Renamed from 'image' to match Supabase schema
   notes?: string;
+  meal_type?: "breakfast" | "lunch" | "dinner" | "snack" | "beverage"; // Optional meal categorization
   status: "pending_review" | "analyzing" | "processed";
 }
 
 export interface Ingredient {
   name: string;
-  isOrganic: boolean;
+  organic: boolean; // Renamed from 'isOrganic' to match Supabase schema
   cookingMethod?:
     | "raw"
     | "fried"

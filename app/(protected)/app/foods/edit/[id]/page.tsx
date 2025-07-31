@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FoodEntryForm } from "@/features/foods/components/food-entry-form";
 import { getFoodById, updateFood as dbUpdateFood } from "@/lib/db";
 import type { Food } from "@/lib/types";
+import { logger } from "@/lib/utils/logger";
 
 export default function EditFoodPage({
   params,
@@ -29,7 +30,7 @@ export default function EditFoodPage({
           router.back();
         }
       } catch (error) {
-        console.error("Error loading food:", error);
+        logger.error("Error loading food", error);
         router.back();
       } finally {
         setLoading(false);

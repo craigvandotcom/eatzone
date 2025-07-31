@@ -26,6 +26,9 @@ import {
   getZoneTextClass,
 } from "@/lib/utils/zone-colors";
 import { DayTimePicker } from "@/components/ui/day-time-picker";
+import { FormLoadingOverlay, LoadingSpinner } from "@/components/ui/loading-states";
+import { cn } from "@/lib/utils";
+import { logger } from "@/lib/utils/logger";
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, "id">) => void;
@@ -76,9 +79,9 @@ export function FoodEntryForm({
         await response.json();
 
       const aiIngredients: Ingredient[] = ingredientData.map(
-        (ingredient: { name: string; isOrganic: boolean }) => ({
+        (ingredient: { name: string; organic: boolean }) => ({
           name: ingredient.name,
-          isOrganic: ingredient.isOrganic,
+          organic: ingredient.organic || false,
           foodGroup: "other" as const, // Default value
           zone: "yellow" as const, // Default value
         })
@@ -92,7 +95,7 @@ export function FoodEntryForm({
       setHasAnalyzed(true);
       toast.success(`Found ${ingredientData.length} ingredients for review.`);
     } catch (error) {
-      console.error("Image analysis failed:", error);
+      logger.error("Image analysis failed", error);
       setAnalysisError("AI analysis failed. Please add ingredients manually.");
       toast.error("AI analysis failed. Please add ingredients manually.");
     } finally {
@@ -133,7 +136,7 @@ export function FoodEntryForm({
         ...ingredients,
         {
           name: currentIngredient.trim(),
-          isOrganic: false,
+          organic: false,
           foodGroup: "other",
           zone: "yellow",
         },
@@ -153,7 +156,7 @@ export function FoodEntryForm({
 
   const handleToggleOrganic = (index: number) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index].isOrganic = !updatedIngredients[index].isOrganic;
+    updatedIngredients[index].organic = !updatedIngredients[index].organic;
     setIngredients(updatedIngredients);
   };
 
@@ -190,7 +193,7 @@ export function FoodEntryForm({
     if (currentIngredient.trim()) {
       finalIngredientsList.push({
         name: currentIngredient.trim(),
-        isOrganic: false,
+        organic: false,
         foodGroup: "other",
         zone: "yellow", // Default zone
       });
@@ -207,12 +210,6 @@ export function FoodEntryForm({
     try {
       const ingredientNames = finalIngredientsList.map(ing => ing.name);
 
-      // Debug logging
-      console.debug("Submitting ingredients for zoning:", {
-        ingredientNames,
-        finalIngredientsList,
-      });
-
       const zoneResponse = await fetch("/api/zone-ingredients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -224,22 +221,12 @@ export function FoodEntryForm({
       if (zoneResponse.ok) {
         const { ingredients: zonedData } = await zoneResponse.json();
 
-        // Debug logging
-        console.debug("Received zoned data:", { zonedData });
-
         const zonedMap = new Map(
           zonedData.map((item: any) => [item.name, item])
         );
 
         enrichedIngredients = finalIngredientsList.map(ing => {
           const zonedData = zonedMap.get(ing.name);
-
-          // Debug logging for name matching
-          console.debug(`Matching ingredient "${ing.name}":`, {
-            found: !!zonedData,
-            zonedData,
-            availableNames: Array.from(zonedMap.keys()),
-          });
 
           const enriched = {
             ...ing,
@@ -249,14 +236,11 @@ export function FoodEntryForm({
           // Ensure required fields have defaults if API didn't provide them
           if (!enriched.foodGroup) enriched.foodGroup = "other";
           if (!enriched.zone) enriched.zone = "yellow";
-          if (typeof enriched.isOrganic !== "boolean")
-            enriched.isOrganic = false;
+          if (typeof enriched.organic !== "boolean")
+            enriched.organic = false;
 
           return enriched;
         });
-
-        // Debug logging
-        console.debug("Enriched ingredients:", { enrichedIngredients });
 
         setIsZoning(false);
         toast.success("Ingredients successfully analyzed and zoned!");
@@ -268,7 +252,7 @@ export function FoodEntryForm({
           const errorMessage =
             errorData?.error?.message || "Could not zone ingredients";
 
-          console.error("Zoning API error:", {
+          logger.error("Zoning API error", undefined, {
             status: zoneResponse.status,
             errorData,
           });
@@ -283,7 +267,7 @@ export function FoodEntryForm({
             toast.warning(errorMessage + ". Saving with default values.");
           }
         } catch {
-          console.error("Failed to parse error response from zoning API");
+          logger.error("Failed to parse error response from zoning API");
           toast.warning(
             "Could not zone ingredients. Saving with default values."
           );
@@ -296,18 +280,10 @@ export function FoodEntryForm({
       // Final validation of enriched ingredients
       const validatedIngredients = enrichedIngredients.map(ing => ({
         name: ing.name,
-        isOrganic: typeof ing.isOrganic === "boolean" ? ing.isOrganic : false,
+        organic: typeof ing.organic === "boolean" ? ing.organic : false,
         foodGroup: ing.foodGroup || "other",
         zone: ing.zone || "yellow",
       }));
-
-      // Debug logging
-      console.debug("Saving food entry:", {
-        name: foodName,
-        ingredients: validatedIngredients,
-        notes: notes.trim(),
-        status: "processed",
-      });
 
       onAddFood({
         name: foodName,
@@ -319,7 +295,7 @@ export function FoodEntryForm({
 
       onClose();
     } catch (error) {
-      console.error("Submission failed:", error);
+      logger.error("Submission failed", error);
       toast.error("Failed to save food entry.");
     } finally {
       setIsSubmitting(false);
@@ -328,15 +304,19 @@ export function FoodEntryForm({
   };
 
   return (
-    <div className={className}>
+    <div className={cn("relative", className)}>
+      <FormLoadingOverlay 
+        isVisible={isSubmitting && isZoning}
+        message="Analyzing ingredients with AI..."
+      />
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Image Display */}
-        {editingFood?.image && (
+        {editingFood?.photo_url && (
           <div className="mb-4">
             <Label>Food Image</Label>
             <div className="mt-2 relative w-full max-w-md mx-auto">
               <img
-                src={editingFood.image}
+                src={editingFood.photo_url}
                 alt="Food entry"
                 className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
               />
@@ -453,7 +433,7 @@ export function FoodEntryForm({
                           <span className="text-sm font-medium">
                             {ingredient.name}
                           </span>
-                          {ingredient.isOrganic && (
+                          {ingredient.organic && (
                             <span
                               className={`text-xs ${getZoneBgClass("green", "light")} ${getZoneTextClass("green")} px-1.5 py-0.5 rounded-full`}
                             >
@@ -467,12 +447,12 @@ export function FoodEntryForm({
                           type="button"
                           onClick={() => handleToggleOrganic(index)}
                           className={`p-1 transition-colors ${
-                            ingredient.isOrganic
+                            ingredient.organic
                               ? `${getZoneTextClass("green")} hover:opacity-80`
                               : `text-gray-400 hover:${getZoneTextClass("green")}`
                           }`}
                           title={
-                            ingredient.isOrganic
+                            ingredient.organic
                               ? "Mark as non-organic"
                               : "Mark as organic"
                           }
@@ -539,7 +519,10 @@ export function FoodEntryForm({
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting || isAnalyzing}>
+          <Button type="submit" disabled={isSubmitting || isAnalyzing} className="relative">
+            {isSubmitting && (
+              <LoadingSpinner size="sm" className="mr-2" />
+            )}
             {isSubmitting
               ? isZoning
                 ? "Zoning ingredients..."

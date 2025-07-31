@@ -355,37 +355,36 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
         - Set up CI/CD pipeline to run tests on every commit
         - Create test data fixtures and cleanup utilities
       - **Success Criteria:** All tests must pass before proceeding to production deployment
-    - **15.3.1: Project Setup & Configuration**
+- [x] **15.3.1: Project Setup & Configuration**
       - Create new Supabase project and configure database
       - Install Supabase dependencies (`@supabase/supabase-js`, `@supabase/auth-js`)
       - Set up environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
       - Configure Supabase client in `lib/supabase/client.ts` and `lib/supabase/server.ts`
-    - **15.3.2: Database Schema Design & Migration**
+- [x] **15.3.2: Database Schema Design & Migration**
       - Design PostgreSQL schema matching existing TypeScript interfaces (`User`, `Food`, `Ingredient`, `Symptom`)
       - Create Supabase tables with proper relationships and constraints
       - Set up Row Level Security (RLS) policies for data isolation
       - Create database functions and triggers for automated timestamps
-      - Export existing IndexedDB data for migration (development utility)
-    - **15.3.3: Authentication System Migration**
+- [x] **15.3.3: Authentication System Migration**
       - Replace custom IndexedDB auth with Supabase Auth
       - Update `features/auth/components/auth-provider.tsx` to use Supabase sessions
       - Migrate from `bcryptjs` and `jose` to Supabase's built-in auth
       - Replace PWA storage auth tokens with Supabase session management
       - Update middleware.ts for Supabase session validation
       - Maintain demo mode functionality with Supabase test users
-    - **15.3.4: Data Layer Refactoring**
+- [x] **15.3.4: Data Layer Refactoring**
       - Replace `lib/db.ts` Dexie operations with Supabase queries
       - Update all CRUD operations (`addFood`, `getSymptoms`, etc.) to use Supabase
       - Replace `useLiveQuery` hooks with Supabase real-time subscriptions
       - Migrate data export/import functionality to work with Supabase
       - Update type definitions for Supabase auto-generated types
-    - **15.3.5: Component Updates & Testing**
+- [x] **15.3.5: Component Updates & Testing**
       - Update all components using database operations to work with new async patterns
       - Replace Dexie reactive queries with Supabase real-time subscriptions
       - Test all forms, dialogs, and data visualization components
       - Ensure proper loading states and error handling for network operations
       - Update development and testing scripts for Supabase environment
-    - **15.3.6: Production Deployment & Cleanup**
+- [ ] **15.3.6: Production Deployment & Cleanup**
       - Configure Supabase production environment and connection pooling
       - Update Vercel environment variables for production
       - Remove IndexedDB dependencies (`dexie`, `dexie-react-hooks`, `bcryptjs`, `jose`)
@@ -399,10 +398,20 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - **Migration Strategy:** Phase out IndexedDB gradually with feature flags, maintain data export for user safety
   - **Outcome:** Complete cloud-based data architecture with improved development experience and user capabilities, eliminating IndexedDB storage issues and enabling rapid MVP iteration.
 
+- refactor project to align with chosen design patterns
+- setup basic testing
+  - site
+  - auth
+  - user journey
+  - image analysis
+  - ingredient zoning
+
 - [ ] Task 15.5: Review complete symptoms logging flow
   - [ ] manual capture
   - [ ] recent entries
   - [ ] etc
+  - [ ] testing
+
 
 - [ ] **Task 16: Build MVP Insights Page (`build-mvp-insights-page`)**
   - **Action:** Create the initial "Insights & Analytics" page that performs all calculations on the client-side, focusing on a simple heuristic-based correlation approach.
@@ -415,6 +424,9 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
       - Create `features/analytics/` folder with a basic structure for components and hooks.
       - Implement `app/(protected)/app/insights/page.tsx` with this initial functionality.
   - **Outcome:** A functional MVP insights page that provides users with direct, actionable heuristic correlations from their local data, delivering on the core "Body Compass" promise.
+
+Task 16.5: Security
+
 
 ---
 

@@ -2,6 +2,7 @@
 
 import NextError from "next/error";
 import { useEffect } from "react";
+import { logger } from "@/lib/utils/logger";
 
 export default function GlobalError({
   error,
@@ -10,7 +11,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log error to console for debugging
-    console.error("Global error caught:", error);
+    logger.error("Global error caught", error);
   }, [error]);
 
   return (

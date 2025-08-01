@@ -11,12 +11,13 @@
    - Copy URL, anon key, and service role key
 
 3. **Configure Environment**
+
    ```bash
    # Copy the appropriate env file
    cp .env.development .env.local  # for development
    # or
    cp .env.production .env.local   # for production
-   
+
    # Fill in your actual keys
    ```
 
@@ -32,6 +33,7 @@
 ## Development Workflow
 
 ### Local Development
+
 ```bash
 # Use development environment
 cp .env.development .env.local
@@ -39,6 +41,7 @@ pnpm dev
 ```
 
 ### Testing with Production Schema
+
 ```bash
 # Use production environment locally (be careful!)
 cp .env.production .env.local
@@ -77,15 +80,18 @@ pnpm dev
 ## Troubleshooting
 
 ### "Permission denied" errors
+
 - Check RLS policies
 - Ensure user is authenticated
 - Verify auth.uid() matches user_id
 
 ### "Table not found" errors
+
 - Run migrations in SQL editor
 - Check you're connected to right project
 
 ### Auth issues
+
 - Verify redirect URLs in Supabase Auth settings
 - Check CORS settings if needed
 - Ensure cookies are enabled

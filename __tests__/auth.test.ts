@@ -1,6 +1,6 @@
 /**
  * Authentication Tests
- * 
+ *
  * Tests for user authentication flows including:
  * - User registration with email/password validation
  * - User login with correct/incorrect credentials

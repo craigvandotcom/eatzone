@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import type React from "react";
-import type { Food, Ingredient } from "@/lib/types";
+import type React from 'react';
+import type { Food, Ingredient } from '@/lib/types';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Edit2,
   Trash2,
@@ -18,20 +18,23 @@ import {
   ChevronUp,
   Loader2,
   AlertCircle,
-} from "lucide-react";
-import { toast } from "sonner";
+} from 'lucide-react';
+import { toast } from 'sonner';
 import {
   getZoneColor,
   getZoneBgClass,
   getZoneTextClass,
-} from "@/lib/utils/zone-colors";
-import { DayTimePicker } from "@/components/ui/day-time-picker";
-import { FormLoadingOverlay, LoadingSpinner } from "@/components/ui/loading-states";
-import { cn } from "@/lib/utils";
-import { logger } from "@/lib/utils/logger";
+} from '@/lib/utils/zone-colors';
+import { DayTimePicker } from '@/components/ui/day-time-picker';
+import {
+  FormLoadingOverlay,
+  LoadingSpinner,
+} from '@/components/ui/loading-states';
+import { cn } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 
 interface FoodEntryFormProps {
-  onAddFood: (food: Omit<Food, "id">) => void;
+  onAddFood: (food: Omit<Food, 'id'>) => void;
   onClose: () => void;
   editingFood?: Food | null;
   imageData?: string; // Base64 image data for AI analysis
@@ -45,12 +48,12 @@ export function FoodEntryForm({
   imageData,
   className,
 }: FoodEntryFormProps) {
-  const [name, setName] = useState("");
-  const [currentIngredient, setCurrentIngredient] = useState("");
+  const [name, setName] = useState('');
+  const [currentIngredient, setCurrentIngredient] = useState('');
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editingValue, setEditingValue] = useState("");
-  const [notes, setNotes] = useState("");
+  const [editingValue, setEditingValue] = useState('');
+  const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [selectedDateTime, setSelectedDateTime] = useState<Date>(new Date());
 
@@ -67,13 +70,13 @@ export function FoodEntryForm({
     setAnalysisError(null);
 
     try {
-      const response = await fetch("/api/analyze-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/analyze-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageData }),
       });
 
-      if (!response.ok) throw new Error("Analysis failed");
+      if (!response.ok) throw new Error('Analysis failed');
 
       const { mealSummary, ingredients: ingredientData } =
         await response.json();
@@ -82,9 +85,9 @@ export function FoodEntryForm({
         (ingredient: { name: string; organic: boolean }) => ({
           name: ingredient.name,
           organic: ingredient.organic || false,
-          foodGroup: "other" as const, // Default value
-          zone: "yellow" as const, // Default value
-        })
+          foodGroup: 'other' as const, // Default value
+          zone: 'yellow' as const, // Default value
+        }),
       );
 
       setIngredients(aiIngredients);
@@ -95,28 +98,27 @@ export function FoodEntryForm({
       setHasAnalyzed(true);
       toast.success(`Found ${ingredientData.length} ingredients for review.`);
     } catch (error) {
-      logger.error("Image analysis failed", error);
-      setAnalysisError("AI analysis failed. Please add ingredients manually.");
-      toast.error("AI analysis failed. Please add ingredients manually.");
+      logger.error('Image analysis failed', error);
+      setAnalysisError('AI analysis failed. Please add ingredients manually.');
+      toast.error('AI analysis failed. Please add ingredients manually.');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-
   // Pre-populate form when editing or analyze image when provided
   useEffect(() => {
     if (editingFood) {
-      setName(editingFood.name || "");
+      setName(editingFood.name || '');
       setIngredients(editingFood.ingredients || []);
-      setNotes(editingFood.notes || "");
+      setNotes(editingFood.notes || '');
       setShowNotes(!!editingFood.notes);
       setSelectedDateTime(new Date(editingFood.timestamp));
       setHasAnalyzed(false);
     } else {
-      setName("");
+      setName('');
       setIngredients([]);
-      setNotes("");
+      setNotes('');
       setShowNotes(false);
       setSelectedDateTime(new Date());
       setHasAnalyzed(false);
@@ -130,18 +132,18 @@ export function FoodEntryForm({
   }, [editingFood, imageData]);
 
   const handleIngredientKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && currentIngredient.trim()) {
+    if (e.key === 'Enter' && currentIngredient.trim()) {
       e.preventDefault();
       setIngredients([
         ...ingredients,
         {
           name: currentIngredient.trim(),
           organic: false,
-          foodGroup: "other",
-          zone: "yellow",
+          foodGroup: 'other',
+          zone: 'yellow',
         },
       ]);
-      setCurrentIngredient("");
+      setCurrentIngredient('');
     }
   };
 
@@ -167,19 +169,19 @@ export function FoodEntryForm({
       setIngredients(updatedIngredients);
     }
     setEditingIndex(null);
-    setEditingValue("");
+    setEditingValue('');
   };
 
   const handleCancelEdit = () => {
     setEditingIndex(null);
-    setEditingValue("");
+    setEditingValue('');
   };
 
   const handleEditKeyPress = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSaveEdit(index);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       e.preventDefault();
       handleCancelEdit();
     }
@@ -194,13 +196,13 @@ export function FoodEntryForm({
       finalIngredientsList.push({
         name: currentIngredient.trim(),
         organic: false,
-        foodGroup: "other",
-        zone: "yellow", // Default zone
+        foodGroup: 'other',
+        zone: 'yellow', // Default zone
       });
     }
 
     if (finalIngredientsList.length === 0) {
-      toast.error("Please add at least one ingredient.");
+      toast.error('Please add at least one ingredient.');
       return;
     }
 
@@ -208,11 +210,11 @@ export function FoodEntryForm({
     setIsZoning(true);
 
     try {
-      const ingredientNames = finalIngredientsList.map(ing => ing.name);
+      const ingredientNames = finalIngredientsList.map((ing) => ing.name);
 
-      const zoneResponse = await fetch("/api/zone-ingredients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const zoneResponse = await fetch('/api/zone-ingredients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ingredients: ingredientNames }),
       });
 
@@ -222,10 +224,10 @@ export function FoodEntryForm({
         const { ingredients: zonedData } = await zoneResponse.json();
 
         const zonedMap = new Map(
-          zonedData.map((item: any) => [item.name, item])
+          zonedData.map((item: any) => [item.name, item]),
         );
 
-        enrichedIngredients = finalIngredientsList.map(ing => {
+        enrichedIngredients = finalIngredientsList.map((ing) => {
           const zonedData = zonedMap.get(ing.name);
 
           const enriched = {
@@ -234,42 +236,41 @@ export function FoodEntryForm({
           };
 
           // Ensure required fields have defaults if API didn't provide them
-          if (!enriched.foodGroup) enriched.foodGroup = "other";
-          if (!enriched.zone) enriched.zone = "yellow";
-          if (typeof enriched.organic !== "boolean")
-            enriched.organic = false;
+          if (!enriched.foodGroup) enriched.foodGroup = 'other';
+          if (!enriched.zone) enriched.zone = 'yellow';
+          if (typeof enriched.organic !== 'boolean') enriched.organic = false;
 
           return enriched;
         });
 
         setIsZoning(false);
-        toast.success("Ingredients successfully analyzed and zoned!");
+        toast.success('Ingredients successfully analyzed and zoned!');
       } else {
         setIsZoning(false);
         // Handle specific error responses
         try {
           const errorData = await zoneResponse.json();
           const errorMessage =
-            errorData?.error?.message || "Could not zone ingredients";
+            errorData?.error?.message || 'Could not zone ingredients';
 
-          logger.error("Zoning API error", undefined, {
+          logger.error('Zoning API error', undefined, {
             status: zoneResponse.status,
             errorData,
           });
 
           if (zoneResponse.status === 429) {
             toast.error(
-              "Too many requests. Please wait a moment and try again."
+              'Too many requests. Please wait a moment and try again.',
             );
           } else if (zoneResponse.status === 400) {
-            toast.error("Invalid ingredients data. Please check your input.");
+            toast.error('Invalid ingredients data. Please check your input.');
           } else {
-            toast.warning(errorMessage + ". Saving with default values.");
+            toast.warning(errorMessage + '. Saving with default values.');
           }
         } catch {
-          logger.error("Failed to parse error response from zoning API");
+          logger.error('Failed to parse error response from zoning API');
           toast.warning(
-            "Could not zone ingredients. Saving with default values."
+            'Could not zone ingredients. Saving with default values.',
           );
         }
       }
@@ -278,25 +279,25 @@ export function FoodEntryForm({
         name.trim() || `Meal with ${enrichedIngredients[0].name}`;
 
       // Final validation of enriched ingredients
-      const validatedIngredients = enrichedIngredients.map(ing => ({
+      const validatedIngredients = enrichedIngredients.map((ing) => ({
         name: ing.name,
-        organic: typeof ing.organic === "boolean" ? ing.organic : false,
-        foodGroup: ing.foodGroup || "other",
-        zone: ing.zone || "yellow",
+        organic: typeof ing.organic === 'boolean' ? ing.organic : false,
+        foodGroup: ing.foodGroup || 'other',
+        zone: ing.zone || 'yellow',
       }));
 
       onAddFood({
         name: foodName,
         ingredients: validatedIngredients,
         notes: notes.trim(),
-        status: "processed",
+        status: 'processed',
         timestamp: selectedDateTime.toISOString(),
       });
 
       onClose();
     } catch (error) {
-      logger.error("Submission failed", error);
-      toast.error("Failed to save food entry.");
+      logger.error('Submission failed', error);
+      toast.error('Failed to save food entry.');
     } finally {
       setIsSubmitting(false);
       setIsZoning(false);
@@ -304,8 +305,8 @@ export function FoodEntryForm({
   };
 
   return (
-    <div className={cn("relative", className)}>
-      <FormLoadingOverlay 
+    <div className={cn('relative', className)}>
+      <FormLoadingOverlay
         isVisible={isSubmitting && isZoning}
         message="Analyzing ingredients with AI..."
       />
@@ -328,7 +329,7 @@ export function FoodEntryForm({
           <Input
             id="meal-summary"
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
           />
         </div>
@@ -359,23 +360,27 @@ export function FoodEntryForm({
               <Input
                 id="ingredient-input"
                 value={currentIngredient}
-                onChange={e => setCurrentIngredient(e.target.value)}
+                onChange={(e) => setCurrentIngredient(e.target.value)}
                 onKeyPress={handleIngredientKeyPress}
                 placeholder="Type ingredient and press Enter"
                 autoFocus={!imageData} // Don't autofocus if we're analyzing an image
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {hasAnalyzed
-                  ? "AI analysis complete! Add more ingredients or edit existing ones."
-                  : "Press Enter to add each ingredient"}
+                  ? 'AI analysis complete! Add more ingredients or edit existing ones.'
+                  : 'Press Enter to add each ingredient'}
               </p>
             </>
           )}
 
           {analysisError && (
-            <div className={`flex items-center gap-2 p-3 ${getZoneBgClass("red", "light")} rounded-md mt-2`}>
-              <AlertCircle className={`h-4 w-4 ${getZoneTextClass("red")}`} />
-              <span className={`text-sm ${getZoneTextClass("red")}`}>{analysisError}</span>
+            <div
+              className={`flex items-center gap-2 p-3 ${getZoneBgClass('red', 'light')} rounded-md mt-2`}
+            >
+              <AlertCircle className={`h-4 w-4 ${getZoneTextClass('red')}`} />
+              <span className={`text-sm ${getZoneTextClass('red')}`}>
+                {analysisError}
+              </span>
             </div>
           )}
         </div>
@@ -385,7 +390,7 @@ export function FoodEntryForm({
           <div>
             <Label>
               {isAnalyzing
-                ? "Analyzing ingredients..."
+                ? 'Analyzing ingredients...'
                 : `Added Ingredients (${ingredients.length})`}
             </Label>
             {isAnalyzing ? (
@@ -407,23 +412,23 @@ export function FoodEntryForm({
                         className="absolute left-0 top-0 bottom-0 w-1"
                         style={{
                           backgroundColor:
-                            ingredient.zone === "green"
-                              ? getZoneColor("green", "hex")
-                              : ingredient.zone === "yellow"
-                                ? getZoneColor("yellow", "hex")
-                                : ingredient.zone === "red"
-                                  ? getZoneColor("red", "hex")
-                                  : "#9ca3af",
+                            ingredient.zone === 'green'
+                              ? getZoneColor('green', 'hex')
+                              : ingredient.zone === 'yellow'
+                                ? getZoneColor('yellow', 'hex')
+                                : ingredient.zone === 'red'
+                                  ? getZoneColor('red', 'hex')
+                                  : '#9ca3af',
                         }}
-                        title={`Zone: ${ingredient.zone || "unzoned"}`}
+                        title={`Zone: ${ingredient.zone || 'unzoned'}`}
                       />
 
                       {/* Ingredient Row */}
                       {editingIndex === index ? (
                         <Input
                           value={editingValue}
-                          onChange={e => setEditingValue(e.target.value)}
-                          onKeyPress={e => handleEditKeyPress(e, index)}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onKeyPress={(e) => handleEditKeyPress(e, index)}
                           onBlur={() => handleSaveEdit(index)}
                           className="flex-1 h-8 mx-2 ml-3"
                           autoFocus
@@ -435,7 +440,7 @@ export function FoodEntryForm({
                           </span>
                           {ingredient.organic && (
                             <span
-                              className={`text-xs ${getZoneBgClass("green", "light")} ${getZoneTextClass("green")} px-1.5 py-0.5 rounded-full`}
+                              className={`text-xs ${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} px-1.5 py-0.5 rounded-full`}
                             >
                               organic
                             </span>
@@ -448,13 +453,13 @@ export function FoodEntryForm({
                           onClick={() => handleToggleOrganic(index)}
                           className={`p-1 transition-colors ${
                             ingredient.organic
-                              ? `${getZoneTextClass("green")} hover:opacity-80`
-                              : `text-gray-400 hover:${getZoneTextClass("green")}`
+                              ? `${getZoneTextClass('green')} hover:opacity-80`
+                              : `text-gray-400 hover:${getZoneTextClass('green')}`
                           }`}
                           title={
                             ingredient.organic
-                              ? "Mark as non-organic"
-                              : "Mark as organic"
+                              ? 'Mark as non-organic'
+                              : 'Mark as organic'
                           }
                         >
                           <Leaf className="h-3 w-3" />
@@ -470,7 +475,7 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleDeleteIngredient(index)}
-                          className={`p-1 text-muted-foreground hover:${getZoneTextClass("red")} transition-colors`}
+                          className={`p-1 text-muted-foreground hover:${getZoneTextClass('red')} transition-colors`}
                           title="Delete ingredient"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -502,7 +507,7 @@ export function FoodEntryForm({
             <div className="mt-2">
               <Textarea
                 value={notes}
-                onChange={e => setNotes(e.target.value)}
+                onChange={(e) => setNotes(e.target.value)}
                 placeholder="Any additional details..."
                 rows={3}
               />
@@ -519,15 +524,17 @@ export function FoodEntryForm({
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting || isAnalyzing} className="relative">
-            {isSubmitting && (
-              <LoadingSpinner size="sm" className="mr-2" />
-            )}
+          <Button
+            type="submit"
+            disabled={isSubmitting || isAnalyzing}
+            className="relative"
+          >
+            {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
             {isSubmitting
               ? isZoning
-                ? "Zoning ingredients..."
-                : "Saving..."
-              : "Save Food"}
+                ? 'Zoning ingredients...'
+                : 'Saving...'
+              : 'Save Food'}
           </Button>
         </div>
       </form>

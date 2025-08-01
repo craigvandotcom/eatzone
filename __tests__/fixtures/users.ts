@@ -11,4 +11,4 @@ export const mockUsers = {
     password: 'hashed_password_here',
     createdAt: new Date('2024-01-01').toISOString(),
   },
-}
+};

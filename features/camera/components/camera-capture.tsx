@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
-import { Camera, Edit3, Upload } from "lucide-react";
-import { logger } from "@/lib/utils/logger";
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import { Camera, Edit3, Upload } from 'lucide-react';
+import { logger } from '@/lib/utils/logger';
 
 interface CameraCaptureProps {
   open: boolean;
@@ -44,8 +44,8 @@ export function CameraCapture({
   useEffect(() => {
     if (stream && videoRef.current) {
       videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(err => {
-        logger.error("Error playing video", err);
+      videoRef.current.play().catch((err) => {
+        logger.error('Error playing video', err);
       });
     }
   }, [stream]);
@@ -57,7 +57,7 @@ export function CameraCapture({
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: "environment", // Use back camera on mobile
+          facingMode: 'environment', // Use back camera on mobile
           width: { ideal: 1280 },
           height: { ideal: 1280 },
         },
@@ -66,15 +66,15 @@ export function CameraCapture({
       setStream(mediaStream);
       setIsLoading(false);
     } catch (err) {
-      logger.error("Error accessing camera", err);
-      setError("Unable to access camera. Please check permissions.");
+      logger.error('Error accessing camera', err);
+      setError('Unable to access camera. Please check permissions.');
       setIsLoading(false);
     }
   };
 
   const stopCamera = () => {
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
       setStream(null);
     }
   };
@@ -84,7 +84,7 @@ export function CameraCapture({
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
@@ -96,7 +96,7 @@ export function CameraCapture({
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     // Get image data as base64
-    const imageData = canvas.toDataURL("image/jpeg", 0.8);
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
 
     // Stop camera and close dialog
     stopCamera();
@@ -220,7 +220,7 @@ export function CameraCapture({
           <Button
             onClick={handleClose}
             variant="outline"
-            className={`w-16 h-12 ${getZoneBgClass("red", "light")} border-zone-red/30 ${getZoneTextClass("red")} hover:${getZoneBgClass("red", "medium")} hover:border-zone-red/50`}
+            className={`w-16 h-12 ${getZoneBgClass('red', 'light')} border-zone-red/30 ${getZoneTextClass('red')} hover:${getZoneBgClass('red', 'medium')} hover:border-zone-red/50`}
             size="lg"
           >
             Cancel
@@ -233,11 +233,7 @@ export function CameraCapture({
               onChange={handleFileUpload}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
-            <Button
-              variant="outline"
-              className="w-full h-12"
-              size="lg"
-            >
+            <Button variant="outline" className="w-full h-12" size="lg">
               <Upload className="h-5 w-5 mr-2" />
               Upload
             </Button>

@@ -24,7 +24,7 @@ This guide will walk you through setting up the production-ready webhook system 
      - **Table**: `auth.users`
      - **Events**: ✅ `INSERT` (uncheck others)
      - **Type**: `Supabase Function`
-     - **Function**: 
+     - **Function**:
        - Schema: `public`
        - Function: `handle_auth_user_created`
      - **Method**: `POST`
@@ -44,7 +44,7 @@ This guide will walk you through setting up the production-ready webhook system 
      - **Table**: `auth.users`
      - **Events**: ✅ `UPDATE` (uncheck others)
      - **Type**: `Supabase Function`
-     - **Function**: 
+     - **Function**:
        - Schema: `public`
        - Function: `handle_auth_user_updated`
 
@@ -53,6 +53,7 @@ This guide will walk you through setting up the production-ready webhook system 
 ## Step 3: Verify Webhook Configuration
 
 1. **Check Webhook Status**
+
    ```sql
    -- Run this in SQL Editor to check sync status
    SELECT * FROM public.check_user_profile_sync_status();
@@ -65,6 +66,7 @@ This guide will walk you through setting up the production-ready webhook system 
 ## Step 4: Test the Setup
 
 ### Option A: Test via SQL
+
 ```sql
 -- Manually trigger profile creation for a test user
 -- First, create a test auth user (if needed)
@@ -73,6 +75,7 @@ SELECT * FROM public.users ORDER BY created_at DESC LIMIT 5;
 ```
 
 ### Option B: Test via Application
+
 1. Sign up a new user in your application
 2. Check the `public.users` table - profile should exist immediately
 3. Check webhook logs for the execution
@@ -80,17 +83,19 @@ SELECT * FROM public.users ORDER BY created_at DESC LIMIT 5;
 ## Step 5: Monitor Webhook Health
 
 ### Daily Health Check Query
+
 ```sql
 -- Run this periodically to ensure webhooks are working
 SELECT * FROM public.check_user_profile_sync_status();
 
 -- If missing_profiles > 0, investigate and sync manually:
-SELECT public.sync_single_user_profile(id) 
-FROM auth.users 
+SELECT public.sync_single_user_profile(id)
+FROM auth.users
 WHERE id NOT IN (SELECT id FROM public.users);
 ```
 
 ### Set Up Alerts (Optional)
+
 1. Go to `Logs` → `Alerts`
 2. Create an alert for webhook failures
 3. Set up email notifications
@@ -98,6 +103,7 @@ WHERE id NOT IN (SELECT id FROM public.users);
 ## Troubleshooting
 
 ### Webhook Not Triggering
+
 1. Verify webhook is enabled (green toggle)
 2. Check webhook logs for errors
 3. Ensure functions have correct permissions:
@@ -107,6 +113,7 @@ WHERE id NOT IN (SELECT id FROM public.users);
    ```
 
 ### Profile Not Created
+
 1. Check webhook execution logs
 2. Run manual sync for specific user:
    ```sql
@@ -114,6 +121,7 @@ WHERE id NOT IN (SELECT id FROM public.users);
    ```
 
 ### Performance Issues
+
 - Webhooks run asynchronously and shouldn't impact signup performance
 - If you see delays, check the function execution time in logs
 
@@ -134,6 +142,7 @@ WHERE id NOT IN (SELECT id FROM public.users);
 ## Rollback Plan
 
 If you need to disable webhooks temporarily:
+
 1. Toggle the webhook OFF in the dashboard
 2. Your application code has retry logic as fallback
 3. To fully remove:
@@ -146,6 +155,7 @@ If you need to disable webhooks temporarily:
 ## Next Steps
 
 After webhooks are working:
+
 1. Remove any application-level profile creation code
 2. Update error messages to be more user-friendly
 3. Consider adding user metadata during signup for richer profiles

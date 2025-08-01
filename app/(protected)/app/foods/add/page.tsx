@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { FoodEntryForm } from "@/features/foods/components/food-entry-form";
-import { addFood as dbAddFood } from "@/lib/db";
-import type { Food } from "@/lib/types";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FoodEntryForm } from '@/features/foods/components/food-entry-form';
+import { addFood as dbAddFood } from '@/lib/db';
+import type { Food } from '@/lib/types';
 
 export default function AddFoodPage() {
   const router = useRouter();
@@ -14,19 +14,19 @@ export default function AddFoodPage() {
 
   useEffect(() => {
     // Check if there's a pending image from camera capture
-    const pendingImage = sessionStorage.getItem("pendingFoodImage");
+    const pendingImage = sessionStorage.getItem('pendingFoodImage');
     if (pendingImage) {
       setImageData(pendingImage);
       // Clear it after retrieval to prevent reuse
-      sessionStorage.removeItem("pendingFoodImage");
+      sessionStorage.removeItem('pendingFoodImage');
     }
   }, []);
 
-  const handleAddFood = async (food: Omit<Food, "id" | "timestamp">) => {
+  const handleAddFood = async (food: Omit<Food, 'id' | 'timestamp'>) => {
     // Include image data if available
     const foodWithImage = imageData ? { ...food, image: imageData } : food;
     await dbAddFood(foodWithImage);
-    router.push("/app");
+    router.push('/app');
   };
 
   const handleClose = () => {

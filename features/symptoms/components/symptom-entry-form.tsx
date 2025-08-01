@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import type React from "react";
-import type { Symptom } from "@/lib/types";
+import type React from 'react';
+import type { Symptom } from '@/lib/types';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from "lucide-react";
-import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
-import type { ZoneType } from "@/lib/utils/zone-colors";
-import { LoadingSpinner } from "@/components/ui/loading-states";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from 'lucide-react';
+import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import type { ZoneType } from '@/lib/utils/zone-colors';
+import { LoadingSpinner } from '@/components/ui/loading-states';
 
 interface LocalSymptom {
   name: string;
@@ -20,7 +20,9 @@ interface LocalSymptom {
 }
 
 interface SymptomEntryFormProps {
-  onAddSymptom: (symptom: Omit<Symptom, "id" | "timestamp">) => void | Promise<void>;
+  onAddSymptom: (
+    symptom: Omit<Symptom, 'id' | 'timestamp'>,
+  ) => void | Promise<void>;
   onClose: () => void;
   editingSymptom?: Symptom | null;
   className?: string;
@@ -32,14 +34,14 @@ export function SymptomEntryForm({
   editingSymptom,
   className,
 }: SymptomEntryFormProps) {
-  const [currentSymptom, setCurrentSymptom] = useState("");
+  const [currentSymptom, setCurrentSymptom] = useState('');
   const [symptoms, setSymptoms] = useState<LocalSymptom[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editingValue, setEditingValue] = useState("");
+  const [editingValue, setEditingValue] = useState('');
   const [severitySelectionIndex, setSeveritySelectionIndex] = useState<
     number | null
   >(null);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
 
   // Pre-populate form when editing
@@ -51,17 +53,17 @@ export function SymptomEntryForm({
           severity: editingSymptom.severity,
         },
       ]);
-      setNotes(editingSymptom.notes || "");
+      setNotes(editingSymptom.notes || '');
       setShowNotes(!!editingSymptom.notes);
     } else {
       setSymptoms([]);
-      setNotes("");
+      setNotes('');
       setShowNotes(false);
     }
   }, [editingSymptom]);
 
   const handleSymptomKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && currentSymptom.trim()) {
+    if (e.key === 'Enter' && currentSymptom.trim()) {
       e.preventDefault();
       setSymptoms([
         ...symptoms,
@@ -70,7 +72,7 @@ export function SymptomEntryForm({
           severity: 0, // Set to 0 to indicate it needs to be set
         },
       ]);
-      setCurrentSymptom("");
+      setCurrentSymptom('');
       // Automatically open severity selection for the new symptom
       setSeveritySelectionIndex(symptoms.length);
     }
@@ -105,43 +107,43 @@ export function SymptomEntryForm({
       setSymptoms(updatedSymptoms);
     }
     setEditingIndex(null);
-    setEditingValue("");
+    setEditingValue('');
   };
 
   const handleCancelEdit = () => {
     setEditingIndex(null);
-    setEditingValue("");
+    setEditingValue('');
   };
 
   const handleEditKeyPress = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSaveEdit(index);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       e.preventDefault();
       handleCancelEdit();
     }
   };
 
   const getSeverityZone = (severity: number): ZoneType => {
-    if (severity <= 2) return "green";
-    if (severity <= 4) return "yellow";
-    return "red";
+    if (severity <= 2) return 'green';
+    if (severity <= 4) return 'yellow';
+    return 'red';
   };
 
   const getSeverityColor = (severity: number) => {
     const zone = getSeverityZone(severity);
-    return `${getZoneBgClass(zone, "light")} ${getZoneTextClass(zone)}`;
+    return `${getZoneBgClass(zone, 'light')} ${getZoneTextClass(zone)}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validSymptoms = symptoms.filter(symptom => symptom.severity > 0);
+    const validSymptoms = symptoms.filter((symptom) => symptom.severity > 0);
     if (validSymptoms.length === 0) return;
 
     // Submit each valid symptom individually and wait for all to complete
-    const symptomPromises = validSymptoms.map(localSymptom => {
-      const symptom: Omit<Symptom, "id" | "timestamp"> = {
+    const symptomPromises = validSymptoms.map((localSymptom) => {
+      const symptom: Omit<Symptom, 'id' | 'timestamp'> = {
         name: localSymptom.name,
         severity: localSymptom.severity,
         notes: notes.trim() || undefined,
@@ -153,12 +155,12 @@ export function SymptomEntryForm({
     await Promise.all(symptomPromises);
 
     // Reset form
-    setCurrentSymptom("");
+    setCurrentSymptom('');
     setSymptoms([]);
-    setNotes("");
+    setNotes('');
     setShowNotes(false);
     setEditingIndex(null);
-    setEditingValue("");
+    setEditingValue('');
     setSeveritySelectionIndex(null);
     onClose();
   };
@@ -171,7 +173,7 @@ export function SymptomEntryForm({
           <Input
             id="symptom-input"
             value={currentSymptom}
-            onChange={e => setCurrentSymptom(e.target.value)}
+            onChange={(e) => setCurrentSymptom(e.target.value)}
             onKeyPress={handleSymptomKeyPress}
             placeholder="Type symptom and press Enter"
             autoFocus
@@ -199,8 +201,8 @@ export function SymptomEntryForm({
                           {editingIndex === index ? (
                             <Input
                               value={editingValue}
-                              onChange={e => setEditingValue(e.target.value)}
-                              onKeyPress={e => handleEditKeyPress(e, index)}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              onKeyPress={(e) => handleEditKeyPress(e, index)}
                               onBlur={() => handleSaveEdit(index)}
                               className="flex-1 h-8 mx-2"
                               autoFocus
@@ -225,10 +227,10 @@ export function SymptomEntryForm({
                               }
                               className={`p-1 transition-colors ${
                                 symptom.severity >= 4
-                                  ? getZoneTextClass("red")
+                                  ? getZoneTextClass('red')
                                   : symptom.severity >= 3
-                                    ? getZoneTextClass("yellow")
-                                    : getZoneTextClass("green")
+                                    ? getZoneTextClass('yellow')
+                                    : getZoneTextClass('green')
                               } hover:opacity-80`}
                               title="Adjust severity"
                             >
@@ -245,7 +247,7 @@ export function SymptomEntryForm({
                             <button
                               type="button"
                               onClick={() => handleDeleteSymptom(index)}
-                              className={`p-1 text-muted-foreground hover:${getZoneTextClass("red")} transition-colors`}
+                              className={`p-1 text-muted-foreground hover:${getZoneTextClass('red')} transition-colors`}
                               title="Delete symptom"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -258,17 +260,17 @@ export function SymptomEntryForm({
                     {severitySelectionIndex === index && (
                       <div className="flex-1 min-w-0 px-3 flex items-center justify-center">
                         <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map(level => (
+                          {[1, 2, 3, 4, 5].map((level) => (
                             <button
                               key={level}
                               type="button"
                               onClick={() => handleSelectSeverity(index, level)}
                               className={`w-10 h-8 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-110 ${
                                 level <= 2
-                                  ? `${getZoneBgClass("green", "light")} ${getZoneTextClass("green")} hover:${getZoneBgClass("green", "medium")} border-2 border-zone-green/30`
+                                  ? `${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} hover:${getZoneBgClass('green', 'medium')} border-2 border-zone-green/30`
                                   : level <= 4
-                                    ? `${getZoneBgClass("yellow", "light")} ${getZoneTextClass("yellow")} hover:${getZoneBgClass("yellow", "medium")} border-2 border-zone-yellow/30`
-                                    : `${getZoneBgClass("red", "light")} ${getZoneTextClass("red")} hover:${getZoneBgClass("red", "medium")} border-2 border-zone-red/30`
+                                    ? `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')} hover:${getZoneBgClass('yellow', 'medium')} border-2 border-zone-yellow/30`
+                                    : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')} hover:${getZoneBgClass('red', 'medium')} border-2 border-zone-red/30`
                               }`}
                             >
                               {level}
@@ -302,7 +304,7 @@ export function SymptomEntryForm({
             <div className="mt-2">
               <Textarea
                 value={notes}
-                onChange={e => setNotes(e.target.value)}
+                onChange={(e) => setNotes(e.target.value)}
                 placeholder="Any additional details..."
                 rows={3}
               />
@@ -321,12 +323,12 @@ export function SymptomEntryForm({
           </Button>
           <Button
             type="submit"
-            disabled={symptoms.filter(s => s.severity > 0).length === 0}
+            disabled={symptoms.filter((s) => s.severity > 0).length === 0}
             className="flex-1 relative"
           >
             {editingSymptom
-              ? "Update Symptom"
-              : `Add Symptoms (${symptoms.filter(s => s.severity > 0).length})`}
+              ? 'Update Symptom'
+              : `Add Symptoms (${symptoms.filter((s) => s.severity > 0).length})`}
           </Button>
         </div>
       </form>

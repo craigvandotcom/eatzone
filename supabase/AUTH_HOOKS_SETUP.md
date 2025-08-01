@@ -33,6 +33,7 @@ Supabase Cloud doesn't allow direct database triggers on the `auth.users` table 
 If you deployed the Edge Function:
 
 1. Deploy the edge function:
+
    ```bash
    supabase functions deploy handle-new-user
    ```
@@ -53,6 +54,7 @@ After setting up the webhook:
 ## Current Fallback
 
 Until hooks are configured, the app uses a fallback approach:
+
 - Calls `ensure_user_profile` RPC function after signup
 - Falls back to direct insert if needed
 

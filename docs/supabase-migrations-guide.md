@@ -59,20 +59,22 @@ supabase db reset
 ### Migration Best Practices
 
 1. **Always create migrations for schema changes**
+
    ```bash
    supabase migration new add_user_preferences_table
    ```
 
 2. **Test migrations locally first** (requires Docker)
+
    ```bash
    # Start local Supabase
    supabase start
-   
+
    # Apply migrations locally
    supabase db push --local
-   
+
    # Test your changes
-   
+
    # Stop local Supabase
    supabase stop
    ```
@@ -106,6 +108,7 @@ Add these to your package.json:
 ## Migration File Structure
 
 Your project should have:
+
 ```
 supabase/
 ├── migrations/
@@ -121,17 +124,19 @@ supabase/
 Based on your project, you should:
 
 1. **Move existing migrations** to proper structure:
+
    ```bash
    # Your current migrations are in supabase/migrations/
    # This is correct! Just ensure they're named with timestamps
    ```
 
 2. **Rename migrations with timestamps**:
+
    ```bash
    # Rename to include timestamps
    mv supabase/migrations/001_initial_schema.sql \
       supabase/migrations/20240101000000_initial_schema.sql
-   
+
    mv supabase/migrations/002_fix_user_profile_trigger.sql \
       supabase/migrations/20240102000000_fix_user_profile_trigger.sql
    ```
@@ -154,18 +159,23 @@ supabase db push
 ## Troubleshooting
 
 ### "Not linked to a project"
+
 ```bash
 supabase link --project-ref ecvbexxmqlghzosgoiww
 ```
 
 ### "Migration already applied"
+
 Check migration history:
+
 ```bash
 supabase migration list
 ```
 
 ### "Permission denied"
+
 Ensure you're logged in:
+
 ```bash
 supabase login
 ```
@@ -186,7 +196,7 @@ CREATE TABLE IF NOT EXISTS public.schema_migrations (
 );
 
 -- After running each migration, record it:
-INSERT INTO public.schema_migrations (version) 
+INSERT INTO public.schema_migrations (version)
 VALUES ('002_fix_user_profile_trigger');
 ```
 

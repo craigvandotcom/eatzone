@@ -13,9 +13,9 @@ const fs = require('fs');
 const envPath = path.join(process.cwd(), '.env.local');
 if (fs.existsSync(envPath)) {
   const envFile = fs.readFileSync(envPath, 'utf8');
-  const envVars = envFile.split('\n').filter(line => line.includes('='));
-  
-  envVars.forEach(line => {
+  const envVars = envFile.split('\n').filter((line) => line.includes('='));
+
+  envVars.forEach((line) => {
     const [key, ...valueParts] = line.split('=');
     const value = valueParts.join('=').replace(/"/g, '');
     process.env[key] = value;
@@ -27,7 +27,9 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase configuration');
-  console.error('Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local');
+  console.error(
+    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local',
+  );
   process.exit(1);
 }
 
@@ -35,57 +37,76 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function resetDatabase() {
   console.log('🔄 Starting database reset...');
-  
+
   try {
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      console.log('⚠️  No authenticated user found. Creating demo data instead...');
-      
+      console.log(
+        '⚠️  No authenticated user found. Creating demo data instead...',
+      );
+
       // For development, we can create demo data
-      console.log('📝 Use this script after logging in to reset your personal data');
+      console.log(
+        '📝 Use this script after logging in to reset your personal data',
+      );
       console.log('💡 For now, this serves as a connection test...');
-      
+
       // Test connection with timeout and retry
       const MAX_RETRIES = 3;
       const TIMEOUT_MS = 5000;
       let lastError = null;
-      
+
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-          console.log(`🔍 Testing database connection (attempt ${attempt}/${MAX_RETRIES})...`);
-          
+          console.log(
+            `🔍 Testing database connection (attempt ${attempt}/${MAX_RETRIES})...`,
+          );
+
           // Create a timeout promise
           const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Connection timeout')), TIMEOUT_MS);
+            setTimeout(
+              () => reject(new Error('Connection timeout')),
+              TIMEOUT_MS,
+            );
           });
-          
+
           // Create the query promise
-          const queryPromise = supabase.from('foods').select('count', { count: 'exact', head: true });
-          
+          const queryPromise = supabase
+            .from('foods')
+            .select('count', { count: 'exact', head: true });
+
           // Race between timeout and query
-          const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
-          
+          const { data, error } = await Promise.race([
+            queryPromise,
+            timeoutPromise,
+          ]);
+
           if (error) {
             throw error;
           }
-          
+
           console.log('✅ Database connection successful');
           return;
-          
         } catch (error) {
           lastError = error;
-          console.error(`❌ Connection attempt ${attempt} failed:`, error.message);
-          
+          console.error(
+            `❌ Connection attempt ${attempt} failed:`,
+            error.message,
+          );
+
           if (attempt < MAX_RETRIES) {
             const waitTime = Math.pow(2, attempt - 1) * 1000; // Exponential backoff: 1s, 2s, 4s
             console.log(`⏳ Waiting ${waitTime / 1000}s before retry...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
+            await new Promise((resolve) => setTimeout(resolve, waitTime));
           }
         }
       }
-      
+
       // All retries failed
       console.error('\n❌ Database connection failed after all retries');
       console.error('\n🔧 Troubleshooting tips:');
@@ -104,7 +125,7 @@ async function resetDatabase() {
       .from('foods')
       .delete()
       .eq('user_id', user.id);
-    
+
     if (foodsError) {
       console.error('❌ Error deleting foods:', foodsError.message);
     } else {
@@ -116,7 +137,7 @@ async function resetDatabase() {
       .from('symptoms')
       .delete()
       .eq('user_id', user.id);
-    
+
     if (symptomsError) {
       console.error('❌ Error deleting symptoms:', symptomsError.message);
     } else {
@@ -125,7 +146,6 @@ async function resetDatabase() {
 
     console.log('✅ Database reset completed successfully!');
     console.log('💡 Your account remains active, only your data was cleared');
-    
   } catch (error) {
     console.error('❌ Reset failed:', error.message);
     process.exit(1);
@@ -133,10 +153,12 @@ async function resetDatabase() {
 }
 
 // Run the reset
-resetDatabase().then(() => {
-  console.log('🎉 Reset process complete');
-  process.exit(0);
-}).catch(error => {
-  console.error('💥 Unexpected error:', error);
-  process.exit(1);
-});
+resetDatabase()
+  .then(() => {
+    console.log('🎉 Reset process complete');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('💥 Unexpected error:', error);
+    process.exit(1);
+  });

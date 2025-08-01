@@ -1,4 +1,4 @@
-import { Symptom } from '@/lib/types'
+import { Symptom } from '@/lib/types';
 
 export const mockSymptoms: Symptom[] = [
   {
@@ -22,4 +22,4 @@ export const mockSymptoms: Symptom[] = [
     severity: 1,
     notes: 'Slight tiredness',
   },
-]
+];

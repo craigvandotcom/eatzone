@@ -1,24 +1,24 @@
-import type React from "react";
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/features/auth/components/auth-provider";
+import type React from 'react';
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/features/auth/components/auth-provider';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 // Centralized metadata using Next.js App Router conventions
 export const metadata: Metadata = {
   title: "Puls - Your Body's Compass",
   description:
-    "Private health tracking with AI-powered insights. Your data stays on your device.",
-  manifest: "/manifest.json",
-  applicationName: "Puls",
+    'Private health tracking with AI-powered insights. Your data stays on your device.',
+  manifest: '/manifest.json',
+  applicationName: 'Puls',
   appleWebApp: {
     capable: true,
-    title: "Puls",
-    statusBarStyle: "default",
+    title: 'Puls',
+    statusBarStyle: 'default',
   },
   formatDetection: {
     telephone: false,
@@ -28,11 +28,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#2563eb",
+  themeColor: '#2563eb',
 };
 
 export default function RootLayout({

@@ -47,21 +47,39 @@ export const updateFood = async (
   id: string,
   updates: Partial<Omit<Food, 'id'>>,
 ): Promise<void> => {
-  const { error } = await supabase.from('foods').update(updates).eq('id', id);
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  const { error } = await supabase
+    .from('foods')
+    .update(updates)
+    .eq('id', id)
+    .eq('user_id', user.user.id);
 
   if (error) throw error;
 };
 
 export const deleteFood = async (id: string): Promise<void> => {
-  const { error } = await supabase.from('foods').delete().eq('id', id);
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  const { error } = await supabase
+    .from('foods')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.user.id);
 
   if (error) throw error;
 };
 
 export const getAllFoods = async (): Promise<Food[]> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { data, error } = await supabase
     .from('foods')
     .select('*')
+    .eq('user_id', user.user.id)
     .order('timestamp', { ascending: false });
 
   if (error) throw error;
@@ -69,9 +87,13 @@ export const getAllFoods = async (): Promise<Food[]> => {
 };
 
 export const getRecentFoods = async (limit: number = 10): Promise<Food[]> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { data, error } = await supabase
     .from('foods')
     .select('*')
+    .eq('user_id', user.user.id)
     .order('timestamp', { ascending: false })
     .limit(limit);
 
@@ -80,6 +102,9 @@ export const getRecentFoods = async (limit: number = 10): Promise<Food[]> => {
 };
 
 export const getTodaysFoods = async (): Promise<Food[]> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const today = getTodayDate();
   const startRange = today + 'T00:00:00.000Z';
   const endRange = today + 'T23:59:59.999Z';
@@ -87,6 +112,7 @@ export const getTodaysFoods = async (): Promise<Food[]> => {
   const { data, error } = await supabase
     .from('foods')
     .select('*')
+    .eq('user_id', user.user.id)
     .gte('timestamp', startRange)
     .lte('timestamp', endRange)
     .order('timestamp', { ascending: false });
@@ -96,10 +122,14 @@ export const getTodaysFoods = async (): Promise<Food[]> => {
 };
 
 export const getFoodById = async (id: string): Promise<Food | undefined> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { data, error } = await supabase
     .from('foods')
     .select('*')
     .eq('id', id)
+    .eq('user_id', user.user.id)
     .single();
 
   if (error) {
@@ -136,24 +166,39 @@ export const updateSymptom = async (
   id: string,
   updates: Partial<Omit<Symptom, 'id'>>,
 ): Promise<void> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { error } = await supabase
     .from('symptoms')
     .update(updates)
-    .eq('id', id);
+    .eq('id', id)
+    .eq('user_id', user.user.id);
 
   if (error) throw error;
 };
 
 export const deleteSymptom = async (id: string): Promise<void> => {
-  const { error } = await supabase.from('symptoms').delete().eq('id', id);
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  const { error } = await supabase
+    .from('symptoms')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.user.id);
 
   if (error) throw error;
 };
 
 export const getAllSymptoms = async (): Promise<Symptom[]> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { data, error } = await supabase
     .from('symptoms')
     .select('*')
+    .eq('user_id', user.user.id)
     .order('timestamp', { ascending: false });
 
   if (error) throw error;
@@ -163,9 +208,13 @@ export const getAllSymptoms = async (): Promise<Symptom[]> => {
 export const getRecentSymptoms = async (
   limit: number = 10,
 ): Promise<Symptom[]> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { data, error } = await supabase
     .from('symptoms')
     .select('*')
+    .eq('user_id', user.user.id)
     .order('timestamp', { ascending: false })
     .limit(limit);
 
@@ -174,6 +223,9 @@ export const getRecentSymptoms = async (
 };
 
 export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const today = getTodayDate();
   const startRange = today + 'T00:00:00.000Z';
   const endRange = today + 'T23:59:59.999Z';
@@ -181,6 +233,7 @@ export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
   const { data, error } = await supabase
     .from('symptoms')
     .select('*')
+    .eq('user_id', user.user.id)
     .gte('timestamp', startRange)
     .lte('timestamp', endRange)
     .order('timestamp', { ascending: false });
@@ -192,10 +245,14 @@ export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
 export const getSymptomById = async (
   id: string,
 ): Promise<Symptom | undefined> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { data, error } = await supabase
     .from('symptoms')
     .select('*')
     .eq('id', id)
+    .eq('user_id', user.user.id)
     .single();
 
   if (error) {
@@ -207,18 +264,21 @@ export const getSymptomById = async (
 
 // UTILITY OPERATIONS
 export const clearAllData = async (): Promise<void> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   // Clear user's foods and symptoms
   const { error: foodsError } = await supabase
     .from('foods')
     .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all user's records
+    .eq('user_id', user.user.id);
 
   if (foodsError) throw foodsError;
 
   const { error: symptomsError } = await supabase
     .from('symptoms')
     .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all user's records
+    .eq('user_id', user.user.id);
 
   if (symptomsError) throw symptomsError;
 };

@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Symptom } from "./types";
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -17,12 +18,20 @@ import { logger } from "./utils/logger";
 // Create a shared supabase client for all hooks
 const supabase = createClient();
 
+// Type for subscription configuration
+type SubscriptionConfig = {
+  event: '*' | 'INSERT' | 'UPDATE' | 'DELETE';
+  schema: string;
+  table: string;
+  filter?: string;
+};
+
 // Shared subscription management to prevent duplicate subscriptions
 class SubscriptionManager {
-  private subscriptions = new Map<string, any>();
+  private subscriptions = new Map<string, RealtimeChannel>();
   private listeners = new Map<string, Set<() => void>>();
 
-  subscribe(key: string, subscriptionConfig: any, callback: () => void) {
+  subscribe(key: string, subscriptionConfig: SubscriptionConfig, callback: () => void) {
     // Add callback to listeners
     if (!this.listeners.has(key)) {
       this.listeners.set(key, new Set());
@@ -31,15 +40,25 @@ class SubscriptionManager {
 
     // Create subscription if it doesn't exist
     if (!this.subscriptions.has(key)) {
-      const subscription = supabase
-        .channel(key)
-        .on('postgres_changes', subscriptionConfig, () => {
+      const channel = supabase.channel(key);
+      
+      // TypeScript workaround: Supabase v2 has a known type issue where 'postgres_changes' 
+      // is not properly recognized in the overloaded 'on' method signatures.
+      // This is a documented issue in the Supabase community.
+      // See: https://github.com/supabase/supabase-js/issues/1451
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (channel as any).on(
+        'postgres_changes',
+        subscriptionConfig,
+        () => {
           // Notify all listeners
           this.listeners.get(key)?.forEach(listener => listener());
-        })
-        .subscribe();
+        }
+      );
       
-      this.subscriptions.set(key, subscription);
+      channel.subscribe();
+      
+      this.subscriptions.set(key, channel);
     }
 
     // Return unsubscribe function
@@ -68,8 +87,8 @@ const subscriptionManager = new SubscriptionManager();
 function useSupabaseData<T>(
   fetchFn: () => Promise<T>,
   subscriptionKey: string,
-  subscriptionConfig: any,
-  dependencies: any[] = []
+  subscriptionConfig: SubscriptionConfig,
+  dependencies: React.DependencyList = []
 ) {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
@@ -117,7 +136,8 @@ function useSupabaseData<T>(
     );
 
     return unsubscribe;
-  }, dependencies);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchData, subscriptionKey, subscriptionConfig, ...dependencies]);
 
   const retry = useCallback(() => {
     retryCount.current = 0;

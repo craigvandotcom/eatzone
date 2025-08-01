@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     // Normalize AI response - only convert zone to lowercase
     const normalizedIngredients = parsedResponse.ingredients?.map(
-      (ingredient: any) => ({
+      (ingredient: { name: string; zone?: string; foodGroup?: string }) => ({
         name: ingredient.name,
         zone: ingredient.zone?.toLowerCase(), // Convert to lowercase
         foodGroup: ingredient.foodGroup, // Use AI category directly

@@ -167,7 +167,12 @@ capacitor.config.ts
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Supabase
+supabase/.temp
+supabase/.branches
+.supabase 
 # Monitoring config removed (using Vercel built-in monitoring)
 .vercel
 .env*.local

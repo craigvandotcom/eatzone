@@ -86,10 +86,13 @@ pnpm build:check    # Production build + lint
 - `pnpm run db:reset` - Clear all user data from current Supabase session
 - `pnpm run db:seed` - Seed database with test data (development only)
 - `pnpm run db:status` - Check database connection and status
-- `pnpm supabase:start` - Start local Supabase instance
-- `pnpm supabase:stop` - Stop local Supabase instance
-- `pnpm supabase:reset` - Reset local Supabase database
-- `pnpm supabase:types` - Generate TypeScript types from database schema
+
+### Supabase CLI (Read-Only)
+- `pnpm run supabase:types` - Generate TypeScript types from development database
+- `pnpm run supabase:types:prod` - Generate TypeScript types from production database (requires prod project ID)
+- `pnpm run supabase:status` - List Supabase projects (requires authentication)
+
+**Note**: Supabase CLI is configured for read-only operations. We use remote projects only (no local instances).
 
 ## Architecture Overview
 

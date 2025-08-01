@@ -20,10 +20,9 @@
     "db:reset": "node scripts/db-reset.js",
     "db:seed": "node scripts/db-seed.js",
     "db:status": "node scripts/db-status.js",
-    "supabase:start": "npx supabase start",
-    "supabase:stop": "npx supabase stop",
-    "supabase:reset": "npx supabase db reset",
-    "supabase:types": "npx supabase gen types typescript --local > lib/supabase/types.ts"
+    "supabase:types": "supabase gen types typescript --project-id ecvbexxmqlghzosgoiww > lib/supabase/types.ts",
+    "supabase:types:prod": "supabase gen types typescript --project-id YOUR_PROD_PROJECT_ID > lib/supabase/types.ts",
+    "supabase:status": "supabase projects list"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

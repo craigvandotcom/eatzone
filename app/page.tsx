@@ -108,7 +108,7 @@ export default function LandingPage() {
                 Compass
               </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
               Track your health inputs and outputs with high-speed logging and
               AI-powered insights. All while keeping your data completely
               private on your device.
@@ -121,7 +121,7 @@ export default function LandingPage() {
                   Start Tracking <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Works best on mobile • Install as PWA for native experience
               </p>
             </div>
@@ -150,14 +150,14 @@ export default function LandingPage() {
                     <div className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center">
                       <QrCode className="h-16 w-16 text-gray-400" />
                     </div>
-                    <p className="text-xs text-gray-500 mt-2 text-center">
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
                       Scan to open on mobile
                     </p>
                   </CardContent>
                 </Card>
               )}
 
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                 <div className="flex items-center">
                   <CheckCircle className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`} />
                   No account required to try
@@ -183,7 +183,7 @@ export default function LandingPage() {
                         Your Body Compass
                       </h3>
                       <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
-                        <BarChart3 className="h-16 w-16 text-gray-600" />
+                        <BarChart3 className="h-16 w-16 text-muted-foreground" />
                       </div>
                     </div>
 
@@ -200,7 +200,7 @@ export default function LandingPage() {
                           <p className="text-xs font-medium text-gray-900">
                             {category.name}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {category.description}
                           </p>
                         </div>
@@ -223,13 +223,13 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-gray-50 py-16 lg:py-24">
+      <section className="bg-muted/50 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               High-Speed Logging, Clear Insights
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Designed for busy lives. Capture your health data in seconds, then
               get powerful insights without compromising your privacy.
             </p>
@@ -250,7 +250,7 @@ export default function LandingPage() {
                   <CardTitle className="text-lg">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-gray-600">
+                  <CardDescription className="text-muted-foreground">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -272,7 +272,7 @@ export default function LandingPage() {
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
                 Your Data Stays With You
               </h2>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 Unlike other health apps, we believe your personal health data
                 should remain personal. Everything is stored locally on your
                 device using advanced encryption.

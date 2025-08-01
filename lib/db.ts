@@ -327,9 +327,29 @@ export const createUser = async (
   if (error) throw error;
   if (!data.user) throw new Error("Failed to create user");
 
-  // The user profile is automatically created by the trigger
+  // Create user profile following Supabase best practice
+  // Using upsert to handle any race conditions
+  const { error: profileError } = await supabase
+    .from("users")
+    .upsert({
+      id: data.user.id,
+      email: data.user.email || email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (profileError) {
+    console.error("Failed to create user profile:", profileError);
+    throw new Error("Failed to create user profile");
+  }
+
+  // Fetch the profile to ensure consistency
   const profile = await getUserById(data.user.id);
-  if (!profile) throw new Error("Failed to create user profile");
+  if (!profile) {
+    throw new Error("Failed to create user profile");
+  }
 
   return profile;
 };

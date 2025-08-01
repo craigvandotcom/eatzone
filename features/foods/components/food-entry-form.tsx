@@ -364,7 +364,7 @@ export function FoodEntryForm({
                 placeholder="Type ingredient and press Enter"
                 autoFocus={!imageData} // Don't autofocus if we're analyzing an image
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {hasAnalyzed
                   ? "AI analysis complete! Add more ingredients or edit existing ones."
                   : "Press Enter to add each ingredient"}
@@ -400,7 +400,7 @@ export function FoodEntryForm({
                   {ingredients.map((ingredient, index) => (
                     <div
                       key={index}
-                      className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
+                      className="bg-muted rounded-md h-12 flex items-center overflow-hidden relative"
                     >
                       {/* Zone color indicator bar */}
                       <div
@@ -462,7 +462,7 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleEditIngredient(index)}
-                          className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                          className="p-1 text-muted-foreground hover:text-blue-600 transition-colors"
                           title="Edit ingredient"
                         >
                           <Edit2 className="h-3 w-3" />
@@ -470,7 +470,7 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleDeleteIngredient(index)}
-                          className={`p-1 text-gray-500 hover:${getZoneTextClass("red")} transition-colors`}
+                          className={`p-1 text-muted-foreground hover:${getZoneTextClass("red")} transition-colors`}
                           title="Delete ingredient"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -489,7 +489,7 @@ export function FoodEntryForm({
           <button
             type="button"
             onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {showNotes ? (
               <ChevronUp className="h-4 w-4" />

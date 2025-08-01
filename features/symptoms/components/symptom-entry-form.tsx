@@ -20,7 +20,7 @@ interface LocalSymptom {
 }
 
 interface SymptomEntryFormProps {
-  onAddSymptom: (symptom: Omit<Symptom, "id" | "timestamp">) => void;
+  onAddSymptom: (symptom: Omit<Symptom, "id" | "timestamp">) => void | Promise<void>;
   onClose: () => void;
   editingSymptom?: Symptom | null;
   className?: string;
@@ -134,20 +134,23 @@ export function SymptomEntryForm({
     return `${getZoneBgClass(zone, "light")} ${getZoneTextClass(zone)}`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validSymptoms = symptoms.filter(symptom => symptom.severity > 0);
     if (validSymptoms.length === 0) return;
 
-    // Submit each valid symptom individually
-    validSymptoms.forEach(localSymptom => {
+    // Submit each valid symptom individually and wait for all to complete
+    const symptomPromises = validSymptoms.map(localSymptom => {
       const symptom: Omit<Symptom, "id" | "timestamp"> = {
         name: localSymptom.name,
         severity: localSymptom.severity,
         notes: notes.trim() || undefined,
       };
-      onAddSymptom(symptom);
+      return onAddSymptom(symptom);
     });
+
+    // Wait for all symptoms to be saved
+    await Promise.all(symptomPromises);
 
     // Reset form
     setCurrentSymptom("");
@@ -173,7 +176,7 @@ export function SymptomEntryForm({
             placeholder="Type symptom and press Enter"
             autoFocus
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Press Enter to add each symptom
           </p>
         </div>
@@ -187,7 +190,7 @@ export function SymptomEntryForm({
                 {symptoms.map((symptom, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
+                    className="bg-muted rounded-md h-12 flex items-center overflow-hidden"
                   >
                     {/* Normal Symptom Row */}
                     {severitySelectionIndex !== index &&
@@ -234,7 +237,7 @@ export function SymptomEntryForm({
                             <button
                               type="button"
                               onClick={() => handleEditSymptom(index)}
-                              className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                              className="p-1 text-muted-foreground hover:text-blue-600 transition-colors"
                               title="Edit symptom"
                             >
                               <Edit2 className="h-3 w-3" />
@@ -242,7 +245,7 @@ export function SymptomEntryForm({
                             <button
                               type="button"
                               onClick={() => handleDeleteSymptom(index)}
-                              className={`p-1 text-gray-500 hover:${getZoneTextClass("red")} transition-colors`}
+                              className={`p-1 text-muted-foreground hover:${getZoneTextClass("red")} transition-colors`}
                               title="Delete symptom"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -286,7 +289,7 @@ export function SymptomEntryForm({
           <button
             type="button"
             onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {showNotes ? (
               <ChevronUp className="h-4 w-4" />

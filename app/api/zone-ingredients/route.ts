@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { logger } from '@/lib/utils/logger';
+import { requireAuth } from '@/lib/auth/api';
 
 // Rate limiting setup using Vercel's Upstash integration env vars
 let ratelimit: Ratelimit | null = null;
@@ -32,6 +33,11 @@ const zonedIngredientSchema = z.object({
 // No mapping needed - use AI categories directly
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     // Rate limiting check - only if Redis is configured
     if (ratelimit) {

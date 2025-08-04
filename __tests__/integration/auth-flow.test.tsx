@@ -153,7 +153,7 @@ describe('Auth Flow Integration', () => {
       });
 
       // Subscribe to auth changes
-      const { data } = mockSupabase.auth.onAuthStateChange((event: any) => {
+      const { data } = mockSupabase.auth.onAuthStateChange((event: string) => {
         authStateChanges.push(event);
       });
 

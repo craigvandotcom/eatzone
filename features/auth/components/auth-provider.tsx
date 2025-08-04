@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
-import { getCurrentUser } from '@/lib/db';
+import { getCurrentUser, clearUserCache } from '@/lib/db';
 import { logger } from '@/lib/utils/logger';
 
 interface AuthContextType {
@@ -20,6 +20,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [profileFetchPromise, setProfileFetchPromise] = useState<Promise<User | null> | null>(null);
   const supabase = createClient();
 
   const isAuthenticated = !!user;
@@ -34,11 +36,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       if (!data.user) throw new Error('Login failed');
 
-      // Get the user profile from our database
-      const profile = await getCurrentUser();
+      // Get the user profile from our database with deduplication
+      const fetchProfile = async () => {
+        if (profileFetchPromise) {
+          return profileFetchPromise;
+        }
+        const promise = getCurrentUser();
+        setProfileFetchPromise(promise);
+        return promise;
+      };
+      
+      const profile = await fetchProfile();
       if (profile) {
         setUser(profile);
       }
+      setProfileFetchPromise(null);
     } catch (error) {
       logger.error('Login error', error);
       throw error;
@@ -59,6 +71,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const checkSession = async () => {
+    // Prevent duplicate session checks
+    if (sessionChecked && user) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -133,6 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
     } finally {
       setIsLoading(false);
+      setSessionChecked(true);
     }
   };
 
@@ -146,7 +164,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logger.debug('Auth state changed', { event, hasSession: !!session });
 
       if (event === 'SIGNED_IN' && session) {
-        let profile = await getCurrentUser();
+        // Use cached promise if available
+        const fetchProfile = async () => {
+          if (profileFetchPromise) {
+            return profileFetchPromise;
+          }
+          const promise = getCurrentUser();
+          setProfileFetchPromise(promise);
+          return promise;
+        };
+        
+        let profile = await fetchProfile();
+        setProfileFetchPromise(null);
         
         // Apply same retry logic for auth state changes
         if (!profile && session.user) {
@@ -192,6 +221,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
+        setSessionChecked(false);
+        clearUserCache();
+      } else if (event === 'USER_UPDATED' && session) {
+        // Only fetch profile if we don't have user data
+        if (!user) {
+          const profile = await getCurrentUser();
+          if (profile) {
+            setUser(profile);
+          }
+        }
       }
 
       setIsLoading(false);
@@ -199,27 +238,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
+      setProfileFetchPromise(null);
     };
   }, []);
 
-  // Periodic session check (every 5 minutes) - simplified for Supabase
+  // Periodic session check (every 5 minutes) - optimized
   useEffect(() => {
     if (!isAuthenticated) return;
 
     const interval = setInterval(
       async () => {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) {
-          setUser(null);
+        try {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          if (!session) {
+            setUser(null);
+            setSessionChecked(false);
+          } else if (!user) {
+            // Only fetch profile if we lost user data somehow
+            const profile = await getCurrentUser(true); // Force refresh in this case
+            if (profile) {
+              setUser(profile);
+            }
+          }
+        } catch (error) {
+          logger.error('Periodic session check failed', error);
         }
       },
       5 * 60 * 1000,
     ); // 5 minutes
 
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   const value: AuthContextType = {
     user,
@@ -228,7 +279,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     checkSession,
-  };
+    refreshUser: async () => {
+      // Force refresh user data
+      clearUserCache();
+      setSessionChecked(false);
+      await checkSession();
+    },
+  } as AuthContextType;
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

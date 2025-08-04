@@ -4,6 +4,15 @@ import { Food, Symptom, User } from './types';
 // Get Supabase client
 const supabase = createClient();
 
+// User cache with TTL
+interface UserCache {
+  user: User | null;
+  timestamp: number;
+}
+
+let userCache: UserCache | null = null;
+const USER_CACHE_TTL = 60 * 1000; // 1 minute cache
+
 // Helper function to generate ISO timestamp
 export const generateTimestamp = (): string => {
   return new Date().toISOString();
@@ -351,11 +360,19 @@ export const getUserById = async (id: string): Promise<User | undefined> => {
   return data || undefined;
 };
 
-export const getCurrentUser = async (): Promise<User | null> => {
+export const getCurrentUser = async (forceRefresh = false): Promise<User | null> => {
+  // Check cache first
+  if (!forceRefresh && userCache && Date.now() - userCache.timestamp < USER_CACHE_TTL) {
+    return userCache.user;
+  }
+
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();
-  if (!authUser) return null;
+  if (!authUser) {
+    userCache = { user: null, timestamp: Date.now() };
+    return null;
+  }
 
   const { data, error } = await supabase
     .from('users')
@@ -364,7 +381,15 @@ export const getCurrentUser = async (): Promise<User | null> => {
     .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 or 1 results
 
   if (error) throw error;
+  
+  // Update cache
+  userCache = { user: data, timestamp: Date.now() };
   return data;
+};
+
+// Clear user cache on auth state changes
+export const clearUserCache = () => {
+  userCache = null;
 };
 
 // AUTHENTICATION OPERATIONS (Simplified - using Supabase Auth)

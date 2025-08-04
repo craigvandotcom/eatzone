@@ -3,7 +3,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +17,11 @@ interface DayTimePickerProps {
   className?: string;
 }
 
-export function DayTimePicker({ value, onChange, className }: DayTimePickerProps) {
+export function DayTimePicker({
+  value,
+  onChange,
+  className,
+}: DayTimePickerProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(value || new Date());
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
@@ -23,13 +31,13 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
   const generateDays = () => {
     const days = [];
     const today = new Date();
-    
+
     for (let i = 0; i < 14; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       days.push(date);
     }
-    
+
     return days;
   };
 
@@ -39,7 +47,12 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
     for (let hour = 0; hour < 24; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const timeString = formatTime(hour, minute);
-        slots.push({ hour, minute, display: timeString, value: `${hour}:${minute.toString().padStart(2, '0')}` });
+        slots.push({
+          hour,
+          minute,
+          display: timeString,
+          value: `${hour}:${minute.toString().padStart(2, "0")}`,
+        });
       }
     }
     return slots;
@@ -47,9 +60,9 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
 
   // Format time to 12-hour format with AM/PM
   const formatTime = (hour: number, minute: number) => {
-    const period = hour >= 12 ? 'PM' : 'AM';
+    const period = hour >= 12 ? "PM" : "AM";
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    const displayMinute = minute.toString().padStart(2, '0');
+    const displayMinute = minute.toString().padStart(2, "0");
     return `${displayHour}:${displayMinute} ${period}`;
   };
 
@@ -64,10 +77,10 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
     } else if (date.toDateString() === yesterday.toDateString()) {
       return "Yesterday";
     } else {
-      return date.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
       });
     }
   };
@@ -82,14 +95,14 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
     if (value) {
       const hours = value.getHours();
       const minutes = Math.floor(value.getMinutes() / 30) * 30; // Round to nearest 30min
-      setSelectedTime(`${hours}:${minutes.toString().padStart(2, '0')}`);
+      setSelectedTime(`${hours}:${minutes.toString().padStart(2, "0")}`);
       setSelectedDate(new Date(value));
     } else {
       // Default to current time rounded to nearest 30min
       const now = new Date();
       const hours = now.getHours();
       const minutes = Math.floor(now.getMinutes() / 30) * 30;
-      setSelectedTime(`${hours}:${minutes.toString().padStart(2, '0')}`);
+      setSelectedTime(`${hours}:${minutes.toString().padStart(2, "0")}`);
     }
   }, [value]);
 
@@ -108,14 +121,14 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
 
   // Handle keyboard navigation
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Escape') {
+    if (event.key === "Escape") {
       setIsOpen(false);
     }
   };
 
   // Update the combined date-time and call onChange
   const updateDateTime = (date: Date, time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
+    const [hours, minutes] = time.split(":").map(Number);
     const newDateTime = new Date(date);
     newDateTime.setHours(hours, minutes, 0, 0);
     onChange(newDateTime);
@@ -124,10 +137,15 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
   // Format display text for compact state
   const formatCompactDisplay = () => {
     const dateDisplay = formatDayDisplay(selectedDate);
-    const timeDisplay = selectedTime ? formatTime(
-      parseInt(selectedTime.split(':')[0]), 
-      parseInt(selectedTime.split(':')[1])
-    ) : formatTime(new Date().getHours(), Math.floor(new Date().getMinutes() / 30) * 30);
+    const timeDisplay = selectedTime
+      ? formatTime(
+          parseInt(selectedTime.split(":")[0]),
+          parseInt(selectedTime.split(":")[1])
+        )
+      : formatTime(
+          new Date().getHours(),
+          Math.floor(new Date().getMinutes() / 30) * 30
+        );
     return `${dateDisplay} • ${timeDisplay}`;
   };
 
@@ -135,7 +153,9 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
   useEffect(() => {
     const timeSlots = generateTimeSlots();
     if (timeScrollRef.current && selectedTime) {
-      const timeIndex = timeSlots.findIndex(slot => slot.value === selectedTime);
+      const timeIndex = timeSlots.findIndex(
+        slot => slot.value === selectedTime
+      );
       if (timeIndex >= 0) {
         const scrollTop = timeIndex * 48; // 48px per item
         timeScrollRef.current.scrollTop = scrollTop;
@@ -165,12 +185,16 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
           {formatCompactDisplay()}
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-80 p-4" 
+      <PopoverContent
+        className="w-80 p-4"
         align="start"
         onKeyDown={handleKeyDown}
       >
-        <div className="space-y-4" role="dialog" aria-label="Date and time picker">
+        <div
+          className="space-y-4"
+          role="dialog"
+          aria-label="Date and time picker"
+        >
           {/* Day Picker */}
           <div>
             <h3 className="text-sm font-medium mb-2">Select Date</h3>
@@ -180,7 +204,9 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
                   <Button
                     key={dayIndex}
                     type="button"
-                    variant={isSameDate(day, selectedDate) ? "default" : "outline"}
+                    variant={
+                      isSameDate(day, selectedDate) ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => handleDaySelect(day)}
                     className="whitespace-nowrap min-w-[80px] h-11 flex-shrink-0"
@@ -196,12 +222,9 @@ export function DayTimePicker({ value, onChange, className }: DayTimePickerProps
           {/* Time Picker */}
           <div>
             <h3 className="text-sm font-medium mb-2">Select Time</h3>
-            <ScrollArea 
-              className="h-48 border rounded-md"
-              ref={timeScrollRef}
-            >
+            <ScrollArea className="h-48 border rounded-md" ref={timeScrollRef}>
               <div className="p-1">
-                {timeSlots.map((slot) => (
+                {timeSlots.map(slot => (
                   <Button
                     key={slot.value}
                     type="button"

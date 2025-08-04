@@ -12,7 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from "lucide-react";
 import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
 import type { ZoneType } from "@/lib/utils/zone-colors";
-import { LoadingSpinner } from "@/components/ui/loading-states";
 
 interface LocalSymptom {
   name: string;

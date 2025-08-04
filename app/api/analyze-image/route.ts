@@ -112,33 +112,38 @@ export async function POST(request: NextRequest) {
     if (!aiResponseText) {
       throw new Error("No response from AI model");
     }
-    
+
     // Log the actual AI response for debugging
-    logger.debug("AI Response received", { responseLength: aiResponseText.length });
+    logger.debug("AI Response received", {
+      responseLength: aiResponseText.length,
+    });
 
     // Parse the AI response as JSON with markdown fallback
-    let aiResponse: { mealSummary: string; ingredients: { name: string; isOrganic: boolean }[] };
+    let aiResponse: {
+      mealSummary: string;
+      ingredients: { name: string; isOrganic: boolean }[];
+    };
     try {
       aiResponse = JSON.parse(aiResponseText);
-          } catch {
-        // If direct JSON parsing fails, try to extract JSON from markdown
-        try {
-          const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)\s*```/);
-          if (jsonMatch) {
-            aiResponse = JSON.parse(jsonMatch[1]);
-            logger.debug("Successfully extracted JSON from markdown wrapper");
-          } else {
-            throw new Error("No JSON found in response");
-          }
-        } catch {
-          logger.error("Failed to parse AI response as JSON", undefined, {
-            rawResponse: aiResponseText.substring(0, 200) + "..."
-          });
-          throw new Error(
-            `AI response was not valid JSON. Response: "${aiResponseText}"`
-          );
+    } catch {
+      // If direct JSON parsing fails, try to extract JSON from markdown
+      try {
+        const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+          aiResponse = JSON.parse(jsonMatch[1]);
+          logger.debug("Successfully extracted JSON from markdown wrapper");
+        } else {
+          throw new Error("No JSON found in response");
         }
+      } catch {
+        logger.error("Failed to parse AI response as JSON", undefined, {
+          rawResponse: aiResponseText.substring(0, 200) + "...",
+        });
+        throw new Error(
+          `AI response was not valid JSON. Response: "${aiResponseText}"`
+        );
       }
+    }
 
     // Validate that we got the expected structure
     if (

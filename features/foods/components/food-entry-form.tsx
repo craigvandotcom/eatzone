@@ -26,7 +26,10 @@ import {
   getZoneTextClass,
 } from "@/lib/utils/zone-colors";
 import { DayTimePicker } from "@/components/ui/day-time-picker";
-import { FormLoadingOverlay, LoadingSpinner } from "@/components/ui/loading-states";
+import {
+  FormLoadingOverlay,
+  LoadingSpinner,
+} from "@/components/ui/loading-states";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/utils/logger";
 
@@ -102,7 +105,6 @@ export function FoodEntryForm({
       setIsAnalyzing(false);
     }
   };
-
 
   // Pre-populate form when editing or analyze image when provided
   useEffect(() => {
@@ -236,8 +238,7 @@ export function FoodEntryForm({
           // Ensure required fields have defaults if API didn't provide them
           if (!enriched.foodGroup) enriched.foodGroup = "other";
           if (!enriched.zone) enriched.zone = "yellow";
-          if (typeof enriched.organic !== "boolean")
-            enriched.organic = false;
+          if (typeof enriched.organic !== "boolean") enriched.organic = false;
 
           return enriched;
         });
@@ -305,7 +306,7 @@ export function FoodEntryForm({
 
   return (
     <div className={cn("relative", className)}>
-      <FormLoadingOverlay 
+      <FormLoadingOverlay
         isVisible={isSubmitting && isZoning}
         message="Analyzing ingredients with AI..."
       />
@@ -373,9 +374,13 @@ export function FoodEntryForm({
           )}
 
           {analysisError && (
-            <div className={`flex items-center gap-2 p-3 ${getZoneBgClass("red", "light")} rounded-md mt-2`}>
+            <div
+              className={`flex items-center gap-2 p-3 ${getZoneBgClass("red", "light")} rounded-md mt-2`}
+            >
               <AlertCircle className={`h-4 w-4 ${getZoneTextClass("red")}`} />
-              <span className={`text-sm ${getZoneTextClass("red")}`}>{analysisError}</span>
+              <span className={`text-sm ${getZoneTextClass("red")}`}>
+                {analysisError}
+              </span>
             </div>
           )}
         </div>
@@ -519,10 +524,12 @@ export function FoodEntryForm({
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting || isAnalyzing} className="relative">
-            {isSubmitting && (
-              <LoadingSpinner size="sm" className="mr-2" />
-            )}
+          <Button
+            type="submit"
+            disabled={isSubmitting || isAnalyzing}
+            className="relative"
+          >
+            {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
             {isSubmitting
               ? isZoning
                 ? "Zoning ingredients..."

@@ -17,12 +17,28 @@ import { logger } from "./utils/logger";
 // Create a shared supabase client for all hooks
 const supabase = createClient();
 
+// Type for Supabase subscription configuration
+// Based on Supabase Realtime postgres_changes configuration
+type SubscriptionConfig = {
+  event: "*" | "INSERT" | "UPDATE" | "DELETE";
+  schema: string;
+  table: string;
+  filter?: string;
+};
+
+// Type for Supabase RealtimeChannel (from Supabase client)
+type RealtimeChannel = ReturnType<typeof supabase.channel>;
+
 // Shared subscription management to prevent duplicate subscriptions
 class SubscriptionManager {
-  private subscriptions = new Map<string, any>();
+  private subscriptions = new Map<string, RealtimeChannel>();
   private listeners = new Map<string, Set<() => void>>();
 
-  subscribe(key: string, subscriptionConfig: any, callback: () => void) {
+  subscribe(
+    key: string,
+    subscriptionConfig: SubscriptionConfig,
+    callback: () => void
+  ) {
     // Add callback to listeners
     if (!this.listeners.has(key)) {
       this.listeners.set(key, new Set());
@@ -33,12 +49,12 @@ class SubscriptionManager {
     if (!this.subscriptions.has(key)) {
       const subscription = supabase
         .channel(key)
-        .on('postgres_changes', subscriptionConfig, () => {
+        .on("postgres_changes" as any, subscriptionConfig, () => {
           // Notify all listeners
           this.listeners.get(key)?.forEach(listener => listener());
         })
         .subscribe();
-      
+
       this.subscriptions.set(key, subscription);
     }
 
@@ -47,7 +63,7 @@ class SubscriptionManager {
       const listeners = this.listeners.get(key);
       if (listeners) {
         listeners.delete(callback);
-        
+
         // If no more listeners, clean up subscription
         if (listeners.size === 0) {
           const subscription = this.subscriptions.get(key);
@@ -68,8 +84,8 @@ const subscriptionManager = new SubscriptionManager();
 function useSupabaseData<T>(
   fetchFn: () => Promise<T>,
   subscriptionKey: string,
-  subscriptionConfig: any,
-  dependencies: any[] = []
+  subscriptionConfig: SubscriptionConfig,
+  _dependencies: React.DependencyList = []
 ) {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
@@ -77,33 +93,36 @@ function useSupabaseData<T>(
   const retryCount = useRef(0);
   const maxRetries = 3;
 
-  const fetchData = useCallback(async (showLoading = false) => {
-    if (showLoading) setIsLoading(true);
-    setError(null);
-    
-    try {
-      const result = await fetchFn();
-      setData(result);
-      retryCount.current = 0; // Reset retry count on success
-    } catch (error) {
-      logger.error(`Error fetching data for ${subscriptionKey}`, error);
-      
-      // Implement exponential backoff retry
-      if (retryCount.current < maxRetries) {
-        retryCount.current++;
-        const delay = Math.pow(2, retryCount.current) * 1000; // 2s, 4s, 8s
-        
-        setTimeout(() => {
-          fetchData(false);
-        }, delay);
-      } else {
-        setError(`Failed to load data after ${maxRetries} attempts`);
-        setData(undefined); // Ensure we show error state
+  const fetchData = useCallback(
+    async (showLoading = false) => {
+      if (showLoading) setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await fetchFn();
+        setData(result);
+        retryCount.current = 0; // Reset retry count on success
+      } catch (error) {
+        logger.error(`Error fetching data for ${subscriptionKey}`, error);
+
+        // Implement exponential backoff retry
+        if (retryCount.current < maxRetries) {
+          retryCount.current++;
+          const delay = Math.pow(2, retryCount.current) * 1000; // 2s, 4s, 8s
+
+          setTimeout(() => {
+            fetchData(false);
+          }, delay);
+        } else {
+          setError(`Failed to load data after ${maxRetries} attempts`);
+          setData(undefined); // Ensure we show error state
+        }
+      } finally {
+        if (showLoading) setIsLoading(false);
       }
-    } finally {
-      if (showLoading) setIsLoading(false);
-    }
-  }, [fetchFn, subscriptionKey]);
+    },
+    [fetchFn, subscriptionKey]
+  );
 
   useEffect(() => {
     // Initial fetch
@@ -117,7 +136,7 @@ function useSupabaseData<T>(
     );
 
     return unsubscribe;
-  }, dependencies);
+  }, [fetchData, subscriptionConfig, subscriptionKey]);
 
   const retry = useCallback(() => {
     retryCount.current = 0;
@@ -129,37 +148,29 @@ function useSupabaseData<T>(
 
 // OPTIMIZED FOOD HOOKS
 export const useTodaysFoods = () => {
-  return useSupabaseData(
-    getTodaysFoods,
-    'todays_foods',
-    {
-      event: '*',
-      schema: 'public',
-      table: 'foods',
-    }
-  );
+  return useSupabaseData(getTodaysFoods, "todays_foods", {
+    event: "*",
+    schema: "public",
+    table: "foods",
+  });
 };
 
 export const useAllFoods = () => {
-  return useSupabaseData(
-    getAllFoods,
-    'all_foods',
-    {
-      event: '*',
-      schema: 'public', 
-      table: 'foods',
-    }
-  );
+  return useSupabaseData(getAllFoods, "all_foods", {
+    event: "*",
+    schema: "public",
+    table: "foods",
+  });
 };
 
 export const useFoodById = (id: string | null) => {
   return useSupabaseData(
-    () => id ? getFoodById(id) : Promise.resolve(null),
+    () => (id ? getFoodById(id) : Promise.resolve(null)),
     `food_${id}`,
     {
-      event: '*',
-      schema: 'public',
-      table: 'foods',
+      event: "*",
+      schema: "public",
+      table: "foods",
       filter: id ? `id=eq.${id}` : undefined,
     },
     [id]
@@ -172,11 +183,11 @@ export const useRecentFoods = (limit: number = 5) => {
       const data = await getAllFoods();
       return data.slice(0, limit);
     },
-    'recent_foods',
+    "recent_foods",
     {
-      event: '*',
-      schema: 'public',
-      table: 'foods',
+      event: "*",
+      schema: "public",
+      table: "foods",
     },
     [limit]
   );
@@ -184,37 +195,29 @@ export const useRecentFoods = (limit: number = 5) => {
 
 // OPTIMIZED SYMPTOM HOOKS
 export const useTodaysSymptoms = () => {
-  return useSupabaseData(
-    getTodaysSymptoms,
-    'todays_symptoms',
-    {
-      event: '*',
-      schema: 'public',
-      table: 'symptoms',
-    }
-  );
+  return useSupabaseData(getTodaysSymptoms, "todays_symptoms", {
+    event: "*",
+    schema: "public",
+    table: "symptoms",
+  });
 };
 
 export const useAllSymptoms = () => {
-  return useSupabaseData(
-    getAllSymptoms,
-    'all_symptoms',
-    {
-      event: '*',
-      schema: 'public',
-      table: 'symptoms',
-    }
-  );
+  return useSupabaseData(getAllSymptoms, "all_symptoms", {
+    event: "*",
+    schema: "public",
+    table: "symptoms",
+  });
 };
 
 export const useSymptomById = (id: string | null) => {
   return useSupabaseData(
-    () => id ? getSymptomById(id) : Promise.resolve(null),
+    () => (id ? getSymptomById(id) : Promise.resolve(null)),
     `symptom_${id}`,
     {
-      event: '*',
-      schema: 'public',
-      table: 'symptoms',
+      event: "*",
+      schema: "public",
+      table: "symptoms",
       filter: id ? `id=eq.${id}` : undefined,
     },
     [id]
@@ -227,11 +230,11 @@ export const useRecentSymptoms = (limit: number = 5) => {
       const data = await getAllSymptoms();
       return data.slice(0, limit);
     },
-    'recent_symptoms',
+    "recent_symptoms",
     {
-      event: '*',
-      schema: 'public',
-      table: 'symptoms',
+      event: "*",
+      schema: "public",
+      table: "symptoms",
     },
     [limit]
   );
@@ -309,11 +312,11 @@ export const useFoodStats = () => {
         };
       }
     },
-    'food_stats',
+    "food_stats",
     {
-      event: '*',
-      schema: 'public',
-      table: 'foods',
+      event: "*",
+      schema: "public",
+      table: "foods",
     }
   );
 };
@@ -341,12 +344,15 @@ export const useSymptomTrends = (days: number = 7) => {
         });
 
         // Calculate average severity per day
-        const trendData = Object.entries(symptomsByDay).map(([day, symptoms]) => ({
-          day,
-          count: symptoms.length,
-          averageSeverity:
-            symptoms.reduce((sum, s) => sum + s.severity, 0) / symptoms.length,
-        }));
+        const trendData = Object.entries(symptomsByDay).map(
+          ([day, symptoms]) => ({
+            day,
+            count: symptoms.length,
+            averageSeverity:
+              symptoms.reduce((sum, s) => sum + s.severity, 0) /
+              symptoms.length,
+          })
+        );
 
         return trendData.sort((a, b) => a.day.localeCompare(b.day));
       } catch (error) {
@@ -354,11 +360,11 @@ export const useSymptomTrends = (days: number = 7) => {
         return [];
       }
     },
-    'symptom_trends',
+    "symptom_trends",
     {
-      event: '*',
-      schema: 'public',
-      table: 'symptoms',
+      event: "*",
+      schema: "public",
+      table: "symptoms",
     },
     [days]
   );
@@ -369,11 +375,14 @@ export const useDailySummary = () => {
   const { data: foods } = useTodaysFoods();
   const { data: symptoms } = useTodaysSymptoms();
 
-  const [summary, setSummary] = useState<{
-    foods: number;
-    symptoms: number;
-    totalEntries: number;
-  } | undefined>(undefined);
+  const [summary, setSummary] = useState<
+    | {
+        foods: number;
+        symptoms: number;
+        totalEntries: number;
+      }
+    | undefined
+  >(undefined);
 
   useEffect(() => {
     if (foods !== undefined && symptoms !== undefined) {

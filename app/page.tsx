@@ -52,8 +52,7 @@ export default function LandingPage() {
     {
       icon: BarChart3,
       title: "Comprehensive Tracking",
-      description:
-        "Monitor foods, symptoms, and more in one unified app",
+      description: "Monitor foods, symptoms, and more in one unified app",
       color: "from-amber-400 to-orange-500",
     },
   ];
@@ -159,11 +158,15 @@ export default function LandingPage() {
 
               <div className="flex items-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
-                  <CheckCircle className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`} />
+                  <CheckCircle
+                    className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`}
+                  />
                   No account required to try
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`} />
+                  <CheckCircle
+                    className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`}
+                  />
                   Data stays on your device
                 </div>
               </div>
@@ -286,7 +289,9 @@ export default function LandingPage() {
                   "No tracking or analytics",
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
-                    <CheckCircle className={`h-5 w-5 ${getZoneTextClass("green")} mr-3`} />
+                    <CheckCircle
+                      className={`h-5 w-5 ${getZoneTextClass("green")} mr-3`}
+                    />
                     <span className="text-gray-700">{item}</span>
                   </div>
                 ))}
@@ -345,7 +350,8 @@ export default function LandingPage() {
                 <span className="text-lg font-bold text-white">Puls</span>
               </div>
               <p className="text-gray-400">
-                Your Body&apos;s Compass - Private health tracking with AI insights.
+                Your Body&apos;s Compass - Private health tracking with AI
+                insights.
               </p>
             </div>
 

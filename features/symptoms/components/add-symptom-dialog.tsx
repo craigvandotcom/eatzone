@@ -15,7 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/components/ui/use-mobile";
 import { SymptomEntryForm } from "./symptom-entry-form";
 
 interface AddSymptomDialogProps {

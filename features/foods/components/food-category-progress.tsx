@@ -16,7 +16,6 @@ export function FoodCategoryProgress({
   yellowCount,
   redCount,
   size = 200,
-  strokeWidth = 12,
   isFromToday = true,
 }: FoodCategoryProgressProps) {
   const radius = size / 2;

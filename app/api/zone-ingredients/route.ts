@@ -29,6 +29,17 @@ const zonedIngredientSchema = z.object({
   foodGroup: z.string(), // Accept any string from AI
 });
 
+// Type for AI response
+type AIIngredientResponse = {
+  name: string;
+  zone?: string;
+  foodGroup: string;
+};
+
+type AIResponse = {
+  ingredients?: AIIngredientResponse[];
+};
+
 // No mapping needed - use AI categories directly
 
 export async function POST(request: NextRequest) {
@@ -58,7 +69,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { ingredients } = zoneIngredientsSchema.parse(body);
 
-    logger.debug("Zoning request received", { ingredientCount: ingredients.length });
+    logger.debug("Zoning request received", {
+      ingredientCount: ingredients.length,
+    });
 
     const fullPrompt = `${prompts.ingredientZoning}\n\nInput: ${JSON.stringify(ingredients)}`;
 
@@ -78,13 +91,15 @@ export async function POST(request: NextRequest) {
     // Log the actual AI response for debugging
     logger.debug("AI Response received", { responseLength: aiResponse.length });
 
-    const parsedResponse = JSON.parse(aiResponse);
+    const parsedResponse = JSON.parse(aiResponse) as AIResponse;
 
-    logger.debug("Parsed AI response", { ingredientCount: parsedResponse.ingredients?.length });
+    logger.debug("Parsed AI response", {
+      ingredientCount: parsedResponse.ingredients?.length,
+    });
 
     // Normalize AI response - only convert zone to lowercase
     const normalizedIngredients = parsedResponse.ingredients?.map(
-      (ingredient: any) => ({
+      (ingredient: AIIngredientResponse) => ({
         name: ingredient.name,
         zone: ingredient.zone?.toLowerCase(), // Convert to lowercase
         foodGroup: ingredient.foodGroup, // Use AI category directly

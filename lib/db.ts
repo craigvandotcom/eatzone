@@ -47,19 +47,13 @@ export const updateFood = async (
   id: string,
   updates: Partial<Omit<Food, "id">>
 ): Promise<void> => {
-  const { error } = await supabase
-    .from("foods")
-    .update(updates)
-    .eq("id", id);
+  const { error } = await supabase.from("foods").update(updates).eq("id", id);
 
   if (error) throw error;
 };
 
 export const deleteFood = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from("foods")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("foods").delete().eq("id", id);
 
   if (error) throw error;
 };
@@ -109,7 +103,7 @@ export const getFoodById = async (id: string): Promise<Food | undefined> => {
     .single();
 
   if (error) {
-    if (error.code === 'PGRST116') return undefined; // No rows returned
+    if (error.code === "PGRST116") return undefined; // No rows returned
     throw error;
   }
   return data;
@@ -151,10 +145,7 @@ export const updateSymptom = async (
 };
 
 export const deleteSymptom = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from("symptoms")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("symptoms").delete().eq("id", id);
 
   if (error) throw error;
 };
@@ -208,7 +199,7 @@ export const getSymptomById = async (
     .single();
 
   if (error) {
-    if (error.code === 'PGRST116') return undefined; // No rows returned
+    if (error.code === "PGRST116") return undefined; // No rows returned
     throw error;
   }
   return data;
@@ -301,7 +292,9 @@ export const getUserById = async (id: string): Promise<User | undefined> => {
 };
 
 export const getCurrentUser = async (): Promise<User | null> => {
-  const { data: { user: authUser } } = await supabase.auth.getUser();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
   if (!authUser) return null;
 
   const { data, error } = await supabase
@@ -356,7 +349,9 @@ export const authenticateUser = async (
 };
 
 export const validateSession = async (token?: string): Promise<User | null> => {
-  const { data: { user } } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(token);
   if (!user) return null;
 
   const profile = await getUserById(user.id);
@@ -368,15 +363,18 @@ export const logout = async (): Promise<void> => {
   if (error) throw error;
 };
 
-
 // LEGACY COMPATIBILITY EXPORTS
 export const generateId = (): string => {
-  console.warn("generateId() is deprecated with Supabase - UUIDs are auto-generated");
+  console.warn(
+    "generateId() is deprecated with Supabase - UUIDs are auto-generated"
+  );
   return crypto.randomUUID();
 };
 
 export const clearExpiredSessions = async (): Promise<void> => {
-  console.warn("clearExpiredSessions() is deprecated - Supabase handles session management");
+  console.warn(
+    "clearExpiredSessions() is deprecated - Supabase handles session management"
+  );
   // Supabase handles session expiration automatically
 };
 
@@ -384,7 +382,9 @@ export const updateUserSettings = async (
   _userId: string,
   _settings: Partial<User["settings"]>
 ): Promise<void> => {
-  console.warn("updateUserSettings() is deprecated - user settings moved to auth metadata");
+  console.warn(
+    "updateUserSettings() is deprecated - user settings moved to auth metadata"
+  );
   // User settings would now be handled through Supabase user metadata
   // This function is kept for backward compatibility but doesn't do anything
 };

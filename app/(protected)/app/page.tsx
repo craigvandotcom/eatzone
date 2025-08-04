@@ -20,7 +20,7 @@ import { FoodCompositionBar } from "@/features/foods/components/food-composition
 import { OrganicCompositionBar } from "@/features/foods/components/organic-composition-bar";
 import { VerticalProgressBar } from "@/features/foods/components/vertical-progress-bar";
 import { AuthGuard } from "@/features/auth/components/auth-guard";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/components/ui/use-mobile";
 import {
   Sidebar,
   SidebarContent,
@@ -32,14 +32,17 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
-import { 
-  FoodEntrySkeleton, 
-  SymptomEntrySkeleton, 
+import {
+  FoodEntrySkeleton,
+  SymptomEntrySkeleton,
   ProgressCircleSkeleton,
   EmptyOrLoadingState,
-  NetworkRetryState
+  NetworkRetryState,
 } from "@/components/ui/loading-states";
-import { ErrorBoundary, SupabaseErrorFallback } from "@/components/error-boundary";
+import {
+  ErrorBoundary,
+  SupabaseErrorFallback,
+} from "@/components/error-boundary";
 
 // Import types
 import { Food, Symptom } from "@/lib/types";
@@ -57,9 +60,21 @@ type ViewType = "food" | "symptoms";
 function Dashboard() {
   // Use custom hooks for reactive data binding
   const { data: todaysSymptoms } = useTodaysSymptoms();
-  const { data: recentFoods, error: foodsError, retry: retryFoods } = useRecentFoods();
-  const { data: recentSymptoms, error: recentSymptomsError, retry: retryRecentSymptoms } = useRecentSymptoms();
-  const { data: foodStats, error: statsError, retry: retryStats } = useFoodStats();
+  const {
+    data: recentFoods,
+    error: foodsError,
+    retry: retryFoods,
+  } = useRecentFoods();
+  const {
+    data: recentSymptoms,
+    error: recentSymptomsError,
+    retry: retryRecentSymptoms,
+  } = useRecentSymptoms();
+  const {
+    data: foodStats,
+    error: statsError,
+    retry: retryStats,
+  } = useFoodStats();
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -227,7 +242,9 @@ function Dashboard() {
                           percentage={foodStats?.totalOrganicPercentage || 0}
                           height={200}
                         />
-                        <Leaf className={`h-5 w-5 ${getZoneTextClass("green")}`} />
+                        <Leaf
+                          className={`h-5 w-5 ${getZoneTextClass("green")}`}
+                        />
                       </div>
                     </>
                   )}
@@ -238,7 +255,9 @@ function Dashboard() {
                     <h2 className="text-lg font-semibold text-foreground">
                       Recent Entries
                     </h2>
-                    <button className="text-muted-foreground text-sm">View more</button>
+                    <button className="text-muted-foreground text-sm">
+                      View more
+                    </button>
                   </div>
                   <div className="space-y-3">
                     {foodsError ? (
@@ -335,7 +354,9 @@ function Dashboard() {
                     <h2 className="text-lg font-semibold text-foreground">
                       Recent Entries
                     </h2>
-                    <button className="text-muted-foreground text-sm">View more</button>
+                    <button className="text-muted-foreground text-sm">
+                      View more
+                    </button>
                   </div>
                   <div className="space-y-3">
                     {recentSymptomsError ? (
@@ -360,7 +381,8 @@ function Dashboard() {
                         ))}
                       </div>
                     )}
-                    {recentSymptoms && recentSymptoms.length > 0 && (
+                    {recentSymptoms &&
+                      recentSymptoms.length > 0 &&
                       recentSymptoms.map(symptom => (
                         <button
                           key={symptom.id}
@@ -384,8 +406,7 @@ function Dashboard() {
                             {symptom.severity}/5
                           </Badge>
                         </button>
-                      ))
-                    )}
+                      ))}
                   </div>
                 </div>
               </ErrorBoundary>

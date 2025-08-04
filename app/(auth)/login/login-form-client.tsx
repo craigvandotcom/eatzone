@@ -28,9 +28,9 @@ import { useAuth } from "@/features/auth/components/auth-provider";
 // Simple PWA detection utilities
 const isPWAContext = () => {
   if (typeof window === "undefined") return false;
-  const isIOSPWA = (window.navigator as any).standalone === true;
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  const isMinimalUI = window.matchMedia('(display-mode: minimal-ui)').matches;
+  const isIOSPWA = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+  const isMinimalUI = window.matchMedia("(display-mode: minimal-ui)").matches;
   return isIOSPWA || isStandalone || isMinimalUI;
 };
 
@@ -52,7 +52,6 @@ export function LoginFormClient() {
   const [error, setError] = useState("");
   const [showPWAInfo, setShowPWAInfo] = useState(false);
 
-  
   // PWA detection
   const isPWA = typeof window !== "undefined" ? isPWAContext() : false;
   const isIOS = typeof window !== "undefined" ? isIOSDevice() : false;
@@ -105,7 +104,6 @@ export function LoginFormClient() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
@@ -117,7 +115,6 @@ export function LoginFormClient() {
           </div>
           <p className="text-gray-600">Sign in to your account</p>
 
-          
           {/* PWA Status indicator */}
           {isPWA && (
             <div className="flex items-center justify-center space-x-1 text-xs text-blue-600">
@@ -129,7 +126,9 @@ export function LoginFormClient() {
 
         {/* Success Message */}
         {redirectMessage === "signup_success" && (
-          <Alert className={`border-zone-green/30 ${getZoneBgClass("green", "light")}`}>
+          <Alert
+            className={`border-zone-green/30 ${getZoneBgClass("green", "light")}`}
+          >
             <AlertDescription className={getZoneTextClass("green")}>
               Account created successfully! Please sign in.
             </AlertDescription>
@@ -141,7 +140,10 @@ export function LoginFormClient() {
           <Card className="border-blue-200 bg-blue-50">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                <Badge
+                  variant="outline"
+                  className="bg-blue-100 text-blue-800 border-blue-300"
+                >
                   <div className="flex items-center space-x-1">
                     <Smartphone className="h-3 w-3" />
                     <span>iOS PWA</span>
@@ -158,18 +160,20 @@ export function LoginFormClient() {
             {showPWAInfo && (
               <CardContent className="space-y-2">
                 <p className="text-sm text-blue-700">
-                  <strong>iOS PWA Detected:</strong> Enhanced storage is active for better app experience.
+                  <strong>iOS PWA Detected:</strong> Enhanced storage is active
+                  for better app experience.
                 </p>
                 <ul className="text-xs text-blue-600 space-y-1 ml-4">
                   <li>• Your login will persist across app launches</li>
                   <li>• Data is stored securely in multiple locations</li>
-                  <li>• If login issues occur, try closing and reopening the app</li>
+                  <li>
+                    • If login issues occur, try closing and reopening the app
+                  </li>
                 </ul>
               </CardContent>
             )}
           </Card>
         )}
-
 
         {/* Login Form */}
         <Card>
@@ -221,7 +225,9 @@ export function LoginFormClient() {
               </div>
 
               {error && (
-                <Alert className={`border-zone-red/30 ${getZoneBgClass("red", "light")}`}>
+                <Alert
+                  className={`border-zone-red/30 ${getZoneBgClass("red", "light")}`}
+                >
                   <AlertDescription className={getZoneTextClass("red")}>
                     {error}
                   </AlertDescription>

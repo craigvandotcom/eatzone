@@ -140,12 +140,24 @@ function InsightsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 text-center">
-              <div className={`p-4 ${getZoneBgClass("green", "light")} rounded-lg`}>
-                <div className={`text-2xl font-bold ${getZoneTextClass("green")}`}>--</div>
+              <div
+                className={`p-4 ${getZoneBgClass("green", "light")} rounded-lg`}
+              >
+                <div
+                  className={`text-2xl font-bold ${getZoneTextClass("green")}`}
+                >
+                  --
+                </div>
                 <div className="text-sm text-gray-600">Total Foods</div>
               </div>
-              <div className={`p-4 ${getZoneBgClass("red", "light")} rounded-lg`}>
-                <div className={`text-2xl font-bold ${getZoneTextClass("red")}`}>--</div>
+              <div
+                className={`p-4 ${getZoneBgClass("red", "light")} rounded-lg`}
+              >
+                <div
+                  className={`text-2xl font-bold ${getZoneTextClass("red")}`}
+                >
+                  --
+                </div>
                 <div className="text-sm text-gray-600">Total Symptoms</div>
               </div>
             </div>

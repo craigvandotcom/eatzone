@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       setUser(null);
     } catch (error) {
       logger.error("Logout error", error);
@@ -63,7 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Check Supabase session
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
         setUser(null);
@@ -83,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       logger.error("Session check error", error);
-      
+
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -94,22 +96,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkSession();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        logger.debug('Auth state changed', { event, hasSession: !!session });
-        
-        if (event === 'SIGNED_IN' && session) {
-          const profile = await getCurrentUser();
-          if (profile) {
-            setUser(profile);
-          }
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      logger.debug("Auth state changed", { event, hasSession: !!session });
+
+      if (event === "SIGNED_IN" && session) {
+        const profile = await getCurrentUser();
+        if (profile) {
+          setUser(profile);
         }
-        
-        setIsLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        setUser(null);
       }
-    );
+
+      setIsLoading(false);
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -120,12 +122,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const interval = setInterval(async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setUser(null);
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+    const interval = setInterval(
+      async () => {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+          setUser(null);
+        }
+      },
+      5 * 60 * 1000
+    ); // 5 minutes
 
     return () => clearInterval(interval);
   }, [isAuthenticated]);

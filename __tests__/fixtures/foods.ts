@@ -1,43 +1,43 @@
-import { Food, Ingredient } from '@/lib/types'
+import { Food, Ingredient } from "@/lib/types";
 
 export const mockIngredients: Ingredient[] = [
   {
-    name: 'Organic Spinach',
+    name: "Organic Spinach",
     organic: true,
-    zone: 'green',
-    foodGroup: 'vegetables',
+    zone: "green",
+    foodGroup: "vegetables",
   },
   {
-    name: 'Wild Salmon',
+    name: "Wild Salmon",
     organic: false,
-    zone: 'green',
-    foodGroup: 'protein',
+    zone: "green",
+    foodGroup: "protein",
   },
   {
-    name: 'White Sugar',
+    name: "White Sugar",
     organic: false,
-    zone: 'red',
-    foodGroup: 'sweets',
+    zone: "red",
+    foodGroup: "sweets",
   },
-]
+];
 
 export const mockFoods: Food[] = [
   {
-    id: '1',
-    name: 'Healthy Lunch',
-    timestamp: new Date('2024-01-15T12:00:00Z').toISOString(),
+    id: "1",
+    name: "Healthy Lunch",
+    timestamp: new Date("2024-01-15T12:00:00Z").toISOString(),
     ingredients: [mockIngredients[0], mockIngredients[1]],
-    photo_url: '/test-image-1.jpg',
-    notes: 'Healthy lunch',
-    status: 'processed',
+    photo_url: "/test-image-1.jpg",
+    notes: "Healthy lunch",
+    status: "processed",
   },
   {
-    id: '2',
-    name: 'Mixed Dinner',
-    timestamp: new Date('2024-01-15T19:00:00Z').toISOString(),
+    id: "2",
+    name: "Mixed Dinner",
+    timestamp: new Date("2024-01-15T19:00:00Z").toISOString(),
     ingredients: mockIngredients,
-    photo_url: '/test-image-2.jpg',
-    notes: 'Mixed meal',
-    status: 'processed',
+    photo_url: "/test-image-2.jpg",
+    notes: "Mixed meal",
+    status: "processed",
   },
-]
+];

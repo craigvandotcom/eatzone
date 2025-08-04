@@ -5,17 +5,17 @@ import { Skeleton } from "./skeleton";
 import { cn } from "@/lib/utils";
 
 // Loading spinner component
-export function LoadingSpinner({ 
-  className, 
-  size = "default" 
-}: { 
+export function LoadingSpinner({
+  className,
+  size = "default",
+}: {
   className?: string;
   size?: "sm" | "default" | "lg";
 }) {
   const sizeClasses = {
     sm: "h-4 w-4",
-    default: "h-6 w-6", 
-    lg: "h-8 w-8"
+    default: "h-6 w-6",
+    lg: "h-8 w-8",
   };
 
   return (
@@ -24,15 +24,17 @@ export function LoadingSpinner({
 }
 
 // Data loading state with message
-export function DataLoadingState({ 
+export function DataLoadingState({
   message = "Loading...",
-  className 
-}: { 
+  className,
+}: {
   message?: string;
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-center justify-center gap-2 py-8", className)}>
+    <div
+      className={cn("flex items-center justify-center gap-2 py-8", className)}
+    >
       <LoadingSpinner />
       <span className="text-sm text-muted-foreground">{message}</span>
     </div>
@@ -88,10 +90,10 @@ export function ProgressCircleSkeleton() {
 }
 
 // Form submission loading overlay
-export function FormLoadingOverlay({ 
-  isVisible, 
+export function FormLoadingOverlay({
+  isVisible,
   message = "Saving...",
-  className
+  className,
 }: {
   isVisible: boolean;
   message?: string;
@@ -100,10 +102,12 @@ export function FormLoadingOverlay({
   if (!isVisible) return null;
 
   return (
-    <div className={cn(
-      "absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg",
-      className
-    )}>
+    <div
+      className={cn(
+        "absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg",
+        className
+      )}
+    >
       <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">
         <LoadingSpinner />
         <span className="text-sm font-medium">{message}</span>
@@ -116,7 +120,7 @@ export function FormLoadingOverlay({
 export function NetworkRetryState({
   onRetry,
   message = "Connection failed. Tap to retry.",
-  className
+  className,
 }: {
   onRetry: () => void;
   message?: string;
@@ -151,7 +155,7 @@ export function EmptyOrLoadingState({
   emptyDescription = "Get started by adding your first entry",
   emptyIcon = "📝",
   className,
-  children
+  children,
 }: {
   isLoading: boolean;
   isEmpty: boolean;
@@ -172,8 +176,12 @@ export function EmptyOrLoadingState({
         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">{emptyIcon}</span>
         </div>
-        <p className="text-muted-foreground text-lg font-medium">{emptyTitle}</p>
-        <p className="text-muted-foreground/70 text-sm mt-1">{emptyDescription}</p>
+        <p className="text-muted-foreground text-lg font-medium">
+          {emptyTitle}
+        </p>
+        <p className="text-muted-foreground/70 text-sm mt-1">
+          {emptyDescription}
+        </p>
         {children}
       </div>
     );

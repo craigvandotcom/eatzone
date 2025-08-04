@@ -1,5 +1,5 @@
-import imageAnalysisPrompt from '../../prompts/image-analysis.md';
-import ingredientZoningPrompt from '../../prompts/ingredient-zoning.md';
+import imageAnalysisPrompt from "../../prompts/image-analysis.md";
+import ingredientZoningPrompt from "../../prompts/ingredient-zoning.md";
 
 export const prompts = {
   imageAnalysis: imageAnalysisPrompt,

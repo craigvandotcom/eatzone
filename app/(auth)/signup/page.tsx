@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { createUser } from '@/lib/db';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 
 function SignupForm() {
   const router = useRouter();
@@ -235,21 +236,7 @@ function SignupForm() {
                     </Button>
                   </div>
                   {password.length > 0 && (
-                    <div className="flex items-center text-xs">
-                      {isPasswordStrong ? (
-                        <>
-                          <CheckCircle
-                            className={`h-3 w-3 ${getZoneTextClass('green')} mr-1`}
-                          />{' '}
-                          Strong password
-                        </>
-                      ) : (
-                        <>
-                          <AlertTriangle className="h-3 w-3 text-amber-500 mr-1" />{' '}
-                          At least 8 characters required
-                        </>
-                      )}
-                    </div>
+                    <PasswordStrengthIndicator password={password} />
                   )}
                 </div>
 

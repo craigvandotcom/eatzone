@@ -100,8 +100,9 @@ export function LoginFormClient() {
     try {
       await login(email, password);
       router.push('/app');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+    } catch {
+      // Standardize error message to prevent information leakage
+      setError('Invalid email or password');
     } finally {
       setIsLoading(false);
     }

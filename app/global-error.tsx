@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import NextError from "next/error";
-import { useEffect } from "react";
-import { logger } from "@/lib/utils/logger";
+import NextError from 'next/error';
+import { useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
 
 export default function GlobalError({
   error,
@@ -11,7 +11,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log error to console for debugging
-    logger.error("Global error caught", error);
+    logger.error('Global error caught', error);
   }, [error]);
 
   return (

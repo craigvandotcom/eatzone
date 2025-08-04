@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -31,27 +31,26 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
       <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
         <AlertTriangle className="h-8 w-8 text-red-600" />
       </div>
-      
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-        Something went wrong
-      </h3>
-      
-      <p className="text-sm text-gray-600 mb-4 max-w-md">
-        We&apos;re sorry, but something unexpected happened. Please try refreshing the page.
+
+      <h3 className="text-lg font-semibold mb-2">Something went wrong</h3>
+
+      <p className="text-sm text-muted-foreground mb-4 max-w-md">
+        We&apos;re sorry, but something unexpected happened. Please try
+        refreshing the page.
       </p>
 
       {isDevelopment && (
         <details className="mb-4 text-left">
-          <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
             Show error details
           </summary>
-          <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto max-w-md">
+          <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto max-w-md">
             {error.message}
             {error.stack && '\n\n' + error.stack}
           </pre>
         </details>
       )}
-      
+
       <Button onClick={resetError} className="flex items-center gap-2">
         <RefreshCw className="h-4 w-4" />
         Try Again
@@ -61,14 +60,19 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
 }
 
 // Supabase-specific error fallback
-export function SupabaseErrorFallback({ error, resetError }: ErrorFallbackProps) {
-  const isNetworkError = error.message.includes('fetch') || 
-                        error.message.includes('network') || 
-                        error.message.includes('connection');
-  
-  const isAuthError = error.message.includes('auth') || 
-                     error.message.includes('unauthorized') ||
-                     error.message.includes('session');
+export function SupabaseErrorFallback({
+  error,
+  resetError,
+}: ErrorFallbackProps) {
+  const isNetworkError =
+    error.message.includes('fetch') ||
+    error.message.includes('network') ||
+    error.message.includes('connection');
+
+  const isAuthError =
+    error.message.includes('auth') ||
+    error.message.includes('unauthorized') ||
+    error.message.includes('session');
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
@@ -81,21 +85,23 @@ export function SupabaseErrorFallback({ error, resetError }: ErrorFallbackProps)
           <AlertTriangle className="h-8 w-8 text-blue-600" />
         )}
       </div>
-      
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-        {isNetworkError ? 'Connection Problem' : 
-         isAuthError ? 'Authentication Required' : 
-         'Database Error'}
+
+      <h3 className="text-lg font-semibold mb-2">
+        {isNetworkError
+          ? 'Connection Problem'
+          : isAuthError
+            ? 'Authentication Required'
+            : 'Database Error'}
       </h3>
-      
-      <p className="text-sm text-gray-600 mb-4 max-w-md">
-        {isNetworkError ? 
-          'Unable to connect to the server. Please check your internet connection.' :
-         isAuthError ?
-          'Your session has expired. Please log in again.' :
-          'There was a problem loading your data. Please try again.'}
+
+      <p className="text-sm text-muted-foreground mb-4 max-w-md">
+        {isNetworkError
+          ? 'Unable to connect to the server. Please check your internet connection.'
+          : isAuthError
+            ? 'Your session has expired. Please log in again.'
+            : 'There was a problem loading your data. Please try again.'}
       </p>
-      
+
       <Button onClick={resetError} className="flex items-center gap-2">
         <RefreshCw className="h-4 w-4" />
         {isAuthError ? 'Go to Login' : 'Retry'}
@@ -105,7 +111,10 @@ export function SupabaseErrorFallback({ error, resetError }: ErrorFallbackProps)
 }
 
 // Main Error Boundary class component
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -118,10 +127,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to console in development
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
-    
+
     this.setState({ errorInfo });
   }
 
@@ -132,7 +141,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   render() {
     if (this.state.hasError && this.state.error) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      
+
       return (
         <FallbackComponent
           error={this.state.error}
@@ -148,7 +157,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
 // Convenience wrapper for Supabase operations
 export function withSupabaseErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>
+  Component: React.ComponentType<P>,
 ) {
   return function WrappedComponent(props: P) {
     return (

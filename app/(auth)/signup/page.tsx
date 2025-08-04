@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useState, Suspense, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { getZoneTextClass } from "@/lib/utils/zone-colors";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState, Suspense, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getZoneTextClass } from '@/lib/utils/zone-colors';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Eye,
   EyeOff,
@@ -25,9 +25,10 @@ import {
   Loader2,
   CheckCircle,
   AlertTriangle,
-} from "lucide-react";
-import { createUser } from "@/lib/db";
-import { useAuth } from "@/features/auth/components/auth-provider";
+} from 'lucide-react';
+import { createUser } from '@/lib/db';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 
 function SignupForm() {
   const router = useRouter();
@@ -36,20 +37,20 @@ function SignupForm() {
 
   // All hooks must be called before any conditional returns
   // Check for redirect parameter
-  const redirectTo = searchParams.get("redirect");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const redirectTo = searchParams.get('redirect');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Redirect authenticated users to app
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      router.push("/app");
+      router.push('/app');
     }
   }, [isAuthenticated, authLoading, router]);
 
@@ -72,21 +73,21 @@ function SignupForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     // Validation
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match');
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
+      setError('Password must be at least 8 characters long');
       return;
     }
 
     if (!agreeToTerms) {
-      setError("Please acknowledge the privacy notice");
+      setError('Please acknowledge the privacy notice');
       return;
     }
 
@@ -99,23 +100,23 @@ function SignupForm() {
       await login(email, password);
 
       // Redirect to intended page or dashboard
-      router.push(redirectTo || "/app");
+      router.push(redirectTo || '/app');
     } catch (err) {
       // Safe error handling - check if error has a message property
       setError(
         err &&
-          typeof err === "object" &&
-          "message" in err &&
-          typeof err.message === "string"
+          typeof err === 'object' &&
+          'message' in err &&
+          typeof err.message === 'string'
           ? err.message
-          : "Account creation failed"
+          : 'Account creation failed',
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isValidEmail = email.includes("@") && email.includes(".");
+  const isValidEmail = email.includes('@') && email.includes('.');
   const isPasswordStrong = password.length >= 8;
   const passwordsMatch =
     password === confirmPassword && confirmPassword.length > 0;
@@ -182,7 +183,7 @@ function SignupForm() {
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isLoading}
                     className="h-12"
@@ -191,12 +192,14 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {isValidEmail ? (
                         <>
-                          <CheckCircle className={`h-3 w-3 ${getZoneTextClass("green")} mr-1`} />{" "}
+                          <CheckCircle
+                            className={`h-3 w-3 ${getZoneTextClass('green')} mr-1`}
+                          />{' '}
                           Valid email format
                         </>
                       ) : (
                         <>
-                          <AlertTriangle className="h-3 w-3 text-amber-500 mr-1" />{" "}
+                          <AlertTriangle className="h-3 w-3 text-amber-500 mr-1" />{' '}
                           Enter a valid email
                         </>
                       )}
@@ -209,10 +212,10 @@ function SignupForm() {
                   <div className="relative">
                     <Input
                       id="password"
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="Create a password (min 8 characters)"
                       value={password}
-                      onChange={e => setPassword(e.target.value)}
+                      onChange={(e) => setPassword(e.target.value)}
                       required
                       disabled={isLoading}
                       className="h-12 pr-10"
@@ -233,19 +236,7 @@ function SignupForm() {
                     </Button>
                   </div>
                   {password.length > 0 && (
-                    <div className="flex items-center text-xs">
-                      {isPasswordStrong ? (
-                        <>
-                          <CheckCircle className={`h-3 w-3 ${getZoneTextClass("green")} mr-1`} />{" "}
-                          Strong password
-                        </>
-                      ) : (
-                        <>
-                          <AlertTriangle className="h-3 w-3 text-amber-500 mr-1" />{" "}
-                          At least 8 characters required
-                        </>
-                      )}
-                    </div>
+                    <PasswordStrengthIndicator password={password} />
                   )}
                 </div>
 
@@ -254,10 +245,10 @@ function SignupForm() {
                   <div className="relative">
                     <Input
                       id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
+                      type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Confirm your password"
                       value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       disabled={isLoading}
                       className="h-12 pr-10"
@@ -283,12 +274,16 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {passwordsMatch ? (
                         <>
-                          <CheckCircle className={`h-3 w-3 ${getZoneTextClass("green")} mr-1`} />{" "}
+                          <CheckCircle
+                            className={`h-3 w-3 ${getZoneTextClass('green')} mr-1`}
+                          />{' '}
                           Passwords match
                         </>
                       ) : (
                         <>
-                          <AlertTriangle className={`h-3 w-3 ${getZoneTextClass("red")} mr-1`} />{" "}
+                          <AlertTriangle
+                            className={`h-3 w-3 ${getZoneTextClass('red')} mr-1`}
+                          />{' '}
                           Passwords do not match
                         </>
                       )}
@@ -300,7 +295,7 @@ function SignupForm() {
                   <Checkbox
                     id="terms"
                     checked={agreeToTerms}
-                    onCheckedChange={checked =>
+                    onCheckedChange={(checked) =>
                       setAgreeToTerms(checked as boolean)
                     }
                     disabled={isLoading}
@@ -324,14 +319,14 @@ function SignupForm() {
                       Creating Account...
                     </>
                   ) : (
-                    "Create Account"
+                    'Create Account'
                   )}
                 </Button>
               </form>
 
               <div className="text-center">
                 <p className="text-sm text-gray-600">
-                  Already have an account?{" "}
+                  Already have an account?{' '}
                   <Link
                     href="/login"
                     className="text-blue-600 hover:text-blue-500 font-medium"

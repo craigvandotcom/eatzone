@@ -12,7 +12,7 @@ export interface User {
 }
 
 export interface UserSettings {
-  theme: "light" | "dark" | "system";
+  theme: 'light' | 'dark' | 'system';
   waterGoal: number; // in ml
   notifications: {
     reminders: boolean;
@@ -34,23 +34,23 @@ export interface Food {
   ingredients: Ingredient[]; // A food entry is defined by its ingredients
   photo_url?: string; // Renamed from 'image' to match Supabase schema
   notes?: string;
-  meal_type?: "breakfast" | "lunch" | "dinner" | "snack" | "beverage"; // Optional meal categorization
-  status: "pending_review" | "analyzing" | "processed";
+  meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'beverage'; // Optional meal categorization
+  status: 'pending_review' | 'analyzing' | 'processed';
 }
 
 export interface Ingredient {
   name: string;
   organic: boolean; // Renamed from 'isOrganic' to match Supabase schema
   cookingMethod?:
-    | "raw"
-    | "fried"
-    | "steamed"
-    | "baked"
-    | "grilled"
-    | "roasted"
-    | "other";
+    | 'raw'
+    | 'fried'
+    | 'steamed'
+    | 'baked'
+    | 'grilled'
+    | 'roasted'
+    | 'other';
   foodGroup: string; // AI-provided category (flexible for MVP)
-  zone: "green" | "yellow" | "red";
+  zone: 'green' | 'yellow' | 'red';
 }
 
 export interface Symptom {

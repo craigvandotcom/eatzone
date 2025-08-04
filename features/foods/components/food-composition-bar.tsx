@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { Ingredient } from "@/lib/types";
+import type { Ingredient } from '@/lib/types';
 import {
   getZoneColor,
   getZoneBgClass,
   getZoneBgStyle,
-} from "@/lib/utils/zone-colors";
+} from '@/lib/utils/zone-colors';
 
 interface FoodCompositionBarProps {
   ingredients: Ingredient[];
@@ -25,11 +25,13 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   }
 
   // Use 'zone' property instead of 'healthCategory' to match our data structure
-  const greenCount = safeIngredients.filter(ing => ing.zone === "green").length;
-  const yellowCount = safeIngredients.filter(
-    ing => ing.zone === "yellow"
+  const greenCount = safeIngredients.filter(
+    (ing) => ing.zone === 'green',
   ).length;
-  const redCount = safeIngredients.filter(ing => ing.zone === "red").length;
+  const yellowCount = safeIngredients.filter(
+    (ing) => ing.zone === 'yellow',
+  ).length;
+  const redCount = safeIngredients.filter((ing) => ing.zone === 'red').length;
   const analyzedCount = greenCount + yellowCount + redCount;
 
   if (analyzedCount === 0) {
@@ -39,9 +41,9 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
         <div
           className="transition-all duration-500"
           style={{
-            backgroundColor: getZoneColor("yellow"),
-            width: "100%",
-            height: "100%",
+            backgroundColor: getZoneColor('yellow'),
+            width: '100%',
+            height: '100%',
           }}
           title="Unanalyzed ingredients"
         ></div>
@@ -60,31 +62,31 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
     >
       {greenPercent > 0 && (
         <div
-          className={`${getZoneBgClass("green")} transition-all duration-500`}
+          className={`${getZoneBgClass('green')} transition-all duration-500`}
           style={{
             width: `${greenPercent}%`,
-            minWidth: greenPercent > 0 ? "2px" : "0px",
-            ...getZoneBgStyle("green"), // Fallback inline style
+            minWidth: greenPercent > 0 ? '2px' : '0px',
+            ...getZoneBgStyle('green'), // Fallback inline style
           }}
         />
       )}
       {yellowPercent > 0 && (
         <div
-          className={`${getZoneBgClass("yellow")} transition-all duration-500`}
+          className={`${getZoneBgClass('yellow')} transition-all duration-500`}
           style={{
             width: `${yellowPercent}%`,
-            minWidth: yellowPercent > 0 ? "2px" : "0px",
-            ...getZoneBgStyle("yellow"), // Fallback inline style
+            minWidth: yellowPercent > 0 ? '2px' : '0px',
+            ...getZoneBgStyle('yellow'), // Fallback inline style
           }}
         />
       )}
       {redPercent > 0 && (
         <div
-          className={`${getZoneBgClass("red")} transition-all duration-500`}
+          className={`${getZoneBgClass('red')} transition-all duration-500`}
           style={{
             width: `${redPercent}%`,
-            minWidth: redPercent > 0 ? "2px" : "0px",
-            ...getZoneBgStyle("red"), // Fallback inline style
+            minWidth: redPercent > 0 ? '2px' : '0px',
+            ...getZoneBgStyle('red'), // Fallback inline style
           }}
         />
       )}

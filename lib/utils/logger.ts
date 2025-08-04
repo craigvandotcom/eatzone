@@ -1,7 +1,7 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogContext {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class Logger {
@@ -17,7 +17,11 @@ class Logger {
     return true;
   }
 
-  private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+  ): string {
     const timestamp = new Date().toISOString();
     const contextStr = context ? ` ${JSON.stringify(context)}` : '';
     return `[${timestamp}] [${level.toUpperCase()}] ${message}${contextStr}`;
@@ -45,17 +49,20 @@ class Logger {
     if (this.shouldLog('error')) {
       const errorContext = {
         ...context,
-        ...(error instanceof Error ? {
-          errorMessage: error.message,
-          errorStack: error.stack,
-        } : error ? {
-          error: String(error)
-        } : {})
+        ...(error instanceof Error
+          ? {
+              errorMessage: error.message,
+              errorStack: error.stack,
+            }
+          : error
+            ? {
+                error: String(error),
+              }
+            : {}),
       };
       console.error(this.formatMessage('error', message, errorContext));
     }
   }
-
 
   // For CLI scripts that should always output
   cli(message: string): void {

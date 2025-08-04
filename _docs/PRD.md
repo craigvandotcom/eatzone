@@ -614,7 +614,7 @@ The application follows a **structured logging approach** that maintains user pr
 // lib/logger.ts
 export const logger = {
   error: (message: string, context?: Record<string, any>) => {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === 'production') {
       // Send to Vercel monitoring (sanitized)
       console.error(message, sanitizeContext(context));
     } else {
@@ -715,29 +715,29 @@ interface Food {
   ingredients: Ingredient[]; // A food entry is defined by its ingredients.
   image?: string;
   notes?: string;
-  status: "pending_review" | "analyzing" | "processed";
+  status: 'pending_review' | 'analyzing' | 'processed';
 }
 
 interface Ingredient {
   name: string;
   isOrganic: boolean;
   cookingMethod?:
-    | "raw"
-    | "fried"
-    | "steamed"
-    | "baked"
-    | "grilled"
-    | "roasted"
-    | "other";
+    | 'raw'
+    | 'fried'
+    | 'steamed'
+    | 'baked'
+    | 'grilled'
+    | 'roasted'
+    | 'other';
   foodGroup:
-    | "vegetable"
-    | "fruit"
-    | "protein"
-    | "grain"
-    | "dairy"
-    | "fat"
-    | "other";
-  zone: "green" | "yellow" | "red";
+    | 'vegetable'
+    | 'fruit'
+    | 'protein'
+    | 'grain'
+    | 'dairy'
+    | 'fat'
+    | 'other';
+  zone: 'green' | 'yellow' | 'red';
 }
 
 interface Liquid {
@@ -745,7 +745,7 @@ interface Liquid {
   name: string; // e.g. "Morning Coffee"
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   amount: number; // in ml
-  type: "water" | "coffee" | "tea" | "juice" | "soda" | "dairy" | "other";
+  type: 'water' | 'coffee' | 'tea' | 'juice' | 'soda' | 'dairy' | 'other';
   notes?: string;
   image?: string;
 }
@@ -762,7 +762,7 @@ interface Stool {
   id: string;
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   bristolScale: number; // 1-7
-  color: "brown" | "green" | "yellow" | "black" | "white" | "red" | "other";
+  color: 'brown' | 'green' | 'yellow' | 'black' | 'white' | 'red' | 'other';
   hasBlood: boolean;
   notes?: string;
   image?: string;

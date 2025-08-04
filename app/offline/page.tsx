@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { WifiOff, RotateCcw } from "lucide-react";
+} from '@/components/ui/card';
+import { WifiOff, RotateCcw } from 'lucide-react';
 
 export default function OfflinePage() {
   return (
@@ -59,7 +59,7 @@ export default function OfflinePage() {
           </Button>
 
           <Button
-            onClick={() => (window.location.href = "/app")}
+            onClick={() => (window.location.href = '/app')}
             variant="outline"
             className="w-full"
             size="lg"

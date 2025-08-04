@@ -251,7 +251,7 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
 ### Phase 2: AI Integration & Intelligence
 
 - [x] debug pwa scrolling
-- [x] setup bug bot 
+- [x] setup bug bot
 
 **Goal:** Implement a two-step, privacy-preserving AI analysis flow to provide intelligent food logging, with a human-in-the-loop validation step to ensure accuracy.
 
@@ -355,42 +355,12 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
         - Set up CI/CD pipeline to run tests on every commit
         - Create test data fixtures and cleanup utilities
       - **Success Criteria:** All tests must pass before proceeding to production deployment
-- [x] **15.3.1: Project Setup & Configuration**
-      - Create new Supabase project and configure database
-      - Install Supabase dependencies (`@supabase/supabase-js`, `@supabase/auth-js`)
-      - Set up environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
-      - Configure Supabase client in `lib/supabase/client.ts` and `lib/supabase/server.ts`
-- [x] **15.3.2: Database Schema Design & Migration**
-      - Design PostgreSQL schema matching existing TypeScript interfaces (`User`, `Food`, `Ingredient`, `Symptom`)
-      - Create Supabase tables with proper relationships and constraints
-      - Set up Row Level Security (RLS) policies for data isolation
-      - Create database functions and triggers for automated timestamps
-- [x] **15.3.3: Authentication System Migration**
-      - Replace custom IndexedDB auth with Supabase Auth
-      - Update `features/auth/components/auth-provider.tsx` to use Supabase sessions
-      - Migrate from `bcryptjs` and `jose` to Supabase's built-in auth
-      - Replace PWA storage auth tokens with Supabase session management
-      - Update middleware.ts for Supabase session validation
-      - Maintain demo mode functionality with Supabase test users
-- [x] **15.3.4: Data Layer Refactoring**
-      - Replace `lib/db.ts` Dexie operations with Supabase queries
-      - Update all CRUD operations (`addFood`, `getSymptoms`, etc.) to use Supabase
-      - Replace `useLiveQuery` hooks with Supabase real-time subscriptions
-      - Migrate data export/import functionality to work with Supabase
-      - Update type definitions for Supabase auto-generated types
-- [x] **15.3.5: Component Updates & Testing**
-      - Update all components using database operations to work with new async patterns
-      - Replace Dexie reactive queries with Supabase real-time subscriptions
-      - Test all forms, dialogs, and data visualization components
-      - Ensure proper loading states and error handling for network operations
-      - Update development and testing scripts for Supabase environment
-- [ ] **15.3.6: Production Deployment & Cleanup**
-      - Configure Supabase production environment and connection pooling
-      - Update Vercel environment variables for production
-      - Remove IndexedDB dependencies (`dexie`, `dexie-react-hooks`, `bcryptjs`, `jose`)
-      - Remove PWA storage system (`lib/pwa-storage.ts`) as no longer needed
-      - Update documentation and development workflow for Supabase
-      - Create data migration script for existing users (if any)
+- [x] **15.3.1: Project Setup & Configuration** - Create new Supabase project and configure database - Install Supabase dependencies (`@supabase/supabase-js`, `@supabase/auth-js`) - Set up environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) - Configure Supabase client in `lib/supabase/client.ts` and `lib/supabase/server.ts`
+- [x] **15.3.2: Database Schema Design & Migration** - Design PostgreSQL schema matching existing TypeScript interfaces (`User`, `Food`, `Ingredient`, `Symptom`) - Create Supabase tables with proper relationships and constraints - Set up Row Level Security (RLS) policies for data isolation - Create database functions and triggers for automated timestamps
+- [x] **15.3.3: Authentication System Migration** - Replace custom IndexedDB auth with Supabase Auth - Update `features/auth/components/auth-provider.tsx` to use Supabase sessions - Migrate from `bcryptjs` and `jose` to Supabase's built-in auth - Replace PWA storage auth tokens with Supabase session management - Update middleware.ts for Supabase session validation - Maintain demo mode functionality with Supabase test users
+- [x] **15.3.4: Data Layer Refactoring** - Replace `lib/db.ts` Dexie operations with Supabase queries - Update all CRUD operations (`addFood`, `getSymptoms`, etc.) to use Supabase - Replace `useLiveQuery` hooks with Supabase real-time subscriptions - Migrate data export/import functionality to work with Supabase - Update type definitions for Supabase auto-generated types
+- [x] **15.3.5: Component Updates & Testing** - Update all components using database operations to work with new async patterns - Replace Dexie reactive queries with Supabase real-time subscriptions - Test all forms, dialogs, and data visualization components - Ensure proper loading states and error handling for network operations - Update development and testing scripts for Supabase environment
+- [x] **15.3.6: Production Deployment & Cleanup** - Configure Supabase production environment and connection pooling - Update Vercel environment variables for production - Remove IndexedDB dependencies (`dexie`, `dexie-react-hooks`, `bcryptjs`, `jose`) - Remove PWA storage system (`lib/pwa-storage.ts`) as no longer needed - Update documentation and development workflow for Supabase - Create data migration script for existing users (if any)
   - **Benefits:**
     - **Development Velocity:** Instant schema changes, real-time data sync, no IndexedDB migration issues
     - **User Experience:** Cross-device access, data persistence, account recovery, no demo mode complexity
@@ -412,7 +382,6 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - [ ] etc
   - [ ] testing
 
-
 - [ ] **Task 16: Build MVP Insights Page (`build-mvp-insights-page`)**
   - **Action:** Create the initial "Insights & Analytics" page that performs all calculations on the client-side, focusing on a simple heuristic-based correlation approach.
   - **Implementation:**
@@ -426,7 +395,6 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - **Outcome:** A functional MVP insights page that provides users with direct, actionable heuristic correlations from their local data, delivering on the core "Body Compass" promise.
 
 Task 16.5: Security
-
 
 ---
 
@@ -489,15 +457,16 @@ Task 16.5: Security
 
 ---
 
-
-----
+---
 
 #### **2. Implement the Simplified API Route**
+
 **File:** `app/api/zone-ingredients/route.ts`
 
 **Action:** This API route will be straightforward. It receives a list of ingredients, sends them all to the AI with the rubric, and returns the result.
 
 **Engineer's Checklist:**
+
 1.  **Receive Request:** Get the `ingredients` array from the request body.
 2.  **Validate Input:** Use a Zod schema to ensure the request body is an object with an `ingredients` key that is an array of strings.
 3.  **Construct Prompt:** Create the full prompt string to send to the AI, combining the static rubric from `prompts.ingredientZoning` with the dynamic list of ingredients from the user.
@@ -506,21 +475,25 @@ Task 16.5: Security
 6.  **Return Response:** If validation passes, return the zoned ingredients to the client. If anything fails, return a structured error.
 
 #### **3. Implement Security: Rate Limiting**
+
 **File:** `app/api/zone-ingredients/route.ts`
 
 **Action:** Before any logic runs, implement IP-based rate limiting to prevent abuse of this potentially expensive endpoint.
 
 **Engineer's Checklist:**
+
 1.  **Integrate Upstash:** Use the `@upstash/ratelimit` package.
 2.  **Set Limit:** Configure a reasonable limit (e.g., 20 requests per minute) for the MVP.
 3.  **Return Error:** If the rate limit is exceeded, immediately return a `429 Too Many Requests` error.
 
 #### **4. Finalize Client-Side Integration**
+
 **File:** `features/foods/components/food-entry-form.tsx`
 
 **Action:** The existing client-side logic is already well-suited for this simplified flow.
 
 **Engineer's Checklist:**
+
 1.  **Verify API Call:** In the `handleSubmit` function, ensure the `fetch` call to `/api/zone-ingredients` correctly sends the `ingredients` array in the request body.
 2.  **Handle States:** Maintain the existing loading and error states. When the user submits, the UI should show a "Zoning ingredients..." message.
 3.  **Process Data:** The existing logic that maps the API response back to the ingredients list before saving to the database is correct and should be kept.

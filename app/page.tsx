@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { getZoneTextClass } from "@/lib/utils/zone-colors";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { getZoneTextClass } from '@/lib/utils/zone-colors';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Smartphone,
   Shield,
@@ -21,8 +21,8 @@ import {
   CheckCircle,
   ArrowRight,
   QrCode,
-} from "lucide-react";
-import Link from "next/link";
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function LandingPage() {
   const [showQR, setShowQR] = useState(false);
@@ -30,46 +30,45 @@ export default function LandingPage() {
   const features = [
     {
       icon: Camera,
-      title: "AI-Powered Capture",
+      title: 'AI-Powered Capture',
       description:
-        "Take a photo of your food or drink and let AI analyze it for you",
-      color: "from-green-400 to-emerald-500",
+        'Take a photo of your food or drink and let AI analyze it for you',
+      color: 'from-green-400 to-emerald-500',
     },
     {
       icon: Shield,
-      title: "Privacy by Design",
+      title: 'Privacy by Design',
       description:
-        "Your health data never leaves your device - complete privacy guaranteed",
-      color: "from-blue-400 to-cyan-500",
+        'Your health data never leaves your device - complete privacy guaranteed',
+      color: 'from-blue-400 to-cyan-500',
     },
     {
       icon: BarChart3,
-      title: "Visual Insights",
+      title: 'Visual Insights',
       description:
         "Beautiful charts and progress tracking to understand your body's patterns",
-      color: "from-purple-400 to-pink-500",
+      color: 'from-purple-400 to-pink-500',
     },
     {
       icon: BarChart3,
-      title: "Comprehensive Tracking",
-      description:
-        "Monitor foods, symptoms, and more in one unified app",
-      color: "from-amber-400 to-orange-500",
+      title: 'Comprehensive Tracking',
+      description: 'Monitor foods, symptoms, and more in one unified app',
+      color: 'from-amber-400 to-orange-500',
     },
   ];
 
   const trackingCategories = [
     {
       icon: Utensils,
-      name: "Foods",
-      color: getZoneTextClass("green"),
-      description: "Ingredient analysis",
+      name: 'Foods',
+      color: getZoneTextClass('green'),
+      description: 'Ingredient analysis',
     },
     {
       icon: Activity,
-      name: "Symptoms",
-      color: getZoneTextClass("red"),
-      description: "Health monitoring",
+      name: 'Symptoms',
+      color: getZoneTextClass('red'),
+      description: 'Health monitoring',
     },
   ];
 
@@ -103,12 +102,12 @@ export default function LandingPage() {
               Private • Offline-First • AI-Powered
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Your Body&apos;s{" "}
+              Your Body&apos;s{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500">
                 Compass
               </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
               Track your health inputs and outputs with high-speed logging and
               AI-powered insights. All while keeping your data completely
               private on your device.
@@ -121,7 +120,7 @@ export default function LandingPage() {
                   Start Tracking <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Works best on mobile • Install as PWA for native experience
               </p>
             </div>
@@ -150,20 +149,24 @@ export default function LandingPage() {
                     <div className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center">
                       <QrCode className="h-16 w-16 text-gray-400" />
                     </div>
-                    <p className="text-xs text-gray-500 mt-2 text-center">
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
                       Scan to open on mobile
                     </p>
                   </CardContent>
                 </Card>
               )}
 
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                 <div className="flex items-center">
-                  <CheckCircle className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`} />
+                  <CheckCircle
+                    className={`h-4 w-4 ${getZoneTextClass('green')} mr-1`}
+                  />
                   No account required to try
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`} />
+                  <CheckCircle
+                    className={`h-4 w-4 ${getZoneTextClass('green')} mr-1`}
+                  />
                   Data stays on your device
                 </div>
               </div>
@@ -183,7 +186,7 @@ export default function LandingPage() {
                         Your Body Compass
                       </h3>
                       <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
-                        <BarChart3 className="h-16 w-16 text-gray-600" />
+                        <BarChart3 className="h-16 w-16 text-muted-foreground" />
                       </div>
                     </div>
 
@@ -200,7 +203,7 @@ export default function LandingPage() {
                           <p className="text-xs font-medium text-gray-900">
                             {category.name}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {category.description}
                           </p>
                         </div>
@@ -223,13 +226,13 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-gray-50 py-16 lg:py-24">
+      <section className="bg-muted/50 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               High-Speed Logging, Clear Insights
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Designed for busy lives. Capture your health data in seconds, then
               get powerful insights without compromising your privacy.
             </p>
@@ -250,7 +253,7 @@ export default function LandingPage() {
                   <CardTitle className="text-lg">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-gray-600">
+                  <CardDescription className="text-muted-foreground">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -272,7 +275,7 @@ export default function LandingPage() {
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
                 Your Data Stays With You
               </h2>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 Unlike other health apps, we believe your personal health data
                 should remain personal. Everything is stored locally on your
                 device using advanced encryption.
@@ -280,13 +283,15 @@ export default function LandingPage() {
 
               <div className="space-y-4">
                 {[
-                  "No cloud storage of personal data",
-                  "AI processing happens securely",
-                  "Export your data anytime",
-                  "No tracking or analytics",
+                  'No cloud storage of personal data',
+                  'AI processing happens securely',
+                  'Export your data anytime',
+                  'No tracking or analytics',
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
-                    <CheckCircle className={`h-5 w-5 ${getZoneTextClass("green")} mr-3`} />
+                    <CheckCircle
+                      className={`h-5 w-5 ${getZoneTextClass('green')} mr-3`}
+                    />
                     <span className="text-gray-700">{item}</span>
                   </div>
                 ))}
@@ -345,7 +350,8 @@ export default function LandingPage() {
                 <span className="text-lg font-bold text-white">Puls</span>
               </div>
               <p className="text-gray-400">
-                Your Body&apos;s Compass - Private health tracking with AI insights.
+                Your Body&apos;s Compass - Private health tracking with AI
+                insights.
               </p>
             </div>
 

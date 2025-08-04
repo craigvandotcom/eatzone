@@ -26,14 +26,14 @@ mockOn.mockReturnThis();
 mockChannel.mockReturnValue({
   on: mockOn,
   subscribe: mockSubscribe.mockReturnValue({
-    unsubscribe: mockUnsubscribe
-  })
+    unsubscribe: mockUnsubscribe,
+  }),
 });
 
 jest.mock('@/lib/supabase/client', () => ({
   createClient: jest.fn(() => ({
-    channel: mockChannel
-  }))
+    channel: mockChannel,
+  })),
 }));
 
 const mockDb = db as jest.Mocked<typeof db>;
@@ -81,7 +81,7 @@ describe('Optimized Supabase Hooks', () => {
         totalOrganicPercentage: 0,
         isFromToday: true,
       });
-      
+
       expect(result.current.error).toBe(null);
       expect(typeof result.current.retry).toBe('function');
     });
@@ -128,7 +128,7 @@ describe('Optimized Supabase Hooks', () => {
 
       // Test that retry function exists and is callable
       expect(typeof result.current.retry).toBe('function');
-      
+
       // Test that retry doesn't throw
       expect(() => {
         result.current.retry();
@@ -147,7 +147,7 @@ describe('Optimized Supabase Hooks', () => {
       expect(result.current).toHaveProperty('error');
       expect(result.current).toHaveProperty('isLoading');
       expect(result.current).toHaveProperty('retry');
-      
+
       // Initially should not have errors (mocked to return successful state)
       expect(result.current.error).toBe(null);
     });

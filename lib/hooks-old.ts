@@ -1,9 +1,9 @@
 // Custom React hooks for reactive data binding with Supabase
 // Uses Supabase real-time subscriptions for automatic UI updates
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Food, Symptom } from "./types";
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Food, Symptom } from './types';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -11,8 +11,8 @@ import {
   getTodaysSymptoms,
   getFoodById,
   getSymptomById,
-} from "./db";
-import { logger } from "./utils/logger";
+} from './db';
+import { logger } from './utils/logger';
 
 // Create a shared supabase client for all hooks
 const supabase = createClient();
@@ -48,7 +48,7 @@ export const useTodaysFoods = () => {
         () => {
           // Refetch data when any food changes
           fetchFoods();
-        }
+        },
       )
       .subscribe();
 
@@ -70,7 +70,7 @@ export const useAllFoods = () => {
         const data = await getAllFoods();
         setFoods(data);
       } catch (error) {
-        logger.error("Error fetching all foods", error);
+        logger.error('Error fetching all foods', error);
         setFoods([]);
       }
     };
@@ -90,7 +90,7 @@ export const useAllFoods = () => {
         () => {
           // Refetch data when any food changes
           fetchFoods();
-        }
+        },
       )
       .subscribe();
 
@@ -117,7 +117,7 @@ export const useFoodById = (id: string | null) => {
         const data = await getFoodById(id);
         setFood(data || null);
       } catch (error) {
-        logger.error("Error fetching food by id", error);
+        logger.error('Error fetching food by id', error);
         setFood(null);
       }
     };
@@ -138,7 +138,7 @@ export const useFoodById = (id: string | null) => {
         () => {
           // Refetch data when this specific food changes
           fetchFood();
-        }
+        },
       )
       .subscribe();
 
@@ -160,7 +160,7 @@ export const useRecentFoods = (limit: number = 5) => {
         const data = await getAllFoods();
         setFoods(data.slice(0, limit));
       } catch (error) {
-        logger.error("Error fetching recent foods", error);
+        logger.error('Error fetching recent foods', error);
         setFoods([]);
       }
     };
@@ -180,7 +180,7 @@ export const useRecentFoods = (limit: number = 5) => {
         () => {
           // Refetch data when any food changes
           fetchFoods();
-        }
+        },
       )
       .subscribe();
 
@@ -223,7 +223,7 @@ export const useTodaysSymptoms = () => {
         () => {
           // Refetch data when any symptom changes
           fetchSymptoms();
-        }
+        },
       )
       .subscribe();
 
@@ -245,7 +245,7 @@ export const useAllSymptoms = () => {
         const data = await getAllSymptoms();
         setSymptoms(data);
       } catch (error) {
-        logger.error("Error fetching all symptoms", error);
+        logger.error('Error fetching all symptoms', error);
         setSymptoms([]);
       }
     };
@@ -265,7 +265,7 @@ export const useAllSymptoms = () => {
         () => {
           // Refetch data when any symptom changes
           fetchSymptoms();
-        }
+        },
       )
       .subscribe();
 
@@ -292,7 +292,7 @@ export const useSymptomById = (id: string | null) => {
         const data = await getSymptomById(id);
         setSymptom(data || null);
       } catch (error) {
-        logger.error("Error fetching symptom by id", error);
+        logger.error('Error fetching symptom by id', error);
         setSymptom(null);
       }
     };
@@ -313,7 +313,7 @@ export const useSymptomById = (id: string | null) => {
         () => {
           // Refetch data when this specific symptom changes
           fetchSymptom();
-        }
+        },
       )
       .subscribe();
 
@@ -335,7 +335,7 @@ export const useRecentSymptoms = (limit: number = 5) => {
         const data = await getAllSymptoms();
         setSymptoms(data.slice(0, limit));
       } catch (error) {
-        logger.error("Error fetching recent symptoms", error);
+        logger.error('Error fetching recent symptoms', error);
         setSymptoms([]);
       }
     };
@@ -355,7 +355,7 @@ export const useRecentSymptoms = (limit: number = 5) => {
         () => {
           // Refetch data when any symptom changes
           fetchSymptoms();
-        }
+        },
       )
       .subscribe();
 
@@ -369,15 +369,18 @@ export const useRecentSymptoms = (limit: number = 5) => {
 
 // ANALYTICS HOOKS
 export const useFoodStats = () => {
-  const [stats, setStats] = useState<{
-    greenIngredients: number;
-    yellowIngredients: number;
-    redIngredients: number;
-    totalIngredients: number;
-    organicCount: number;
-    totalOrganicPercentage: number;
-    isFromToday: boolean;
-  } | undefined>(undefined);
+  const [stats, setStats] = useState<
+    | {
+        greenIngredients: number;
+        yellowIngredients: number;
+        redIngredients: number;
+        totalIngredients: number;
+        organicCount: number;
+        totalOrganicPercentage: number;
+        isFromToday: boolean;
+      }
+    | undefined
+  >(undefined);
 
   useEffect(() => {
     // Function to calculate stats
@@ -410,21 +413,21 @@ export const useFoodStats = () => {
         const isFromToday = todaysFoods.length > 0;
 
         const ingredients = foodsToAnalyze.flatMap(
-          food => food.ingredients || []
+          (food) => food.ingredients || [],
         );
 
         const greenIngredients = ingredients.filter(
-          ing => ing.zone === "green"
+          (ing) => ing.zone === 'green',
         ).length;
         const yellowIngredients = ingredients.filter(
-          ing => ing.zone === "yellow"
+          (ing) => ing.zone === 'yellow',
         ).length;
         const redIngredients = ingredients.filter(
-          ing => ing.zone === "red"
+          (ing) => ing.zone === 'red',
         ).length;
 
         const organicIngredientsCount = ingredients.filter(
-          ing => ing.organic === true
+          (ing) => ing.organic === true,
         ).length;
         const totalOrganicPercentage =
           ingredients.length > 0
@@ -441,7 +444,7 @@ export const useFoodStats = () => {
           isFromToday,
         });
       } catch (error) {
-        logger.error("Error calculating food stats", error);
+        logger.error('Error calculating food stats', error);
         setStats({
           greenIngredients: 0,
           yellowIngredients: 0,
@@ -470,7 +473,7 @@ export const useFoodStats = () => {
         () => {
           // Recalculate stats when any food changes
           calculateStats();
-        }
+        },
       )
       .subscribe();
 
@@ -483,11 +486,14 @@ export const useFoodStats = () => {
 };
 
 export const useSymptomTrends = (days: number = 7) => {
-  const [trends, setTrends] = useState<Array<{
-    day: string;
-    count: number;
-    averageSeverity: number;
-  }> | undefined>(undefined);
+  const [trends, setTrends] = useState<
+    | Array<{
+        day: string;
+        count: number;
+        averageSeverity: number;
+      }>
+    | undefined
+  >(undefined);
 
   useEffect(() => {
     // Function to calculate trends
@@ -498,13 +504,13 @@ export const useSymptomTrends = (days: number = 7) => {
         cutoffDate.setDate(cutoffDate.getDate() - days);
 
         const recentSymptoms = allSymptoms.filter(
-          symptom => new Date(symptom.timestamp) >= cutoffDate
+          (symptom) => new Date(symptom.timestamp) >= cutoffDate,
         );
 
         // Group symptoms by day
         const symptomsByDay: { [key: string]: Symptom[] } = {};
-        recentSymptoms.forEach(symptom => {
-          const day = symptom.timestamp.split("T")[0];
+        recentSymptoms.forEach((symptom) => {
+          const day = symptom.timestamp.split('T')[0];
           if (!symptomsByDay[day]) {
             symptomsByDay[day] = [];
           }
@@ -512,16 +518,19 @@ export const useSymptomTrends = (days: number = 7) => {
         });
 
         // Calculate average severity per day
-        const trendData = Object.entries(symptomsByDay).map(([day, symptoms]) => ({
-          day,
-          count: symptoms.length,
-          averageSeverity:
-            symptoms.reduce((sum, s) => sum + s.severity, 0) / symptoms.length,
-        }));
+        const trendData = Object.entries(symptomsByDay).map(
+          ([day, symptoms]) => ({
+            day,
+            count: symptoms.length,
+            averageSeverity:
+              symptoms.reduce((sum, s) => sum + s.severity, 0) /
+              symptoms.length,
+          }),
+        );
 
         setTrends(trendData.sort((a, b) => a.day.localeCompare(b.day)));
       } catch (error) {
-        logger.error("Error calculating symptom trends", error);
+        logger.error('Error calculating symptom trends', error);
         setTrends([]);
       }
     };
@@ -542,7 +551,7 @@ export const useSymptomTrends = (days: number = 7) => {
         () => {
           // Recalculate trends when any symptom changes
           calculateTrends();
-        }
+        },
       )
       .subscribe();
 
@@ -556,11 +565,14 @@ export const useSymptomTrends = (days: number = 7) => {
 
 // DAILY SUMMARY HOOK
 export const useDailySummary = () => {
-  const [summary, setSummary] = useState<{
-    foods: number;
-    symptoms: number;
-    totalEntries: number;
-  } | undefined>(undefined);
+  const [summary, setSummary] = useState<
+    | {
+        foods: number;
+        symptoms: number;
+        totalEntries: number;
+      }
+    | undefined
+  >(undefined);
 
   useEffect(() => {
     // Function to calculate summary
@@ -577,7 +589,7 @@ export const useDailySummary = () => {
           totalEntries: foods.length + symptoms.length,
         });
       } catch (error) {
-        logger.error("Error calculating daily summary", error);
+        logger.error('Error calculating daily summary', error);
         setSummary({
           foods: 0,
           symptoms: 0,
@@ -601,7 +613,7 @@ export const useDailySummary = () => {
         },
         () => {
           calculateSummary();
-        }
+        },
       )
       .subscribe();
 
@@ -616,7 +628,7 @@ export const useDailySummary = () => {
         },
         () => {
           calculateSummary();
-        }
+        },
       )
       .subscribe();
 

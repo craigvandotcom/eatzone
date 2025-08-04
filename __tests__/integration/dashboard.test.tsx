@@ -46,35 +46,35 @@ describe('Dashboard Integration', () => {
         data: undefined,
         error: null,
         isLoading: true,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
         data: undefined,
         error: null,
         isLoading: true,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: undefined,
         error: null,
         isLoading: true,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: undefined,
         error: null,
         isLoading: true,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       render(<Dashboard />);
 
       // Should show loading message
       expect(screen.getByText(/loading recent foods/i)).toBeInTheDocument();
-      
+
       // Should show skeleton loaders (not actual content)
       expect(screen.queryByText('Test Food')).not.toBeInTheDocument();
     });
@@ -84,35 +84,35 @@ describe('Dashboard Integration', () => {
         data: undefined,
         error: null,
         isLoading: true,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       render(<Dashboard />);
 
       // Should show loading skeleton for the progress circle area
       expect(screen.getByText(/no foods logged yet/i)).toBeInTheDocument();
-      
+
       // Progress area should show skeleton (we can't easily test for skeleton component,
       // but we can test that the real progress circle is not there)
       expect(screen.queryByText(/today/i)).not.toBeInTheDocument();
@@ -125,28 +125,28 @@ describe('Dashboard Integration', () => {
         data: mockFoods,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
         data: mockFoodStats,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       render(<Dashboard />);
@@ -157,7 +157,9 @@ describe('Dashboard Integration', () => {
       });
 
       // Should show ingredient information - use getAllByText for multiple matches
-      expect(screen.getAllByText(/organic spinach, wild salmon/i).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/organic spinach, wild salmon/i).length,
+      ).toBeGreaterThan(0);
     });
 
     it('should display symptoms data when switched to symptoms view', async () => {
@@ -165,28 +167,28 @@ describe('Dashboard Integration', () => {
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: mockSymptoms,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: mockSymptoms,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
         data: mockFoodStats,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       const user = userEvent.setup();
@@ -215,35 +217,39 @@ describe('Dashboard Integration', () => {
         data: undefined,
         error: 'Network connection failed',
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
         data: mockFoodStats,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       render(<Dashboard />);
 
       // Should show error message (may be in NetworkRetryState component)
-      expect(screen.getByText(/connection failed|failed to load|network connection failed/i)).toBeInTheDocument();
-      
+      expect(
+        screen.getByText(
+          /connection failed|failed to load|network connection failed/i,
+        ),
+      ).toBeInTheDocument();
+
       // Should have retry button available
       const retryButtons = screen.getAllByText(/retry/i);
       expect(retryButtons.length).toBeGreaterThan(0);
@@ -254,35 +260,39 @@ describe('Dashboard Integration', () => {
         data: undefined,
         error: 'Database connection lost',
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       render(<Dashboard />);
 
       // Should show error message for stats
-      expect(screen.getByText(/database connection lost|failed to load|connection failed/i)).toBeInTheDocument();
-      
+      expect(
+        screen.getByText(
+          /database connection lost|failed to load|connection failed/i,
+        ),
+      ).toBeInTheDocument();
+
       // Should have retry button available
       const retryButtons = screen.getAllByText(/retry/i);
       expect(retryButtons.length).toBeGreaterThan(0);
@@ -295,28 +305,28 @@ describe('Dashboard Integration', () => {
         data: mockFoods,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
         data: mockFoodStats,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       const user = userEvent.setup();
@@ -338,28 +348,28 @@ describe('Dashboard Integration', () => {
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
         data: mockFoodStats,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       const user = userEvent.setup();
@@ -368,7 +378,7 @@ describe('Dashboard Integration', () => {
       // Find the food add button by looking for buttons with utensils icon or food-related text
       // Since accessibility names might not match, let's look for any button that might trigger food capture
       const buttons = screen.getAllByRole('button');
-      const addFoodButton = buttons.find(button => {
+      const addFoodButton = buttons.find((button) => {
         const text = button.textContent || '';
         const ariaLabel = button.getAttribute('aria-label') || '';
         return /utensils|add.*food|capture.*food/i.test(text + ' ' + ariaLabel);
@@ -377,7 +387,9 @@ describe('Dashboard Integration', () => {
       if (addFoodButton) {
         await user.click(addFoodButton);
         // Should open camera capture modal
-        expect(screen.getByText(/capture food|camera|take photo/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/capture food|camera|take photo/i),
+        ).toBeInTheDocument();
       } else {
         // If no specific add food button found, this test scenario may not be relevant
         // Just check that the dashboard is rendered properly by looking for a unique element
@@ -392,7 +404,7 @@ describe('Dashboard Integration', () => {
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
@@ -402,27 +414,29 @@ describe('Dashboard Integration', () => {
         },
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       render(<Dashboard />);
 
       expect(screen.getByText(/no foods logged yet/i)).toBeInTheDocument();
-      expect(screen.getByText(/tap the eat icon below to get started/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/tap the eat icon below to get started/i),
+      ).toBeInTheDocument();
     });
 
     it('should show appropriate empty state for symptoms', async () => {
@@ -430,28 +444,28 @@ describe('Dashboard Integration', () => {
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
         data: [],
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
         data: mockFoodStats,
         error: null,
         isLoading: false,
-        retry: jest.fn()
+        retry: jest.fn(),
       });
 
       const user = userEvent.setup();
@@ -462,7 +476,9 @@ describe('Dashboard Integration', () => {
       await user.click(symptomsTab);
 
       expect(screen.getByText(/no symptoms logged yet/i)).toBeInTheDocument();
-      expect(screen.getByText(/tap the symptom icon below to get started/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/tap the symptom icon below to get started/i),
+      ).toBeInTheDocument();
     });
   });
 });

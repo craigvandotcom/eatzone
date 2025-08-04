@@ -1,4 +1,4 @@
-import { Food, Ingredient } from '@/lib/types'
+import { Food, Ingredient } from '@/lib/types';
 
 export const mockIngredients: Ingredient[] = [
   {
@@ -19,7 +19,7 @@ export const mockIngredients: Ingredient[] = [
     zone: 'red',
     foodGroup: 'sweets',
   },
-]
+];
 
 export const mockFoods: Food[] = [
   {
@@ -40,4 +40,4 @@ export const mockFoods: Food[] = [
     notes: 'Mixed meal',
     status: 'processed',
   },
-]
+];

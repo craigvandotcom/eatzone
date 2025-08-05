@@ -31,6 +31,7 @@ jest.mock('next/navigation', () => ({
 const mockSupabaseClient = {
   auth: {
     getUser: jest.fn(),
+    getSession: jest.fn(),
     signInWithPassword: jest.fn(),
     signUp: jest.fn(),
     signOut: jest.fn(),
@@ -58,7 +59,7 @@ const mockSupabaseClient = {
 };
 
 jest.mock('@/lib/supabase/client', () => ({
-  createClient: jest.fn(() => mockSupabaseClient),
+  createClient: () => mockSupabaseClient,
 }));
 
 // Mock custom hooks to return test data

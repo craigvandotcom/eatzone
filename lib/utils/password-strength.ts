@@ -11,7 +11,9 @@ export interface PasswordStrengthResult {
   feedback: string[];
 }
 
-export function calculatePasswordStrength(password: string): PasswordStrengthResult {
+export function calculatePasswordStrength(
+  password: string
+): PasswordStrengthResult {
   let score = 0;
   const feedback: string[] = [];
 
@@ -57,7 +59,9 @@ export function calculatePasswordStrength(password: string): PasswordStrengthRes
     /(.)\1{2,}/, // Repeated characters
   ];
 
-  const hasCommonPattern = commonPatterns.some(pattern => pattern.test(password));
+  const hasCommonPattern = commonPatterns.some(pattern =>
+    pattern.test(password)
+  );
   if (hasCommonPattern) {
     score = Math.max(0, score - 1);
     feedback.push('Avoid common patterns');

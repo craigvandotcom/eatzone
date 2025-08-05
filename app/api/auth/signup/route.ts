@@ -45,14 +45,14 @@ export async function POST(request: NextRequest) {
               statusCode: 429,
             },
           },
-          { 
+          {
             status: 429,
             headers: {
               'X-RateLimit-Limit': limit.toString(),
               'X-RateLimit-Remaining': remaining.toString(),
               'X-RateLimit-Reset': new Date(reset).toISOString(),
             },
-          },
+          }
         );
       }
     }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = signupSchema.parse(body);
 
     const cookieStore = await cookies();
-    
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,

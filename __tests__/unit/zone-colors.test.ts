@@ -1,6 +1,6 @@
 /**
  * Zone Colors Unit Tests
- * 
+ *
  * Tests the complete ingredient zoning color system:
  * - Zone color definitions and formats
  * - Color utility functions
@@ -34,20 +34,20 @@ describe('Zone Colors System', () => {
 
     it('should have consistent structure for all zones', () => {
       const zones: ZoneType[] = ['green', 'yellow', 'red'];
-      
+
       zones.forEach(zone => {
         const config = zoneColors[zone];
-        
+
         // Check required properties
         expect(config.hex).toMatch(/^#[0-9a-f]{6}$/i);
         expect(config.hsl).toContain('var(--zone-');
         expect(config.rgb).toContain('var(--zone-');
-        
+
         // Check Tailwind classes
         expect(config.bg).toBe(`bg-zone-${zone}`);
         expect(config.text).toBe(`text-zone-${zone}`);
         expect(config.border).toBe(`border-zone-${zone}`);
-        
+
         // Check opacity variants
         expect(config.bgLight).toBe(`bg-zone-${zone}/10`);
         expect(config.bgMedium).toBe(`bg-zone-${zone}/50`);
@@ -80,7 +80,7 @@ describe('Zone Colors System', () => {
 
     it('should handle all zone types', () => {
       const zones: ZoneType[] = ['green', 'yellow', 'red'];
-      
+
       zones.forEach(zone => {
         expect(getZoneColor(zone, 'hex')).toMatch(/^#[0-9a-f]{6}$/i);
         expect(getZoneColor(zone, 'hsl')).toContain(`var(--zone-${zone})`);
@@ -103,7 +103,7 @@ describe('Zone Colors System', () => {
 
     it('should work for all zones with opacity', () => {
       const zones: ZoneType[] = ['green', 'yellow', 'red'];
-      
+
       zones.forEach(zone => {
         expect(getZoneBgClass(zone, 'light')).toBe(`bg-zone-${zone}/10`);
         expect(getZoneBgClass(zone, 'medium')).toBe(`bg-zone-${zone}/50`);
@@ -115,7 +115,7 @@ describe('Zone Colors System', () => {
   describe('getZoneBgStyle', () => {
     it('should return CSS style object with background color', () => {
       const style = getZoneBgStyle('green');
-      
+
       expect(style).toEqual({
         backgroundColor: 'hsl(var(--zone-green))',
       });
@@ -123,7 +123,7 @@ describe('Zone Colors System', () => {
 
     it('should handle opacity when specified', () => {
       const style = getZoneBgStyle('yellow', 0.5);
-      
+
       expect(style).toEqual({
         backgroundColor: 'hsl(var(--zone-yellow) / 0.5)',
       });
@@ -131,13 +131,15 @@ describe('Zone Colors System', () => {
 
     it('should work for all zones', () => {
       const zones: ZoneType[] = ['green', 'yellow', 'red'];
-      
+
       zones.forEach(zone => {
         const style = getZoneBgStyle(zone);
         expect(style.backgroundColor).toBe(`hsl(var(--zone-${zone}))`);
-        
+
         const styleWithOpacity = getZoneBgStyle(zone, 0.3);
-        expect(styleWithOpacity.backgroundColor).toBe(`hsl(var(--zone-${zone}) / 0.3)`);
+        expect(styleWithOpacity.backgroundColor).toBe(
+          `hsl(var(--zone-${zone}) / 0.3)`
+        );
       });
     });
   });
@@ -256,7 +258,7 @@ describe('Zone Colors System', () => {
     it('should work for all zones and properties', () => {
       const zones: ZoneType[] = ['green', 'yellow', 'red'];
       const properties = ['backgroundColor', 'color', 'borderColor'] as const;
-      
+
       zones.forEach(zone => {
         properties.forEach(property => {
           const style = getZoneStyle(zone, property);
@@ -269,7 +271,7 @@ describe('Zone Colors System', () => {
   describe('Utility Functions', () => {
     it('should export cn function for class merging', () => {
       expect(typeof cn).toBe('function');
-      
+
       // Test basic functionality
       const result = cn('class1', 'class2');
       expect(typeof result).toBe('string');
@@ -293,7 +295,13 @@ describe('Zone Colors System', () => {
 
     it('should enforce ColorFormat constraint', () => {
       // These should work (compile-time check)
-      const validFormats: ColorFormat[] = ['hex', 'hsl', 'rgb', 'className', 'tailwind'];
+      const validFormats: ColorFormat[] = [
+        'hex',
+        'hsl',
+        'rgb',
+        'className',
+        'tailwind',
+      ];
       validFormats.forEach(format => {
         expect(() => getZoneColor('green', format)).not.toThrow();
       });
@@ -310,11 +318,11 @@ describe('Zone Colors System', () => {
     it('should support theme switching through CSS variables', () => {
       // The functions should return variable references that work with both light and dark themes
       const zones: ZoneType[] = ['green', 'yellow', 'red'];
-      
+
       zones.forEach(zone => {
         const hslColor = getZoneColor(zone, 'hsl');
         const rgbColor = getZoneColor(zone, 'rgb');
-        
+
         expect(hslColor).toMatch(/var\(--zone-\w+\)/);
         expect(rgbColor).toMatch(/var\(--zone-\w+-rgb\)/);
       });
@@ -327,7 +335,7 @@ describe('Zone Colors System', () => {
       const greenBadge = getZoneClasses('green', 'ghost');
       const yellowBadge = getZoneClasses('yellow', 'outline');
       const redBadge = getZoneClasses('red', 'solid');
-      
+
       expect(greenBadge).toContain('bg-zone-green/10');
       expect(yellowBadge).toContain('border-zone-yellow');
       expect(redBadge).toContain('bg-zone-red');
@@ -335,22 +343,18 @@ describe('Zone Colors System', () => {
 
     it('should support chart/visualization colors', () => {
       // Simulate getting colors for chart libraries
-      const chartColors = ['green', 'yellow', 'red'].map(zone => 
+      const chartColors = ['green', 'yellow', 'red'].map(zone =>
         getZoneColorWithAlpha(zone as ZoneType, '80')
       );
-      
-      expect(chartColors).toEqual([
-        '#27a69a80',
-        '#ffc00a80',
-        '#fe515180'
-      ]);
+
+      expect(chartColors).toEqual(['#27a69a80', '#ffc00a80', '#fe515180']);
     });
 
     it('should support inline styling for dynamic components', () => {
       // Simulate dynamic component styling
       const zones: ZoneType[] = ['green', 'yellow', 'red'];
       const styles = zones.map(zone => getZoneBgStyle(zone, 0.2));
-      
+
       styles.forEach((style, index) => {
         const zone = zones[index];
         expect(style.backgroundColor).toBe(`hsl(var(--zone-${zone}) / 0.2)`);

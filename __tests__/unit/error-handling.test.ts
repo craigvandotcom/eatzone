@@ -1,6 +1,6 @@
 /**
  * Error Handling Utilities Unit Tests
- * 
+ *
  * Tests all error handling scenarios:
  * - Network failures and timeouts
  * - Authentication expiry and session handling
@@ -76,7 +76,7 @@ describe('Error Handling Utilities', () => {
       const fallbackData = [];
 
       const result = await safeDbQuery(failingQuery, fallbackData);
-      
+
       expect(result).toBe(fallbackData);
       expect(logger.warn).toHaveBeenCalledWith(
         'Database query failed, using fallback',
@@ -95,7 +95,7 @@ describe('Error Handling Utilities', () => {
 
       const validClient = {
         from: jest.fn(),
-        auth: { getUser: jest.fn() }
+        auth: { getUser: jest.fn() },
       };
 
       const invalidClient = {
@@ -130,31 +130,54 @@ describe('Error Handling Utilities', () => {
         return 'unknown_auth_error';
       };
 
-      expect(classifyAuthError({ message: 'JWT expired' })).toBe('session_expired');
-      expect(classifyAuthError({ message: 'Invalid login credentials' })).toBe('invalid_credentials');
-      expect(classifyAuthError({ message: 'Email not confirmed' })).toBe('email_not_confirmed');
+      expect(classifyAuthError({ message: 'JWT expired' })).toBe(
+        'session_expired'
+      );
+      expect(classifyAuthError({ message: 'Invalid login credentials' })).toBe(
+        'invalid_credentials'
+      );
+      expect(classifyAuthError({ message: 'Email not confirmed' })).toBe(
+        'email_not_confirmed'
+      );
       expect(classifyAuthError({ status: 403 })).toBe('account_disabled');
       expect(classifyAuthError({ status: 401 })).toBe('unauthorized');
-      expect(classifyAuthError({ message: 'Unknown error' })).toBe('unknown_auth_error');
+      expect(classifyAuthError({ message: 'Unknown error' })).toBe(
+        'unknown_auth_error'
+      );
     });
 
     it('should provide user-friendly auth error messages', () => {
       const getAuthErrorMessage = (errorType: string) => {
         const messages = {
           session_expired: 'Your session has expired. Please sign in again.',
-          invalid_credentials: 'The email or password you entered is incorrect.',
-          email_not_confirmed: 'Please check your email and click the confirmation link.',
-          account_disabled: 'Your account has been disabled. Please contact support.',
+          invalid_credentials:
+            'The email or password you entered is incorrect.',
+          email_not_confirmed:
+            'Please check your email and click the confirmation link.',
+          account_disabled:
+            'Your account has been disabled. Please contact support.',
           unauthorized: 'You are not authorized to access this resource.',
-          unknown_auth_error: 'An authentication error occurred. Please try again.',
+          unknown_auth_error:
+            'An authentication error occurred. Please try again.',
         };
-        return messages[errorType as keyof typeof messages] || messages.unknown_auth_error;
+        return (
+          messages[errorType as keyof typeof messages] ||
+          messages.unknown_auth_error
+        );
       };
 
-      expect(getAuthErrorMessage('session_expired')).toBe('Your session has expired. Please sign in again.');
-      expect(getAuthErrorMessage('invalid_credentials')).toBe('The email or password you entered is incorrect.');
-      expect(getAuthErrorMessage('email_not_confirmed')).toBe('Please check your email and click the confirmation link.');
-      expect(getAuthErrorMessage('unknown')).toBe('An authentication error occurred. Please try again.');
+      expect(getAuthErrorMessage('session_expired')).toBe(
+        'Your session has expired. Please sign in again.'
+      );
+      expect(getAuthErrorMessage('invalid_credentials')).toBe(
+        'The email or password you entered is incorrect.'
+      );
+      expect(getAuthErrorMessage('email_not_confirmed')).toBe(
+        'Please check your email and click the confirmation link.'
+      );
+      expect(getAuthErrorMessage('unknown')).toBe(
+        'An authentication error occurred. Please try again.'
+      );
     });
 
     it('should handle auth token validation', () => {
@@ -224,56 +247,85 @@ describe('Error Handling Utilities', () => {
         }
       };
 
-      expect(classifyCameraError({ name: 'NotAllowedError' })).toBe('permission_denied');
-      expect(classifyCameraError({ name: 'NotFoundError' })).toBe('device_not_found');
-      expect(classifyCameraError({ name: 'NotReadableError' })).toBe('device_busy');
-      expect(classifyCameraError({ name: 'OverconstrainedError' })).toBe('constraints_not_satisfied');
-      expect(classifyCameraError({ name: 'AbortError' })).toBe('operation_aborted');
-      expect(classifyCameraError({ name: 'TypeError' })).toBe('invalid_constraints');
-      expect(classifyCameraError({ name: 'UnknownError' })).toBe('unknown_camera_error');
+      expect(classifyCameraError({ name: 'NotAllowedError' })).toBe(
+        'permission_denied'
+      );
+      expect(classifyCameraError({ name: 'NotFoundError' })).toBe(
+        'device_not_found'
+      );
+      expect(classifyCameraError({ name: 'NotReadableError' })).toBe(
+        'device_busy'
+      );
+      expect(classifyCameraError({ name: 'OverconstrainedError' })).toBe(
+        'constraints_not_satisfied'
+      );
+      expect(classifyCameraError({ name: 'AbortError' })).toBe(
+        'operation_aborted'
+      );
+      expect(classifyCameraError({ name: 'TypeError' })).toBe(
+        'invalid_constraints'
+      );
+      expect(classifyCameraError({ name: 'UnknownError' })).toBe(
+        'unknown_camera_error'
+      );
     });
 
     it('should provide user-friendly camera error messages', () => {
       const getCameraErrorMessage = (errorType: string) => {
         const messages = {
-          permission_denied: 'Camera access was denied. Please enable camera permissions in your browser.',
+          permission_denied:
+            'Camera access was denied. Please enable camera permissions in your browser.',
           device_not_found: 'No camera was found on this device.',
           device_busy: 'Camera is already being used by another application.',
-          constraints_not_satisfied: 'Camera does not support the requested video quality.',
+          constraints_not_satisfied:
+            'Camera does not support the requested video quality.',
           operation_aborted: 'Camera operation was cancelled.',
           invalid_constraints: 'Invalid camera settings were requested.',
-          unknown_camera_error: 'An unexpected camera error occurred. Please try again.',
+          unknown_camera_error:
+            'An unexpected camera error occurred. Please try again.',
         };
-        return messages[errorType as keyof typeof messages] || messages.unknown_camera_error;
+        return (
+          messages[errorType as keyof typeof messages] ||
+          messages.unknown_camera_error
+        );
       };
 
-      expect(getCameraErrorMessage('permission_denied')).toBe('Camera access was denied. Please enable camera permissions in your browser.');
-      expect(getCameraErrorMessage('device_not_found')).toBe('No camera was found on this device.');
-      expect(getCameraErrorMessage('device_busy')).toBe('Camera is already being used by another application.');
-      expect(getCameraErrorMessage('unknown')).toBe('An unexpected camera error occurred. Please try again.');
+      expect(getCameraErrorMessage('permission_denied')).toBe(
+        'Camera access was denied. Please enable camera permissions in your browser.'
+      );
+      expect(getCameraErrorMessage('device_not_found')).toBe(
+        'No camera was found on this device.'
+      );
+      expect(getCameraErrorMessage('device_busy')).toBe(
+        'Camera is already being used by another application.'
+      );
+      expect(getCameraErrorMessage('unknown')).toBe(
+        'An unexpected camera error occurred. Please try again.'
+      );
     });
 
     it('should check camera API availability', () => {
       const checkCameraSupport = () => {
         const hasNavigator = typeof navigator !== 'undefined';
         const hasMediaDevices = hasNavigator && 'mediaDevices' in navigator;
-        const hasGetUserMedia = hasMediaDevices && 'getUserMedia' in navigator.mediaDevices;
-        
+        const hasGetUserMedia =
+          hasMediaDevices && 'getUserMedia' in navigator.mediaDevices;
+
         return {
           supported: hasGetUserMedia,
           reasons: {
             noNavigator: !hasNavigator,
             noMediaDevices: hasNavigator && !hasMediaDevices,
             noGetUserMedia: hasMediaDevices && !hasGetUserMedia,
-          }
+          },
         };
       };
 
       const support = checkCameraSupport();
-      
+
       // In test environment, navigator should exist
       expect(support.reasons.noNavigator).toBe(false);
-      
+
       // The specific support will depend on the test environment setup
       expect(typeof support.supported).toBe('boolean');
     });
@@ -284,7 +336,10 @@ describe('Error Handling Utilities', () => {
           // Simulate different constraint attempts
           if (constraints.video === true) {
             return { success: true, stream: 'mock-stream' };
-          } else if (typeof constraints.video === 'object' && constraints.video.width) {
+          } else if (
+            typeof constraints.video === 'object' &&
+            constraints.video.width
+          ) {
             // Simulate failing for impossible constraints
             if (constraints.video.width > 4000) {
               throw new Error('Resolution too high');
@@ -298,7 +353,9 @@ describe('Error Handling Utilities', () => {
         }
       };
 
-      const highQuality = await tryGetCamera({ video: { width: 1920, height: 1080 } });
+      const highQuality = await tryGetCamera({
+        video: { width: 1920, height: 1080 },
+      });
       const basicVideo = await tryGetCamera({ video: true });
       const impossible = await tryGetCamera({ video: { width: 99999 } });
 
@@ -315,9 +372,15 @@ describe('Error Handling Utilities', () => {
           case 'denied':
             return { allowed: false, message: 'Camera access denied' };
           case 'prompt':
-            return { allowed: null, message: 'Camera permission will be requested' };
+            return {
+              allowed: null,
+              message: 'Camera permission will be requested',
+            };
           default:
-            return { allowed: null, message: 'Camera permission status unknown' };
+            return {
+              allowed: null,
+              message: 'Camera permission status unknown',
+            };
         }
       };
 
@@ -366,10 +429,11 @@ describe('Error Handling Utilities', () => {
         ok: false,
         status: 429,
         statusText: 'Too Many Requests',
-        json: () => Promise.resolve({ 
-          error: 'Rate limit exceeded',
-          retryAfter: 60 
-        }),
+        json: () =>
+          Promise.resolve({
+            error: 'Rate limit exceeded',
+            retryAfter: 60,
+          }),
       };
 
       global.fetch = jest.fn().mockResolvedValue(rateLimitResponse as any);
@@ -384,9 +448,10 @@ describe('Error Handling Utilities', () => {
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
-        json: () => Promise.resolve({ 
-          error: 'Internal server error' 
-        }),
+        json: () =>
+          Promise.resolve({
+            error: 'Internal server error',
+          }),
       };
 
       global.fetch = jest.fn().mockResolvedValue(serverErrorResponse as any);
@@ -406,7 +471,7 @@ describe('Error Handling Utilities', () => {
       global.fetch = jest.fn().mockResolvedValue(invalidJsonResponse as any);
 
       const response = await fetch('/api/test');
-      
+
       try {
         await response.json();
         fail('Should have thrown JSON parsing error');
@@ -437,7 +502,9 @@ describe('Error Handling Utilities', () => {
       };
 
       const errorMessage = handleApiError(apiKeyError);
-      expect(errorMessage).toBe('Invalid API key. Please check your OpenRouter configuration.');
+      expect(errorMessage).toBe(
+        'Invalid API key. Please check your OpenRouter configuration.'
+      );
     });
 
     it('should handle AI model unavailable errors', () => {
@@ -458,7 +525,9 @@ describe('Error Handling Utilities', () => {
       };
 
       const errorMessage = handleApiError(modelError);
-      expect(errorMessage).toBe('AI model is temporarily unavailable. Please try again later.');
+      expect(errorMessage).toBe(
+        'AI model is temporarily unavailable. Please try again later.'
+      );
     });
 
     it('should handle AI quota exceeded errors', () => {
@@ -472,14 +541,19 @@ describe('Error Handling Utilities', () => {
       };
 
       const handleApiError = (error: any) => {
-        if (error.status === 429 && error.error?.type === 'insufficient_quota') {
+        if (
+          error.status === 429 &&
+          error.error?.type === 'insufficient_quota'
+        ) {
           return 'AI service quota exceeded. Please upgrade your plan or try again later.';
         }
         return 'Unknown API error';
       };
 
       const errorMessage = handleApiError(quotaError);
-      expect(errorMessage).toBe('AI service quota exceeded. Please upgrade your plan or try again later.');
+      expect(errorMessage).toBe(
+        'AI service quota exceeded. Please upgrade your plan or try again later.'
+      );
     });
 
     it('should handle AI processing timeout', () => {
@@ -499,31 +573,48 @@ describe('Error Handling Utilities', () => {
       };
 
       const errorMessage = handleApiError(timeoutError);
-      expect(errorMessage).toBe('AI processing took too long. Please try with a smaller image or simpler request.');
+      expect(errorMessage).toBe(
+        'AI processing took too long. Please try with a smaller image or simpler request.'
+      );
     });
   });
 
   describe('User-Friendly Error Messages', () => {
     it('should convert technical errors to user-friendly messages', () => {
       const errorMap = {
-        'ECONNREFUSED': 'Unable to connect to the server. Please check your internet connection.',
-        'ETIMEDOUT': 'The request took too long. Please try again.',
-        'ENOTFOUND': 'Server not found. Please check your connection.',
+        ECONNREFUSED:
+          'Unable to connect to the server. Please check your internet connection.',
+        ETIMEDOUT: 'The request took too long. Please try again.',
+        ENOTFOUND: 'Server not found. Please check your connection.',
         'JWT expired': 'Your session has expired. Please sign in again.',
-        'Invalid login credentials': 'The email or password you entered is incorrect.',
-        'Permission denied': 'Camera access was denied. Please enable camera permissions in your browser.',
-        'NotFoundError': 'No camera was found on this device.',
-        'NotAllowedError': 'Camera access is required for this feature. Please allow camera access.',
+        'Invalid login credentials':
+          'The email or password you entered is incorrect.',
+        'Permission denied':
+          'Camera access was denied. Please enable camera permissions in your browser.',
+        NotFoundError: 'No camera was found on this device.',
+        NotAllowedError:
+          'Camera access is required for this feature. Please allow camera access.',
       };
 
       const getUserFriendlyMessage = (error: string) => {
-        return errorMap[error as keyof typeof errorMap] || 'An unexpected error occurred. Please try again.';
+        return (
+          errorMap[error as keyof typeof errorMap] ||
+          'An unexpected error occurred. Please try again.'
+        );
       };
 
-      expect(getUserFriendlyMessage('ECONNREFUSED')).toBe('Unable to connect to the server. Please check your internet connection.');
-      expect(getUserFriendlyMessage('JWT expired')).toBe('Your session has expired. Please sign in again.');
-      expect(getUserFriendlyMessage('NotAllowedError')).toBe('Camera access is required for this feature. Please allow camera access.');
-      expect(getUserFriendlyMessage('UNKNOWN_ERROR')).toBe('An unexpected error occurred. Please try again.');
+      expect(getUserFriendlyMessage('ECONNREFUSED')).toBe(
+        'Unable to connect to the server. Please check your internet connection.'
+      );
+      expect(getUserFriendlyMessage('JWT expired')).toBe(
+        'Your session has expired. Please sign in again.'
+      );
+      expect(getUserFriendlyMessage('NotAllowedError')).toBe(
+        'Camera access is required for this feature. Please allow camera access.'
+      );
+      expect(getUserFriendlyMessage('UNKNOWN_ERROR')).toBe(
+        'An unexpected error occurred. Please try again.'
+      );
     });
 
     it('should preserve original error details for debugging', () => {
@@ -541,16 +632,26 @@ describe('Error Handling Utilities', () => {
         timestamp: new Date().toISOString(),
       };
 
-      expect(errorInfo.userMessage).toBe('Unable to save your data. Please try again.');
+      expect(errorInfo.userMessage).toBe(
+        'Unable to save your data. Please try again.'
+      );
       expect(errorInfo.originalError.name).toBe('CONNECTION_ERROR');
-      expect(errorInfo.originalError.message).toBe('Database connection failed');
-      expect(errorInfo.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      expect(errorInfo.originalError.message).toBe(
+        'Database connection failed'
+      );
+      expect(errorInfo.timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+      );
     });
   });
 
   describe('Error Recovery Strategies', () => {
     it('should implement exponential backoff for retries', () => {
-      const calculateBackoffDelay = (attempt: number, baseDelay = 1000, maxDelay = 30000) => {
+      const calculateBackoffDelay = (
+        attempt: number,
+        baseDelay = 1000,
+        maxDelay = 30000
+      ) => {
         const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
         // Add jitter to prevent thundering herd
         const jitter = Math.random() * 0.1 * delay;
@@ -558,7 +659,11 @@ describe('Error Handling Utilities', () => {
       };
 
       // Test without jitter for predictable results
-      const calculateBackoffDelayNoJitter = (attempt: number, baseDelay = 1000, maxDelay = 30000) => {
+      const calculateBackoffDelayNoJitter = (
+        attempt: number,
+        baseDelay = 1000,
+        maxDelay = 30000
+      ) => {
         return Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
       };
 
@@ -566,7 +671,7 @@ describe('Error Handling Utilities', () => {
       expect(calculateBackoffDelayNoJitter(1)).toBe(2000);
       expect(calculateBackoffDelayNoJitter(2)).toBe(4000);
       expect(calculateBackoffDelayNoJitter(10)).toBe(30000); // Max delay cap
-      
+
       // Test that jitter version is within reasonable bounds
       const withJitter = calculateBackoffDelay(0);
       expect(withJitter).toBeGreaterThanOrEqual(1000);
@@ -622,22 +727,22 @@ describe('Error Handling Utilities', () => {
       }
 
       const breaker = new CircuitBreaker();
-      
+
       // Circuit should be closed initially
       expect(() => breaker['isOpen']()).not.toThrow();
-      
+
       // Simulate failures
       for (let i = 0; i < 5; i++) {
         breaker['onFailure']();
       }
-      
+
       // Circuit should be open now
       expect(breaker['isOpen']()).toBe(true);
     });
 
     it('should provide fallback values for failed operations', () => {
       const safeGetValue = async <T>(
-        operation: () => Promise<T>, 
+        operation: () => Promise<T>,
         fallback: T
       ): Promise<T> => {
         try {
@@ -651,8 +756,9 @@ describe('Error Handling Utilities', () => {
       const failingOperation = () => Promise.reject(new Error('Failed'));
       const fallbackValue = 'default value';
 
-      return expect(safeGetValue(failingOperation, fallbackValue))
-        .resolves.toBe(fallbackValue);
+      return expect(
+        safeGetValue(failingOperation, fallbackValue)
+      ).resolves.toBe(fallbackValue);
     });
   });
 
@@ -676,24 +782,24 @@ describe('Error Handling Utilities', () => {
       logError(clientError, 'test');
       logError(infoError, 'test');
 
-      expect(logger.error).toHaveBeenCalledWith('Server error', { 
-        error: serverError, 
-        context: 'test' 
+      expect(logger.error).toHaveBeenCalledWith('Server error', {
+        error: serverError,
+        context: 'test',
       });
-      expect(logger.warn).toHaveBeenCalledWith('Client error', { 
-        error: clientError, 
-        context: 'test' 
+      expect(logger.warn).toHaveBeenCalledWith('Client error', {
+        error: clientError,
+        context: 'test',
       });
-      expect(logger.info).toHaveBeenCalledWith('Request info', { 
-        error: infoError, 
-        context: 'test' 
+      expect(logger.info).toHaveBeenCalledWith('Request info', {
+        error: infoError,
+        context: 'test',
       });
     });
 
     it('should sanitize sensitive data from error logs', () => {
       const sanitizeError = (error: any) => {
         const sanitized = { ...error };
-        
+
         // Remove sensitive fields
         const sensitiveFields = ['password', 'token', 'apiKey', 'secret'];
         sensitiveFields.forEach(field => {

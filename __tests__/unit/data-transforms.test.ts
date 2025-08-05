@@ -1,19 +1,15 @@
 /**
  * Data Transformations Unit Tests
- * 
+ *
  * Tests all data transformation utilities:
  * - Date formatting functions
- * - Statistics calculations 
+ * - Statistics calculations
  * - Food/symptom data processing
  * - Chart data transformations
  * - Export/import data formatting
  */
 
-import { 
-  generateTimestamp, 
-  getTodayDate, 
-  isToday,
-} from '@/lib/db';
+import { generateTimestamp, getTodayDate, isToday } from '@/lib/db';
 
 // Mock data for testing
 const mockFood = {
@@ -51,14 +47,16 @@ describe('Data Transformations', () => {
 
     it('should generate proper ISO timestamp', () => {
       const timestamp = generateTimestamp();
-      
+
       expect(timestamp).toBe('2024-01-15T12:00:00.000Z');
-      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+      );
     });
 
     it('should get today date in YYYY-MM-DD format', () => {
       const today = getTodayDate();
-      
+
       expect(today).toBe('2024-01-15');
       expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
@@ -76,7 +74,7 @@ describe('Data Transformations', () => {
     it('should handle edge cases for date checking', () => {
       // Beginning of day
       expect(isToday('2024-01-15T00:00:00.000Z')).toBe(true);
-      // End of day  
+      // End of day
       expect(isToday('2024-01-15T23:59:59.999Z')).toBe(true);
       // Just after midnight next day
       expect(isToday('2024-01-16T00:00:00.000Z')).toBe(false);
@@ -91,7 +89,7 @@ describe('Data Transformations', () => {
         ingredients: [
           { name: 'spinach', zone: 'green' as const, organic: true },
           { name: 'kale', zone: 'green' as const, organic: true },
-        ]
+        ],
       },
       {
         ...mockFood,
@@ -99,7 +97,7 @@ describe('Data Transformations', () => {
         ingredients: [
           { name: 'chicken', zone: 'yellow' as const, organic: false },
           { name: 'rice', zone: 'yellow' as const, organic: true },
-        ]
+        ],
       },
       {
         ...mockFood,
@@ -107,15 +105,17 @@ describe('Data Transformations', () => {
         ingredients: [
           { name: 'sugar', zone: 'red' as const, organic: false },
           { name: 'candy', zone: 'red' as const, organic: false },
-        ]
-      }
+        ],
+      },
     ];
 
     it('should calculate ingredient zone statistics correctly', () => {
       const ingredients = mockFoods.flatMap(food => food.ingredients || []);
-      
+
       const greenCount = ingredients.filter(ing => ing.zone === 'green').length;
-      const yellowCount = ingredients.filter(ing => ing.zone === 'yellow').length;
+      const yellowCount = ingredients.filter(
+        ing => ing.zone === 'yellow'
+      ).length;
       const redCount = ingredients.filter(ing => ing.zone === 'red').length;
       const totalCount = ingredients.length;
 
@@ -127,7 +127,9 @@ describe('Data Transformations', () => {
 
     it('should calculate organic percentage correctly', () => {
       const ingredients = mockFoods.flatMap(food => food.ingredients || []);
-      const organicCount = ingredients.filter(ing => ing.organic === true).length;
+      const organicCount = ingredients.filter(
+        ing => ing.organic === true
+      ).length;
       const totalCount = ingredients.length;
       const organicPercentage = (organicCount / totalCount) * 100;
 
@@ -138,11 +140,14 @@ describe('Data Transformations', () => {
     it('should handle empty data gracefully', () => {
       const emptyFoods: typeof mockFoods = [];
       const ingredients = emptyFoods.flatMap(food => food.ingredients || []);
-      
+
       const greenCount = ingredients.filter(ing => ing.zone === 'green').length;
-      const organicPercentage = ingredients.length > 0 
-        ? (ingredients.filter(ing => ing.organic).length / ingredients.length) * 100 
-        : 0;
+      const organicPercentage =
+        ingredients.length > 0
+          ? (ingredients.filter(ing => ing.organic).length /
+              ingredients.length) *
+            100
+          : 0;
 
       expect(greenCount).toBe(0);
       expect(organicPercentage).toBe(0);
@@ -155,7 +160,10 @@ describe('Data Transformations', () => {
         { ...mockSymptom, id: '3', severity: 3 },
       ];
 
-      const totalSeverity = mockSymptoms.reduce((sum, s) => sum + s.severity, 0);
+      const totalSeverity = mockSymptoms.reduce(
+        (sum, s) => sum + s.severity,
+        0
+      );
       const averageSeverity = totalSeverity / mockSymptoms.length;
 
       expect(totalSeverity).toBe(9);
@@ -171,14 +179,14 @@ describe('Data Transformations', () => {
           ingredients: [
             { name: 'spinach', zone: 'green' as const, organic: true },
             { name: 'spinach', zone: 'green' as const, organic: false }, // duplicate
-          ]
+          ],
         },
         {
           ...mockFood,
           ingredients: [
             { name: 'chicken', zone: 'yellow' as const, organic: false },
-          ]
-        }
+          ],
+        },
       ];
 
       const allIngredients = foods.flatMap(food => food.ingredients || []);
@@ -216,8 +224,9 @@ describe('Data Transformations', () => {
         { ...mockFood, id: '3', timestamp: '2024-01-15T12:30:00.000Z' },
       ];
 
-      const sortedFoods = [...foods].sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      const sortedFoods = [...foods].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
       expect(sortedFoods[0].id).toBe('1'); // 15:30 (latest)
@@ -237,9 +246,18 @@ describe('Data Transformations', () => {
 
       // Transform to chart data format
       const zoneData = [
-        { zone: 'green', count: ingredients.filter(i => i.zone === 'green').length },
-        { zone: 'yellow', count: ingredients.filter(i => i.zone === 'yellow').length },
-        { zone: 'red', count: ingredients.filter(i => i.zone === 'red').length },
+        {
+          zone: 'green',
+          count: ingredients.filter(i => i.zone === 'green').length,
+        },
+        {
+          zone: 'yellow',
+          count: ingredients.filter(i => i.zone === 'yellow').length,
+        },
+        {
+          zone: 'red',
+          count: ingredients.filter(i => i.zone === 'red').length,
+        },
       ];
 
       expect(zoneData).toEqual([
@@ -266,11 +284,15 @@ describe('Data Transformations', () => {
         groupedByDay[day].push(symptom);
       });
 
-      const trendData = Object.entries(groupedByDay).map(([day, daySymptoms]) => ({
-        day,
-        count: daySymptoms.length,
-        averageSeverity: daySymptoms.reduce((sum, s) => sum + s.severity, 0) / daySymptoms.length,
-      }));
+      const trendData = Object.entries(groupedByDay).map(
+        ([day, daySymptoms]) => ({
+          day,
+          count: daySymptoms.length,
+          averageSeverity:
+            daySymptoms.reduce((sum, s) => sum + s.severity, 0) /
+            daySymptoms.length,
+        })
+      );
 
       expect(trendData).toEqual([
         { day: '2024-01-15', count: 2, averageSeverity: 3 },
@@ -290,8 +312,10 @@ describe('Data Transformations', () => {
       // Verify export structure
       expect(exportData.foods).toHaveLength(1);
       expect(exportData.symptoms).toHaveLength(1);
-      expect(exportData.exportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-      
+      expect(exportData.exportedAt).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+      );
+
       // Verify required fields are present
       expect(exportData.foods[0]).toHaveProperty('id');
       expect(exportData.foods[0]).toHaveProperty('name');
@@ -306,7 +330,7 @@ describe('Data Transformations', () => {
       };
 
       const newUserId = 'new-user';
-      
+
       // Transform for new user
       const preparedFoods = importData.foods.map(food => ({
         ...food,
@@ -337,12 +361,12 @@ describe('Data Transformations', () => {
       const validateImportData = (data: any) => {
         if (!data.foods || !Array.isArray(data.foods)) return false;
         if (!data.symptoms || !Array.isArray(data.symptoms)) return false;
-        
+
         // Check required fields for foods
         for (const food of data.foods) {
           if (!food.id || !food.name || !food.timestamp) return false;
         }
-        
+
         return true;
       };
 
@@ -353,14 +377,33 @@ describe('Data Transformations', () => {
 
   describe('Data Filtering and Searching', () => {
     const testFoods = [
-      { ...mockFood, id: '1', name: 'Green Smoothie', ingredients: [{ name: 'spinach', zone: 'green' as const, organic: true }] },
-      { ...mockFood, id: '2', name: 'Chicken Salad', ingredients: [{ name: 'chicken', zone: 'yellow' as const, organic: false }] },
-      { ...mockFood, id: '3', name: 'Chocolate Cake', ingredients: [{ name: 'sugar', zone: 'red' as const, organic: false }] },
+      {
+        ...mockFood,
+        id: '1',
+        name: 'Green Smoothie',
+        ingredients: [
+          { name: 'spinach', zone: 'green' as const, organic: true },
+        ],
+      },
+      {
+        ...mockFood,
+        id: '2',
+        name: 'Chicken Salad',
+        ingredients: [
+          { name: 'chicken', zone: 'yellow' as const, organic: false },
+        ],
+      },
+      {
+        ...mockFood,
+        id: '3',
+        name: 'Chocolate Cake',
+        ingredients: [{ name: 'sugar', zone: 'red' as const, organic: false }],
+      },
     ];
 
     it('should filter foods by name', () => {
       const searchTerm = 'chicken';
-      const filtered = testFoods.filter(food => 
+      const filtered = testFoods.filter(food =>
         food.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
@@ -389,10 +432,13 @@ describe('Data Transformations', () => {
     it('should search across multiple fields', () => {
       const searchTerm = 'green';
       const results = testFoods.filter(food => {
-        const nameMatch = food.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const ingredientMatch = food.ingredients?.some(ing => 
-          ing.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          ing.zone.toLowerCase().includes(searchTerm.toLowerCase())
+        const nameMatch = food.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const ingredientMatch = food.ingredients?.some(
+          ing =>
+            ing.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            ing.zone.toLowerCase().includes(searchTerm.toLowerCase())
         );
         return nameMatch || ingredientMatch;
       });
@@ -413,7 +459,7 @@ describe('Data Transformations', () => {
     it('should paginate data correctly', () => {
       const pageSize = 10;
       const page = 1; // 0-indexed
-      
+
       const startIndex = page * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedData = testData.slice(startIndex, endIndex);
@@ -426,7 +472,7 @@ describe('Data Transformations', () => {
     it('should handle last page with fewer items', () => {
       const pageSize = 10;
       const lastPage = 2; // Should have 5 items
-      
+
       const startIndex = lastPage * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedData = testData.slice(startIndex, endIndex);
@@ -436,8 +482,9 @@ describe('Data Transformations', () => {
     });
 
     it('should sort by timestamp descending', () => {
-      const sorted = [...testData].sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      const sorted = [...testData].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
       expect(sorted[0].name).toBe('Food 1'); // Most recent

@@ -1,6 +1,6 @@
 /**
  * AI Analysis Integration Tests
- * 
+ *
  * Tests the AI analysis logic and OpenRouter integration:
  * - OpenRouter API calls with mocked responses
  * - Response data parsing and validation
@@ -13,8 +13,10 @@ import { openrouter } from '@/lib/ai/openrouter';
 // Mock prompts module since Jest can't handle markdown imports
 jest.mock('@/lib/prompts', () => ({
   prompts: {
-    imageAnalysis: 'You are an expert food ingredient analyst. Analyze the provided image and return JSON.',
-    ingredientZoning: 'Zone the following ingredients into green (healthy), yellow (moderate), or red (unhealthy) categories.',
+    imageAnalysis:
+      'You are an expert food ingredient analyst. Analyze the provided image and return JSON.',
+    ingredientZoning:
+      'Zone the following ingredients into green (healthy), yellow (moderate), or red (unhealthy) categories.',
   },
 }));
 
@@ -31,9 +33,8 @@ jest.mock('@/lib/ai/openrouter', () => ({
   },
 }));
 
-const mockOpenRouter = openrouter.chat.completions.create as jest.MockedFunction<
-  typeof openrouter.chat.completions.create
->;
+const mockOpenRouter = openrouter.chat.completions
+  .create as jest.MockedFunction<typeof openrouter.chat.completions.create>;
 
 describe('AI Analysis Integration', () => {
   beforeEach(() => {
@@ -43,18 +44,20 @@ describe('AI Analysis Integration', () => {
   describe('OpenRouter Integration', () => {
     it('should successfully call OpenRouter for image analysis', async () => {
       const mockAIResponse = {
-        choices: [{
-          message: {
-            content: JSON.stringify({
-              mealSummary: 'Healthy green salad with mixed vegetables',
-              ingredients: [
-                { name: 'Spinach', isOrganic: true },
-                { name: 'Tomatoes', isOrganic: false },
-                { name: 'Olive Oil', isOrganic: true }
-              ]
-            })
-          }
-        }]
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                mealSummary: 'Healthy green salad with mixed vegetables',
+                ingredients: [
+                  { name: 'Spinach', isOrganic: true },
+                  { name: 'Tomatoes', isOrganic: false },
+                  { name: 'Olive Oil', isOrganic: true },
+                ],
+              }),
+            },
+          },
+        ],
       };
 
       mockOpenRouter.mockResolvedValueOnce(mockAIResponse);
@@ -90,23 +93,23 @@ describe('AI Analysis Integration', () => {
             role: 'user',
             content: expect.arrayContaining([
               expect.objectContaining({ type: 'text' }),
-              expect.objectContaining({ 
+              expect.objectContaining({
                 type: 'image_url',
-                image_url: { url: 'data:image/jpeg;base64,test-image-data' }
-              })
-            ])
-          })
+                image_url: { url: 'data:image/jpeg;base64,test-image-data' },
+              }),
+            ]),
+          }),
         ]),
         max_tokens: 300,
-        temperature: 0.1
+        temperature: 0.1,
       });
 
       expect(response.choices[0].message.content).toBeDefined();
-      
+
       // Parse the response
       const aiResponseText = response.choices[0].message.content;
       const parsedResponse = JSON.parse(aiResponseText);
-      
+
       expect(parsedResponse).toHaveProperty('mealSummary');
       expect(parsedResponse).toHaveProperty('ingredients');
       expect(Array.isArray(parsedResponse.ingredients)).toBe(true);
@@ -114,23 +117,37 @@ describe('AI Analysis Integration', () => {
 
     it('should successfully call OpenRouter for ingredient zoning', async () => {
       const mockAIResponse = {
-        choices: [{
-          message: {
-            content: JSON.stringify({
-              zonedIngredients: [
-                { name: 'spinach', zone: 'green', reasoning: 'Leafy green vegetable rich in nutrients' },
-                { name: 'olive oil', zone: 'yellow', reasoning: 'Healthy fat but high in calories' },
-                { name: 'processed cheese', zone: 'red', reasoning: 'High in sodium and processed ingredients' }
-              ]
-            })
-          }
-        }]
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                zonedIngredients: [
+                  {
+                    name: 'spinach',
+                    zone: 'green',
+                    reasoning: 'Leafy green vegetable rich in nutrients',
+                  },
+                  {
+                    name: 'olive oil',
+                    zone: 'yellow',
+                    reasoning: 'Healthy fat but high in calories',
+                  },
+                  {
+                    name: 'processed cheese',
+                    zone: 'red',
+                    reasoning: 'High in sodium and processed ingredients',
+                  },
+                ],
+              }),
+            },
+          },
+        ],
       };
 
       mockOpenRouter.mockResolvedValueOnce(mockAIResponse);
 
       const ingredients = ['spinach', 'olive oil', 'processed cheese'];
-      
+
       // Simulate ingredient zoning call
       const response = await openrouter.chat.completions.create({
         model: 'openai/gpt-4o-mini',
@@ -151,19 +168,19 @@ Ingredients to zone: ${ingredients.join(', ')}`,
         messages: expect.arrayContaining([
           expect.objectContaining({
             role: 'user',
-            content: expect.stringContaining('spinach')
-          })
+            content: expect.stringContaining('spinach'),
+          }),
         ]),
         max_tokens: 1000,
-        temperature: 0.1
+        temperature: 0.1,
       });
 
       expect(response.choices[0].message.content).toBeDefined();
-      
+
       // Parse the response
       const aiResponseText = response.choices[0].message.content;
       const parsedResponse = JSON.parse(aiResponseText);
-      
+
       expect(parsedResponse).toHaveProperty('zonedIngredients');
       expect(Array.isArray(parsedResponse.zonedIngredients)).toBe(true);
       expect(parsedResponse.zonedIngredients).toHaveLength(3);
@@ -178,14 +195,16 @@ Ingredients to zone: ${ingredients.join(', ')}`,
     });
 
     it('should handle API errors gracefully', async () => {
-      mockOpenRouter.mockRejectedValueOnce(new Error('API service unavailable'));
+      mockOpenRouter.mockRejectedValueOnce(
+        new Error('API service unavailable')
+      );
 
       try {
         await openrouter.chat.completions.create({
           model: 'openai/gpt-4o',
           messages: [{ role: 'user', content: 'test' }],
         });
-        
+
         // Should not reach here
         expect(true).toBe(false);
       } catch (error) {
@@ -196,7 +215,7 @@ Ingredients to zone: ${ingredients.join(', ')}`,
 
     it('should handle empty responses from AI', async () => {
       const mockAIResponse = {
-        choices: []
+        choices: [],
       };
 
       mockOpenRouter.mockResolvedValueOnce(mockAIResponse);
@@ -211,11 +230,13 @@ Ingredients to zone: ${ingredients.join(', ')}`,
 
     it('should handle malformed JSON responses', async () => {
       const mockAIResponse = {
-        choices: [{
-          message: {
-            content: 'This is not valid JSON'
-          }
-        }]
+        choices: [
+          {
+            message: {
+              content: 'This is not valid JSON',
+            },
+          },
+        ],
       };
 
       mockOpenRouter.mockResolvedValueOnce(mockAIResponse);
@@ -226,7 +247,7 @@ Ingredients to zone: ${ingredients.join(', ')}`,
       });
 
       const aiResponseText = response.choices[0].message.content;
-      
+
       expect(() => JSON.parse(aiResponseText)).toThrow();
     });
   });
@@ -272,15 +293,18 @@ Ingredients to zone: ${ingredients.join(', ')}`,
     });
 
     it('should handle markdown-wrapped JSON responses', () => {
-      const markdownResponse = '```json\n' + JSON.stringify({
-        mealSummary: 'Test meal',
-        ingredients: [{ name: 'Test Ingredient', isOrganic: false }]
-      }) + '\n```';
+      const markdownResponse =
+        '```json\n' +
+        JSON.stringify({
+          mealSummary: 'Test meal',
+          ingredients: [{ name: 'Test Ingredient', isOrganic: false }],
+        }) +
+        '\n```';
 
       // Simulate the markdown parsing logic from the API
       const jsonMatch = markdownResponse.match(/```json\s*([\s\S]*?)\s*```/);
       expect(jsonMatch).toBeTruthy();
-      
+
       if (jsonMatch) {
         const parsedResponse = JSON.parse(jsonMatch[1]);
         expect(parsedResponse.mealSummary).toBe('Test meal');

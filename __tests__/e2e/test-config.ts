@@ -6,7 +6,7 @@
 export const TEST_CONFIG = {
   // Base URL for testing (production build)
   baseUrl: 'http://localhost:3000',
-  
+
   // Test email addresses (REAL emails required for Supabase auth)
   // Note: These should be real, accessible email addresses for testing
   testEmails: {
@@ -14,10 +14,10 @@ export const TEST_CONFIG = {
     secondary: 'puls.test.secondary@gmail.com', // Replace with real test email
     cleanup: 'puls.test.cleanup@gmail.com', // Replace with real test email
   },
-  
+
   // Test passwords
   testPassword: 'TestPassword123!',
-  
+
   // Test timeouts
   timeouts: {
     pageLoad: 5000,
@@ -25,7 +25,7 @@ export const TEST_CONFIG = {
     authFlow: 10000,
     aiAnalysis: 15000,
   },
-  
+
   // Test data
   testData: {
     food: {
@@ -38,7 +38,7 @@ export const TEST_CONFIG = {
       notes: 'After lunch test symptom',
     },
   },
-  
+
   // Expected elements for validation
   selectors: {
     navigation: {
@@ -80,7 +80,7 @@ export const testUtils = {
    * Wait for network requests to complete
    */
   waitForNetworkIdle: () => new Promise(resolve => setTimeout(resolve, 1000)),
-  
+
   /**
    * Generate test user data
    */
@@ -89,7 +89,7 @@ export const testUtils = {
     password: TEST_CONFIG.testPassword,
     name: `Test User ${Date.now()}`,
   }),
-  
+
   /**
    * Common validation texts
    */

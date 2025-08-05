@@ -8,10 +8,12 @@ export interface AuthenticatedRequest {
   userEmail: string;
 }
 
-export async function requireAuth(): Promise<AuthenticatedRequest | NextResponse> {
+export async function requireAuth(): Promise<
+  AuthenticatedRequest | NextResponse
+> {
   try {
     const cookieStore = await cookies();
-    
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -31,17 +33,20 @@ export async function requireAuth(): Promise<AuthenticatedRequest | NextResponse
       }
     );
 
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
     if (error || !user) {
       logger.warn('Unauthorized API request', { error: error?.message });
       return NextResponse.json(
-        { 
+        {
           error: {
             message: 'Authentication required',
             code: 'UNAUTHORIZED',
-            statusCode: 401
-          }
+            statusCode: 401,
+          },
         },
         { status: 401 }
       );
@@ -54,12 +59,12 @@ export async function requireAuth(): Promise<AuthenticatedRequest | NextResponse
   } catch (error) {
     logger.error('Auth verification error', error);
     return NextResponse.json(
-      { 
+      {
         error: {
           message: 'Authentication verification failed',
-          code: 'AUTH_ERROR', 
-          statusCode: 500
-        }
+          code: 'AUTH_ERROR',
+          statusCode: 500,
+        },
       },
       { status: 500 }
     );

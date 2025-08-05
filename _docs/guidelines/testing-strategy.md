@@ -7,6 +7,7 @@ Puls uses a **dual testing approach** combining Jest for fast feedback and Playw
 ## Testing Architecture
 
 ### **Jest Tests** (Fast, Many)
+
 - **Unit tests**: Pure functions, utilities, business logic
 - **Component tests**: React components in isolation with Testing Library
 - **Integration tests**: Feature slices with mocked dependencies
@@ -14,6 +15,7 @@ Puls uses a **dual testing approach** combining Jest for fast feedback and Playw
 - **Purpose**: Fast development feedback loop
 
 ### **Playwright Tests** (Slow, Few)
+
 - **E2E tests**: Critical user journeys in real browser
 - **Auth flows**: Real Supabase authentication with actual emails
 - **PWA validation**: Installation, offline mode, responsive design
@@ -23,6 +25,7 @@ Puls uses a **dual testing approach** combining Jest for fast feedback and Playw
 ## Test Commands
 
 ### Development Workflow
+
 ```bash
 pnpm test:watch          # Jest only - continuous feedback
 pnpm test               # Jest only - pre-commit validation
@@ -30,6 +33,7 @@ pnpm type-check         # TypeScript validation
 ```
 
 ### Comprehensive Validation
+
 ```bash
 pnpm test:e2e           # Playwright only - critical journeys
 pnpm test:all           # Both Jest + Playwright
@@ -37,6 +41,7 @@ pnpm build:check        # Build + lint + type check
 ```
 
 ### Debugging
+
 ```bash
 pnpm test:e2e:ui        # Visual Playwright interface
 pnpm test:e2e:debug     # Step-through debugging
@@ -46,26 +51,30 @@ pnpm test:e2e:headed    # Run in visible browser
 ## Current Test Coverage
 
 ### **E2E Tests** (Playwright)
+
 ✅ **Site Health** (8 tests) - Basic functionality, navigation, responsive design  
 ✅ **Auth Flow** (6 tests) - Login, session persistence, protected routes (with skip logic)  
 🔄 **Food Journey** - Camera → AI analysis → save → dashboard  
-🔄 **Symptom Journey** - Add symptom → save → view  
+🔄 **Symptom Journey** - Add symptom → save → view
 
 ### **Integration/Component Tests** (Jest)
+
 ✅ **Dashboard Integration** - Loading states, data display, navigation  
 ✅ **Auth Flow Integration** - Mocked auth scenarios  
 ✅ **Login Form Component** - Form validation and submission  
-✅ **Food Entry Form** - Component behavior  
+✅ **Food Entry Form** - Component behavior
 
 ### **Unit Tests** (Jest)
+
 ✅ **Hooks Tests** - Custom hook logic  
 ✅ **Data Operations** - Database operations  
 🔄 **Ingredient Zoning** - Business logic for food classification  
-🔄 **Data Transformations** - Utilities and calculations  
+🔄 **Data Transformations** - Utilities and calculations
 
 ## Testing Principles
 
 ### Do Test
+
 - ✅ User behavior and workflows
 - ✅ Critical business logic
 - ✅ Error handling and edge cases
@@ -74,6 +83,7 @@ pnpm test:e2e:headed    # Run in visible browser
 - ✅ Data persistence and sync
 
 ### Don't Test
+
 - ❌ Implementation details
 - ❌ Third-party library internals
 - ❌ Styling/CSS (unless functional)
@@ -84,6 +94,7 @@ pnpm test:e2e:headed    # Run in visible browser
 **Real Email Required**: Auth tests use `craigvh89@gmail.com` for login validation.
 
 **Configuration**:
+
 1. Update `TEST_PASSWORD` in `__tests__/e2e/auth-flow.spec.ts`
 2. Tests automatically skip if password not configured
 3. Signup tests are placeholders for future implementation
@@ -91,18 +102,21 @@ pnpm test:e2e:headed    # Run in visible browser
 ## Best Practices
 
 ### Jest Tests
+
 - Use Testing Library queries (`getByRole`, `getByLabelText`)
 - Mock external dependencies (APIs, browser APIs)
 - Test behavior, not implementation
 - Keep tests fast and focused
 
 ### Playwright Tests
+
 - Test complete user journeys
 - Use real services where possible
 - Validate critical functionality only
 - Include accessibility checks
 
 ### Pre-Commit Checklist
+
 ```bash
 pnpm format && pnpm lint && pnpm test && pnpm build:check
 ```

@@ -1,9 +1,9 @@
 // Optimized Custom React hooks for reactive data binding with Supabase
 // Uses shared subscriptions and better error handling patterns
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Symptom } from "./types";
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Symptom } from './types';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -11,8 +11,8 @@ import {
   getTodaysSymptoms,
   getFoodById,
   getSymptomById,
-} from "./db";
-import { logger } from "./utils/logger";
+} from './db';
+import { logger } from './utils/logger';
 
 // Create a shared supabase client for all hooks
 const supabase = createClient();
@@ -20,7 +20,7 @@ const supabase = createClient();
 // Type for Supabase subscription configuration
 // Based on Supabase Realtime postgres_changes configuration
 type SubscriptionConfig = {
-  event: "*" | "INSERT" | "UPDATE" | "DELETE";
+  event: '*' | 'INSERT' | 'UPDATE' | 'DELETE';
   schema: string;
   table: string;
   filter?: string;
@@ -49,7 +49,10 @@ class SubscriptionManager {
     if (!this.subscriptions.has(key)) {
       const subscription = supabase
         .channel(key)
-        .on("postgres_changes" as any, subscriptionConfig, () => {
+        .on(
+          'postgres_changes' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          subscriptionConfig,
+          () => {
           // Notify all listeners
           this.listeners.get(key)?.forEach(listener => listener());
         })
@@ -148,18 +151,18 @@ function useSupabaseData<T>(
 
 // OPTIMIZED FOOD HOOKS
 export const useTodaysFoods = () => {
-  return useSupabaseData(getTodaysFoods, "todays_foods", {
-    event: "*",
-    schema: "public",
-    table: "foods",
+  return useSupabaseData(getTodaysFoods, 'todays_foods', {
+    event: '*',
+    schema: 'public',
+    table: 'foods',
   });
 };
 
 export const useAllFoods = () => {
-  return useSupabaseData(getAllFoods, "all_foods", {
-    event: "*",
-    schema: "public",
-    table: "foods",
+  return useSupabaseData(getAllFoods, 'all_foods', {
+    event: '*',
+    schema: 'public',
+    table: 'foods',
   });
 };
 
@@ -168,9 +171,9 @@ export const useFoodById = (id: string | null) => {
     () => (id ? getFoodById(id) : Promise.resolve(null)),
     `food_${id}`,
     {
-      event: "*",
-      schema: "public",
-      table: "foods",
+      event: '*',
+      schema: 'public',
+      table: 'foods',
       filter: id ? `id=eq.${id}` : undefined,
     },
     [id]
@@ -183,11 +186,11 @@ export const useRecentFoods = (limit: number = 5) => {
       const data = await getAllFoods();
       return data.slice(0, limit);
     },
-    "recent_foods",
+    'recent_foods',
     {
-      event: "*",
-      schema: "public",
-      table: "foods",
+      event: '*',
+      schema: 'public',
+      table: 'foods',
     },
     [limit]
   );
@@ -195,18 +198,18 @@ export const useRecentFoods = (limit: number = 5) => {
 
 // OPTIMIZED SYMPTOM HOOKS
 export const useTodaysSymptoms = () => {
-  return useSupabaseData(getTodaysSymptoms, "todays_symptoms", {
-    event: "*",
-    schema: "public",
-    table: "symptoms",
+  return useSupabaseData(getTodaysSymptoms, 'todays_symptoms', {
+    event: '*',
+    schema: 'public',
+    table: 'symptoms',
   });
 };
 
 export const useAllSymptoms = () => {
-  return useSupabaseData(getAllSymptoms, "all_symptoms", {
-    event: "*",
-    schema: "public",
-    table: "symptoms",
+  return useSupabaseData(getAllSymptoms, 'all_symptoms', {
+    event: '*',
+    schema: 'public',
+    table: 'symptoms',
   });
 };
 
@@ -215,9 +218,9 @@ export const useSymptomById = (id: string | null) => {
     () => (id ? getSymptomById(id) : Promise.resolve(null)),
     `symptom_${id}`,
     {
-      event: "*",
-      schema: "public",
-      table: "symptoms",
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
       filter: id ? `id=eq.${id}` : undefined,
     },
     [id]
@@ -230,11 +233,11 @@ export const useRecentSymptoms = (limit: number = 5) => {
       const data = await getAllSymptoms();
       return data.slice(0, limit);
     },
-    "recent_symptoms",
+    'recent_symptoms',
     {
-      event: "*",
-      schema: "public",
-      table: "symptoms",
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
     },
     [limit]
   );
@@ -273,13 +276,13 @@ export const useFoodStats = () => {
         );
 
         const greenIngredients = ingredients.filter(
-          ing => ing.zone === "green"
+          ing => ing.zone === 'green'
         ).length;
         const yellowIngredients = ingredients.filter(
-          ing => ing.zone === "yellow"
+          ing => ing.zone === 'yellow'
         ).length;
         const redIngredients = ingredients.filter(
-          ing => ing.zone === "red"
+          ing => ing.zone === 'red'
         ).length;
 
         const organicIngredientsCount = ingredients.filter(
@@ -300,7 +303,7 @@ export const useFoodStats = () => {
           isFromToday,
         };
       } catch (error) {
-        logger.error("Error calculating food stats", error);
+        logger.error('Error calculating food stats', error);
         return {
           greenIngredients: 0,
           yellowIngredients: 0,
@@ -312,11 +315,11 @@ export const useFoodStats = () => {
         };
       }
     },
-    "food_stats",
+    'food_stats',
     {
-      event: "*",
-      schema: "public",
-      table: "foods",
+      event: '*',
+      schema: 'public',
+      table: 'foods',
     }
   );
 };
@@ -336,7 +339,7 @@ export const useSymptomTrends = (days: number = 7) => {
         // Group symptoms by day
         const symptomsByDay: { [key: string]: Symptom[] } = {};
         recentSymptoms.forEach(symptom => {
-          const day = symptom.timestamp.split("T")[0];
+          const day = symptom.timestamp.split('T')[0];
           if (!symptomsByDay[day]) {
             symptomsByDay[day] = [];
           }
@@ -356,15 +359,15 @@ export const useSymptomTrends = (days: number = 7) => {
 
         return trendData.sort((a, b) => a.day.localeCompare(b.day));
       } catch (error) {
-        logger.error("Error calculating symptom trends", error);
+        logger.error('Error calculating symptom trends', error);
         return [];
       }
     },
-    "symptom_trends",
+    'symptom_trends',
     {
-      event: "*",
-      schema: "public",
-      table: "symptoms",
+      event: '*',
+      schema: 'public',
+      table: 'symptoms',
     },
     [days]
   );

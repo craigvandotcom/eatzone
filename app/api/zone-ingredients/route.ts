@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { openrouter } from "@/lib/ai/openrouter";
-import { prompts } from "@/lib/prompts";
-import { z } from "zod";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import { logger } from "@/lib/utils/logger";
+import { NextRequest, NextResponse } from 'next/server';
+import { openrouter } from '@/lib/ai/openrouter';
+import { prompts } from '@/lib/prompts';
+import { z } from 'zod';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import { logger } from '@/lib/utils/logger';
 
 // Rate limiting setup using Vercel's Upstash integration env vars
 let ratelimit: Ratelimit | null = null;
@@ -15,7 +15,7 @@ if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
       url: process.env.KV_REST_API_URL,
       token: process.env.KV_REST_API_TOKEN,
     }),
-    limiter: Ratelimit.slidingWindow(20, "60 s"), // 20 requests per minute
+    limiter: Ratelimit.slidingWindow(20, '60 s'), // 20 requests per minute
   });
 }
 
@@ -25,7 +25,7 @@ const zoneIngredientsSchema = z.object({
 
 const zonedIngredientSchema = z.object({
   name: z.string(),
-  zone: z.enum(["green", "yellow", "red"]),
+  zone: z.enum(['green', 'yellow', 'red']),
   foodGroup: z.string(), // Accept any string from AI
 });
 
@@ -46,9 +46,9 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting check - only if Redis is configured
     if (ratelimit) {
-      const forwardedFor = request.headers.get("x-forwarded-for");
-      const realIp = request.headers.get("x-real-ip");
-      const ip = forwardedFor?.split(",")[0] ?? realIp ?? "127.0.0.1";
+      const forwardedFor = request.headers.get('x-forwarded-for');
+      const realIp = request.headers.get('x-real-ip');
+      const ip = forwardedFor?.split(',')[0] ?? realIp ?? '127.0.0.1';
 
       const { success } = await ratelimit.limit(ip);
 
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: {
-              message: "Too many requests. Please wait before trying again.",
-              code: "RATE_LIMIT_EXCEEDED",
+              message: 'Too many requests. Please wait before trying again.',
+              code: 'RATE_LIMIT_EXCEEDED',
               statusCode: 429,
             },
           },
@@ -69,31 +69,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { ingredients } = zoneIngredientsSchema.parse(body);
 
-    logger.debug("Zoning request received", {
+    logger.debug('Zoning request received', {
       ingredientCount: ingredients.length,
     });
 
     const fullPrompt = `${prompts.ingredientZoning}\n\nInput: ${JSON.stringify(ingredients)}`;
 
-    logger.debug("Calling OpenRouter for ingredient zoning");
+    logger.debug('Calling OpenRouter for ingredient zoning');
 
     const response = await openrouter.chat.completions.create({
-      model: "anthropic/claude-3.5-sonnet", // Better for structured JSON
-      messages: [{ role: "user", content: fullPrompt }],
-      response_format: { type: "json_object" },
+      model: 'anthropic/claude-3.5-sonnet', // Better for structured JSON
+      messages: [{ role: 'user', content: fullPrompt }],
+      response_format: { type: 'json_object' },
       max_tokens: 1024,
       temperature: 0.1,
     });
 
     const aiResponse = response.choices[0]?.message?.content;
-    if (!aiResponse) throw new Error("No response from AI model");
+    if (!aiResponse) throw new Error('No response from AI model');
 
     // Log the actual AI response for debugging
-    logger.debug("AI Response received", { responseLength: aiResponse.length });
+    logger.debug('AI Response received', { responseLength: aiResponse.length });
 
     const parsedResponse = JSON.parse(aiResponse) as AIResponse;
 
-    logger.debug("Parsed AI response", {
+    logger.debug('Parsed AI response', {
       ingredientCount: parsedResponse.ingredients?.length,
     });
 
@@ -110,16 +110,16 @@ export async function POST(request: NextRequest) {
       .array(zonedIngredientSchema)
       .parse(normalizedIngredients);
 
-    logger.debug("Final validated response", {
+    logger.debug('Final validated response', {
       ingredientCount: validatedIngredients.length,
     });
 
     return NextResponse.json({ ingredients: validatedIngredients });
   } catch (error) {
-    logger.error("Error in zone-ingredients API", error);
+    logger.error('Error in zone-ingredients API', error);
     // Add robust error handling here
     return NextResponse.json(
-      { error: "Failed to zone ingredients" },
+      { error: 'Failed to zone ingredients' },
       { status: 500 }
     );
   }

@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { LoginFormClient } from "./login-form-client";
+import { Suspense } from 'react';
+import { LoginFormClient } from './login-form-client';
 
 export default function LoginPage() {
   return (

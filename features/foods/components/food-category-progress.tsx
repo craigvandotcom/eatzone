@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { getZoneColor, getZoneColorWithAlpha } from "@/lib/utils/zone-colors";
+import { getZoneColor, getZoneColorWithAlpha } from '@/lib/utils/zone-colors';
 
 interface FoodCategoryProgressProps {
   greenCount: number;
@@ -64,8 +64,8 @@ export function FoodCategoryProgress({
           d={createPieSlice(greenStart, greenStart + greenAngle)}
           fill={
             totalCount > 0
-              ? getZoneColor("green", "hex")
-              : getZoneColorWithAlpha("green", "40")
+              ? getZoneColor('green', 'hex')
+              : getZoneColorWithAlpha('green', '40')
           }
           className="transition-all duration-500 ease-in-out"
         />
@@ -75,8 +75,8 @@ export function FoodCategoryProgress({
           d={createPieSlice(redStart, redStart + redAngle)}
           fill={
             totalCount > 0
-              ? getZoneColor("red", "hex")
-              : getZoneColorWithAlpha("red", "40")
+              ? getZoneColor('red', 'hex')
+              : getZoneColorWithAlpha('red', '40')
           }
           className="transition-all duration-500 ease-in-out"
         />
@@ -86,8 +86,8 @@ export function FoodCategoryProgress({
           d={createPieSlice(yellowStart, yellowStart + yellowAngle)}
           fill={
             totalCount > 0
-              ? getZoneColor("yellow", "hex")
-              : getZoneColorWithAlpha("yellow", "40")
+              ? getZoneColor('yellow', 'hex')
+              : getZoneColorWithAlpha('yellow', '40')
           }
           className="transition-all duration-500 ease-in-out"
         />
@@ -98,7 +98,7 @@ export function FoodCategoryProgress({
         <div className="text-center">
           <p className="text-3xl font-bold text-slate-700">{totalCount}</p>
           <p className="text-xs text-slate-500 mt-1">
-            {isFromToday ? "foods today" : "recent foods"}
+            {isFromToday ? 'foods today' : 'recent foods'}
           </p>
         </div>
       </div>

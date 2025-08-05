@@ -1,72 +1,72 @@
-import type { Config } from "jest";
-import nextJest from "next/jest";
+import type { Config } from 'jest';
+import nextJest from 'next/jest';
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
-  dir: "./",
+  dir: './',
 });
 
 // Add any custom config to be passed to Jest
 const customJestConfig: Config = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ["<rootDir>/__tests__/setup/jest.setup.ts"],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest.setup.ts'],
 
   // Module name mapper to handle path aliases
   moduleNameMapper: {
     // Handle path aliases (@ -> src)
-    "^@/(.*)$": "<rootDir>/$1",
+    '^@/(.*)$': '<rootDir>/$1',
 
     // Handle CSS imports (with CSS modules)
-    "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
+    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
 
     // Handle CSS imports (without CSS modules)
-    "^.+\\.(css|sass|scss)$": "<rootDir>/__tests__/setup/style-mock.js",
+    '^.+\\.(css|sass|scss)$': '<rootDir>/__tests__/setup/style-mock.js',
 
     // Handle image imports
-    "^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp|svg)$/i":
-      "<rootDir>/__tests__/setup/file-mock.js",
+    '^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp|svg)$/i':
+      '<rootDir>/__tests__/setup/file-mock.js',
   },
 
   // Test environment options
-  testEnvironment: "jest-environment-jsdom",
+  testEnvironment: 'jest-environment-jsdom',
 
   // Coverage configuration
   collectCoverageFrom: [
-    "app/**/*.{js,jsx,ts,tsx}",
-    "features/**/*.{js,jsx,ts,tsx}",
-    "lib/**/*.{js,jsx,ts,tsx}",
-    "components/**/*.{js,jsx,ts,tsx}",
-    "!**/*.d.ts",
-    "!**/node_modules/**",
-    "!**/.next/**",
-    "!**/coverage/**",
-    "!**/jest.config.js",
-    "!**/jest.config.ts",
+    'app/**/*.{js,jsx,ts,tsx}',
+    'features/**/*.{js,jsx,ts,tsx}',
+    'lib/**/*.{js,jsx,ts,tsx}',
+    'components/**/*.{js,jsx,ts,tsx}',
+    '!**/*.d.ts',
+    '!**/node_modules/**',
+    '!**/.next/**',
+    '!**/coverage/**',
+    '!**/jest.config.js',
+    '!**/jest.config.ts',
   ],
 
   // Test path patterns
   testMatch: [
-    "**/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}",
-    "**/*.(test|spec).{js,jsx,ts,tsx}",
+    '**/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}',
+    '**/*.(test|spec).{js,jsx,ts,tsx}',
   ],
 
   // Ignore patterns
-  testPathIgnorePatterns: ["/node_modules/", "/.next/"],
+  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
 
   // Transform ignore patterns
   transformIgnorePatterns: [
-    "/node_modules/",
-    "^.+\\.module\\.(css|sass|scss)$",
+    '/node_modules/',
+    '^.+\\.module\\.(css|sass|scss)$',
   ],
 
   // Module directories
-  modulePaths: ["<rootDir>"],
+  modulePaths: ['<rootDir>'],
 
   // Globals
   globals: {
-    "ts-jest": {
+    'ts-jest': {
       tsconfig: {
-        jsx: "react-jsx",
+        jsx: 'react-jsx',
       },
     },
   },

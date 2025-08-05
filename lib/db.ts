@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/client";
-import { Food, Symptom, User } from "./types";
+import { createClient } from '@/lib/supabase/client';
+import { Food, Symptom, User } from './types';
 
 // Get Supabase client
 const supabase = createClient();
@@ -11,7 +11,7 @@ export const generateTimestamp = (): string => {
 
 // Helper function to get today's date in YYYY-MM-DD format
 export const getTodayDate = (): string => {
-  return new Date().toISOString().split("T")[0];
+  return new Date().toISOString().split('T')[0];
 };
 
 // Helper function to check if a timestamp is from today
@@ -22,10 +22,10 @@ export const isToday = (timestamp: string): boolean => {
 
 // FOOD OPERATIONS
 export const addFood = async (
-  food: Omit<Food, "id" | "timestamp">
+  food: Omit<Food, 'id' | 'timestamp'>
 ): Promise<string> => {
   const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error("User not authenticated");
+  if (!user.user) throw new Error('User not authenticated');
 
   const newFood = {
     ...food,
@@ -34,9 +34,9 @@ export const addFood = async (
   };
 
   const { data, error } = await supabase
-    .from("foods")
+    .from('foods')
     .insert(newFood)
-    .select("id")
+    .select('id')
     .single();
 
   if (error) throw error;
@@ -45,24 +45,24 @@ export const addFood = async (
 
 export const updateFood = async (
   id: string,
-  updates: Partial<Omit<Food, "id">>
+  updates: Partial<Omit<Food, 'id'>>
 ): Promise<void> => {
-  const { error } = await supabase.from("foods").update(updates).eq("id", id);
+  const { error } = await supabase.from('foods').update(updates).eq('id', id);
 
   if (error) throw error;
 };
 
 export const deleteFood = async (id: string): Promise<void> => {
-  const { error } = await supabase.from("foods").delete().eq("id", id);
+  const { error } = await supabase.from('foods').delete().eq('id', id);
 
   if (error) throw error;
 };
 
 export const getAllFoods = async (): Promise<Food[]> => {
   const { data, error } = await supabase
-    .from("foods")
-    .select("*")
-    .order("timestamp", { ascending: false });
+    .from('foods')
+    .select('*')
+    .order('timestamp', { ascending: false });
 
   if (error) throw error;
   return data || [];
@@ -70,9 +70,9 @@ export const getAllFoods = async (): Promise<Food[]> => {
 
 export const getRecentFoods = async (limit: number = 10): Promise<Food[]> => {
   const { data, error } = await supabase
-    .from("foods")
-    .select("*")
-    .order("timestamp", { ascending: false })
+    .from('foods')
+    .select('*')
+    .order('timestamp', { ascending: false })
     .limit(limit);
 
   if (error) throw error;
@@ -81,15 +81,15 @@ export const getRecentFoods = async (limit: number = 10): Promise<Food[]> => {
 
 export const getTodaysFoods = async (): Promise<Food[]> => {
   const today = getTodayDate();
-  const startRange = today + "T00:00:00.000Z";
-  const endRange = today + "T23:59:59.999Z";
+  const startRange = today + 'T00:00:00.000Z';
+  const endRange = today + 'T23:59:59.999Z';
 
   const { data, error } = await supabase
-    .from("foods")
-    .select("*")
-    .gte("timestamp", startRange)
-    .lte("timestamp", endRange)
-    .order("timestamp", { ascending: false });
+    .from('foods')
+    .select('*')
+    .gte('timestamp', startRange)
+    .lte('timestamp', endRange)
+    .order('timestamp', { ascending: false });
 
   if (error) throw error;
   return data || [];
@@ -97,13 +97,13 @@ export const getTodaysFoods = async (): Promise<Food[]> => {
 
 export const getFoodById = async (id: string): Promise<Food | undefined> => {
   const { data, error } = await supabase
-    .from("foods")
-    .select("*")
-    .eq("id", id)
+    .from('foods')
+    .select('*')
+    .eq('id', id)
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") return undefined; // No rows returned
+    if (error.code === 'PGRST116') return undefined; // No rows returned
     throw error;
   }
   return data;
@@ -111,10 +111,10 @@ export const getFoodById = async (id: string): Promise<Food | undefined> => {
 
 // SYMPTOM OPERATIONS
 export const addSymptom = async (
-  symptom: Omit<Symptom, "id" | "timestamp">
+  symptom: Omit<Symptom, 'id' | 'timestamp'>
 ): Promise<string> => {
   const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error("User not authenticated");
+  if (!user.user) throw new Error('User not authenticated');
 
   const newSymptom = {
     ...symptom,
@@ -123,9 +123,9 @@ export const addSymptom = async (
   };
 
   const { data, error } = await supabase
-    .from("symptoms")
+    .from('symptoms')
     .insert(newSymptom)
-    .select("id")
+    .select('id')
     .single();
 
   if (error) throw error;
@@ -134,27 +134,27 @@ export const addSymptom = async (
 
 export const updateSymptom = async (
   id: string,
-  updates: Partial<Omit<Symptom, "id">>
+  updates: Partial<Omit<Symptom, 'id'>>
 ): Promise<void> => {
   const { error } = await supabase
-    .from("symptoms")
+    .from('symptoms')
     .update(updates)
-    .eq("id", id);
+    .eq('id', id);
 
   if (error) throw error;
 };
 
 export const deleteSymptom = async (id: string): Promise<void> => {
-  const { error } = await supabase.from("symptoms").delete().eq("id", id);
+  const { error } = await supabase.from('symptoms').delete().eq('id', id);
 
   if (error) throw error;
 };
 
 export const getAllSymptoms = async (): Promise<Symptom[]> => {
   const { data, error } = await supabase
-    .from("symptoms")
-    .select("*")
-    .order("timestamp", { ascending: false });
+    .from('symptoms')
+    .select('*')
+    .order('timestamp', { ascending: false });
 
   if (error) throw error;
   return data || [];
@@ -164,9 +164,9 @@ export const getRecentSymptoms = async (
   limit: number = 10
 ): Promise<Symptom[]> => {
   const { data, error } = await supabase
-    .from("symptoms")
-    .select("*")
-    .order("timestamp", { ascending: false })
+    .from('symptoms')
+    .select('*')
+    .order('timestamp', { ascending: false })
     .limit(limit);
 
   if (error) throw error;
@@ -175,15 +175,15 @@ export const getRecentSymptoms = async (
 
 export const getTodaysSymptoms = async (): Promise<Symptom[]> => {
   const today = getTodayDate();
-  const startRange = today + "T00:00:00.000Z";
-  const endRange = today + "T23:59:59.999Z";
+  const startRange = today + 'T00:00:00.000Z';
+  const endRange = today + 'T23:59:59.999Z';
 
   const { data, error } = await supabase
-    .from("symptoms")
-    .select("*")
-    .gte("timestamp", startRange)
-    .lte("timestamp", endRange)
-    .order("timestamp", { ascending: false });
+    .from('symptoms')
+    .select('*')
+    .gte('timestamp', startRange)
+    .lte('timestamp', endRange)
+    .order('timestamp', { ascending: false });
 
   if (error) throw error;
   return data || [];
@@ -193,13 +193,13 @@ export const getSymptomById = async (
   id: string
 ): Promise<Symptom | undefined> => {
   const { data, error } = await supabase
-    .from("symptoms")
-    .select("*")
-    .eq("id", id)
+    .from('symptoms')
+    .select('*')
+    .eq('id', id)
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") return undefined; // No rows returned
+    if (error.code === 'PGRST116') return undefined; // No rows returned
     throw error;
   }
   return data;
@@ -209,16 +209,16 @@ export const getSymptomById = async (
 export const clearAllData = async (): Promise<void> => {
   // Clear user's foods and symptoms
   const { error: foodsError } = await supabase
-    .from("foods")
+    .from('foods')
     .delete()
-    .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all user's records
+    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all user's records
 
   if (foodsError) throw foodsError;
 
   const { error: symptomsError } = await supabase
-    .from("symptoms")
+    .from('symptoms')
     .delete()
-    .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all user's records
+    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all user's records
 
   if (symptomsError) throw symptomsError;
 };
@@ -245,7 +245,7 @@ export const importAllData = async (data: {
   symptoms: Symptom[];
 }): Promise<void> => {
   const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error("User not authenticated");
+  if (!user.user) throw new Error('User not authenticated');
 
   // Clear existing data first
   await clearAllData();
@@ -258,7 +258,7 @@ export const importAllData = async (data: {
     }));
 
     const { error: foodsError } = await supabase
-      .from("foods")
+      .from('foods')
       .insert(foodsToInsert);
 
     if (foodsError) throw foodsError;
@@ -272,7 +272,7 @@ export const importAllData = async (data: {
     }));
 
     const { error: symptomsError } = await supabase
-      .from("symptoms")
+      .from('symptoms')
       .insert(symptomsToInsert);
 
     if (symptomsError) throw symptomsError;
@@ -282,9 +282,9 @@ export const importAllData = async (data: {
 // USER OPERATIONS (Simplified since Supabase handles auth)
 export const getUserById = async (id: string): Promise<User | undefined> => {
   const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", id)
+    .from('users')
+    .select('*')
+    .eq('id', id)
     .maybeSingle();
 
   if (error) throw error;
@@ -298,9 +298,9 @@ export const getCurrentUser = async (): Promise<User | null> => {
   if (!authUser) return null;
 
   const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", authUser.id)
+    .from('users')
+    .select('*')
+    .eq('id', authUser.id)
     .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 or 1 results
 
   if (error) throw error;
@@ -318,11 +318,11 @@ export const createUser = async (
   });
 
   if (error) throw error;
-  if (!data.user) throw new Error("Failed to create user");
+  if (!data.user) throw new Error('Failed to create user');
 
   // The user profile is automatically created by the trigger
   const profile = await getUserById(data.user.id);
-  if (!profile) throw new Error("Failed to create user profile");
+  if (!profile) throw new Error('Failed to create user profile');
 
   return profile;
 };
@@ -337,10 +337,10 @@ export const authenticateUser = async (
   });
 
   if (error) throw error;
-  if (!data.user || !data.session) throw new Error("Authentication failed");
+  if (!data.user || !data.session) throw new Error('Authentication failed');
 
   const profile = await getUserById(data.user.id);
-  if (!profile) throw new Error("User profile not found");
+  if (!profile) throw new Error('User profile not found');
 
   return {
     user: profile,
@@ -366,24 +366,24 @@ export const logout = async (): Promise<void> => {
 // LEGACY COMPATIBILITY EXPORTS
 export const generateId = (): string => {
   console.warn(
-    "generateId() is deprecated with Supabase - UUIDs are auto-generated"
+    'generateId() is deprecated with Supabase - UUIDs are auto-generated'
   );
   return crypto.randomUUID();
 };
 
 export const clearExpiredSessions = async (): Promise<void> => {
   console.warn(
-    "clearExpiredSessions() is deprecated - Supabase handles session management"
+    'clearExpiredSessions() is deprecated - Supabase handles session management'
   );
   // Supabase handles session expiration automatically
 };
 
 export const updateUserSettings = async (
   _userId: string,
-  _settings: Partial<User["settings"]>
+  _settings: Partial<User['settings']>
 ): Promise<void> => {
   console.warn(
-    "updateUserSettings() is deprecated - user settings moved to auth metadata"
+    'updateUserSettings() is deprecated - user settings moved to auth metadata'
   );
   // User settings would now be handled through Supabase user metadata
   // This function is kept for backward compatibility but doesn't do anything
@@ -392,7 +392,7 @@ export const updateUserSettings = async (
 // Backwards compatibility - maintain the HealthTrackerDB class structure for any direct references
 export class HealthTrackerDB {
   constructor() {
-    console.warn("HealthTrackerDB class is deprecated - now using Supabase");
+    console.warn('HealthTrackerDB class is deprecated - now using Supabase');
   }
 }
 

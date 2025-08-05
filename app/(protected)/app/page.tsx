@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
 import {
   ChevronLeft,
   Utensils,
@@ -11,16 +11,16 @@ import {
   Leaf,
   Settings,
   BarChart3,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { CameraCapture } from "@/features/camera/components/camera-capture";
-import { MetallicButton } from "@/components/ui/metallic-button";
-import { FoodCategoryProgress } from "@/features/foods/components/food-category-progress";
-import { FoodCompositionBar } from "@/features/foods/components/food-composition-bar";
-import { OrganicCompositionBar } from "@/features/foods/components/organic-composition-bar";
-import { VerticalProgressBar } from "@/features/foods/components/vertical-progress-bar";
-import { AuthGuard } from "@/features/auth/components/auth-guard";
-import { useIsMobile } from "@/components/ui/use-mobile";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { CameraCapture } from '@/features/camera/components/camera-capture';
+import { MetallicButton } from '@/components/ui/metallic-button';
+import { FoodCategoryProgress } from '@/features/foods/components/food-category-progress';
+import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
+import { OrganicCompositionBar } from '@/features/foods/components/organic-composition-bar';
+import { VerticalProgressBar } from '@/features/foods/components/vertical-progress-bar';
+import { AuthGuard } from '@/features/auth/components/auth-guard';
+import { useIsMobile } from '@/components/ui/use-mobile';
 import {
   Sidebar,
   SidebarContent,
@@ -30,22 +30,22 @@ import {
   SidebarMenuButton,
   SidebarProvider,
   SidebarHeader,
-} from "@/components/ui/sidebar";
-import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
+} from '@/components/ui/sidebar';
+import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
 import {
   FoodEntrySkeleton,
   SymptomEntrySkeleton,
   ProgressCircleSkeleton,
   EmptyOrLoadingState,
   NetworkRetryState,
-} from "@/components/ui/loading-states";
+} from '@/components/ui/loading-states';
 import {
   ErrorBoundary,
   SupabaseErrorFallback,
-} from "@/components/error-boundary";
+} from '@/components/error-boundary';
 
 // Import types
-import { Food, Symptom } from "@/lib/types";
+import { Food, Symptom } from '@/lib/types';
 
 // Import custom hooks
 import {
@@ -53,9 +53,9 @@ import {
   useRecentFoods,
   useRecentSymptoms,
   useFoodStats,
-} from "@/lib/hooks";
+} from '@/lib/hooks';
 
-type ViewType = "food" | "symptoms";
+type ViewType = 'food' | 'symptoms';
 
 function Dashboard() {
   // Use custom hooks for reactive data binding
@@ -80,16 +80,16 @@ function Dashboard() {
 
   // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
-  const [currentView, setCurrentView] = useState<ViewType>("food");
+  const [currentView, setCurrentView] = useState<ViewType>('food');
 
   const handleCameraCapture = async (imageData: string) => {
     // Store the image data temporarily in sessionStorage for the add food page
-    sessionStorage.setItem("pendingFoodImage", imageData);
-    router.push("/app/foods/add");
+    sessionStorage.setItem('pendingFoodImage', imageData);
+    router.push('/app/foods/add');
   };
 
   const handleManualEntry = () => {
-    router.push("/app/foods/add");
+    router.push('/app/foods/add');
   };
 
   const handleQuickCapture = () => {
@@ -99,15 +99,15 @@ function Dashboard() {
   // Get the active tab styling based on current view
   const getActiveTabStyle = (view: ViewType) => {
     if (currentView !== view)
-      return "text-muted-foreground hover:text-foreground hover:bg-background/30";
+      return 'text-muted-foreground hover:text-foreground hover:bg-background/30';
 
     switch (view) {
-      case "food":
-        return "bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-400/25";
-      case "symptoms":
-        return "bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg shadow-red-400/25";
+      case 'food':
+        return 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-400/25';
+      case 'symptoms':
+        return 'bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg shadow-red-400/25';
       default:
-        return "bg-card text-foreground shadow-sm";
+        return 'bg-card text-foreground shadow-sm';
     }
   };
 
@@ -120,7 +120,7 @@ function Dashboard() {
   };
 
   const handleAddSymptom = () => {
-    router.push("/app/symptoms/add");
+    router.push('/app/symptoms/add');
   };
 
   // Desktop sidebar navigation
@@ -136,8 +136,8 @@ function Dashboard() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={currentView === "food"}
-                onClick={() => setCurrentView("food")}
+                isActive={currentView === 'food'}
+                onClick={() => setCurrentView('food')}
               >
                 <Utensils className="h-4 w-4" />
                 <span>Foods</span>
@@ -145,21 +145,21 @@ function Dashboard() {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={currentView === "symptoms"}
-                onClick={() => setCurrentView("symptoms")}
+                isActive={currentView === 'symptoms'}
+                onClick={() => setCurrentView('symptoms')}
               >
                 <Activity className="h-4 w-4" />
                 <span>Symptoms</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => router.push("/app/insights")}>
+              <SidebarMenuButton onClick={() => router.push('/app/insights')}>
                 <BarChart3 className="h-4 w-4" />
                 <span>Insights</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => router.push("/settings")}>
+              <SidebarMenuButton onClick={() => router.push('/settings')}>
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
               </SidebarMenuButton>
@@ -172,18 +172,18 @@ function Dashboard() {
 
   const getTopGlowStyle = (view: ViewType) => {
     switch (view) {
-      case "food":
-        return "shadow-[0_-4px_20px_rgba(34,197,94,0.15)]";
-      case "symptoms":
-        return "shadow-[0_-4px_20px_rgba(239,68,68,0.15)]";
+      case 'food':
+        return 'shadow-[0_-4px_20px_rgba(34,197,94,0.15)]';
+      case 'symptoms':
+        return 'shadow-[0_-4px_20px_rgba(239,68,68,0.15)]';
       default:
-        return "";
+        return '';
     }
   };
 
   return (
     <div
-      className={`flex bg-background ${isMobile ? "mobile-container h-[100dvh]" : "h-[100dvh]"}`}
+      className={`flex bg-background ${isMobile ? 'mobile-container h-[100dvh]' : 'h-[100dvh]'}`}
     >
       {/* Desktop Sidebar */}
       {!isMobile && (
@@ -202,7 +202,7 @@ function Dashboard() {
               Your Body Compass
             </h1>
             <button
-              onClick={() => router.push("/settings")}
+              onClick={() => router.push('/settings')}
               className="p-1 rounded-full hover:bg-muted transition-colors"
             >
               <Settings className="h-6 w-6 text-muted-foreground" />
@@ -212,10 +212,10 @@ function Dashboard() {
 
         {/* Scrollable Content Area */}
         <div
-          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? "main-content-mobile" : ""}`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'main-content-mobile' : ''}`}
         >
           <div className="px-4 py-6 space-y-6 max-w-full">
-            {currentView === "food" && (
+            {currentView === 'food' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 {/* Food Category Progress */}
                 <div className="relative flex flex-col items-center h-64">
@@ -243,7 +243,7 @@ function Dashboard() {
                           height={200}
                         />
                         <Leaf
-                          className={`h-5 w-5 ${getZoneTextClass("green")}`}
+                          className={`h-5 w-5 ${getZoneTextClass('green')}`}
                         />
                       </div>
                     </>
@@ -294,7 +294,7 @@ function Dashboard() {
                               {food.photo_url ? (
                                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                                   <Image
-                                    src={food.photo_url || "/placeholder.svg"}
+                                    src={food.photo_url || '/placeholder.svg'}
                                     alt={food.name}
                                     className="w-full h-full object-cover"
                                     width={48}
@@ -308,14 +308,14 @@ function Dashboard() {
                               )}
                               <div className="text-left flex-1 min-w-0">
                                 <p className="font-medium text-gray-900 truncate">
-                                  {food.status === "analyzing"
-                                    ? "New Food"
+                                  {food.status === 'analyzing'
+                                    ? 'New Food'
                                     : food.name}
                                 </p>
                                 <p className="text-sm text-gray-500 truncate">
                                   {food.ingredients
                                     ?.map(ing => ing.name)
-                                    .join(", ") || "No ingredients"}
+                                    .join(', ') || 'No ingredients'}
                                 </p>
                               </div>
                             </div>
@@ -336,7 +336,7 @@ function Dashboard() {
               </ErrorBoundary>
             )}
 
-            {currentView === "symptoms" && (
+            {currentView === 'symptoms' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 <div className="flex flex-col items-center space-y-4 h-64">
                   <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
@@ -425,14 +425,14 @@ function Dashboard() {
               <div className="px-4 py-4">
                 <div className="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 rounded-full p-1 flex justify-around space-x-1 shadow-[0_-2px_8px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] border border-slate-200/40">
                   <button
-                    onClick={() => setCurrentView("food")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle("food")}`}
+                    onClick={() => setCurrentView('food')}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle('food')}`}
                   >
                     Foods
                   </button>
                   <button
-                    onClick={() => setCurrentView("symptoms")}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle("symptoms")}`}
+                    onClick={() => setCurrentView('symptoms')}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle('symptoms')}`}
                   >
                     Symptoms
                   </button>
@@ -450,11 +450,11 @@ function Dashboard() {
                       className="group min-h-[44px] min-w-[44px]"
                     >
                       <Utensils
-                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass("green")} transition-colors`}
+                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass('green')} transition-colors`}
                       />
                     </MetallicButton>
                     <div
-                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass("green")} rounded-full flex items-center justify-center shadow-lg`}
+                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass('green')} rounded-full flex items-center justify-center shadow-lg`}
                     >
                       <Plus className="h-3 w-3 text-white" />
                     </div>
@@ -468,11 +468,11 @@ function Dashboard() {
                       className="group min-h-[44px] min-w-[44px]"
                     >
                       <Activity
-                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass("red")} transition-colors`}
+                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass('red')} transition-colors`}
                       />
                     </MetallicButton>
                     <div
-                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass("red")} rounded-full flex items-center justify-center shadow-lg`}
+                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass('red')} rounded-full flex items-center justify-center shadow-lg`}
                     >
                       <Plus className="h-3 w-3 text-white" />
                     </div>

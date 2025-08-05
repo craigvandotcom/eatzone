@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 interface VerticalProgressBarProps {
   percentage: number;
@@ -26,7 +26,7 @@ export function VerticalProgressBar({
           className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-green-500 via-green-400 to-emerald-500 transition-all duration-700 ease-out rounded-full"
           style={{
             height: `${safePercentage}%`,
-            minHeight: safePercentage > 0 ? "2px" : "0px",
+            minHeight: safePercentage > 0 ? '2px' : '0px',
           }}
         />
       )}

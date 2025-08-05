@@ -5,20 +5,20 @@
  * Creates sample data for development and testing
  */
 
-import { createClient } from "@supabase/supabase-js";
-import * as path from "path";
-import * as fs from "fs";
-import type { Food, Symptom } from "../lib/types";
+import { createClient } from '@supabase/supabase-js';
+import * as path from 'path';
+import * as fs from 'fs';
+import type { Food, Symptom } from '../lib/types';
 
 // Load environment variables
-const envPath = path.join(process.cwd(), ".env.local");
+const envPath = path.join(process.cwd(), '.env.local');
 if (fs.existsSync(envPath)) {
-  const envFile = fs.readFileSync(envPath, "utf8");
-  const envVars = envFile.split("\n").filter(line => line.includes("="));
+  const envFile = fs.readFileSync(envPath, 'utf8');
+  const envVars = envFile.split('\n').filter(line => line.includes('='));
 
   envVars.forEach(line => {
-    const [key, ...valueParts] = line.split("=");
-    const value = valueParts.join("=").replace(/"/g, "");
+    const [key, ...valueParts] = line.split('=');
+    const value = valueParts.join('=').replace(/"/g, '');
     process.env[key] = value;
   });
 }
@@ -27,9 +27,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error("❌ Missing Supabase configuration");
+  console.error('❌ Missing Supabase configuration');
   console.error(
-    "Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local"
+    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local'
   );
   process.exit(1);
 }
@@ -37,95 +37,95 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Sample data
-const sampleFoods: Omit<Food, "id" | "user_id" | "timestamp">[] = [
+const sampleFoods: Omit<Food, 'id' | 'user_id' | 'timestamp'>[] = [
   {
-    name: "Green Smoothie",
+    name: 'Green Smoothie',
     ingredients: [
       {
-        name: "Spinach",
+        name: 'Spinach',
         organic: true,
-        foodGroup: "vegetables",
-        zone: "green",
+        foodGroup: 'vegetables',
+        zone: 'green',
       },
-      { name: "Banana", organic: false, foodGroup: "fruits", zone: "green" },
+      { name: 'Banana', organic: false, foodGroup: 'fruits', zone: 'green' },
       {
-        name: "Coconut Milk",
+        name: 'Coconut Milk',
         organic: true,
-        foodGroup: "dairy",
-        zone: "yellow",
+        foodGroup: 'dairy',
+        zone: 'yellow',
       },
     ],
-    notes: "Morning energy boost",
-    status: "processed",
+    notes: 'Morning energy boost',
+    status: 'processed',
   },
   {
-    name: "Grilled Chicken Salad",
+    name: 'Grilled Chicken Salad',
     ingredients: [
       {
-        name: "Chicken Breast",
+        name: 'Chicken Breast',
         organic: true,
-        foodGroup: "protein",
-        zone: "green",
+        foodGroup: 'protein',
+        zone: 'green',
       },
       {
-        name: "Mixed Greens",
+        name: 'Mixed Greens',
         organic: true,
-        foodGroup: "vegetables",
-        zone: "green",
+        foodGroup: 'vegetables',
+        zone: 'green',
       },
-      { name: "Olive Oil", organic: false, foodGroup: "fats", zone: "green" },
+      { name: 'Olive Oil', organic: false, foodGroup: 'fats', zone: 'green' },
       {
-        name: "Cherry Tomatoes",
+        name: 'Cherry Tomatoes',
         organic: true,
-        foodGroup: "vegetables",
-        zone: "green",
+        foodGroup: 'vegetables',
+        zone: 'green',
       },
     ],
-    notes: "Lunch - felt very satisfied",
-    status: "processed",
+    notes: 'Lunch - felt very satisfied',
+    status: 'processed',
   },
   {
-    name: "Coffee with Sugar",
+    name: 'Coffee with Sugar',
     ingredients: [
       {
-        name: "Coffee",
+        name: 'Coffee',
         organic: false,
-        foodGroup: "beverages",
-        zone: "yellow",
+        foodGroup: 'beverages',
+        zone: 'yellow',
       },
-      { name: "White Sugar", organic: false, foodGroup: "other", zone: "red" },
+      { name: 'White Sugar', organic: false, foodGroup: 'other', zone: 'red' },
       {
-        name: "Whole Milk",
+        name: 'Whole Milk',
         organic: false,
-        foodGroup: "dairy",
-        zone: "yellow",
+        foodGroup: 'dairy',
+        zone: 'yellow',
       },
     ],
-    notes: "Afternoon pick-me-up",
-    status: "processed",
+    notes: 'Afternoon pick-me-up',
+    status: 'processed',
   },
 ];
 
-const sampleSymptoms: Omit<Symptom, "id" | "user_id" | "timestamp">[] = [
+const sampleSymptoms: Omit<Symptom, 'id' | 'user_id' | 'timestamp'>[] = [
   {
-    name: "Mild Headache",
+    name: 'Mild Headache',
     severity: 2,
-    notes: "Started after lunch, went away after water",
+    notes: 'Started after lunch, went away after water',
   },
   {
-    name: "Energy Dip",
+    name: 'Energy Dip',
     severity: 3,
-    notes: "Around 3 PM, usual afternoon slump",
+    notes: 'Around 3 PM, usual afternoon slump',
   },
   {
-    name: "Stomach Discomfort",
+    name: 'Stomach Discomfort',
     severity: 1,
-    notes: "Very mild, barely noticeable",
+    notes: 'Very mild, barely noticeable',
   },
 ];
 
 async function seedDatabase(): Promise<void> {
-  console.log("🌱 Starting database seeding...");
+  console.log('🌱 Starting database seeding...');
 
   try {
     // Check if user is authenticated
@@ -135,9 +135,9 @@ async function seedDatabase(): Promise<void> {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.log("⚠️  No authenticated user found.");
+      console.log('⚠️  No authenticated user found.');
       console.log(
-        "📝 Please log in first, then run this script to create sample data"
+        '📝 Please log in first, then run this script to create sample data'
       );
       return;
     }
@@ -157,11 +157,11 @@ async function seedDatabase(): Promise<void> {
     });
 
     const { error: foodsError } = await supabase
-      .from("foods")
+      .from('foods')
       .insert(foodsWithTimestamps);
 
     if (foodsError) {
-      console.error("❌ Error creating sample foods:", foodsError.message);
+      console.error('❌ Error creating sample foods:', foodsError.message);
     } else {
       console.log(`✅ Created ${sampleFoods.length} sample food entries`);
     }
@@ -179,22 +179,22 @@ async function seedDatabase(): Promise<void> {
     });
 
     const { error: symptomsError } = await supabase
-      .from("symptoms")
+      .from('symptoms')
       .insert(symptomsWithTimestamps);
 
     if (symptomsError) {
       console.error(
-        "❌ Error creating sample symptoms:",
+        '❌ Error creating sample symptoms:',
         symptomsError.message
       );
     } else {
       console.log(`✅ Created ${sampleSymptoms.length} sample symptom entries`);
     }
 
-    console.log("🎉 Database seeding completed successfully!");
-    console.log("💡 You can now explore the app with sample data");
+    console.log('🎉 Database seeding completed successfully!');
+    console.log('💡 You can now explore the app with sample data');
   } catch (error) {
-    console.error("❌ Seeding failed:", (error as Error).message);
+    console.error('❌ Seeding failed:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -202,10 +202,10 @@ async function seedDatabase(): Promise<void> {
 // Run the seeding
 seedDatabase()
   .then(() => {
-    console.log("🌟 Seeding process complete");
+    console.log('🌟 Seeding process complete');
     process.exit(0);
   })
   .catch(error => {
-    console.error("💥 Unexpected error:", error);
+    console.error('💥 Unexpected error:', error);
     process.exit(1);
   });

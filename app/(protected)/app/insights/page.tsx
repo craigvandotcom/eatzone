@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Card,
@@ -6,10 +6,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
-import { AuthGuard } from "@/features/auth/components/auth-guard";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import { AuthGuard } from '@/features/auth/components/auth-guard';
 import {
   ChevronLeft,
   TrendingUp,
@@ -18,8 +18,8 @@ import {
   LineChart,
   Calendar,
   Clock,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 function InsightsPage() {
   const router = useRouter();
@@ -141,20 +141,20 @@ function InsightsPage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4 text-center">
               <div
-                className={`p-4 ${getZoneBgClass("green", "light")} rounded-lg`}
+                className={`p-4 ${getZoneBgClass('green', 'light')} rounded-lg`}
               >
                 <div
-                  className={`text-2xl font-bold ${getZoneTextClass("green")}`}
+                  className={`text-2xl font-bold ${getZoneTextClass('green')}`}
                 >
                   --
                 </div>
                 <div className="text-sm text-gray-600">Total Foods</div>
               </div>
               <div
-                className={`p-4 ${getZoneBgClass("red", "light")} rounded-lg`}
+                className={`p-4 ${getZoneBgClass('red', 'light')} rounded-lg`}
               >
                 <div
-                  className={`text-2xl font-bold ${getZoneTextClass("red")}`}
+                  className={`text-2xl font-bold ${getZoneTextClass('red')}`}
                 >
                   --
                 </div>
@@ -168,7 +168,7 @@ function InsightsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <Button onClick={() => router.push("/app")} variant="outline">
+              <Button onClick={() => router.push('/app')} variant="outline">
                 Back to Dashboard
               </Button>
             </div>

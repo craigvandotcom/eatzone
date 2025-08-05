@@ -1,56 +1,56 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 // Zone type definition
-export type ZoneType = "green" | "yellow" | "red";
+export type ZoneType = 'green' | 'yellow' | 'red';
 
 // Color format options
-export type ColorFormat = "hex" | "hsl" | "rgb" | "className" | "tailwind";
+export type ColorFormat = 'hex' | 'hsl' | 'rgb' | 'className' | 'tailwind';
 
 // Zone color definitions
 export const zoneColors = {
   green: {
     // Light mode hex
-    hex: "#27a69a",
+    hex: '#27a69a',
     // CSS variable references
-    hsl: "hsl(var(--zone-green))",
-    rgb: "rgb(var(--zone-green-rgb))",
+    hsl: 'hsl(var(--zone-green))',
+    rgb: 'rgb(var(--zone-green-rgb))',
     // Tailwind classes
-    bg: "bg-zone-green",
-    text: "text-zone-green",
-    border: "border-zone-green",
+    bg: 'bg-zone-green',
+    text: 'text-zone-green',
+    border: 'border-zone-green',
     // With transparency
-    bgLight: "bg-zone-green/10",
-    bgMedium: "bg-zone-green/50",
-    bgDark: "bg-zone-green/80",
-    textLight: "text-zone-green/70",
-    borderLight: "border-zone-green/30",
+    bgLight: 'bg-zone-green/10',
+    bgMedium: 'bg-zone-green/50',
+    bgDark: 'bg-zone-green/80',
+    textLight: 'text-zone-green/70',
+    borderLight: 'border-zone-green/30',
   },
   yellow: {
-    hex: "#ffc00a",
-    hsl: "hsl(var(--zone-yellow))",
-    rgb: "rgb(var(--zone-yellow-rgb))",
-    bg: "bg-zone-yellow",
-    text: "text-zone-yellow",
-    border: "border-zone-yellow",
-    bgLight: "bg-zone-yellow/10",
-    bgMedium: "bg-zone-yellow/50",
-    bgDark: "bg-zone-yellow/80",
-    textLight: "text-zone-yellow/70",
-    borderLight: "border-zone-yellow/30",
+    hex: '#ffc00a',
+    hsl: 'hsl(var(--zone-yellow))',
+    rgb: 'rgb(var(--zone-yellow-rgb))',
+    bg: 'bg-zone-yellow',
+    text: 'text-zone-yellow',
+    border: 'border-zone-yellow',
+    bgLight: 'bg-zone-yellow/10',
+    bgMedium: 'bg-zone-yellow/50',
+    bgDark: 'bg-zone-yellow/80',
+    textLight: 'text-zone-yellow/70',
+    borderLight: 'border-zone-yellow/30',
   },
   red: {
-    hex: "#fe5151",
-    hsl: "hsl(var(--zone-red))",
-    rgb: "rgb(var(--zone-red-rgb))",
-    bg: "bg-zone-red",
-    text: "text-zone-red",
-    border: "border-zone-red",
-    bgLight: "bg-zone-red/10",
-    bgMedium: "bg-zone-red/50",
-    bgDark: "bg-zone-red/80",
-    textLight: "text-zone-red/70",
-    borderLight: "border-zone-red/30",
+    hex: '#fe5151',
+    hsl: 'hsl(var(--zone-red))',
+    rgb: 'rgb(var(--zone-red-rgb))',
+    bg: 'bg-zone-red',
+    text: 'text-zone-red',
+    border: 'border-zone-red',
+    bgLight: 'bg-zone-red/10',
+    bgMedium: 'bg-zone-red/50',
+    bgDark: 'bg-zone-red/80',
+    textLight: 'text-zone-red/70',
+    borderLight: 'border-zone-red/30',
   },
 } as const;
 
@@ -62,19 +62,19 @@ export const zoneColors = {
  */
 export function getZoneColor(
   zone: ZoneType,
-  format: ColorFormat = "hsl"
+  format: ColorFormat = 'hsl'
 ): string {
   const colorConfig = zoneColors[zone];
 
   switch (format) {
-    case "hex":
+    case 'hex':
       return colorConfig.hex;
-    case "hsl":
+    case 'hsl':
       return colorConfig.hsl;
-    case "rgb":
+    case 'rgb':
       return colorConfig.rgb;
-    case "className":
-    case "tailwind":
+    case 'className':
+    case 'tailwind':
       return colorConfig.bg;
     default:
       return colorConfig.hsl;
@@ -89,16 +89,16 @@ export function getZoneColor(
  */
 export function getZoneBgClass(
   zone: ZoneType,
-  opacity?: "light" | "medium" | "dark"
+  opacity?: 'light' | 'medium' | 'dark'
 ): string {
   const colorConfig = zoneColors[zone];
 
   switch (opacity) {
-    case "light":
+    case 'light':
       return colorConfig.bgLight;
-    case "medium":
+    case 'medium':
       return colorConfig.bgMedium;
-    case "dark":
+    case 'dark':
       return colorConfig.bgDark;
     default:
       return colorConfig.bg;
@@ -159,22 +159,22 @@ export function getZoneBorderClass(zone: ZoneType, light = false): string {
  */
 export function getZoneClasses(
   zone: ZoneType,
-  variant: "solid" | "outline" | "ghost" | "indicator" = "solid"
+  variant: 'solid' | 'outline' | 'ghost' | 'indicator' = 'solid'
 ): string {
   const colorConfig = zoneColors[zone];
 
   switch (variant) {
-    case "solid":
-      return twMerge(colorConfig.bg, "text-white");
-    case "outline":
+    case 'solid':
+      return twMerge(colorConfig.bg, 'text-white');
+    case 'outline':
       return twMerge(
         colorConfig.border,
         colorConfig.text,
-        "border-2 bg-transparent"
+        'border-2 bg-transparent'
       );
-    case "ghost":
+    case 'ghost':
       return twMerge(colorConfig.bgLight, colorConfig.text);
-    case "indicator":
+    case 'indicator':
       return colorConfig.bg;
     default:
       return colorConfig.bg;
@@ -205,7 +205,7 @@ export function getZoneColorWithAlpha(zone: ZoneType, alpha?: string): string {
  */
 export function getZoneStyle(
   zone: ZoneType,
-  property: "backgroundColor" | "color" | "borderColor" = "backgroundColor"
+  property: 'backgroundColor' | 'color' | 'borderColor' = 'backgroundColor'
 ): React.CSSProperties {
   const colorConfig = zoneColors[zone];
 

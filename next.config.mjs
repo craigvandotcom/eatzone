@@ -10,7 +10,7 @@ const nextConfig = {
 
   // PERFORMANCE: PWA-optimized image handling
   images: {
-    formats: ["image/avif", "image/webp"], // Modern, efficient formats
+    formats: ['image/avif', 'image/webp'], // Modern, efficient formats
     minimumCacheTTL: 31536000, // 1 year cache for better performance
     // Removed unoptimized: true for production optimization
   },
@@ -25,19 +25,19 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: '/(.*)',
         headers: [
           {
-            key: "X-Frame-Options",
-            value: "DENY", // Prevent clickjacking attacks
+            key: 'X-Frame-Options',
+            value: 'DENY', // Prevent clickjacking attacks
           },
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff", // Prevent MIME type sniffing
+            key: 'X-Content-Type-Options',
+            value: 'nosniff', // Prevent MIME type sniffing
           },
           {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin", // Control referrer information
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin', // Control referrer information
           },
         ],
       },
@@ -46,7 +46,7 @@ const nextConfig = {
   webpack: config => {
     config.module.rules.push({
       test: /\.md$/,
-      type: "asset/source",
+      type: 'asset/source',
     });
     return config;
   },

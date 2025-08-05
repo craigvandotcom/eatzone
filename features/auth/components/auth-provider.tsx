@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { User } from "@/lib/types";
-import { createClient } from "@/lib/supabase/client";
-import { getCurrentUser } from "@/lib/db";
-import { logger } from "@/lib/utils/logger";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { User } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/db';
+import { logger } from '@/lib/utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) throw error;
-      if (!data.user) throw new Error("Login failed");
+      if (!data.user) throw new Error('Login failed');
 
       // Get the user profile from our database
       const profile = await getCurrentUser();
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(profile);
       }
     } catch (error) {
-      logger.error("Login error", error);
+      logger.error('Login error', error);
       throw error;
     }
   };
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(null);
     } catch (error) {
-      logger.error("Logout error", error);
+      logger.error('Logout error', error);
       // Still clear the user state even if logout fails
       setUser(null);
     }
@@ -78,13 +78,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profile) {
         setUser(profile);
       } else {
-        logger.warn("Supabase session exists but no user profile found");
+        logger.warn('Supabase session exists but no user profile found');
         // Sign out if we have a session but no profile
         await supabase.auth.signOut();
         setUser(null);
       }
     } catch (error) {
-      logger.error("Session check error", error);
+      logger.error('Session check error', error);
 
       setUser(null);
     } finally {
@@ -99,14 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      logger.debug("Auth state changed", { event, hasSession: !!session });
+      logger.debug('Auth state changed', { event, hasSession: !!session });
 
-      if (event === "SIGNED_IN" && session) {
+      if (event === 'SIGNED_IN' && session) {
         const profile = await getCurrentUser();
         if (profile) {
           setUser(profile);
         }
-      } else if (event === "SIGNED_OUT") {
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }
 
@@ -152,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }

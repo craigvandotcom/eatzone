@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import React, { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/popover';
+import { Calendar, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DayTimePickerProps {
   value?: Date;
@@ -23,7 +23,7 @@ export function DayTimePicker({
   className,
 }: DayTimePickerProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(value || new Date());
-  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
   const timeScrollRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +51,7 @@ export function DayTimePicker({
           hour,
           minute,
           display: timeString,
-          value: `${hour}:${minute.toString().padStart(2, "0")}`,
+          value: `${hour}:${minute.toString().padStart(2, '0')}`,
         });
       }
     }
@@ -60,9 +60,9 @@ export function DayTimePicker({
 
   // Format time to 12-hour format with AM/PM
   const formatTime = (hour: number, minute: number) => {
-    const period = hour >= 12 ? "PM" : "AM";
+    const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    const displayMinute = minute.toString().padStart(2, "0");
+    const displayMinute = minute.toString().padStart(2, '0');
     return `${displayHour}:${displayMinute} ${period}`;
   };
 
@@ -73,14 +73,14 @@ export function DayTimePicker({
     yesterday.setDate(today.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return "Today";
+      return 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
+      return 'Yesterday';
     } else {
-      return date.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
       });
     }
   };
@@ -95,14 +95,14 @@ export function DayTimePicker({
     if (value) {
       const hours = value.getHours();
       const minutes = Math.floor(value.getMinutes() / 30) * 30; // Round to nearest 30min
-      setSelectedTime(`${hours}:${minutes.toString().padStart(2, "0")}`);
+      setSelectedTime(`${hours}:${minutes.toString().padStart(2, '0')}`);
       setSelectedDate(new Date(value));
     } else {
       // Default to current time rounded to nearest 30min
       const now = new Date();
       const hours = now.getHours();
       const minutes = Math.floor(now.getMinutes() / 30) * 30;
-      setSelectedTime(`${hours}:${minutes.toString().padStart(2, "0")}`);
+      setSelectedTime(`${hours}:${minutes.toString().padStart(2, '0')}`);
     }
   }, [value]);
 
@@ -121,14 +121,14 @@ export function DayTimePicker({
 
   // Handle keyboard navigation
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       setIsOpen(false);
     }
   };
 
   // Update the combined date-time and call onChange
   const updateDateTime = (date: Date, time: string) => {
-    const [hours, minutes] = time.split(":").map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
     const newDateTime = new Date(date);
     newDateTime.setHours(hours, minutes, 0, 0);
     onChange(newDateTime);
@@ -139,8 +139,8 @@ export function DayTimePicker({
     const dateDisplay = formatDayDisplay(selectedDate);
     const timeDisplay = selectedTime
       ? formatTime(
-          parseInt(selectedTime.split(":")[0]),
-          parseInt(selectedTime.split(":")[1])
+          parseInt(selectedTime.split(':')[0]),
+          parseInt(selectedTime.split(':')[1])
         )
       : formatTime(
           new Date().getHours(),
@@ -172,8 +172,8 @@ export function DayTimePicker({
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground",
+            'w-full justify-start text-left font-normal',
+            !value && 'text-muted-foreground',
             className
           )}
           aria-label={`Select date and time. Current: ${formatCompactDisplay()}`}
@@ -205,7 +205,7 @@ export function DayTimePicker({
                     key={dayIndex}
                     type="button"
                     variant={
-                      isSameDate(day, selectedDate) ? "default" : "outline"
+                      isSameDate(day, selectedDate) ? 'default' : 'outline'
                     }
                     size="sm"
                     onClick={() => handleDaySelect(day)}
@@ -228,15 +228,15 @@ export function DayTimePicker({
                   <Button
                     key={slot.value}
                     type="button"
-                    variant={selectedTime === slot.value ? "default" : "ghost"}
+                    variant={selectedTime === slot.value ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => {
                       handleTimeSelect(slot.value);
                       setIsOpen(false);
                     }}
                     className={cn(
-                      "w-full justify-center h-12 mb-1 text-sm",
-                      selectedTime === slot.value && "font-medium"
+                      'w-full justify-center h-12 mb-1 text-sm',
+                      selectedTime === slot.value && 'font-medium'
                     )}
                   >
                     {slot.display}

@@ -1,14 +1,14 @@
 // Learn more: https://github.com/testing-library/jest-dom
-import "@testing-library/jest-dom";
-import { TextEncoder, TextDecoder } from "util";
-import React from "react";
+import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
+import React from 'react';
 
 // Polyfill for encoding/decoding
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as any;
 
 // Mock Next.js router
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter() {
     return {
       push: jest.fn(),
@@ -20,7 +20,7 @@ jest.mock("next/navigation", () => ({
     };
   },
   usePathname() {
-    return "/";
+    return '/';
   },
   useSearchParams() {
     return new URLSearchParams();
@@ -57,12 +57,12 @@ const mockSupabaseClient = {
   })),
 };
 
-jest.mock("@/lib/supabase/client", () => ({
+jest.mock('@/lib/supabase/client', () => ({
   createClient: jest.fn(() => mockSupabaseClient),
 }));
 
 // Mock custom hooks to return test data
-jest.mock("@/lib/hooks", () => ({
+jest.mock('@/lib/hooks', () => ({
   useTodaysFoods: jest.fn(() => ({
     data: [],
     error: null,
@@ -127,7 +127,7 @@ jest.mock("@/lib/hooks", () => ({
 }));
 
 // Mock ErrorBoundary component
-jest.mock("@/components/error-boundary", () => ({
+jest.mock('@/components/error-boundary', () => ({
   ErrorBoundary: ({
     children,
     fallback,
@@ -143,10 +143,10 @@ jest.mock("@/components/error-boundary", () => ({
     resetError: () => void;
   }) =>
     React.createElement(
-      "div",
+      'div',
       {},
-      React.createElement("div", {}, "Error: " + error.message),
-      React.createElement("button", { onClick: resetError }, "Retry")
+      React.createElement('div', {}, 'Error: ' + error.message),
+      React.createElement('button', { onClick: resetError }, 'Retry')
     ),
   withSupabaseErrorBoundary: <P extends object>(
     Component: React.ComponentType<P>
@@ -158,7 +158,7 @@ jest.mock("@/components/error-boundary", () => ({
 export { mockSupabaseClient };
 
 // Mock window.matchMedia
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
     matches: false,
@@ -193,8 +193,8 @@ const originalError = console.error;
 beforeAll(() => {
   console.error = (...args: any[]) => {
     if (
-      typeof args[0] === "string" &&
-      args[0].includes("Warning: ReactDOM.render")
+      typeof args[0] === 'string' &&
+      args[0].includes('Warning: ReactDOM.render')
     ) {
       return;
     }

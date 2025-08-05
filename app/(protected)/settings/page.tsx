@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { getZoneTextClass, getZoneBgClass } from "@/lib/utils/zone-colors";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { getZoneTextClass, getZoneBgClass } from '@/lib/utils/zone-colors';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,8 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useToast } from "@/components/ui/use-toast";
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/components/ui/use-toast';
 import {
   ChevronLeft,
   Download,
@@ -37,13 +37,13 @@ import {
   TestTube,
   User,
   Loader2,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
-import { exportAllData, importAllData, clearAllData, addFood } from "@/lib/db";
-import { useAuth } from "@/features/auth/components/auth-provider";
-import { AuthGuard } from "@/features/auth/components/auth-guard";
-import { logger } from "@/lib/utils/logger";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { exportAllData, importAllData, clearAllData, addFood } from '@/lib/db';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import { AuthGuard } from '@/features/auth/components/auth-guard';
+import { logger } from '@/lib/utils/logger';
 
 function SettingsPage() {
   const [isExporting, setIsExporting] = useState(false);
@@ -63,28 +63,28 @@ function SettingsPage() {
 
       // Create a downloadable JSON file
       const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
+        type: 'application/json',
       });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = `health-tracker-backup-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `health-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Data exported successfully",
+        title: 'Data exported successfully',
         description: `Exported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
       });
     } catch (error) {
-      logger.error("Export failed", error);
+      logger.error('Export failed', error);
       toast({
-        title: "Export failed",
+        title: 'Export failed',
         description:
-          "There was an error exporting your data. Please try again.",
-        variant: "destructive",
+          'There was an error exporting your data. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsExporting(false);
@@ -104,27 +104,27 @@ function SettingsPage() {
 
       // Validate the data structure
       if (!data.foods || !data.symptoms) {
-        throw new Error("Invalid backup file format");
+        throw new Error('Invalid backup file format');
       }
 
       await importAllData(data);
 
       toast({
-        title: "Data imported successfully",
+        title: 'Data imported successfully',
         description: `Imported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
       });
     } catch (error) {
-      logger.error("Import failed", error);
+      logger.error('Import failed', error);
       toast({
-        title: "Import failed",
+        title: 'Import failed',
         description:
-          "There was an error importing your data. Please check the file format and try again.",
-        variant: "destructive",
+          'There was an error importing your data. Please check the file format and try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsImporting(false);
       // Reset the file input
-      event.target.value = "";
+      event.target.value = '';
     }
   };
 
@@ -133,16 +133,16 @@ function SettingsPage() {
     try {
       await clearAllData();
       toast({
-        title: "All data cleared",
+        title: 'All data cleared',
         description:
-          "All your health tracking data has been permanently deleted.",
+          'All your health tracking data has been permanently deleted.',
       });
     } catch (error) {
-      logger.error("Clear failed", error);
+      logger.error('Clear failed', error);
       toast({
-        title: "Clear failed",
-        description: "There was an error clearing your data. Please try again.",
-        variant: "destructive",
+        title: 'Clear failed',
+        description: 'There was an error clearing your data. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsClearing(false);
@@ -154,16 +154,16 @@ function SettingsPage() {
     try {
       await logout();
       toast({
-        title: "Logged out",
-        description: "You have been logged out successfully.",
+        title: 'Logged out',
+        description: 'You have been logged out successfully.',
       });
-      router.push("/");
+      router.push('/');
     } catch (error) {
-      logger.error("Logout failed", error);
+      logger.error('Logout failed', error);
       toast({
-        title: "Logout failed",
-        description: "There was an error logging out. Please try again.",
-        variant: "destructive",
+        title: 'Logout failed',
+        description: 'There was an error logging out. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoggingOut(false);
@@ -175,42 +175,42 @@ function SettingsPage() {
     try {
       // Add a test food with organic and non-organic ingredients
       await addFood({
-        name: "Test Organic Meal",
+        name: 'Test Organic Meal',
         ingredients: [
           {
-            name: "organic spinach",
+            name: 'organic spinach',
             organic: true,
-            zone: "green",
-            foodGroup: "vegetable",
+            zone: 'green',
+            foodGroup: 'vegetable',
           },
           {
-            name: "organic quinoa",
+            name: 'organic quinoa',
             organic: true,
-            zone: "green",
-            foodGroup: "grain",
+            zone: 'green',
+            foodGroup: 'grain',
           },
           {
-            name: "salmon",
+            name: 'salmon',
             organic: false,
-            zone: "green",
-            foodGroup: "protein",
+            zone: 'green',
+            foodGroup: 'protein',
           },
         ],
-        status: "processed",
-        notes: "Test data to verify organic tracking",
+        status: 'processed',
+        notes: 'Test data to verify organic tracking',
       });
 
       toast({
-        title: "Test data added",
+        title: 'Test data added',
         description:
-          "Added a test meal with 2/3 organic ingredients to verify the organic tracking works.",
+          'Added a test meal with 2/3 organic ingredients to verify the organic tracking works.',
       });
     } catch (error) {
-      logger.error("Failed to add test data", error);
+      logger.error('Failed to add test data', error);
       toast({
-        title: "Test data failed",
-        description: "There was an error adding test data.",
-        variant: "destructive",
+        title: 'Test data failed',
+        description: 'There was an error adding test data.',
+        variant: 'destructive',
       });
     } finally {
       setIsAddingTest(false);
@@ -247,7 +247,7 @@ function SettingsPage() {
             <div className="space-y-2">
               <Label>Email</Label>
               <p className="text-sm text-foreground">
-                {user?.email || "Loading..."}
+                {user?.email || 'Loading...'}
               </p>
             </div>
             <div className="space-y-2">
@@ -255,7 +255,7 @@ function SettingsPage() {
               <p className="text-sm text-muted-foreground">
                 {user?.createdAt
                   ? new Date(user.createdAt).toLocaleDateString()
-                  : "Loading..."}
+                  : 'Loading...'}
               </p>
             </div>
             <div className="space-y-2">
@@ -263,7 +263,7 @@ function SettingsPage() {
               <p className="text-sm text-muted-foreground">
                 {user?.lastLoginAt
                   ? new Date(user.lastLoginAt).toLocaleDateString()
-                  : "N/A"}
+                  : 'N/A'}
               </p>
             </div>
 
@@ -307,7 +307,7 @@ function SettingsPage() {
                 variant="outline"
               >
                 <Download className="h-4 w-4 mr-2" />
-                {isExporting ? "Exporting..." : "Export All Data"}
+                {isExporting ? 'Exporting...' : 'Export All Data'}
               </Button>
             </div>
 
@@ -333,7 +333,7 @@ function SettingsPage() {
                   variant="outline"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  {isImporting ? "Importing..." : "Import Data"}
+                  {isImporting ? 'Importing...' : 'Import Data'}
                 </Button>
               </div>
             </div>
@@ -341,7 +341,7 @@ function SettingsPage() {
             <Separator />
 
             <div className="space-y-2">
-              <Label className={getZoneTextClass("red")}>Danger Zone</Label>
+              <Label className={getZoneTextClass('red')}>Danger Zone</Label>
               <p className="text-sm text-muted-foreground">
                 Permanently delete all your health tracking data. This cannot be
                 undone.
@@ -371,7 +371,7 @@ function SettingsPage() {
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleClearAllData}
-                      className={`${getZoneBgClass("red")} hover:${getZoneBgClass("red")}/90`}
+                      className={`${getZoneBgClass('red')} hover:${getZoneBgClass('red')}/90`}
                     >
                       Delete Everything
                     </AlertDialogAction>
@@ -401,7 +401,7 @@ function SettingsPage() {
               variant="outline"
             >
               <TestTube className="h-4 w-4 mr-2" />
-              {isAddingTest ? "Adding..." : "Add Test Organic Food"}
+              {isAddingTest ? 'Adding...' : 'Add Test Organic Food'}
             </Button>
             <p className="text-sm text-gray-600">
               This will add a test meal with 2/3 organic ingredients to help you
@@ -414,7 +414,7 @@ function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {theme === "dark" ? (
+              {theme === 'dark' ? (
                 <Moon className="h-5 w-5" />
               ) : (
                 <Sun className="h-5 w-5" />
@@ -434,9 +434,9 @@ function SettingsPage() {
                 </p>
               </div>
               <Switch
-                checked={theme === "dark"}
+                checked={theme === 'dark'}
                 onCheckedChange={checked =>
-                  setTheme(checked ? "dark" : "light")
+                  setTheme(checked ? 'dark' : 'light')
                 }
               />
             </div>

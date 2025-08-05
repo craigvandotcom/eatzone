@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 interface CircularProgressProps {
   percentage: number;
@@ -58,9 +58,9 @@ export function CircularProgress({
         style={{
           width: strokeWidth + 4,
           height: strokeWidth + 4,
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
         }}
       />
     </div>

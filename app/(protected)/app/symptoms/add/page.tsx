@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SymptomEntryForm } from "@/features/symptoms/components/symptom-entry-form";
-import { addSymptom as dbAddSymptom } from "@/lib/db";
-import type { Symptom } from "@/lib/types";
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SymptomEntryForm } from '@/features/symptoms/components/symptom-entry-form';
+import { addSymptom as dbAddSymptom } from '@/lib/db';
+import type { Symptom } from '@/lib/types';
 
 export default function AddSymptomPage() {
   const router = useRouter();
 
   const handleAddSymptom = async (
-    symptom: Omit<Symptom, "id" | "timestamp">
+    symptom: Omit<Symptom, 'id' | 'timestamp'>
   ) => {
     await dbAddSymptom(symptom);
-    router.push("/app");
+    router.push('/app');
   };
 
   const handleClose = () => {

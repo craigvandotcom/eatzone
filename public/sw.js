@@ -1,26 +1,26 @@
-const CACHE_NAME = "puls-health-tracker-v1";
-const RUNTIME_CACHE = "puls-runtime-v1";
-const OFFLINE_URL = "/offline";
+const CACHE_NAME = 'puls-health-tracker-v1';
+const RUNTIME_CACHE = 'puls-runtime-v1';
+const OFFLINE_URL = '/offline';
 
 // Essential URLs to cache during install
 const PRECACHE_URLS = [
-  "/",
-  "/app",
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png",
-  "/offline",
+  '/',
+  '/app',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/offline',
 ];
 
 // Install event - cache essential resources
-self.addEventListener("install", event => {
+self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       try {
         await cache.addAll(PRECACHE_URLS);
       } catch (error) {
-        console.error("Failed to cache essential resources:", error);
+        console.error('Failed to cache essential resources:', error);
       }
     })()
   );
@@ -28,7 +28,7 @@ self.addEventListener("install", event => {
 });
 
 // Activate event - clean up old caches
-self.addEventListener("activate", event => {
+self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
       const cacheNames = await caches.keys();
@@ -45,12 +45,12 @@ self.addEventListener("activate", event => {
 });
 
 // Fetch event - handle all network requests
-self.addEventListener("fetch", event => {
+self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
   // Skip non-GET requests
-  if (request.method !== "GET") {
+  if (request.method !== 'GET') {
     return;
   }
 
@@ -74,9 +74,9 @@ self.addEventListener("fetch", event => {
 // Check if request is a navigation request
 function isNavigationRequest(request) {
   return (
-    request.mode === "navigate" ||
-    (request.method === "GET" &&
-      request.headers.get("accept").includes("text/html"))
+    request.mode === 'navigate' ||
+    (request.method === 'GET' &&
+      request.headers.get('accept').includes('text/html'))
   );
 }
 
@@ -84,8 +84,8 @@ function isNavigationRequest(request) {
 function isStaticAsset(request) {
   const url = new URL(request.url);
   return (
-    url.pathname.startsWith("/_next/static/") ||
-    url.pathname.startsWith("/static/") ||
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/static/') ||
     url.pathname.match(
       /\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|ico)$/
     )
@@ -95,7 +95,7 @@ function isStaticAsset(request) {
 // Check if request is for an API endpoint
 function isApiRequest(request) {
   const url = new URL(request.url);
-  return url.pathname.startsWith("/api/");
+  return url.pathname.startsWith('/api/');
 }
 
 // Handle navigation requests (page routes)
@@ -116,7 +116,7 @@ async function handleNavigationRequest(request) {
 
     return networkResponse;
   } catch (error) {
-    console.error("Navigation request failed:", error);
+    console.error('Navigation request failed:', error);
 
     // Try to serve from cache
     const cachedResponse = await caches.match(request);
@@ -126,8 +126,8 @@ async function handleNavigationRequest(request) {
 
     // Fallback to offline page for HTML requests
     const url = new URL(request.url);
-    if (url.pathname !== "/offline") {
-      return caches.match("/offline");
+    if (url.pathname !== '/offline') {
+      return caches.match('/offline');
     }
 
     // If offline page also fails, return a basic offline response
@@ -158,7 +158,7 @@ async function handleNavigationRequest(request) {
         </body>
       </html>`,
       {
-        headers: { "Content-Type": "text/html" },
+        headers: { 'Content-Type': 'text/html' },
         status: 200,
       }
     );
@@ -183,7 +183,7 @@ async function handleStaticAsset(request) {
 
     return networkResponse;
   } catch (error) {
-    console.error("Static asset request failed:", error);
+    console.error('Static asset request failed:', error);
 
     // Return cached version if available
     const fallbackResponse = await cache.match(request);
@@ -192,9 +192,9 @@ async function handleStaticAsset(request) {
     }
 
     // For critical CSS/JS, return a minimal response
-    if (request.url.includes(".css")) {
-      return new Response("/* Offline - styles not available */", {
-        headers: { "Content-Type": "text/css" },
+    if (request.url.includes('.css')) {
+      return new Response('/* Offline - styles not available */', {
+        headers: { 'Content-Type': 'text/css' },
       });
     }
 
@@ -208,16 +208,16 @@ async function handleApiRequest(request) {
     const networkResponse = await fetch(request);
     return networkResponse;
   } catch (error) {
-    console.error("API request failed:", error);
+    console.error('API request failed:', error);
 
     // Return a generic offline response for API requests
     return new Response(
       JSON.stringify({
-        error: "offline",
-        message: "This feature requires an internet connection",
+        error: 'offline',
+        message: 'This feature requires an internet connection',
       }),
       {
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         status: 503,
       }
     );
@@ -237,7 +237,7 @@ async function handleOtherRequest(request) {
 
     return networkResponse;
   } catch (error) {
-    console.error("Other request failed:", error);
+    console.error('Other request failed:', error);
 
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
@@ -249,8 +249,8 @@ async function handleOtherRequest(request) {
 }
 
 // Message handling for cache updates
-self.addEventListener("message", event => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -24,7 +24,7 @@ interface ErrorFallbackProps {
 
 // Default error fallback component
 function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
-  const isDevelopment = process.env.NODE_ENV === "development";
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
@@ -48,7 +48,7 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
           </summary>
           <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto max-w-md">
             {error.message}
-            {error.stack && "\n\n" + error.stack}
+            {error.stack && '\n\n' + error.stack}
           </pre>
         </details>
       )}
@@ -67,14 +67,14 @@ export function SupabaseErrorFallback({
   resetError,
 }: ErrorFallbackProps) {
   const isNetworkError =
-    error.message.includes("fetch") ||
-    error.message.includes("network") ||
-    error.message.includes("connection");
+    error.message.includes('fetch') ||
+    error.message.includes('network') ||
+    error.message.includes('connection');
 
   const isAuthError =
-    error.message.includes("auth") ||
-    error.message.includes("unauthorized") ||
-    error.message.includes("session");
+    error.message.includes('auth') ||
+    error.message.includes('unauthorized') ||
+    error.message.includes('session');
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
@@ -90,23 +90,23 @@ export function SupabaseErrorFallback({
 
       <h3 className="text-lg font-semibold text-gray-900 mb-2">
         {isNetworkError
-          ? "Connection Problem"
+          ? 'Connection Problem'
           : isAuthError
-            ? "Authentication Required"
-            : "Database Error"}
+            ? 'Authentication Required'
+            : 'Database Error'}
       </h3>
 
       <p className="text-sm text-gray-600 mb-4 max-w-md">
         {isNetworkError
-          ? "Unable to connect to the server. Please check your internet connection."
+          ? 'Unable to connect to the server. Please check your internet connection.'
           : isAuthError
-            ? "Your session has expired. Please log in again."
-            : "There was a problem loading your data. Please try again."}
+            ? 'Your session has expired. Please log in again.'
+            : 'There was a problem loading your data. Please try again.'}
       </p>
 
       <Button onClick={resetError} className="flex items-center gap-2">
         <RefreshCw className="h-4 w-4" />
-        {isAuthError ? "Go to Login" : "Retry"}
+        {isAuthError ? 'Go to Login' : 'Retry'}
       </Button>
     </div>
   );
@@ -128,7 +128,7 @@ export class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to console in development
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);

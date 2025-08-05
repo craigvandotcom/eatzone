@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { getZoneBgClass, getZoneBgStyle } from "@/lib/utils/zone-colors";
+import { getZoneBgClass, getZoneBgStyle } from '@/lib/utils/zone-colors';
 
 interface Ingredient {
   name: string;
@@ -35,11 +35,11 @@ export function OrganicCompositionBar({
     >
       {organicPercent > 0 && (
         <div
-          className={`${getZoneBgClass("green")} transition-all duration-500`}
+          className={`${getZoneBgClass('green')} transition-all duration-500`}
           style={{
             width: `${organicPercent}%`,
-            minWidth: organicPercent > 0 ? "2px" : "0px",
-            ...getZoneBgStyle("green"), // Fallback inline style
+            minWidth: organicPercent > 0 ? '2px' : '0px',
+            ...getZoneBgStyle('green'), // Fallback inline style
           }}
         />
       )}

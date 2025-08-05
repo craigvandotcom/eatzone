@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { getZoneTextClass } from "@/lib/utils/zone-colors";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { getZoneTextClass } from '@/lib/utils/zone-colors';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Smartphone,
   Shield,
@@ -21,8 +21,8 @@ import {
   CheckCircle,
   ArrowRight,
   QrCode,
-} from "lucide-react";
-import Link from "next/link";
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function LandingPage() {
   const [showQR, setShowQR] = useState(false);
@@ -30,45 +30,45 @@ export default function LandingPage() {
   const features = [
     {
       icon: Camera,
-      title: "AI-Powered Capture",
+      title: 'AI-Powered Capture',
       description:
-        "Take a photo of your food or drink and let AI analyze it for you",
-      color: "from-green-400 to-emerald-500",
+        'Take a photo of your food or drink and let AI analyze it for you',
+      color: 'from-green-400 to-emerald-500',
     },
     {
       icon: Shield,
-      title: "Privacy by Design",
+      title: 'Privacy by Design',
       description:
-        "Your health data never leaves your device - complete privacy guaranteed",
-      color: "from-blue-400 to-cyan-500",
+        'Your health data never leaves your device - complete privacy guaranteed',
+      color: 'from-blue-400 to-cyan-500',
     },
     {
       icon: BarChart3,
-      title: "Visual Insights",
+      title: 'Visual Insights',
       description:
         "Beautiful charts and progress tracking to understand your body's patterns",
-      color: "from-purple-400 to-pink-500",
+      color: 'from-purple-400 to-pink-500',
     },
     {
       icon: BarChart3,
-      title: "Comprehensive Tracking",
-      description: "Monitor foods, symptoms, and more in one unified app",
-      color: "from-amber-400 to-orange-500",
+      title: 'Comprehensive Tracking',
+      description: 'Monitor foods, symptoms, and more in one unified app',
+      color: 'from-amber-400 to-orange-500',
     },
   ];
 
   const trackingCategories = [
     {
       icon: Utensils,
-      name: "Foods",
-      color: getZoneTextClass("green"),
-      description: "Ingredient analysis",
+      name: 'Foods',
+      color: getZoneTextClass('green'),
+      description: 'Ingredient analysis',
     },
     {
       icon: Activity,
-      name: "Symptoms",
-      color: getZoneTextClass("red"),
-      description: "Health monitoring",
+      name: 'Symptoms',
+      color: getZoneTextClass('red'),
+      description: 'Health monitoring',
     },
   ];
 
@@ -102,7 +102,7 @@ export default function LandingPage() {
               Private • Offline-First • AI-Powered
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Your Body&apos;s{" "}
+              Your Body&apos;s{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500">
                 Compass
               </span>
@@ -159,13 +159,13 @@ export default function LandingPage() {
               <div className="flex items-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
                   <CheckCircle
-                    className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`}
+                    className={`h-4 w-4 ${getZoneTextClass('green')} mr-1`}
                   />
                   No account required to try
                 </div>
                 <div className="flex items-center">
                   <CheckCircle
-                    className={`h-4 w-4 ${getZoneTextClass("green")} mr-1`}
+                    className={`h-4 w-4 ${getZoneTextClass('green')} mr-1`}
                   />
                   Data stays on your device
                 </div>
@@ -283,14 +283,14 @@ export default function LandingPage() {
 
               <div className="space-y-4">
                 {[
-                  "No cloud storage of personal data",
-                  "AI processing happens securely",
-                  "Export your data anytime",
-                  "No tracking or analytics",
+                  'No cloud storage of personal data',
+                  'AI processing happens securely',
+                  'Export your data anytime',
+                  'No tracking or analytics',
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
                     <CheckCircle
-                      className={`h-5 w-5 ${getZoneTextClass("green")} mr-3`}
+                      className={`h-5 w-5 ${getZoneTextClass('green')} mr-3`}
                     />
                     <span className="text-gray-700">{item}</span>
                   </div>

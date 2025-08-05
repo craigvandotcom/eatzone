@@ -60,10 +60,10 @@ As you grow, you’ll aim for a **“testing trophy”** shape: most value from 
 
 ```ts
 // vitest + typescript example
-import { expect, test } from "vitest";
-import { net } from "./pricing";
+import { expect, test } from 'vitest';
+import { net } from './pricing';
 
-test("net() applies tax and discount", () => {
+test('net() applies tax and discount', () => {
   const price = net({ base: 100, taxRate: 0.2, discount: 0.1 });
   expect(price).toBe(108); // 100 * 1.2 * 0.9
 });
@@ -74,15 +74,15 @@ test("net() applies tax and discount", () => {
 **Type tests:** these never run—your compiler enforces them.
 
 ```ts
-import { expectTypeOf } from "vitest";
-import { parseUser } from "./parseUser";
+import { expectTypeOf } from 'vitest';
+import { parseUser } from './parseUser';
 
-expectTypeOf(parseUser({ id: "1", name: "A" })).toEqualTypeOf<{
+expectTypeOf(parseUser({ id: '1', name: 'A' })).toEqualTypeOf<{
   id: number;
   name: string;
 }>();
 // @ts-expect-error – id must be a string here, so this should fail to compile
-parseUser({ id: 1, name: "A" });
+parseUser({ id: 1, name: 'A' });
 ```
 
 ---
@@ -92,18 +92,18 @@ parseUser({ id: 1, name: "A" });
 **Principle:** If a user can’t do it, your test shouldn’t either. Use roles, labels, and text—never `.querySelector(".some-class")`.
 
 ```tsx
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { LoginForm } from "./LoginForm";
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { LoginForm } from './LoginForm';
 
-test("submits email and password", async () => {
+test('submits email and password', async () => {
   render(<LoginForm />);
   await userEvent.type(
-    screen.getByRole("textbox", { name: /email/i }),
-    "a@b.com"
+    screen.getByRole('textbox', { name: /email/i }),
+    'a@b.com'
   );
-  await userEvent.type(screen.getByLabelText(/password/i), "secret");
-  await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
+  await userEvent.type(screen.getByLabelText(/password/i), 'secret');
+  await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
   expect(await screen.findByText(/welcome/i)).toBeInTheDocument();
 });
 ```
@@ -127,12 +127,12 @@ test("submits email and password", async () => {
 Playwright example:
 
 ```ts
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
 
-test("user can checkout", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("link", { name: /cart/i }).click();
-  await page.getByRole("button", { name: /checkout/i }).click();
+test('user can checkout', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: /cart/i }).click();
+  await page.getByRole('button', { name: /checkout/i }).click();
   await expect(page.getByText(/thank you/i)).toBeVisible();
 });
 ```

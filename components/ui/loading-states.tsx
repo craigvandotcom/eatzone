@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import { Loader2 } from "lucide-react";
-import { Skeleton } from "./skeleton";
-import { cn } from "@/lib/utils";
+import { Loader2 } from 'lucide-react';
+import { Skeleton } from './skeleton';
+import { cn } from '@/lib/utils';
 
 // Loading spinner component
 export function LoadingSpinner({
   className,
-  size = "default",
+  size = 'default',
 }: {
   className?: string;
-  size?: "sm" | "default" | "lg";
+  size?: 'sm' | 'default' | 'lg';
 }) {
   const sizeClasses = {
-    sm: "h-4 w-4",
-    default: "h-6 w-6",
-    lg: "h-8 w-8",
+    sm: 'h-4 w-4',
+    default: 'h-6 w-6',
+    lg: 'h-8 w-8',
   };
 
   return (
-    <Loader2 className={cn("animate-spin", sizeClasses[size], className)} />
+    <Loader2 className={cn('animate-spin', sizeClasses[size], className)} />
   );
 }
 
 // Data loading state with message
 export function DataLoadingState({
-  message = "Loading...",
+  message = 'Loading...',
   className,
 }: {
   message?: string;
@@ -33,7 +33,7 @@ export function DataLoadingState({
 }) {
   return (
     <div
-      className={cn("flex items-center justify-center gap-2 py-8", className)}
+      className={cn('flex items-center justify-center gap-2 py-8', className)}
     >
       <LoadingSpinner />
       <span className="text-sm text-muted-foreground">{message}</span>
@@ -92,7 +92,7 @@ export function ProgressCircleSkeleton() {
 // Form submission loading overlay
 export function FormLoadingOverlay({
   isVisible,
-  message = "Saving...",
+  message = 'Saving...',
   className,
 }: {
   isVisible: boolean;
@@ -104,7 +104,7 @@ export function FormLoadingOverlay({
   return (
     <div
       className={cn(
-        "absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg",
+        'absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg',
         className
       )}
     >
@@ -119,7 +119,7 @@ export function FormLoadingOverlay({
 // Network retry state
 export function NetworkRetryState({
   onRetry,
-  message = "Connection failed. Tap to retry.",
+  message = 'Connection failed. Tap to retry.',
   className,
 }: {
   onRetry: () => void;
@@ -127,7 +127,7 @@ export function NetworkRetryState({
   className?: string;
 }) {
   return (
-    <div className={cn("text-center py-8", className)}>
+    <div className={cn('text-center py-8', className)}>
       <div className="space-y-4">
         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto">
           <span className="text-red-600 text-xl">⚠️</span>
@@ -150,10 +150,10 @@ export function NetworkRetryState({
 export function EmptyOrLoadingState({
   isLoading,
   isEmpty,
-  loadingMessage = "Loading entries...",
-  emptyTitle = "No entries yet",
-  emptyDescription = "Get started by adding your first entry",
-  emptyIcon = "📝",
+  loadingMessage = 'Loading entries...',
+  emptyTitle = 'No entries yet',
+  emptyDescription = 'Get started by adding your first entry',
+  emptyIcon = '📝',
   className,
   children,
 }: {
@@ -172,7 +172,7 @@ export function EmptyOrLoadingState({
 
   if (isEmpty) {
     return (
-      <div className={cn("text-center py-12", className)}>
+      <div className={cn('text-center py-12', className)}>
         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">{emptyIcon}</span>
         </div>

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SymptomEntryForm } from "@/features/symptoms/components/symptom-entry-form";
-import { getSymptomById, updateSymptom as dbUpdateSymptom } from "@/lib/db";
-import type { Symptom } from "@/lib/types";
-import { logger } from "@/lib/utils/logger";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SymptomEntryForm } from '@/features/symptoms/components/symptom-entry-form';
+import { getSymptomById, updateSymptom as dbUpdateSymptom } from '@/lib/db';
+import type { Symptom } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
 
 export default function EditSymptomPage({
   params,
@@ -30,7 +30,7 @@ export default function EditSymptomPage({
           router.back();
         }
       } catch (error) {
-        logger.error("Error loading symptom", error);
+        logger.error('Error loading symptom', error);
         router.back();
       } finally {
         setLoading(false);
@@ -41,11 +41,11 @@ export default function EditSymptomPage({
   }, [params, router]);
 
   const handleUpdateSymptom = async (
-    updatedSymptom: Omit<Symptom, "id" | "timestamp">
+    updatedSymptom: Omit<Symptom, 'id' | 'timestamp'>
   ) => {
     if (symptom) {
       await dbUpdateSymptom(symptom.id, updatedSymptom);
-      router.push("/app");
+      router.push('/app');
     }
   };
 

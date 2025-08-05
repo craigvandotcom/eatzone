@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { getZoneBgClass, getZoneTextClass } from "@/lib/utils/zone-colors";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import {
   Eye,
   EyeOff,
@@ -23,19 +23,21 @@ import {
   Shield,
   Loader2,
   Smartphone,
-} from "lucide-react";
-import { useAuth } from "@/features/auth/components/auth-provider";
+} from 'lucide-react';
+import { useAuth } from '@/features/auth/components/auth-provider';
 // Simple PWA detection utilities
 const isPWAContext = () => {
-  if (typeof window === "undefined") return false;
-  const isIOSPWA = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-  const isMinimalUI = window.matchMedia("(display-mode: minimal-ui)").matches;
+  if (typeof window === 'undefined') return false;
+  const isIOSPWA =
+    (window.navigator as unknown as { standalone?: boolean }).standalone ===
+    true;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const isMinimalUI = window.matchMedia('(display-mode: minimal-ui)').matches;
   return isIOSPWA || isStandalone || isMinimalUI;
 };
 
 const isIOSDevice = () => {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
 };
 
@@ -45,30 +47,30 @@ export function LoginFormClient() {
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
   // All hooks must be called before any conditional returns
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [showPWAInfo, setShowPWAInfo] = useState(false);
 
   // PWA detection
-  const isPWA = typeof window !== "undefined" ? isPWAContext() : false;
-  const isIOS = typeof window !== "undefined" ? isIOSDevice() : false;
+  const isPWA = typeof window !== 'undefined' ? isPWAContext() : false;
+  const isIOS = typeof window !== 'undefined' ? isIOSDevice() : false;
 
   // Check for redirect message
-  const redirectMessage = searchParams.get("message");
+  const redirectMessage = searchParams.get('message');
 
   // Redirect authenticated users to app
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      router.push("/app");
+      router.push('/app');
     }
   }, [isAuthenticated, authLoading, router]);
 
   useEffect(() => {
-    if (redirectMessage === "signup_success") {
-      setError("");
+    if (redirectMessage === 'signup_success') {
+      setError('');
     }
   }, [redirectMessage]);
 
@@ -92,13 +94,13 @@ export function LoginFormClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     try {
       await login(email, password);
-      router.push("/app");
+      router.push('/app');
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -119,17 +121,17 @@ export function LoginFormClient() {
           {isPWA && (
             <div className="flex items-center justify-center space-x-1 text-xs text-blue-600">
               <Smartphone className="h-3 w-3" />
-              <span>PWA Mode {isIOS ? "(iOS)" : ""}</span>
+              <span>PWA Mode {isIOS ? '(iOS)' : ''}</span>
             </div>
           )}
         </div>
 
         {/* Success Message */}
-        {redirectMessage === "signup_success" && (
+        {redirectMessage === 'signup_success' && (
           <Alert
-            className={`border-zone-green/30 ${getZoneBgClass("green", "light")}`}
+            className={`border-zone-green/30 ${getZoneBgClass('green', 'light')}`}
           >
-            <AlertDescription className={getZoneTextClass("green")}>
+            <AlertDescription className={getZoneTextClass('green')}>
               Account created successfully! Please sign in.
             </AlertDescription>
           </Alert>
@@ -153,7 +155,7 @@ export function LoginFormClient() {
                   onClick={() => setShowPWAInfo(!showPWAInfo)}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
-                  {showPWAInfo ? "Hide" : "Info"}
+                  {showPWAInfo ? 'Hide' : 'Info'}
                 </button>
               </div>
             </CardHeader>
@@ -203,7 +205,7 @@ export function LoginFormClient() {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
@@ -226,9 +228,9 @@ export function LoginFormClient() {
 
               {error && (
                 <Alert
-                  className={`border-zone-red/30 ${getZoneBgClass("red", "light")}`}
+                  className={`border-zone-red/30 ${getZoneBgClass('red', 'light')}`}
                 >
-                  <AlertDescription className={getZoneTextClass("red")}>
+                  <AlertDescription className={getZoneTextClass('red')}>
                     {error}
                   </AlertDescription>
                 </Alert>
@@ -245,7 +247,7 @@ export function LoginFormClient() {
                     Signing in...
                   </>
                 ) : (
-                  "Sign In"
+                  'Sign In'
                 )}
               </Button>
             </form>
@@ -255,7 +257,7 @@ export function LoginFormClient() {
         {/* Sign Up Link */}
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{" "}
+            Don&apos;t have an account?{' '}
             <Link
               href="/signup"
               className="font-medium text-blue-600 hover:text-blue-500"

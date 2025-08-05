@@ -18,8 +18,8 @@
 // 4. Test session persistence and expiration
 // 5. Test demo mode functionality
 
-describe("Authentication", () => {
-  it("should be implemented after Supabase auth integration", () => {
+describe('Authentication', () => {
+  it('should be implemented after Supabase auth integration', () => {
     // This is a placeholder test that passes
     // Real auth tests will be added when auth system is fully integrated
     expect(true).toBe(true);

@@ -1,5 +1,5 @@
 import type { Config } from 'jest';
-import nextJest from 'next/jest';
+import nextJest from 'next/jest.js';
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
@@ -51,7 +51,12 @@ const customJestConfig: Config = {
   ],
 
   // Ignore patterns
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+  testPathIgnorePatterns: [
+    '/node_modules/', 
+    '/.next/',
+    '/__tests__/e2e/', // Exclude Playwright tests from Jest
+    '\\.spec\\.(ts|tsx)$', // Exclude .spec files (Playwright convention)
+  ],
 
   // Transform ignore patterns
   transformIgnorePatterns: [

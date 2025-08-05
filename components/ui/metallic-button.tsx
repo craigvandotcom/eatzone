@@ -50,7 +50,7 @@ const metallicButtonVariants = cva(
       variant: 'metallic',
       size: 'default',
     },
-  }
+  },
 );
 
 export interface MetallicButtonProps
@@ -63,7 +63,7 @@ const MetallicButton = React.forwardRef<HTMLButtonElement, MetallicButtonProps>(
       <button
         className={cn(
           metallicButtonVariants({ variant, accent, size }),
-          className
+          className,
         )}
         ref={ref}
         {...props}
@@ -71,7 +71,7 @@ const MetallicButton = React.forwardRef<HTMLButtonElement, MetallicButtonProps>(
         <span className="relative z-10">{children}</span>
       </button>
     );
-  }
+  },
 );
 MetallicButton.displayName = 'MetallicButton';
 

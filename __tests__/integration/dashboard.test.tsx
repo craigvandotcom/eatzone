@@ -158,7 +158,7 @@ describe('Dashboard Integration', () => {
 
       // Should show ingredient information - use getAllByText for multiple matches
       expect(
-        screen.getAllByText(/organic spinach, wild salmon/i).length,
+        screen.getAllByText(/organic spinach, wild salmon/i).length
       ).toBeGreaterThan(0);
     });
 
@@ -246,8 +246,8 @@ describe('Dashboard Integration', () => {
       // Should show error message (may be in NetworkRetryState component)
       expect(
         screen.getByText(
-          /connection failed|failed to load|network connection failed/i,
-        ),
+          /connection failed|failed to load|network connection failed/i
+        )
       ).toBeInTheDocument();
 
       // Should have retry button available
@@ -289,8 +289,8 @@ describe('Dashboard Integration', () => {
       // Should show error message for stats
       expect(
         screen.getByText(
-          /database connection lost|failed to load|connection failed/i,
-        ),
+          /database connection lost|failed to load|connection failed/i
+        )
       ).toBeInTheDocument();
 
       // Should have retry button available
@@ -378,7 +378,7 @@ describe('Dashboard Integration', () => {
       // Find the food add button by looking for buttons with utensils icon or food-related text
       // Since accessibility names might not match, let's look for any button that might trigger food capture
       const buttons = screen.getAllByRole('button');
-      const addFoodButton = buttons.find((button) => {
+      const addFoodButton = buttons.find(button => {
         const text = button.textContent || '';
         const ariaLabel = button.getAttribute('aria-label') || '';
         return /utensils|add.*food|capture.*food/i.test(text + ' ' + ariaLabel);
@@ -388,7 +388,7 @@ describe('Dashboard Integration', () => {
         await user.click(addFoodButton);
         // Should open camera capture modal
         expect(
-          screen.getByText(/capture food|camera|take photo/i),
+          screen.getByText(/capture food|camera|take photo/i)
         ).toBeInTheDocument();
       } else {
         // If no specific add food button found, this test scenario may not be relevant
@@ -435,7 +435,7 @@ describe('Dashboard Integration', () => {
 
       expect(screen.getByText(/no foods logged yet/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/tap the eat icon below to get started/i),
+        screen.getByText(/tap the eat icon below to get started/i)
       ).toBeInTheDocument();
     });
 
@@ -477,7 +477,7 @@ describe('Dashboard Integration', () => {
 
       expect(screen.getByText(/no symptoms logged yet/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/tap the symptom icon below to get started/i),
+        screen.getByText(/tap the symptom icon below to get started/i)
       ).toBeInTheDocument();
     });
   });

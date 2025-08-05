@@ -31,7 +31,6 @@ jest.mock('next/navigation', () => ({
 const mockSupabaseClient = {
   auth: {
     getUser: jest.fn(),
-    getSession: jest.fn(),
     signInWithPassword: jest.fn(),
     signUp: jest.fn(),
     signOut: jest.fn(),
@@ -43,13 +42,11 @@ const mockSupabaseClient = {
     select: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
     update: jest.fn().mockReturnThis(),
-    upsert: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     single: jest.fn(),
-    maybeSingle: jest.fn(),
     then: jest.fn(),
   })),
   channel: jest.fn(() => ({
@@ -149,10 +146,10 @@ jest.mock('@/components/error-boundary', () => ({
       'div',
       {},
       React.createElement('div', {}, 'Error: ' + error.message),
-      React.createElement('button', { onClick: resetError }, 'Retry'),
+      React.createElement('button', { onClick: resetError }, 'Retry')
     ),
   withSupabaseErrorBoundary: <P extends object>(
-    Component: React.ComponentType<P>,
+    Component: React.ComponentType<P>
   ) => Component,
   useErrorHandler: () => ({ handleError: jest.fn(), clearError: jest.fn() }),
 }));
@@ -163,7 +160,7 @@ export { mockSupabaseClient };
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation((query) => ({
+  value: jest.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,

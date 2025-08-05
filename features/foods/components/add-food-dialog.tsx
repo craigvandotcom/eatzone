@@ -15,7 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/components/ui/use-mobile';
 import { FoodEntryForm } from './food-entry-form';
 
 interface AddFoodDialogProps {
@@ -38,7 +38,7 @@ export function AddFoodDialog({
   const isMobile = useIsMobile();
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [availableHeight, setAvailableHeight] = useState(
-    typeof window !== 'undefined' ? window.innerHeight : 0,
+    typeof window !== 'undefined' ? window.innerHeight : 0
   );
   const contentRef = useRef<HTMLDivElement>(null);
 

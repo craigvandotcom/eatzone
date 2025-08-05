@@ -62,7 +62,7 @@ export const zoneColors = {
  */
 export function getZoneColor(
   zone: ZoneType,
-  format: ColorFormat = 'hsl',
+  format: ColorFormat = 'hsl'
 ): string {
   const colorConfig = zoneColors[zone];
 
@@ -89,7 +89,7 @@ export function getZoneColor(
  */
 export function getZoneBgClass(
   zone: ZoneType,
-  opacity?: 'light' | 'medium' | 'dark',
+  opacity?: 'light' | 'medium' | 'dark'
 ): string {
   const colorConfig = zoneColors[zone];
 
@@ -113,7 +113,7 @@ export function getZoneBgClass(
  */
 export function getZoneBgStyle(
   zone: ZoneType,
-  opacity?: number,
+  opacity?: number
 ): React.CSSProperties {
   const colorConfig = zoneColors[zone];
 
@@ -159,7 +159,7 @@ export function getZoneBorderClass(zone: ZoneType, light = false): string {
  */
 export function getZoneClasses(
   zone: ZoneType,
-  variant: 'solid' | 'outline' | 'ghost' | 'indicator' = 'solid',
+  variant: 'solid' | 'outline' | 'ghost' | 'indicator' = 'solid'
 ): string {
   const colorConfig = zoneColors[zone];
 
@@ -170,7 +170,7 @@ export function getZoneClasses(
       return twMerge(
         colorConfig.border,
         colorConfig.text,
-        'border-2 bg-transparent',
+        'border-2 bg-transparent'
       );
     case 'ghost':
       return twMerge(colorConfig.bgLight, colorConfig.text);
@@ -205,7 +205,7 @@ export function getZoneColorWithAlpha(zone: ZoneType, alpha?: string): string {
  */
 export function getZoneStyle(
   zone: ZoneType,
-  property: 'backgroundColor' | 'color' | 'borderColor' = 'backgroundColor',
+  property: 'backgroundColor' | 'color' | 'borderColor' = 'backgroundColor'
 ): React.CSSProperties {
   const colorConfig = zoneColors[zone];
 

@@ -1,6 +1,6 @@
 # Medical Symptoms Questionnaire (MSQ)
 
-**Date:** ****\_\_\_****
+**Date:** \***\*\_\_\_\*\***
 
 ## Instructions
 
@@ -170,11 +170,11 @@ Rate each of the following symptoms based upon your typical health profile for t
 
 ## Summary
 
-**MSQ Total:** ****\_\_\_****
+**MSQ Total:** \***\*\_\_\_\*\***
 
-**Date/Time:** ****\_\_\_****
+**Date/Time:** \***\*\_\_\_\*\***
 
-**Reviewed by:** ************\_\_\_\_************
+**Reviewed by:** ****\*\*\*\*****\_\_\_\_****\*\*\*\*****
 
 ---
 

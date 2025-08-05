@@ -29,9 +29,8 @@ import { useAuth } from '@/features/auth/components/auth-provider';
 const isPWAContext = () => {
   if (typeof window === 'undefined') return false;
   const isIOSPWA =
-    'standalone' in window.navigator &&
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true;
+    (window.navigator as unknown as { standalone?: boolean }).standalone ===
+    true;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
   const isMinimalUI = window.matchMedia('(display-mode: minimal-ui)').matches;
   return isIOSPWA || isStandalone || isMinimalUI;
@@ -100,9 +99,8 @@ export function LoginFormClient() {
     try {
       await login(email, password);
       router.push('/app');
-    } catch {
-      // Standardize error message to prevent information leakage
-      setError('Invalid email or password');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -196,7 +194,7 @@ export function LoginFormClient() {
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   className="w-full"
                 />
@@ -210,7 +208,7 @@ export function LoginFormClient() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     required
                     className="w-full pr-10"
                   />

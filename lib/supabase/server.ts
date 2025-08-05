@@ -16,7 +16,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              cookieStore.set(name, value, options)
             );
           } catch (error) {
             // The `setAll` method was called from a Server Component.
@@ -31,12 +31,12 @@ export async function createClient() {
                     error instanceof Error ? error.message : 'Unknown error',
                   context:
                     'This is expected when called from Server Components',
-                },
+                }
               );
             }
           }
         },
       },
-    },
+    }
   );
 }

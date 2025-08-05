@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import {
   ChevronLeft,
   Download,
@@ -92,7 +92,7 @@ function SettingsPage() {
   };
 
   const handleImportData = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -435,7 +435,7 @@ function SettingsPage() {
               </div>
               <Switch
                 checked={theme === 'dark'}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setTheme(checked ? 'dark' : 'light')
                 }
               />

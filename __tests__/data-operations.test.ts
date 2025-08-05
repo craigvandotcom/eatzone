@@ -67,7 +67,7 @@ describe('Data Operations', () => {
     it('should generate ISO 8601 compliant timestamps', async () => {
       const timestamp = new Date().toISOString();
       expect(timestamp).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
       );
     });
 

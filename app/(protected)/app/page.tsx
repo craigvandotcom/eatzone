@@ -20,7 +20,7 @@ import { FoodCompositionBar } from '@/features/foods/components/food-composition
 import { OrganicCompositionBar } from '@/features/foods/components/organic-composition-bar';
 import { VerticalProgressBar } from '@/features/foods/components/vertical-progress-bar';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/components/ui/use-mobile';
 import {
   Sidebar,
   SidebarContent,
@@ -284,7 +284,7 @@ function Dashboard() {
                     )}
                     {recentFoods && recentFoods.length > 0 && (
                       <div className="space-y-3 overflow-hidden">
-                        {recentFoods.map((food) => (
+                        {recentFoods.map(food => (
                           <button
                             key={food.id}
                             onClick={() => handleEditFood(food)}
@@ -314,7 +314,7 @@ function Dashboard() {
                                 </p>
                                 <p className="text-sm text-gray-500 truncate">
                                   {food.ingredients
-                                    ?.map((ing) => ing.name)
+                                    ?.map(ing => ing.name)
                                     .join(', ') || 'No ingredients'}
                                 </p>
                               </div>
@@ -383,7 +383,7 @@ function Dashboard() {
                     )}
                     {recentSymptoms &&
                       recentSymptoms.length > 0 &&
-                      recentSymptoms.map((symptom) => (
+                      recentSymptoms.map(symptom => (
                         <button
                           key={symptom.id}
                           onClick={() => handleEditSymptom(symptom)}

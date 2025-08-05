@@ -13,7 +13,7 @@ const PRECACHE_URLS = [
 ];
 
 // Install event - cache essential resources
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
@@ -22,30 +22,30 @@ self.addEventListener('install', (event) => {
       } catch (error) {
         console.error('Failed to cache essential resources:', error);
       }
-    })(),
+    })()
   );
   self.skipWaiting();
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
       const cacheNames = await caches.keys();
       await Promise.all(
-        cacheNames.map(async (cacheName) => {
+        cacheNames.map(async cacheName => {
           if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
             await caches.delete(cacheName);
           }
-        }),
+        })
       );
-    })(),
+    })()
   );
   self.clients.claim();
 });
 
 // Fetch event - handle all network requests
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
@@ -87,7 +87,7 @@ function isStaticAsset(request) {
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/static/') ||
     url.pathname.match(
-      /\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|ico)$/,
+      /\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|ico)$/
     )
   );
 }
@@ -160,7 +160,7 @@ async function handleNavigationRequest(request) {
       {
         headers: { 'Content-Type': 'text/html' },
         status: 200,
-      },
+      }
     );
   }
 }
@@ -219,7 +219,7 @@ async function handleApiRequest(request) {
       {
         headers: { 'Content-Type': 'application/json' },
         status: 503,
-      },
+      }
     );
   }
 }
@@ -249,7 +249,7 @@ async function handleOtherRequest(request) {
 }
 
 // Message handling for cache updates
-self.addEventListener('message', (event) => {
+self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }

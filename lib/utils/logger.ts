@@ -5,7 +5,6 @@ interface LogContext {
 }
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === 'development';
   private isProduction = process.env.NODE_ENV === 'production';
 
   private shouldLog(level: LogLevel): boolean {
@@ -20,7 +19,7 @@ class Logger {
   private formatMessage(
     level: LogLevel,
     message: string,
-    context?: LogContext,
+    context?: LogContext
   ): string {
     const timestamp = new Date().toISOString();
     const contextStr = context ? ` ${JSON.stringify(context)}` : '';

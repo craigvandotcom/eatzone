@@ -5,17 +5,17 @@
  * Clears all user data from the current user's session
  */
 
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
-const fs = require('fs');
+import { createClient } from '@supabase/supabase-js';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Load environment variables
 const envPath = path.join(process.cwd(), '.env.local');
 if (fs.existsSync(envPath)) {
   const envFile = fs.readFileSync(envPath, 'utf8');
-  const envVars = envFile.split('\n').filter((line) => line.includes('='));
+  const envVars = envFile.split('\n').filter(line => line.includes('='));
 
-  envVars.forEach((line) => {
+  envVars.forEach(line => {
     const [key, ...valueParts] = line.split('=');
     const value = valueParts.join('=').replace(/"/g, '');
     process.env[key] = value;
@@ -28,14 +28,14 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase configuration');
   console.error(
-    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local',
+    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local'
   );
   process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function resetDatabase() {
+async function resetDatabase(): Promise<void> {
   console.log('🔄 Starting database reset...');
 
   try {
@@ -47,31 +47,31 @@ async function resetDatabase() {
 
     if (authError || !user) {
       console.log(
-        '⚠️  No authenticated user found. Creating demo data instead...',
+        '⚠️  No authenticated user found. Creating demo data instead...'
       );
 
       // For development, we can create demo data
       console.log(
-        '📝 Use this script after logging in to reset your personal data',
+        '📝 Use this script after logging in to reset your personal data'
       );
       console.log('💡 For now, this serves as a connection test...');
 
       // Test connection with timeout and retry
       const MAX_RETRIES = 3;
       const TIMEOUT_MS = 5000;
-      let lastError = null;
+      let lastError: Error | null = null;
 
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
           console.log(
-            `🔍 Testing database connection (attempt ${attempt}/${MAX_RETRIES})...`,
+            `🔍 Testing database connection (attempt ${attempt}/${MAX_RETRIES})...`
           );
 
           // Create a timeout promise
-          const timeoutPromise = new Promise((_, reject) => {
+          const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(
               () => reject(new Error('Connection timeout')),
-              TIMEOUT_MS,
+              TIMEOUT_MS
             );
           });
 
@@ -81,28 +81,25 @@ async function resetDatabase() {
             .select('count', { count: 'exact', head: true });
 
           // Race between timeout and query
-          const { data, error } = await Promise.race([
-            queryPromise,
-            timeoutPromise,
-          ]);
+          const result = await Promise.race([queryPromise, timeoutPromise]);
 
-          if (error) {
-            throw error;
+          if ('error' in result && result.error) {
+            throw result.error;
           }
 
           console.log('✅ Database connection successful');
           return;
         } catch (error) {
-          lastError = error;
+          lastError = error as Error;
           console.error(
             `❌ Connection attempt ${attempt} failed:`,
-            error.message,
+            (error as Error).message
           );
 
           if (attempt < MAX_RETRIES) {
             const waitTime = Math.pow(2, attempt - 1) * 1000; // Exponential backoff: 1s, 2s, 4s
             console.log(`⏳ Waiting ${waitTime / 1000}s before retry...`);
-            await new Promise((resolve) => setTimeout(resolve, waitTime));
+            await new Promise(resolve => setTimeout(resolve, waitTime));
           }
         }
       }
@@ -147,7 +144,7 @@ async function resetDatabase() {
     console.log('✅ Database reset completed successfully!');
     console.log('💡 Your account remains active, only your data was cleared');
   } catch (error) {
-    console.error('❌ Reset failed:', error.message);
+    console.error('❌ Reset failed:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -158,7 +155,7 @@ resetDatabase()
     console.log('🎉 Reset process complete');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('💥 Unexpected error:', error);
     process.exit(1);
   });

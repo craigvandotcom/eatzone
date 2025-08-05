@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import { createUser } from '@/lib/db';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 
 function SignupForm() {
   const router = useRouter();
@@ -109,7 +108,7 @@ function SignupForm() {
           'message' in err &&
           typeof err.message === 'string'
           ? err.message
-          : 'Account creation failed',
+          : 'Account creation failed'
       );
     } finally {
       setIsLoading(false);
@@ -183,7 +182,7 @@ function SignupForm() {
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     required
                     disabled={isLoading}
                     className="h-12"
@@ -215,7 +214,7 @@ function SignupForm() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Create a password (min 8 characters)"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={e => setPassword(e.target.value)}
                       required
                       disabled={isLoading}
                       className="h-12 pr-10"
@@ -236,7 +235,21 @@ function SignupForm() {
                     </Button>
                   </div>
                   {password.length > 0 && (
-                    <PasswordStrengthIndicator password={password} />
+                    <div className="flex items-center text-xs">
+                      {isPasswordStrong ? (
+                        <>
+                          <CheckCircle
+                            className={`h-3 w-3 ${getZoneTextClass('green')} mr-1`}
+                          />{' '}
+                          Strong password
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle className="h-3 w-3 text-amber-500 mr-1" />{' '}
+                          At least 8 characters required
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -248,7 +261,7 @@ function SignupForm() {
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Confirm your password"
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={e => setConfirmPassword(e.target.value)}
                       required
                       disabled={isLoading}
                       className="h-12 pr-10"
@@ -295,7 +308,7 @@ function SignupForm() {
                   <Checkbox
                     id="terms"
                     checked={agreeToTerms}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={checked =>
                       setAgreeToTerms(checked as boolean)
                     }
                     disabled={isLoading}

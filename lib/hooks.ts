@@ -4,7 +4,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Symptom } from './types';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -18,13 +17,17 @@ import { logger } from './utils/logger';
 // Create a shared supabase client for all hooks
 const supabase = createClient();
 
-// Type for subscription configuration
+// Type for Supabase subscription configuration
+// Based on Supabase Realtime postgres_changes configuration
 type SubscriptionConfig = {
   event: '*' | 'INSERT' | 'UPDATE' | 'DELETE';
   schema: string;
   table: string;
   filter?: string;
 };
+
+// Type for Supabase RealtimeChannel (from Supabase client)
+type RealtimeChannel = ReturnType<typeof supabase.channel>;
 
 // Shared subscription management to prevent duplicate subscriptions
 class SubscriptionManager {
@@ -34,7 +37,7 @@ class SubscriptionManager {
   subscribe(
     key: string,
     subscriptionConfig: SubscriptionConfig,
-    callback: () => void,
+    callback: () => void
   ) {
     // Add callback to listeners
     if (!this.listeners.has(key)) {
@@ -44,21 +47,18 @@ class SubscriptionManager {
 
     // Create subscription if it doesn't exist
     if (!this.subscriptions.has(key)) {
-      const channel = supabase.channel(key);
+      const subscription = supabase
+        .channel(key)
+        .on(
+          'postgres_changes' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          subscriptionConfig,
+          () => {
+          // Notify all listeners
+          this.listeners.get(key)?.forEach(listener => listener());
+        })
+        .subscribe();
 
-      // TypeScript workaround: Supabase v2 has a known type issue where 'postgres_changes'
-      // is not properly recognized in the overloaded 'on' method signatures.
-      // This is a documented issue in the Supabase community.
-      // See: https://github.com/supabase/supabase-js/issues/1451
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (channel as any).on('postgres_changes', subscriptionConfig, () => {
-        // Notify all listeners
-        this.listeners.get(key)?.forEach((listener) => listener());
-      });
-
-      channel.subscribe();
-
-      this.subscriptions.set(key, channel);
+      this.subscriptions.set(key, subscription);
     }
 
     // Return unsubscribe function
@@ -88,7 +88,7 @@ function useSupabaseData<T>(
   fetchFn: () => Promise<T>,
   subscriptionKey: string,
   subscriptionConfig: SubscriptionConfig,
-  dependencies: React.DependencyList = [],
+  _dependencies: React.DependencyList = []
 ) {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +124,7 @@ function useSupabaseData<T>(
         if (showLoading) setIsLoading(false);
       }
     },
-    [fetchFn, subscriptionKey],
+    [fetchFn, subscriptionKey]
   );
 
   useEffect(() => {
@@ -135,12 +135,11 @@ function useSupabaseData<T>(
     const unsubscribe = subscriptionManager.subscribe(
       subscriptionKey,
       subscriptionConfig,
-      () => fetchData(false), // Don't show loading on real-time updates
+      () => fetchData(false) // Don't show loading on real-time updates
     );
 
     return unsubscribe;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData, subscriptionKey, subscriptionConfig, ...dependencies]);
+  }, [fetchData, subscriptionConfig, subscriptionKey]);
 
   const retry = useCallback(() => {
     retryCount.current = 0;
@@ -177,7 +176,7 @@ export const useFoodById = (id: string | null) => {
       table: 'foods',
       filter: id ? `id=eq.${id}` : undefined,
     },
-    [id],
+    [id]
   );
 };
 
@@ -193,7 +192,7 @@ export const useRecentFoods = (limit: number = 5) => {
       schema: 'public',
       table: 'foods',
     },
-    [limit],
+    [limit]
   );
 };
 
@@ -224,7 +223,7 @@ export const useSymptomById = (id: string | null) => {
       table: 'symptoms',
       filter: id ? `id=eq.${id}` : undefined,
     },
-    [id],
+    [id]
   );
 };
 
@@ -240,7 +239,7 @@ export const useRecentSymptoms = (limit: number = 5) => {
       schema: 'public',
       table: 'symptoms',
     },
-    [limit],
+    [limit]
   );
 };
 
@@ -273,21 +272,21 @@ export const useFoodStats = () => {
         const isFromToday = todaysFoods.length > 0;
 
         const ingredients = foodsToAnalyze.flatMap(
-          (food) => food.ingredients || [],
+          food => food.ingredients || []
         );
 
         const greenIngredients = ingredients.filter(
-          (ing) => ing.zone === 'green',
+          ing => ing.zone === 'green'
         ).length;
         const yellowIngredients = ingredients.filter(
-          (ing) => ing.zone === 'yellow',
+          ing => ing.zone === 'yellow'
         ).length;
         const redIngredients = ingredients.filter(
-          (ing) => ing.zone === 'red',
+          ing => ing.zone === 'red'
         ).length;
 
         const organicIngredientsCount = ingredients.filter(
-          (ing) => ing.organic === true,
+          ing => ing.organic === true
         ).length;
         const totalOrganicPercentage =
           ingredients.length > 0
@@ -321,7 +320,7 @@ export const useFoodStats = () => {
       event: '*',
       schema: 'public',
       table: 'foods',
-    },
+    }
   );
 };
 
@@ -334,12 +333,12 @@ export const useSymptomTrends = (days: number = 7) => {
         cutoffDate.setDate(cutoffDate.getDate() - days);
 
         const recentSymptoms = allSymptoms.filter(
-          (symptom) => new Date(symptom.timestamp) >= cutoffDate,
+          symptom => new Date(symptom.timestamp) >= cutoffDate
         );
 
         // Group symptoms by day
         const symptomsByDay: { [key: string]: Symptom[] } = {};
-        recentSymptoms.forEach((symptom) => {
+        recentSymptoms.forEach(symptom => {
           const day = symptom.timestamp.split('T')[0];
           if (!symptomsByDay[day]) {
             symptomsByDay[day] = [];
@@ -355,7 +354,7 @@ export const useSymptomTrends = (days: number = 7) => {
             averageSeverity:
               symptoms.reduce((sum, s) => sum + s.severity, 0) /
               symptoms.length,
-          }),
+          })
         );
 
         return trendData.sort((a, b) => a.day.localeCompare(b.day));
@@ -370,7 +369,7 @@ export const useSymptomTrends = (days: number = 7) => {
       schema: 'public',
       table: 'symptoms',
     },
-    [days],
+    [days]
   );
 };
 

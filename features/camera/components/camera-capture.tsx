@@ -44,7 +44,7 @@ export function CameraCapture({
   useEffect(() => {
     if (stream && videoRef.current) {
       videoRef.current.srcObject = stream;
-      videoRef.current.play().catch((err) => {
+      videoRef.current.play().catch(err => {
         logger.error('Error playing video', err);
       });
     }
@@ -74,7 +74,7 @@ export function CameraCapture({
 
   const stopCamera = () => {
     if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
   };

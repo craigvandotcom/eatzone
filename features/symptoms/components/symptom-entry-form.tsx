@@ -12,7 +12,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from 'lucide-react';
 import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
 import type { ZoneType } from '@/lib/utils/zone-colors';
-import { LoadingSpinner } from '@/components/ui/loading-states';
 
 interface LocalSymptom {
   name: string;
@@ -20,9 +19,7 @@ interface LocalSymptom {
 }
 
 interface SymptomEntryFormProps {
-  onAddSymptom: (
-    symptom: Omit<Symptom, 'id' | 'timestamp'>,
-  ) => void | Promise<void>;
+  onAddSymptom: (symptom: Omit<Symptom, 'id' | 'timestamp'>) => void;
   onClose: () => void;
   editingSymptom?: Symptom | null;
   className?: string;
@@ -136,23 +133,20 @@ export function SymptomEntryForm({
     return `${getZoneBgClass(zone, 'light')} ${getZoneTextClass(zone)}`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validSymptoms = symptoms.filter((symptom) => symptom.severity > 0);
+    const validSymptoms = symptoms.filter(symptom => symptom.severity > 0);
     if (validSymptoms.length === 0) return;
 
-    // Submit each valid symptom individually and wait for all to complete
-    const symptomPromises = validSymptoms.map((localSymptom) => {
+    // Submit each valid symptom individually
+    validSymptoms.forEach(localSymptom => {
       const symptom: Omit<Symptom, 'id' | 'timestamp'> = {
         name: localSymptom.name,
         severity: localSymptom.severity,
         notes: notes.trim() || undefined,
       };
-      return onAddSymptom(symptom);
+      onAddSymptom(symptom);
     });
-
-    // Wait for all symptoms to be saved
-    await Promise.all(symptomPromises);
 
     // Reset form
     setCurrentSymptom('');
@@ -173,12 +167,12 @@ export function SymptomEntryForm({
           <Input
             id="symptom-input"
             value={currentSymptom}
-            onChange={(e) => setCurrentSymptom(e.target.value)}
+            onChange={e => setCurrentSymptom(e.target.value)}
             onKeyPress={handleSymptomKeyPress}
             placeholder="Type symptom and press Enter"
             autoFocus
           />
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Press Enter to add each symptom
           </p>
         </div>
@@ -192,7 +186,7 @@ export function SymptomEntryForm({
                 {symptoms.map((symptom, index) => (
                   <div
                     key={index}
-                    className="bg-muted rounded-md h-12 flex items-center overflow-hidden"
+                    className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
                   >
                     {/* Normal Symptom Row */}
                     {severitySelectionIndex !== index &&
@@ -201,8 +195,8 @@ export function SymptomEntryForm({
                           {editingIndex === index ? (
                             <Input
                               value={editingValue}
-                              onChange={(e) => setEditingValue(e.target.value)}
-                              onKeyPress={(e) => handleEditKeyPress(e, index)}
+                              onChange={e => setEditingValue(e.target.value)}
+                              onKeyPress={e => handleEditKeyPress(e, index)}
                               onBlur={() => handleSaveEdit(index)}
                               className="flex-1 h-8 mx-2"
                               autoFocus
@@ -239,7 +233,7 @@ export function SymptomEntryForm({
                             <button
                               type="button"
                               onClick={() => handleEditSymptom(index)}
-                              className="p-1 text-muted-foreground hover:text-blue-600 transition-colors"
+                              className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
                               title="Edit symptom"
                             >
                               <Edit2 className="h-3 w-3" />
@@ -247,7 +241,7 @@ export function SymptomEntryForm({
                             <button
                               type="button"
                               onClick={() => handleDeleteSymptom(index)}
-                              className={`p-1 text-muted-foreground hover:${getZoneTextClass('red')} transition-colors`}
+                              className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
                               title="Delete symptom"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -260,7 +254,7 @@ export function SymptomEntryForm({
                     {severitySelectionIndex === index && (
                       <div className="flex-1 min-w-0 px-3 flex items-center justify-center">
                         <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map((level) => (
+                          {[1, 2, 3, 4, 5].map(level => (
                             <button
                               key={level}
                               type="button"
@@ -291,7 +285,7 @@ export function SymptomEntryForm({
           <button
             type="button"
             onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
             {showNotes ? (
               <ChevronUp className="h-4 w-4" />
@@ -304,7 +298,7 @@ export function SymptomEntryForm({
             <div className="mt-2">
               <Textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={e => setNotes(e.target.value)}
                 placeholder="Any additional details..."
                 rows={3}
               />
@@ -323,12 +317,12 @@ export function SymptomEntryForm({
           </Button>
           <Button
             type="submit"
-            disabled={symptoms.filter((s) => s.severity > 0).length === 0}
+            disabled={symptoms.filter(s => s.severity > 0).length === 0}
             className="flex-1 relative"
           >
             {editingSymptom
               ? 'Update Symptom'
-              : `Add Symptoms (${symptoms.filter((s) => s.severity > 0).length})`}
+              : `Add Symptoms (${symptoms.filter(s => s.severity > 0).length})`}
           </Button>
         </div>
       </form>

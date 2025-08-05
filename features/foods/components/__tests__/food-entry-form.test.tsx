@@ -91,7 +91,7 @@ describe('FoodEntryForm', () => {
           ingredients: expect.arrayContaining([
             expect.objectContaining({ name: 'Spinach' }),
           ]),
-        }),
+        })
       );
     });
   });

@@ -5,7 +5,6 @@ import { prompts } from '@/lib/prompts'; // Import from our new module
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { logger } from '@/lib/utils/logger';
-import { requireAuth } from '@/lib/auth/api';
 
 // Rate limiting setup using Vercel's Upstash integration env vars
 let ratelimit: Ratelimit | null = null;
@@ -43,11 +42,6 @@ interface AnalyzeImageErrorResponse {
 }
 
 export async function POST(request: NextRequest) {
-  const authResult = await requireAuth();
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-
   try {
     // Rate limiting check - only if Redis is configured
     if (ratelimit) {
@@ -66,7 +60,7 @@ export async function POST(request: NextRequest) {
               statusCode: 429,
             },
           },
-          { status: 429 },
+          { status: 429 }
         );
       }
     }
@@ -85,7 +79,7 @@ export async function POST(request: NextRequest) {
             statusCode: 400,
           },
         } as AnalyzeImageErrorResponse,
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -146,7 +140,7 @@ export async function POST(request: NextRequest) {
           rawResponse: aiResponseText.substring(0, 200) + '...',
         });
         throw new Error(
-          `AI response was not valid JSON. Response: "${aiResponseText}"`,
+          `AI response was not valid JSON. Response: "${aiResponseText}"`
         );
       }
     }
@@ -162,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     // Server-side validation and normalization process
     const normalizedIngredients = aiResponse.ingredients
-      .map((ingredient) => {
+      .map(ingredient => {
         if (
           typeof ingredient !== 'object' ||
           typeof ingredient.name !== 'string' ||
@@ -177,13 +171,13 @@ export async function POST(request: NextRequest) {
       })
       .filter(
         (ingredient): ingredient is { name: string; isOrganic: boolean } =>
-          ingredient !== null && ingredient.name.length > 0,
+          ingredient !== null && ingredient.name.length > 0
       );
 
     // Remove duplicates based on name
     const uniqueIngredients = normalizedIngredients.filter(
       (ingredient, index, array) =>
-        array.findIndex((item) => item.name === ingredient.name) === index,
+        array.findIndex(item => item.name === ingredient.name) === index
     );
 
     // Return standardized response
@@ -192,7 +186,7 @@ export async function POST(request: NextRequest) {
         mealSummary: aiResponse.mealSummary.trim(),
         ingredients: uniqueIngredients,
       } as AnalyzeImageResponse,
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     logger.error('Error in analyze-image API', error);
@@ -207,7 +201,7 @@ export async function POST(request: NextRequest) {
             statusCode: 400,
           },
         } as AnalyzeImageErrorResponse,
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -221,7 +215,7 @@ export async function POST(request: NextRequest) {
             statusCode: 503,
           },
         } as AnalyzeImageErrorResponse,
-        { status: 503 },
+        { status: 503 }
       );
     }
 
@@ -234,7 +228,7 @@ export async function POST(request: NextRequest) {
           statusCode: 500,
         },
       } as AnalyzeImageErrorResponse,
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

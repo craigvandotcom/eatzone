@@ -11,7 +11,7 @@ export default function AddSymptomPage() {
   const router = useRouter();
 
   const handleAddSymptom = async (
-    symptom: Omit<Symptom, 'id' | 'timestamp'>,
+    symptom: Omit<Symptom, 'id' | 'timestamp'>
   ) => {
     await dbAddSymptom(symptom);
     router.push('/app');

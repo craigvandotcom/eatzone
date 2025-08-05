@@ -1,7 +1,7 @@
 // Add to home screen prompt
 let deferredPrompt;
 
-window.addEventListener('beforeinstallprompt', (e) => {
+window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
 
@@ -11,7 +11,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     installButton.style.display = 'block';
     installButton.addEventListener('click', () => {
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
+      deferredPrompt.userChoice.then(choiceResult => {
         if (choiceResult.outcome === 'accepted') {
           console.log('User accepted the install prompt');
         }

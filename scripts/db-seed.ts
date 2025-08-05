@@ -5,17 +5,18 @@
  * Creates sample data for development and testing
  */
 
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
-const fs = require('fs');
+import { createClient } from '@supabase/supabase-js';
+import * as path from 'path';
+import * as fs from 'fs';
+import type { Food, Symptom } from '../lib/types';
 
 // Load environment variables
 const envPath = path.join(process.cwd(), '.env.local');
 if (fs.existsSync(envPath)) {
   const envFile = fs.readFileSync(envPath, 'utf8');
-  const envVars = envFile.split('\n').filter((line) => line.includes('='));
+  const envVars = envFile.split('\n').filter(line => line.includes('='));
 
-  envVars.forEach((line) => {
+  envVars.forEach(line => {
     const [key, ...valueParts] = line.split('=');
     const value = valueParts.join('=').replace(/"/g, '');
     process.env[key] = value;
@@ -28,7 +29,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase configuration');
   console.error(
-    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local',
+    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local'
   );
   process.exit(1);
 }
@@ -36,7 +37,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Sample data
-const sampleFoods = [
+const sampleFoods: Omit<Food, 'id' | 'user_id' | 'timestamp'>[] = [
   {
     name: 'Green Smoothie',
     ingredients: [
@@ -105,7 +106,7 @@ const sampleFoods = [
   },
 ];
 
-const sampleSymptoms = [
+const sampleSymptoms: Omit<Symptom, 'id' | 'user_id' | 'timestamp'>[] = [
   {
     name: 'Mild Headache',
     severity: 2,
@@ -123,7 +124,7 @@ const sampleSymptoms = [
   },
 ];
 
-async function seedDatabase() {
+async function seedDatabase(): Promise<void> {
   console.log('🌱 Starting database seeding...');
 
   try {
@@ -136,7 +137,7 @@ async function seedDatabase() {
     if (authError || !user) {
       console.log('⚠️  No authenticated user found.');
       console.log(
-        '📝 Please log in first, then run this script to create sample data',
+        '📝 Please log in first, then run this script to create sample data'
       );
       return;
     }
@@ -184,7 +185,7 @@ async function seedDatabase() {
     if (symptomsError) {
       console.error(
         '❌ Error creating sample symptoms:',
-        symptomsError.message,
+        symptomsError.message
       );
     } else {
       console.log(`✅ Created ${sampleSymptoms.length} sample symptom entries`);
@@ -193,7 +194,7 @@ async function seedDatabase() {
     console.log('🎉 Database seeding completed successfully!');
     console.log('💡 You can now explore the app with sample data');
   } catch (error) {
-    console.error('❌ Seeding failed:', error.message);
+    console.error('❌ Seeding failed:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -204,7 +205,7 @@ seedDatabase()
     console.log('🌟 Seeding process complete');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('💥 Unexpected error:', error);
     process.exit(1);
   });

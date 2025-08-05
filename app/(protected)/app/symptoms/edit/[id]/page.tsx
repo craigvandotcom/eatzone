@@ -41,7 +41,7 @@ export default function EditSymptomPage({
   }, [params, router]);
 
   const handleUpdateSymptom = async (
-    updatedSymptom: Omit<Symptom, 'id' | 'timestamp'>,
+    updatedSymptom: Omit<Symptom, 'id' | 'timestamp'>
   ) => {
     if (symptom) {
       await dbUpdateSymptom(symptom.id, updatedSymptom);

@@ -43,7 +43,7 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config) => {
+  webpack: config => {
     config.module.rules.push({
       test: /\.md$/,
       type: 'asset/source',

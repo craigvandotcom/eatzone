@@ -32,19 +32,21 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
         <AlertTriangle className="h-8 w-8 text-red-600" />
       </div>
 
-      <h3 className="text-lg font-semibold mb-2">Something went wrong</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        Something went wrong
+      </h3>
 
-      <p className="text-sm text-muted-foreground mb-4 max-w-md">
+      <p className="text-sm text-gray-600 mb-4 max-w-md">
         We&apos;re sorry, but something unexpected happened. Please try
         refreshing the page.
       </p>
 
       {isDevelopment && (
         <details className="mb-4 text-left">
-          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+          <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
             Show error details
           </summary>
-          <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto max-w-md">
+          <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto max-w-md">
             {error.message}
             {error.stack && '\n\n' + error.stack}
           </pre>
@@ -86,7 +88,7 @@ export function SupabaseErrorFallback({
         )}
       </div>
 
-      <h3 className="text-lg font-semibold mb-2">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
         {isNetworkError
           ? 'Connection Problem'
           : isAuthError
@@ -94,7 +96,7 @@ export function SupabaseErrorFallback({
             : 'Database Error'}
       </h3>
 
-      <p className="text-sm text-muted-foreground mb-4 max-w-md">
+      <p className="text-sm text-gray-600 mb-4 max-w-md">
         {isNetworkError
           ? 'Unable to connect to the server. Please check your internet connection.'
           : isAuthError
@@ -157,7 +159,7 @@ export class ErrorBoundary extends React.Component<
 
 // Convenience wrapper for Supabase operations
 export function withSupabaseErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
+  Component: React.ComponentType<P>
 ) {
   return function WrappedComponent(props: P) {
     return (

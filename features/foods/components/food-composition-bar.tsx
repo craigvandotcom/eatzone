@@ -25,13 +25,11 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   }
 
   // Use 'zone' property instead of 'healthCategory' to match our data structure
-  const greenCount = safeIngredients.filter(
-    (ing) => ing.zone === 'green',
-  ).length;
+  const greenCount = safeIngredients.filter(ing => ing.zone === 'green').length;
   const yellowCount = safeIngredients.filter(
-    (ing) => ing.zone === 'yellow',
+    ing => ing.zone === 'yellow'
   ).length;
-  const redCount = safeIngredients.filter((ing) => ing.zone === 'red').length;
+  const redCount = safeIngredients.filter(ing => ing.zone === 'red').length;
   const analyzedCount = greenCount + yellowCount + redCount;
 
   if (analyzedCount === 0) {

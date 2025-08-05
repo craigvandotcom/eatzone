@@ -140,11 +140,11 @@ export function DayTimePicker({
     const timeDisplay = selectedTime
       ? formatTime(
           parseInt(selectedTime.split(':')[0]),
-          parseInt(selectedTime.split(':')[1]),
+          parseInt(selectedTime.split(':')[1])
         )
       : formatTime(
           new Date().getHours(),
-          Math.floor(new Date().getMinutes() / 30) * 30,
+          Math.floor(new Date().getMinutes() / 30) * 30
         );
     return `${dateDisplay} • ${timeDisplay}`;
   };
@@ -154,7 +154,7 @@ export function DayTimePicker({
     const timeSlots = generateTimeSlots();
     if (timeScrollRef.current && selectedTime) {
       const timeIndex = timeSlots.findIndex(
-        (slot) => slot.value === selectedTime,
+        slot => slot.value === selectedTime
       );
       if (timeIndex >= 0) {
         const scrollTop = timeIndex * 48; // 48px per item
@@ -174,7 +174,7 @@ export function DayTimePicker({
           className={cn(
             'w-full justify-start text-left font-normal',
             !value && 'text-muted-foreground',
-            className,
+            className
           )}
           aria-label={`Select date and time. Current: ${formatCompactDisplay()}`}
           aria-expanded={isOpen}
@@ -224,7 +224,7 @@ export function DayTimePicker({
             <h3 className="text-sm font-medium mb-2">Select Time</h3>
             <ScrollArea className="h-48 border rounded-md" ref={timeScrollRef}>
               <div className="p-1">
-                {timeSlots.map((slot) => (
+                {timeSlots.map(slot => (
                   <Button
                     key={slot.value}
                     type="button"
@@ -236,7 +236,7 @@ export function DayTimePicker({
                     }}
                     className={cn(
                       'w-full justify-center h-12 mb-1 text-sm',
-                      selectedTime === slot.value && 'font-medium',
+                      selectedTime === slot.value && 'font-medium'
                     )}
                   >
                     {slot.display}

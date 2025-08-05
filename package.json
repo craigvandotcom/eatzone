@@ -17,9 +17,9 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:pwa": "next build && next start",
-    "db:reset": "node scripts/db-reset.js",
-    "db:seed": "node scripts/db-seed.js",
-    "db:status": "node scripts/db-status.js",
+    "db:reset": "npx ts-node scripts/db-reset.ts",
+    "db:seed": "npx ts-node scripts/db-seed.ts",
+    "db:status": "npx ts-node scripts/db-status.ts",
     "supabase:types": "supabase gen types typescript --project-id ecvbexxmqlghzosgoiww > lib/supabase/types.ts",
     "supabase:types:prod": "supabase gen types typescript --project-id YOUR_PROD_PROJECT_ID > lib/supabase/types.ts",
     "supabase:status": "supabase projects list"

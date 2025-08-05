@@ -15,42 +15,18 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          // Extract request context for error logging
-          const errorContext = {
-            url: request.url,
-            pathname: request.nextUrl.pathname,
-            userAgent: request.headers.get('user-agent') || 'unknown',
-            timestamp: new Date().toISOString(),
-          };
-
-          cookiesToSet.forEach(({ name, value }) => {
-            try {
-              request.cookies.set(name, value);
-            } catch (error) {
-              console.error('Failed to set request cookie:', {
-                name,
-                error,
-                ...errorContext,
-              });
-            }
-          });
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
           supabaseResponse = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            try {
-              supabaseResponse.cookies.set(name, value, options);
-            } catch (error) {
-              console.error('Failed to set response cookie:', {
-                name,
-                error,
-                ...errorContext,
-              });
-            }
-          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
         },
       },
-    },
+    }
   );
 
   // IMPORTANT: Avoid writing any logic between createServerClient and

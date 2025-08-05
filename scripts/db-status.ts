@@ -5,17 +5,17 @@
  * Shows connection status and data summary
  */
 
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
-const fs = require('fs');
+import { createClient } from '@supabase/supabase-js';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Load environment variables
 const envPath = path.join(process.cwd(), '.env.local');
 if (fs.existsSync(envPath)) {
   const envFile = fs.readFileSync(envPath, 'utf8');
-  const envVars = envFile.split('\n').filter((line) => line.includes('='));
+  const envVars = envFile.split('\n').filter(line => line.includes('='));
 
-  envVars.forEach((line) => {
+  envVars.forEach(line => {
     const [key, ...valueParts] = line.split('=');
     const value = valueParts.join('=').replace(/"/g, '');
     process.env[key] = value;
@@ -28,24 +28,24 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase configuration');
   console.error(
-    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local',
+    'Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in .env.local'
   );
   process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkDatabaseStatus() {
+async function checkDatabaseStatus(): Promise<void> {
   console.log('📊 Checking database status...\n');
 
   try {
     // Check connection
     console.log('🔗 Connection Details:');
     console.log(`   URL: ${supabaseUrl}`);
-    console.log(`   Key: ${supabaseKey.substring(0, 20)}...`);
+    console.log(`   Key: ${supabaseKey!.substring(0, 20)}...`);
 
     // Test basic connection
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('foods')
       .select('count', { count: 'exact', head: true });
     if (error) {
@@ -68,7 +68,7 @@ async function checkDatabaseStatus() {
       console.log(`   Status: Authenticated as ${user.email}`);
       console.log(`   User ID: ${user.id}`);
       console.log(
-        `   Created: ${new Date(user.created_at).toLocaleString()}\n`,
+        `   Created: ${new Date(user.created_at!).toLocaleString()}\n`
       );
     }
 
@@ -118,7 +118,7 @@ async function checkDatabaseStatus() {
         recentSymptoms.forEach((symptom, i) => {
           const time = new Date(symptom.timestamp).toLocaleString();
           console.log(
-            `   ${i + 1}. ${symptom.name} (severity: ${symptom.severity}/5) (${time})`,
+            `   ${i + 1}. ${symptom.name} (severity: ${symptom.severity}/5) (${time})`
           );
         });
       }
@@ -146,7 +146,7 @@ async function checkDatabaseStatus() {
       { name: 'Real-time subscriptions', status: true }, // We assume this works if connection works
     ];
 
-    healthChecks.forEach((check) => {
+    healthChecks.forEach(check => {
       const status = check.status ? '✅' : '❌';
       console.log(`   ${status} ${check.name}`);
     });
@@ -160,7 +160,7 @@ async function checkDatabaseStatus() {
     console.log('   pnpm run supabase:start - Start local Supabase');
     console.log('   pnpm run supabase:types - Generate TypeScript types');
   } catch (error) {
-    console.error('❌ Status check failed:', error.message);
+    console.error('❌ Status check failed:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -171,7 +171,7 @@ checkDatabaseStatus()
     console.log('\n✨ Status check complete');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('💥 Unexpected error:', error);
     process.exit(1);
   });

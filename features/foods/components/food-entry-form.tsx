@@ -87,7 +87,7 @@ export function FoodEntryForm({
           organic: ingredient.organic || false,
           foodGroup: 'other' as const, // Default value
           zone: 'yellow' as const, // Default value
-        }),
+        })
       );
 
       setIngredients(aiIngredients);
@@ -210,7 +210,7 @@ export function FoodEntryForm({
     setIsZoning(true);
 
     try {
-      const ingredientNames = finalIngredientsList.map((ing) => ing.name);
+      const ingredientNames = finalIngredientsList.map(ing => ing.name);
 
       const zoneResponse = await fetch('/api/zone-ingredients', {
         method: 'POST',
@@ -224,10 +224,10 @@ export function FoodEntryForm({
         const { ingredients: zonedData } = await zoneResponse.json();
 
         const zonedMap = new Map(
-          zonedData.map((item: any) => [item.name, item]),
+          zonedData.map((item: any) => [item.name, item])
         );
 
-        enrichedIngredients = finalIngredientsList.map((ing) => {
+        enrichedIngredients = finalIngredientsList.map(ing => {
           const zonedData = zonedMap.get(ing.name);
 
           const enriched = {
@@ -260,7 +260,7 @@ export function FoodEntryForm({
 
           if (zoneResponse.status === 429) {
             toast.error(
-              'Too many requests. Please wait a moment and try again.',
+              'Too many requests. Please wait a moment and try again.'
             );
           } else if (zoneResponse.status === 400) {
             toast.error('Invalid ingredients data. Please check your input.');
@@ -270,7 +270,7 @@ export function FoodEntryForm({
         } catch {
           logger.error('Failed to parse error response from zoning API');
           toast.warning(
-            'Could not zone ingredients. Saving with default values.',
+            'Could not zone ingredients. Saving with default values.'
           );
         }
       }
@@ -279,7 +279,7 @@ export function FoodEntryForm({
         name.trim() || `Meal with ${enrichedIngredients[0].name}`;
 
       // Final validation of enriched ingredients
-      const validatedIngredients = enrichedIngredients.map((ing) => ({
+      const validatedIngredients = enrichedIngredients.map(ing => ({
         name: ing.name,
         organic: typeof ing.organic === 'boolean' ? ing.organic : false,
         foodGroup: ing.foodGroup || 'other',
@@ -329,7 +329,7 @@ export function FoodEntryForm({
           <Input
             id="meal-summary"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
             placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
           />
         </div>
@@ -360,12 +360,12 @@ export function FoodEntryForm({
               <Input
                 id="ingredient-input"
                 value={currentIngredient}
-                onChange={(e) => setCurrentIngredient(e.target.value)}
+                onChange={e => setCurrentIngredient(e.target.value)}
                 onKeyPress={handleIngredientKeyPress}
                 placeholder="Type ingredient and press Enter"
                 autoFocus={!imageData} // Don't autofocus if we're analyzing an image
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 {hasAnalyzed
                   ? 'AI analysis complete! Add more ingredients or edit existing ones.'
                   : 'Press Enter to add each ingredient'}
@@ -405,7 +405,7 @@ export function FoodEntryForm({
                   {ingredients.map((ingredient, index) => (
                     <div
                       key={index}
-                      className="bg-muted rounded-md h-12 flex items-center overflow-hidden relative"
+                      className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
                     >
                       {/* Zone color indicator bar */}
                       <div
@@ -427,8 +427,8 @@ export function FoodEntryForm({
                       {editingIndex === index ? (
                         <Input
                           value={editingValue}
-                          onChange={(e) => setEditingValue(e.target.value)}
-                          onKeyPress={(e) => handleEditKeyPress(e, index)}
+                          onChange={e => setEditingValue(e.target.value)}
+                          onKeyPress={e => handleEditKeyPress(e, index)}
                           onBlur={() => handleSaveEdit(index)}
                           className="flex-1 h-8 mx-2 ml-3"
                           autoFocus
@@ -467,7 +467,7 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleEditIngredient(index)}
-                          className="p-1 text-muted-foreground hover:text-blue-600 transition-colors"
+                          className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
                           title="Edit ingredient"
                         >
                           <Edit2 className="h-3 w-3" />
@@ -475,7 +475,7 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleDeleteIngredient(index)}
-                          className={`p-1 text-muted-foreground hover:${getZoneTextClass('red')} transition-colors`}
+                          className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
                           title="Delete ingredient"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -494,7 +494,7 @@ export function FoodEntryForm({
           <button
             type="button"
             onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
             {showNotes ? (
               <ChevronUp className="h-4 w-4" />
@@ -507,7 +507,7 @@ export function FoodEntryForm({
             <div className="mt-2">
               <Textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={e => setNotes(e.target.value)}
                 placeholder="Any additional details..."
                 rows={3}
               />

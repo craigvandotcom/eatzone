@@ -105,7 +105,7 @@ export function FormLoadingOverlay({
     <div
       className={cn(
         'absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg',
-        className,
+        className
       )}
     >
       <div className="flex items-center gap-3 bg-card p-4 rounded-lg shadow-lg border">

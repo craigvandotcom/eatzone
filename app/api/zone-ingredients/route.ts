@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { logger } from '@/lib/utils/logger';
-import { requireAuth } from '@/lib/auth/api';
 
 // Rate limiting setup using Vercel's Upstash integration env vars
 let ratelimit: Ratelimit | null = null;
@@ -30,14 +29,20 @@ const zonedIngredientSchema = z.object({
   foodGroup: z.string(), // Accept any string from AI
 });
 
+// Type for AI response
+type AIIngredientResponse = {
+  name: string;
+  zone?: string;
+  foodGroup: string;
+};
+
+type AIResponse = {
+  ingredients?: AIIngredientResponse[];
+};
+
 // No mapping needed - use AI categories directly
 
 export async function POST(request: NextRequest) {
-  const authResult = await requireAuth();
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-
   try {
     // Rate limiting check - only if Redis is configured
     if (ratelimit) {
@@ -56,7 +61,7 @@ export async function POST(request: NextRequest) {
               statusCode: 429,
             },
           },
-          { status: 429 },
+          { status: 429 }
         );
       }
     }
@@ -86,7 +91,7 @@ export async function POST(request: NextRequest) {
     // Log the actual AI response for debugging
     logger.debug('AI Response received', { responseLength: aiResponse.length });
 
-    const parsedResponse = JSON.parse(aiResponse);
+    const parsedResponse = JSON.parse(aiResponse) as AIResponse;
 
     logger.debug('Parsed AI response', {
       ingredientCount: parsedResponse.ingredients?.length,
@@ -94,11 +99,11 @@ export async function POST(request: NextRequest) {
 
     // Normalize AI response - only convert zone to lowercase
     const normalizedIngredients = parsedResponse.ingredients?.map(
-      (ingredient: { name: string; zone?: string; foodGroup?: string }) => ({
+      (ingredient: AIIngredientResponse) => ({
         name: ingredient.name,
         zone: ingredient.zone?.toLowerCase(), // Convert to lowercase
         foodGroup: ingredient.foodGroup, // Use AI category directly
-      }),
+      })
     );
 
     const validatedIngredients = z
@@ -115,7 +120,7 @@ export async function POST(request: NextRequest) {
     // Add robust error handling here
     return NextResponse.json(
       { error: 'Failed to zone ingredients' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -100,7 +100,7 @@ test('submits email and password', async () => {
   render(<LoginForm />);
   await userEvent.type(
     screen.getByRole('textbox', { name: /email/i }),
-    'a@b.com',
+    'a@b.com'
   );
   await userEvent.type(screen.getByLabelText(/password/i), 'secret');
   await userEvent.click(screen.getByRole('button', { name: /sign in/i }));

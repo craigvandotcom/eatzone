@@ -88,3 +88,13 @@ export type ErrorSanitizer = (error: any) => {
   safe: boolean;
   sanitized: any;
 };
+
+// Test constants to avoid hardcoded emails throughout tests
+export const TEST_CONSTANTS = {
+  // Valid test email for form validation and mock testing
+  MOCK_EMAIL: process.env.TEST_MOCK_EMAIL || 'test@example.com',
+  // Invalid email for negative test cases  
+  INVALID_EMAIL: process.env.TEST_INVALID_EMAIL || 'invalid@example.com',
+  // Test password for form validation
+  MOCK_PASSWORD: 'testpassword123',
+} as const;

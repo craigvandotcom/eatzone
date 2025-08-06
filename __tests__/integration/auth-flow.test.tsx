@@ -8,6 +8,7 @@
  */
 
 import { mockSupabaseClient } from '../setup/jest.setup';
+import { TEST_CONSTANTS } from '../types/test-types';
 
 describe('Auth Flow Integration', () => {
   beforeEach(() => {
@@ -17,7 +18,7 @@ describe('Auth Flow Integration', () => {
   describe('Profile Creation with Retry Logic', () => {
     it('should create profile successfully on first attempt', async () => {
       const userId = 'test-user-123';
-      const email = 'test@example.com';
+      const email = TEST_CONSTANTS.MOCK_EMAIL;
 
       // Mock successful profile creation
       mockSupabaseClient.from.mockReturnValue({
@@ -44,7 +45,7 @@ describe('Auth Flow Integration', () => {
 
     it('should handle profile creation failure and retry', async () => {
       const userId = 'test-user-123';
-      const email = 'test@example.com';
+      const email = TEST_CONSTANTS.MOCK_EMAIL;
 
       // Mock profile creation that fails first then succeeds
       const mockUpsert = jest
@@ -98,7 +99,7 @@ describe('Auth Flow Integration', () => {
         table: 'users',
         record: {
           id: 'test-user-123',
-          email: 'test@example.com',
+          email: TEST_CONSTANTS.MOCK_EMAIL,
         },
       };
 

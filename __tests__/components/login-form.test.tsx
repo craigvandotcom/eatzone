@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LoginFormClient } from '@/app/(auth)/login/login-form-client';
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { TEST_CONSTANTS } from '../types/test-types';
 
 // Mock the auth provider
 jest.mock('@/features/auth/components/auth-provider');
@@ -42,7 +43,7 @@ describe('LoginFormClient', () => {
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, 'test@example.com');
+      await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'wrongpassword');
       await user.click(submitButton);
 
@@ -68,7 +69,7 @@ describe('LoginFormClient', () => {
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, 'test@example.com');
+      await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
 
@@ -90,7 +91,7 @@ describe('LoginFormClient', () => {
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, 'test@example.com');
+      await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
 
@@ -116,13 +117,13 @@ describe('LoginFormClient', () => {
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, 'test@example.com');
+      await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'correctpassword');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith(
-          'test@example.com',
+          TEST_CONSTANTS.MOCK_EMAIL,
           'correctpassword'
         );
         expect(mockPush).toHaveBeenCalledWith('/app');

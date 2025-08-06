@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { ExtendedPage, TestCredentials } from '../types/test-types';
+import { ExtendedPage, TestCredentials, TEST_CONSTANTS } from '../types/test-types';
 
 /**
  * Authentication Flow - E2E Tests
  *
  * Tests critical auth functionality with REAL Supabase integration:
- * - Login with existing account (craigvh89@gmail.com)
+ * - Login with existing account (uses TEST_USER_EMAIL env var)
  * - Session persistence across page refreshes
  * - Protected route access after login
  * - Logout functionality
@@ -185,7 +185,7 @@ test.describe('Authentication Flow', () => {
     // Fill in invalid credentials
     await page
       .getByRole('textbox', { name: /email/i })
-      .fill('invalid@example.com');
+      .fill(TEST_CONSTANTS.INVALID_EMAIL);
     await page
       .getByRole('textbox', { name: /password/i })
       .fill('wrongpassword');

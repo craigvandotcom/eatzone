@@ -2,8 +2,9 @@
 // Uses shared subscriptions and better error handling patterns
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
-import { Symptom } from './types';
+import { Symptom, Food } from './types';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -95,7 +96,6 @@ function useSupabaseData<T>(
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const retryCount = useRef(0);
-  const maxRetries = 3;
 
   const fetchData = useCallback(
     async (showLoading = false) => {
@@ -109,18 +109,11 @@ function useSupabaseData<T>(
       } catch (error) {
         logger.error(`Error fetching data for ${subscriptionKey}`, error);
 
-        // Implement exponential backoff retry
-        if (retryCount.current < maxRetries) {
-          retryCount.current++;
-          const delay = Math.pow(2, retryCount.current) * 1000; // 2s, 4s, 8s
-
-          setTimeout(() => {
-            fetchData(false);
-          }, delay);
-        } else {
-          setError(`Failed to load data after ${maxRetries} attempts`);
-          setData(undefined); // Ensure we show error state
-        }
+        // No automatic retries - only allow manual retries to prevent infinite loops
+        setError(
+          `Failed to load data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+        setData(undefined); // Ensure we show error state
       } finally {
         if (showLoading) setIsLoading(false);
       }
@@ -130,7 +123,7 @@ function useSupabaseData<T>(
 
   useEffect(() => {
     // Initial fetch
-    fetchData(true);
+    fetchData(true); // Show loading for initial fetch
 
     // Set up real-time subscription through manager
     const unsubscribe = subscriptionManager.subscribe(
@@ -144,7 +137,7 @@ function useSupabaseData<T>(
 
   const retry = useCallback(() => {
     retryCount.current = 0;
-    fetchData(true);
+    fetchData(true); // Show loading for manual retry
   }, [fetchData]);
 
   return { data, error, isLoading, retry };
@@ -399,4 +392,94 @@ export const useDailySummary = () => {
   }, [foods, symptoms]);
 
   return summary;
+};
+
+// CONSOLIDATED DASHBOARD DATA HOOK - Fixes infinite loop by batching requests
+export const useDashboardData = () => {
+  return useSWR(
+    'dashboard-data',
+    async () => {
+      try {
+        // Batch all data requests with Promise.all for coordinated fetching
+        const [allFoods, allSymptoms, todaysFoods, todaysSymptoms] =
+          await Promise.all([
+            getAllFoods(),
+            getAllSymptoms(),
+            getTodaysFoods(),
+            getTodaysSymptoms(),
+          ]);
+
+        // Process data client-side to avoid additional API calls
+        const recentFoods = allFoods.slice(0, 5);
+        const recentSymptoms = allSymptoms.slice(0, 5);
+
+        // Calculate food stats client-side (eliminates duplicate getAllFoods call)
+        const foodsToAnalyze =
+          todaysFoods.length > 0 ? todaysFoods : allFoods.slice(0, 5);
+        const isFromToday = todaysFoods.length > 0;
+
+        const ingredients = foodsToAnalyze.flatMap(
+          food => food.ingredients || []
+        );
+
+        const greenIngredients = ingredients.filter(
+          ing => ing.zone === 'green'
+        ).length;
+        const yellowIngredients = ingredients.filter(
+          ing => ing.zone === 'yellow'
+        ).length;
+        const redIngredients = ingredients.filter(
+          ing => ing.zone === 'red'
+        ).length;
+
+        const organicIngredientsCount = ingredients.filter(
+          ing => ing.organic === true
+        ).length;
+        const totalOrganicPercentage =
+          ingredients.length > 0
+            ? (organicIngredientsCount / ingredients.length) * 100
+            : 0;
+
+        const foodStats = {
+          greenIngredients,
+          yellowIngredients,
+          redIngredients,
+          totalIngredients: ingredients.length,
+          organicCount: organicIngredientsCount,
+          totalOrganicPercentage,
+          isFromToday,
+        };
+
+        return {
+          recentFoods,
+          recentSymptoms,
+          todaysSymptoms,
+          foodStats,
+        };
+      } catch (error) {
+        logger.error('Error fetching dashboard data', error);
+        // Return empty data structure to prevent crashes
+        return {
+          recentFoods: [] as Food[],
+          recentSymptoms: [] as Symptom[],
+          todaysSymptoms: [] as Symptom[],
+          foodStats: {
+            greenIngredients: 0,
+            yellowIngredients: 0,
+            redIngredients: 0,
+            totalIngredients: 0,
+            organicCount: 0,
+            totalOrganicPercentage: 0,
+            isFromToday: false,
+          },
+        };
+      }
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000, // Prevent duplicate requests for 30 seconds
+      errorRetryCount: 2, // Limit retry attempts to prevent infinite loops
+      errorRetryInterval: 2000, // 2 second delay between retries
+    }
+  );
 };

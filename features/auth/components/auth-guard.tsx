@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// Removed unused imports - middleware handles redirects
 import { useAuth } from './auth-provider';
 import { Loader2 } from 'lucide-react';
 
@@ -12,13 +11,8 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children, fallback }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
+  // Let middleware handle redirects - AuthGuard only handles UI state
 
   if (isLoading) {
     return (

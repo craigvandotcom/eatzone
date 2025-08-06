@@ -26,7 +26,7 @@ import {
   CheckCircle,
   AlertTriangle,
 } from 'lucide-react';
-import { createUser } from '@/lib/db';
+// Remove direct database import - we'll use the API route instead
 import { useAuth } from '@/features/auth/components/auth-provider';
 
 function SignupForm() {
@@ -93,7 +93,20 @@ function SignupForm() {
     setIsLoading(true);
 
     try {
-      await createUser(email, password);
+      // Use API route for signup which handles profile creation properly
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Signup failed');
+      }
 
       // Auto-login after successful signup using Supabase
       await login(email, password);

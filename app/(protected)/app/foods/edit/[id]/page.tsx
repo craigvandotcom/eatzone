@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FoodEntryForm } from '@/features/foods/components/food-entry-form';
 import { getFoodById, updateFood as dbUpdateFood } from '@/lib/db';
+import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 
@@ -43,6 +44,10 @@ export default function EditFoodPage({
   const handleUpdateFood = async (updatedFood: Omit<Food, 'id'>) => {
     if (food) {
       await dbUpdateFood(food.id, updatedFood);
+
+      // Invalidate SWR cache to trigger immediate refresh
+      await mutate('dashboard-data');
+
       router.push('/app');
     }
   };

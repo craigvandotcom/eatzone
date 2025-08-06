@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { ExtendedPage, TestCredentials, TEST_CONSTANTS } from '../types/test-types';
+import {
+  ExtendedPage,
+  TestCredentials,
+  TEST_CONSTANTS,
+} from '../types/test-types';
 
 /**
  * Authentication Flow - E2E Tests

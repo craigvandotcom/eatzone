@@ -50,7 +50,7 @@ export interface Ingredient {
     | 'roasted'
     | 'other';
   foodGroup: string; // AI-provided category (flexible for MVP)
-  zone: 'green' | 'yellow' | 'red';
+  zone: 'green' | 'yellow' | 'red' | 'unzoned';
 }
 
 export interface Symptom {

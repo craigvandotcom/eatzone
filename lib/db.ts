@@ -1,6 +1,14 @@
 import { createClient } from '@/lib/supabase/client';
 import { Food, Symptom, User } from './types';
 
+// Type for zoning API response
+interface ZonedIngredientData {
+  name: string;
+  zone: 'green' | 'yellow' | 'red' | 'unzoned';
+  foodGroup: string;
+  organic: boolean;
+}
+
 // Get Supabase client
 const supabase = createClient();
 
@@ -22,13 +30,119 @@ export const isToday = (timestamp: string): boolean => {
 
 // FOOD OPERATIONS
 export const addFood = async (
-  food: Omit<Food, 'id' | 'timestamp'>
+  food: Omit<Food, 'id' | 'timestamp'> & { image?: string }
 ): Promise<string> => {
   const { data: user } = await supabase.auth.getUser();
   if (!user.user) throw new Error('User not authenticated');
 
+  // Import image storage utilities
+  const { uploadFoodImage } = await import('./image-storage');
+
+  let photo_url: string | undefined;
+  let zonedIngredients = food.ingredients;
+
+  // Parallel operations: image upload + ingredient zoning
+  const operations: Promise<unknown>[] = [];
+
+  // 1. Image upload (if provided)
+  if (food.image) {
+    operations.push(
+      uploadFoodImage(food.image, user.user.id)
+        .then(url => {
+          photo_url = url || undefined;
+          return url;
+        })
+        .catch(() => {
+          // Graceful degradation - continue without image
+          photo_url = undefined;
+          return null;
+        })
+    );
+  }
+
+  // 2. Ingredient zoning (if ingredients need zoning)
+  const unzonedIngredients = food.ingredients.filter(
+    ing => ing.zone === 'unzoned'
+  );
+  let zoningSucceeded = true;
+
+  if (unzonedIngredients.length > 0) {
+    const ingredientNames = unzonedIngredients.map(ing => ing.name);
+
+    operations.push(
+      fetch('/api/zone-ingredients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ingredients: ingredientNames }),
+      })
+        .then(async response => {
+          if (response.ok) {
+            const {
+              ingredients: zonedData,
+            }: { ingredients: ZonedIngredientData[] } = await response.json();
+            const zonedMap = new Map(zonedData.map(item => [item.name, item]));
+
+            // Update ingredients with zoned data
+            zonedIngredients = food.ingredients.map(ing => {
+              if (ing.zone === 'unzoned') {
+                const zonedData = zonedMap.get(ing.name);
+                if (zonedData) {
+                  return {
+                    ...ing,
+                    ...zonedData,
+                    // Ensure required fields have proper types
+                    foodGroup: zonedData.foodGroup || 'other',
+                    zone: zonedData.zone || 'unzoned',
+                    organic:
+                      typeof zonedData.organic === 'boolean'
+                        ? zonedData.organic
+                        : ing.organic,
+                  };
+                }
+                // If no zoned data found, keep original ingredient
+                return ing;
+              }
+              return ing;
+            });
+            zoningSucceeded = true;
+          } else {
+            zoningSucceeded = false;
+          }
+          return zonedIngredients;
+        })
+        .catch(() => {
+          // Graceful degradation - keep original ingredients but mark as failed
+          zoningSucceeded = false;
+          return zonedIngredients;
+        })
+    );
+  }
+
+  // Wait for both operations to complete
+  if (operations.length > 0) {
+    await Promise.allSettled(operations);
+  }
+
+  // Determine status based on zoning results
+  const hasUnzonedIngredients = zonedIngredients.some(
+    ing => ing.zone === 'unzoned'
+  );
+  let finalStatus: 'pending_review' | 'analyzing' | 'processed' = 'processed';
+
+  if (hasUnzonedIngredients && !zoningSucceeded) {
+    finalStatus = 'analyzing'; // Will be retried by background system
+  } else {
+    finalStatus = 'processed'; // All good
+  }
+
+  // Create food entry with results
   const newFood = {
-    ...food,
+    name: food.name,
+    ingredients: zonedIngredients,
+    notes: food.notes,
+    meal_type: food.meal_type,
+    status: finalStatus,
+    photo_url,
     user_id: user.user.id,
     timestamp: generateTimestamp(),
   };

@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // Zone type definition
-export type ZoneType = 'green' | 'yellow' | 'red';
+export type ZoneType = 'green' | 'yellow' | 'red' | 'unzoned';
 
 // Color format options
 export type ColorFormat = 'hex' | 'hsl' | 'rgb' | 'className' | 'tailwind';
@@ -52,11 +52,24 @@ export const zoneColors = {
     textLight: 'text-zone-red/70',
     borderLight: 'border-zone-red/30',
   },
+  unzoned: {
+    hex: '#9ca3af',
+    hsl: 'hsl(220 9% 64%)',
+    rgb: 'rgb(156 163 175)',
+    bg: 'bg-gray-400',
+    text: 'text-gray-400',
+    border: 'border-gray-400',
+    bgLight: 'bg-gray-400/10',
+    bgMedium: 'bg-gray-400/50',
+    bgDark: 'bg-gray-400/80',
+    textLight: 'text-gray-400/70',
+    borderLight: 'border-gray-400/30',
+  },
 } as const;
 
 /**
  * Get zone color in specified format
- * @param zone - The zone type ('green', 'yellow', 'red')
+ * @param zone - The zone type ('green', 'yellow', 'red', 'unzoned')
  * @param format - The desired color format
  * @returns The color value in the specified format
  */
@@ -118,6 +131,12 @@ export function getZoneBgStyle(
   const colorConfig = zoneColors[zone];
 
   if (opacity !== undefined) {
+    // Handle unzoned separately since it doesn't use CSS variables
+    if (zone === 'unzoned') {
+      return {
+        backgroundColor: `rgba(156, 163, 175, ${opacity})`,
+      };
+    }
     // Use CSS variable with opacity for dark mode support
     return {
       backgroundColor: `hsl(var(--zone-${zone}) / ${opacity})`,

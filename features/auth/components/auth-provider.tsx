@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
-import { getCurrentUser } from '@/lib/db';
+// Removed unused getCurrentUser import
 import { logger } from '@/lib/utils/logger';
 
 interface AuthContextType {
@@ -34,11 +34,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       if (!data.user) throw new Error('Login failed');
 
-      // Get the user profile from our database
-      const profile = await getCurrentUser();
-      if (profile) {
-        setUser(profile);
-      }
+      // Create user from auth data to avoid additional API calls
+      setUser({
+        id: data.user.id,
+        email: data.user.email || email,
+        passwordHash: '', // Not needed on client
+        createdAt: new Date().toISOString(),
+      });
     } catch (error) {
       logger.error('Login error', error);
       throw error;
@@ -62,30 +64,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
-      // Check Supabase session
+      // Simplified: just check if we have a session, don't fetch profile immediately
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
       if (!session) {
         setUser(null);
-        setIsLoading(false);
-        return;
-      }
-
-      // Get the user profile from our database
-      const profile = await getCurrentUser();
-      if (profile) {
-        setUser(profile);
       } else {
-        logger.warn('Supabase session exists but no user profile found');
-        // Sign out if we have a session but no profile
-        await supabase.auth.signOut();
-        setUser(null);
+        // Create a minimal user object from session data to avoid additional API calls
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          passwordHash: '', // Not needed on client
+          createdAt: new Date().toISOString(),
+        });
       }
     } catch (error) {
       logger.error('Session check error', error);
-
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -102,10 +98,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logger.debug('Auth state changed', { event, hasSession: !!session });
 
       if (event === 'SIGNED_IN' && session) {
-        const profile = await getCurrentUser();
-        if (profile) {
-          setUser(profile);
-        }
+        // Create user from session data to avoid additional API calls
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          passwordHash: '', // Not needed on client
+          createdAt: new Date().toISOString(),
+        });
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }

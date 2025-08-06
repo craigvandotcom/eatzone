@@ -17,6 +17,7 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:api": "jest __tests__/api --verbose",
+    "test:real": "node scripts/test-api-direct.mjs",
     "test:pwa": "next build && next start",
     "db:reset": "npx ts-node scripts/db-reset.ts",
     "db:seed": "npx ts-node scripts/db-seed.ts",

@@ -107,6 +107,96 @@ if (typeof global.Headers === 'undefined') {
   } as any;
 }
 
+// Mock Next.js server components to avoid Request conflicts
+jest.mock('next/server', () => {
+  class MockNextRequest {
+    public url: string;
+    public method: string;
+    public headers: Map<string, string>;
+    private _body: string;
+
+    constructor(url: string, init?: RequestInit) {
+      this.url = url;
+      this.method = init?.method || 'GET';
+      this.headers = new Map();
+
+      // Convert headers to Map
+      if (init?.headers) {
+        if (init.headers instanceof Headers) {
+          init.headers.forEach((value, key) => {
+            this.headers.set(key.toLowerCase(), value);
+          });
+        } else if (Array.isArray(init.headers)) {
+          init.headers.forEach(([key, value]) => {
+            this.headers.set(key.toLowerCase(), value);
+          });
+        } else {
+          Object.entries(init.headers).forEach(([key, value]) => {
+            this.headers.set(key.toLowerCase(), value as string);
+          });
+        }
+      }
+
+      this._body =
+        typeof init?.body === 'string'
+          ? init.body
+          : JSON.stringify(init?.body || {});
+    }
+
+    async json() {
+      return JSON.parse(this._body);
+    }
+
+    async text() {
+      return this._body;
+    }
+  }
+
+  class MockNextResponse {
+    constructor(
+      public body: any,
+      public init?: ResponseInit
+    ) {}
+
+    get status() {
+      return this.init?.status || 200;
+    }
+
+    get ok() {
+      return this.status >= 200 && this.status < 300;
+    }
+
+    get headers() {
+      return new Map(Object.entries(this.init?.headers || {}));
+    }
+
+    async json() {
+      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
+    }
+
+    async text() {
+      return typeof this.body === 'string'
+        ? this.body
+        : JSON.stringify(this.body);
+    }
+
+    static json(data: any, init?: ResponseInit) {
+      return new MockNextResponse(data, {
+        ...init,
+        headers: {
+          'content-type': 'application/json',
+          ...init?.headers,
+        },
+      });
+    }
+  }
+
+  return {
+    NextRequest: MockNextRequest,
+    NextResponse: MockNextResponse,
+  };
+});
+
 // Mock Upstash Redis and Ratelimit (to avoid ESM issues in tests)
 jest.mock('@upstash/redis', () => ({
   Redis: jest.fn().mockImplementation(() => ({

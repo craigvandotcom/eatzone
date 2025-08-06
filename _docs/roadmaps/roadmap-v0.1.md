@@ -368,13 +368,13 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - **Migration Strategy:** Phase out IndexedDB gradually with feature flags, maintain data export for user safety
   - **Outcome:** Complete cloud-based data architecture with improved development experience and user capabilities, eliminating IndexedDB storage issues and enabling rapid MVP iteration.
 
-- refactor project to align with chosen design patterns
-- setup basic testing
-  - site
-  - auth
-  - user journey
-  - image analysis
-  - ingredient zoning
+- [x] refactor project to align with chosen design patterns
+- [x] setup basic testing
+  - [x] site
+  - [x] auth
+  - [x] user journey
+  - [x] image analysis
+  - [x] ingredient zoning
 
 - [ ] Task 15.5: Review complete symptoms logging flow
   - [ ] manual capture

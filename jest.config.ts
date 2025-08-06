@@ -51,7 +51,12 @@ const customJestConfig: Config = {
   ],
 
   // Ignore patterns
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/__tests__/e2e/', // Exclude Playwright tests from Jest
+    '\\.spec\\.(ts|tsx)$', // Exclude .spec files (Playwright convention)
+  ],
 
   // Transform ignore patterns - allow transforming specific node_modules
   transformIgnorePatterns: [

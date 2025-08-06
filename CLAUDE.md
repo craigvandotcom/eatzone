@@ -37,19 +37,27 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 
 ### Testing & Pre-Commit Workflow
 
-**Testing Philosophy:**
+**Testing Strategy:**
 
-- Test user behavior and contracts, not implementation details
+- **Dual approach**: Jest for fast feedback, Playwright for E2E confidence
 - Follow testing trophy: focus on integration/component tests with unit test foundation
-- Test Supabase integration and real-time sync features
-- Reference @\_docs/guidelines/testing-best-practices.md for comprehensive patterns
+- Test real Supabase auth flows and cloud data persistence
+- Reference @\_docs/guidelines/testing-strategy.md for complete strategy
 
-**Commands:**
+**Development Commands:**
 
-- `pnpm test` - Run all unit tests
-- `pnpm test:watch` - Run tests in watch mode during development
-- `pnpm test:coverage` - Run tests with coverage report
-- `pnpm test:ci` - Run tests optimized for CI environment
+- `pnpm test` - Run Jest unit/integration tests (fast feedback)
+- `pnpm test:watch` - Run Jest tests in watch mode during development
+- `pnpm test:coverage` - Run Jest tests with coverage report
+- `pnpm test:ci` - Run Jest tests optimized for CI environment
+
+**E2E Testing Commands:**
+
+- `pnpm test:e2e` - Run Playwright E2E tests (critical user journeys)
+- `pnpm test:e2e:ui` - Run Playwright with visual interface
+- `pnpm test:e2e:debug` - Run Playwright with step-through debugging
+- `pnpm test:e2e:headed` - Run Playwright in visible browser
+- `pnpm test:all` - Run both Jest and Playwright tests
 - `pnpm test:pwa` - Build and serve for PWA testing (offline, installability)
 
 **Testing Stack:**
@@ -81,8 +89,14 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 pnpm format          # Auto-format code
 pnpm lint           # ESLint checks
 pnpm type-check     # TypeScript validation
-pnpm test           # Run unit tests
+pnpm test           # Run Jest unit/integration tests (fast)
 pnpm build:check    # Production build + lint
+```
+
+**Pre-Release Validation:**
+
+```bash
+pnpm test:all       # Run both Jest and Playwright tests
 ```
 
 **Browser Testing (when UI changes made):**

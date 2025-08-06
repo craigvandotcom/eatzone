@@ -48,33 +48,32 @@ import {
 import { Food, Symptom } from '@/lib/types';
 
 // Import custom hooks
-import {
-  useTodaysSymptoms,
-  useRecentFoods,
-  useRecentSymptoms,
-  useFoodStats,
-} from '@/lib/hooks';
+import { useDashboardData } from '@/lib/hooks';
 
 type ViewType = 'food' | 'symptoms';
 
 function Dashboard() {
-  // Use custom hooks for reactive data binding
-  const { data: todaysSymptoms } = useTodaysSymptoms();
+  // Use consolidated dashboard data hook to prevent infinite loops
   const {
-    data: recentFoods,
-    error: foodsError,
-    retry: retryFoods,
-  } = useRecentFoods();
-  const {
-    data: recentSymptoms,
-    error: recentSymptomsError,
-    retry: retryRecentSymptoms,
-  } = useRecentSymptoms();
-  const {
-    data: foodStats,
-    error: statsError,
-    retry: retryStats,
-  } = useFoodStats();
+    data: dashboardData,
+    error: dashboardError,
+    mutate: retryDashboard,
+  } = useDashboardData();
+
+  // Extract data from consolidated hook
+  const recentFoods = dashboardData?.recentFoods;
+  const recentSymptoms = dashboardData?.recentSymptoms;
+  const todaysSymptoms = dashboardData?.todaysSymptoms;
+  const foodStats = dashboardData?.foodStats;
+
+  // Use single error and retry for all data
+  const foodsError = dashboardError;
+  const recentSymptomsError = dashboardError;
+  const statsError = dashboardError;
+  const retryFoods = retryDashboard;
+  const retryRecentSymptoms = retryDashboard;
+  const retryStats = retryDashboard;
+
   const router = useRouter();
   const isMobile = useIsMobile();
 

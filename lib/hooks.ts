@@ -110,7 +110,9 @@ function useSupabaseData<T>(
         logger.error(`Error fetching data for ${subscriptionKey}`, error);
 
         // No automatic retries - only allow manual retries to prevent infinite loops
-        setError(`Failed to load data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setError(
+          `Failed to load data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
         setData(undefined); // Ensure we show error state
       } finally {
         if (showLoading) setIsLoading(false);
@@ -394,73 +396,90 @@ export const useDailySummary = () => {
 
 // CONSOLIDATED DASHBOARD DATA HOOK - Fixes infinite loop by batching requests
 export const useDashboardData = () => {
-  return useSWR('dashboard-data', async () => {
-    try {
-      // Batch all data requests with Promise.all for coordinated fetching
-      const [allFoods, allSymptoms, todaysFoods, todaysSymptoms] = await Promise.all([
-        getAllFoods(),
-        getAllSymptoms(), 
-        getTodaysFoods(),
-        getTodaysSymptoms()
-      ]);
+  return useSWR(
+    'dashboard-data',
+    async () => {
+      try {
+        // Batch all data requests with Promise.all for coordinated fetching
+        const [allFoods, allSymptoms, todaysFoods, todaysSymptoms] =
+          await Promise.all([
+            getAllFoods(),
+            getAllSymptoms(),
+            getTodaysFoods(),
+            getTodaysSymptoms(),
+          ]);
 
-      // Process data client-side to avoid additional API calls
-      const recentFoods = allFoods.slice(0, 5);
-      const recentSymptoms = allSymptoms.slice(0, 5);
+        // Process data client-side to avoid additional API calls
+        const recentFoods = allFoods.slice(0, 5);
+        const recentSymptoms = allSymptoms.slice(0, 5);
 
-      // Calculate food stats client-side (eliminates duplicate getAllFoods call)
-      const foodsToAnalyze = todaysFoods.length > 0 ? todaysFoods : allFoods.slice(0, 5);
-      const isFromToday = todaysFoods.length > 0;
+        // Calculate food stats client-side (eliminates duplicate getAllFoods call)
+        const foodsToAnalyze =
+          todaysFoods.length > 0 ? todaysFoods : allFoods.slice(0, 5);
+        const isFromToday = todaysFoods.length > 0;
 
-      const ingredients = foodsToAnalyze.flatMap(food => food.ingredients || []);
-      
-      const greenIngredients = ingredients.filter(ing => ing.zone === 'green').length;
-      const yellowIngredients = ingredients.filter(ing => ing.zone === 'yellow').length;
-      const redIngredients = ingredients.filter(ing => ing.zone === 'red').length;
-      
-      const organicIngredientsCount = ingredients.filter(ing => ing.organic === true).length;
-      const totalOrganicPercentage = ingredients.length > 0 
-        ? (organicIngredientsCount / ingredients.length) * 100 
-        : 0;
+        const ingredients = foodsToAnalyze.flatMap(
+          food => food.ingredients || []
+        );
 
-      const foodStats = {
-        greenIngredients,
-        yellowIngredients,
-        redIngredients,
-        totalIngredients: ingredients.length,
-        organicCount: organicIngredientsCount,
-        totalOrganicPercentage,
-        isFromToday,
-      };
+        const greenIngredients = ingredients.filter(
+          ing => ing.zone === 'green'
+        ).length;
+        const yellowIngredients = ingredients.filter(
+          ing => ing.zone === 'yellow'
+        ).length;
+        const redIngredients = ingredients.filter(
+          ing => ing.zone === 'red'
+        ).length;
 
-      return {
-        recentFoods,
-        recentSymptoms,
-        todaysSymptoms,
-        foodStats,
-      };
-    } catch (error) {
-      logger.error('Error fetching dashboard data', error);
-      // Return empty data structure to prevent crashes
-      return {
-        recentFoods: [] as Food[],
-        recentSymptoms: [] as Symptom[],
-        todaysSymptoms: [] as Symptom[],
-        foodStats: {
-          greenIngredients: 0,
-          yellowIngredients: 0,
-          redIngredients: 0,
-          totalIngredients: 0,
-          organicCount: 0,
-          totalOrganicPercentage: 0,
-          isFromToday: false,
-        },
-      };
+        const organicIngredientsCount = ingredients.filter(
+          ing => ing.organic === true
+        ).length;
+        const totalOrganicPercentage =
+          ingredients.length > 0
+            ? (organicIngredientsCount / ingredients.length) * 100
+            : 0;
+
+        const foodStats = {
+          greenIngredients,
+          yellowIngredients,
+          redIngredients,
+          totalIngredients: ingredients.length,
+          organicCount: organicIngredientsCount,
+          totalOrganicPercentage,
+          isFromToday,
+        };
+
+        return {
+          recentFoods,
+          recentSymptoms,
+          todaysSymptoms,
+          foodStats,
+        };
+      } catch (error) {
+        logger.error('Error fetching dashboard data', error);
+        // Return empty data structure to prevent crashes
+        return {
+          recentFoods: [] as Food[],
+          recentSymptoms: [] as Symptom[],
+          todaysSymptoms: [] as Symptom[],
+          foodStats: {
+            greenIngredients: 0,
+            yellowIngredients: 0,
+            redIngredients: 0,
+            totalIngredients: 0,
+            organicCount: 0,
+            totalOrganicPercentage: 0,
+            isFromToday: false,
+          },
+        };
+      }
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000, // Prevent duplicate requests for 30 seconds
+      errorRetryCount: 2, // Limit retry attempts to prevent infinite loops
+      errorRetryInterval: 2000, // 2 second delay between retries
     }
-  }, {
-    revalidateOnFocus: false,
-    dedupingInterval: 30000, // Prevent duplicate requests for 30 seconds
-    errorRetryCount: 2, // Limit retry attempts to prevent infinite loops
-    errorRetryInterval: 2000, // 2 second delay between retries
-  });
+  );
 };

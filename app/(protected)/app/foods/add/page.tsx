@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FoodEntryForm } from '@/features/foods/components/food-entry-form';
 import { addFood as dbAddFood } from '@/lib/db';
+import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 
 export default function AddFoodPage() {
@@ -26,6 +27,10 @@ export default function AddFoodPage() {
     // Include image data if available
     const foodWithImage = imageData ? { ...food, image: imageData } : food;
     await dbAddFood(foodWithImage);
+
+    // Invalidate SWR cache to trigger immediate refresh
+    await mutate('dashboard-data');
+
     router.push('/app');
   };
 

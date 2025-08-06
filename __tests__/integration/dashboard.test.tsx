@@ -6,7 +6,7 @@
 import { render, screen, waitFor } from '@/__tests__/setup/test-utils';
 import userEvent from '@testing-library/user-event';
 import Dashboard from '@/app/(protected)/app/page';
-import * as hooks from '@/lib/hooks';
+import { useDashboardData } from '@/lib/hooks';
 import { mockFoods } from '@/__tests__/fixtures/foods';
 import { mockSymptoms } from '@/__tests__/fixtures/symptoms';
 
@@ -21,6 +21,18 @@ jest.mock('next/navigation', () => ({
   }),
   usePathname: () => '/app',
   useSearchParams: () => new URLSearchParams(),
+}));
+
+// Mock SWR to avoid external dependencies
+jest.mock('swr', () => ({
+  __esModule: true,
+  default: jest.fn(),
+  mutate: jest.fn(),
+}));
+
+// Mock the hooks module
+jest.mock('@/lib/hooks', () => ({
+  useDashboardData: jest.fn(),
 }));
 
 const mockFoodStats = {
@@ -41,33 +53,12 @@ describe('Dashboard Integration', () => {
 
   describe('Loading States', () => {
     it('should show loading skeletons while data is being fetched', async () => {
-      // Mock hooks to return loading state
-      jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
+      // Mock the consolidated dashboard hook to return loading state
+      (useDashboardData as jest.Mock).mockReturnValue({
         data: undefined,
         error: null,
         isLoading: true,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
-        data: undefined,
-        error: null,
-        isLoading: true,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
-        data: undefined,
-        error: null,
-        isLoading: true,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
-        data: undefined,
-        error: null,
-        isLoading: true,
-        retry: jest.fn(),
+        mutate: jest.fn(),
       });
 
       render(<Dashboard />);
@@ -80,32 +71,17 @@ describe('Dashboard Integration', () => {
     });
 
     it('should show progress circle skeleton while stats are loading', async () => {
-      jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
-        data: undefined,
+      // Mock the consolidated dashboard hook with stats still loading
+      (useDashboardData as jest.Mock).mockReturnValue({
+        data: {
+          recentFoods: [],
+          recentSymptoms: [],
+          todaysSymptoms: [],
+          foodStats: undefined, // Stats still loading
+        },
         error: null,
-        isLoading: true,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
+        isLoading: false, // Overall not loading, but individual data can be undefined
+        mutate: jest.fn(),
       });
 
       render(<Dashboard />);
@@ -121,32 +97,16 @@ describe('Dashboard Integration', () => {
 
   describe('Data Display', () => {
     it('should display food data when loaded successfully', async () => {
-      jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
-        data: mockFoods,
+      (useDashboardData as jest.Mock).mockReturnValue({
+        data: {
+          recentFoods: mockFoods,
+          recentSymptoms: [],
+          todaysSymptoms: [],
+          foodStats: mockFoodStats,
+        },
         error: null,
         isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
-        data: mockFoodStats,
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
+        mutate: jest.fn(),
       });
 
       render(<Dashboard />);
@@ -163,32 +123,16 @@ describe('Dashboard Integration', () => {
     });
 
     it('should display symptoms data when switched to symptoms view', async () => {
-      jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
-        data: [],
+      (useDashboardData as jest.Mock).mockReturnValue({
+        data: {
+          recentFoods: [],
+          recentSymptoms: mockSymptoms,
+          todaysSymptoms: mockSymptoms,
+          foodStats: mockFoodStats,
+        },
         error: null,
         isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
-        data: mockSymptoms,
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
-        data: mockSymptoms,
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
-        data: mockFoodStats,
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
+        mutate: jest.fn(),
       });
 
       const user = userEvent.setup();
@@ -213,32 +157,11 @@ describe('Dashboard Integration', () => {
 
   describe('Error Handling', () => {
     it('should show error state when data fetch fails', async () => {
-      jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
+      (useDashboardData as jest.Mock).mockReturnValue({
         data: undefined,
         error: 'Network connection failed',
         isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
-        data: mockFoodStats,
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
+        mutate: jest.fn(),
       });
 
       render(<Dashboard />);
@@ -256,32 +179,11 @@ describe('Dashboard Integration', () => {
     });
 
     it('should show error state for stats when stats fetch fails', async () => {
-      jest.spyOn(hooks, 'useFoodStats').mockReturnValue({
+      (useDashboardData as jest.Mock).mockReturnValue({
         data: undefined,
         error: 'Database connection lost',
         isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentFoods').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useRecentSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
-      });
-
-      jest.spyOn(hooks, 'useTodaysSymptoms').mockReturnValue({
-        data: [],
-        error: null,
-        isLoading: false,
-        retry: jest.fn(),
+        mutate: jest.fn(),
       });
 
       render(<Dashboard />);

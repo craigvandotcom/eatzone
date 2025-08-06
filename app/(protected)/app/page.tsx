@@ -48,22 +48,24 @@ import {
 import { Food, Symptom } from '@/lib/types';
 
 // Import custom hooks
-import {
-  useDashboardData,
-} from '@/lib/hooks';
+import { useDashboardData } from '@/lib/hooks';
 
 type ViewType = 'food' | 'symptoms';
 
 function Dashboard() {
   // Use consolidated dashboard data hook to prevent infinite loops
-  const { data: dashboardData, error: dashboardError, mutate: retryDashboard } = useDashboardData();
-  
+  const {
+    data: dashboardData,
+    error: dashboardError,
+    mutate: retryDashboard,
+  } = useDashboardData();
+
   // Extract data from consolidated hook
   const recentFoods = dashboardData?.recentFoods;
   const recentSymptoms = dashboardData?.recentSymptoms;
   const todaysSymptoms = dashboardData?.todaysSymptoms;
   const foodStats = dashboardData?.foodStats;
-  
+
   // Use single error and retry for all data
   const foodsError = dashboardError;
   const recentSymptomsError = dashboardError;

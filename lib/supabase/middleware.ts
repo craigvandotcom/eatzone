@@ -37,8 +37,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Allow API routes to be accessed without authentication
+  // (they should handle their own auth if needed)
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api/');
+
   if (
     !user &&
+    !isApiRoute &&
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/signup') &&
     !request.nextUrl.pathname.startsWith('/auth') &&

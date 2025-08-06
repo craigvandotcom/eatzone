@@ -21,6 +21,8 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
     "test:all": "pnpm test && pnpm test:e2e",
+    "test:api": "jest __tests__/api --verbose",
+    "test:real": "node scripts/test-api-direct.mjs",
     "test:pwa": "next build && next start",
     "db:reset": "npx ts-node scripts/db-reset.ts",
     "db:seed": "npx ts-node scripts/db-seed.ts",

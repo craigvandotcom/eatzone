@@ -7,6 +7,211 @@ import React from 'react';
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as any;
 
+// Polyfill Web APIs for Next.js API route testing
+if (typeof global.Request === 'undefined') {
+  global.Request = class Request {
+    public url: string;
+    public method: string;
+    public headers: Headers;
+    private _body: any;
+
+    constructor(url: string, init?: RequestInit) {
+      this.url = url;
+      this.method = init?.method || 'GET';
+      this.headers = new Headers(init?.headers);
+      this._body = init?.body;
+    }
+
+    async json() {
+      if (typeof this._body === 'string') {
+        return JSON.parse(this._body);
+      }
+      return this._body;
+    }
+
+    async text() {
+      if (typeof this._body === 'string') {
+        return this._body;
+      }
+      return JSON.stringify(this._body);
+    }
+
+    clone() {
+      return new Request(this.url, {
+        method: this.method,
+        headers: this.headers,
+        body: this._body,
+      });
+    }
+  } as any;
+}
+
+if (typeof global.Response === 'undefined') {
+  global.Response = class Response {
+    constructor(
+      public body?: any,
+      public init?: ResponseInit
+    ) {}
+
+    json() {
+      return Promise.resolve(JSON.parse(this.body));
+    }
+
+    text() {
+      return Promise.resolve(this.body);
+    }
+  } as any;
+}
+
+if (typeof global.Headers === 'undefined') {
+  global.Headers = class Headers {
+    private headers: Record<string, string> = {};
+
+    constructor(init?: HeadersInit) {
+      if (init) {
+        if (Array.isArray(init)) {
+          init.forEach(([key, value]) => {
+            this.headers[key.toLowerCase()] = value;
+          });
+        } else if (init instanceof Headers) {
+          this.headers = { ...(init as any).headers };
+        } else {
+          Object.entries(init).forEach(([key, value]) => {
+            this.headers[key.toLowerCase()] = value as string;
+          });
+        }
+      }
+    }
+
+    get(name: string) {
+      return this.headers[name.toLowerCase()] || null;
+    }
+
+    set(name: string, value: string) {
+      this.headers[name.toLowerCase()] = value;
+    }
+
+    has(name: string) {
+      return name.toLowerCase() in this.headers;
+    }
+
+    delete(name: string) {
+      delete this.headers[name.toLowerCase()];
+    }
+
+    forEach(callback: (value: string, key: string) => void) {
+      Object.entries(this.headers).forEach(([key, value]) => {
+        callback(value, key);
+      });
+    }
+  } as any;
+}
+
+// Mock Next.js server components to avoid Request conflicts
+jest.mock('next/server', () => {
+  class MockNextRequest {
+    public url: string;
+    public method: string;
+    public headers: Map<string, string>;
+    private _body: string;
+
+    constructor(url: string, init?: RequestInit) {
+      this.url = url;
+      this.method = init?.method || 'GET';
+      this.headers = new Map();
+
+      // Convert headers to Map
+      if (init?.headers) {
+        if (init.headers instanceof Headers) {
+          init.headers.forEach((value, key) => {
+            this.headers.set(key.toLowerCase(), value);
+          });
+        } else if (Array.isArray(init.headers)) {
+          init.headers.forEach(([key, value]) => {
+            this.headers.set(key.toLowerCase(), value);
+          });
+        } else {
+          Object.entries(init.headers).forEach(([key, value]) => {
+            this.headers.set(key.toLowerCase(), value as string);
+          });
+        }
+      }
+
+      this._body =
+        typeof init?.body === 'string'
+          ? init.body
+          : JSON.stringify(init?.body || {});
+    }
+
+    async json() {
+      return JSON.parse(this._body);
+    }
+
+    async text() {
+      return this._body;
+    }
+  }
+
+  class MockNextResponse {
+    constructor(
+      public body: any,
+      public init?: ResponseInit
+    ) {}
+
+    get status() {
+      return this.init?.status || 200;
+    }
+
+    get ok() {
+      return this.status >= 200 && this.status < 300;
+    }
+
+    get headers() {
+      return new Map(Object.entries(this.init?.headers || {}));
+    }
+
+    async json() {
+      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
+    }
+
+    async text() {
+      return typeof this.body === 'string'
+        ? this.body
+        : JSON.stringify(this.body);
+    }
+
+    static json(data: any, init?: ResponseInit) {
+      return new MockNextResponse(data, {
+        ...init,
+        headers: {
+          'content-type': 'application/json',
+          ...init?.headers,
+        },
+      });
+    }
+  }
+
+  return {
+    NextRequest: MockNextRequest,
+    NextResponse: MockNextResponse,
+  };
+});
+
+// Mock Upstash Redis and Ratelimit (to avoid ESM issues in tests)
+jest.mock('@upstash/redis', () => ({
+  Redis: jest.fn().mockImplementation(() => ({
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+  })),
+}));
+
+jest.mock('@upstash/ratelimit', () => ({
+  Ratelimit: jest.fn().mockImplementation(() => ({
+    limit: jest.fn().mockResolvedValue({ success: true }),
+  })),
+}));
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter() {

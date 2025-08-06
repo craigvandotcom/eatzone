@@ -58,9 +58,9 @@ const customJestConfig: Config = {
     '\\.spec\\.(ts|tsx)$', // Exclude .spec files (Playwright convention)
   ],
 
-  // Transform ignore patterns
+  // Transform ignore patterns - allow transforming specific node_modules
   transformIgnorePatterns: [
-    '/node_modules/',
+    '/node_modules/(?!(uncrypto|@upstash)/)',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
 

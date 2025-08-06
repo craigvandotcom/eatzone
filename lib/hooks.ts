@@ -53,9 +53,10 @@ class SubscriptionManager {
           'postgres_changes' as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           subscriptionConfig,
           () => {
-          // Notify all listeners
-          this.listeners.get(key)?.forEach(listener => listener());
-        })
+            // Notify all listeners
+            this.listeners.get(key)?.forEach(listener => listener());
+          }
+        )
         .subscribe();
 
       this.subscriptions.set(key, subscription);

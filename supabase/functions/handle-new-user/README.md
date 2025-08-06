@@ -32,6 +32,7 @@ When setting up the database webhook in Supabase:
 ## Webhook Payload Format
 
 Expected payload structure:
+
 ```json
 {
   "type": "INSERT",
@@ -51,6 +52,7 @@ supabase functions deploy handle-new-user
 ```
 
 To set the webhook secret:
+
 ```bash
 supabase secrets set WEBHOOK_SECRET="your-secret-value"
 ```

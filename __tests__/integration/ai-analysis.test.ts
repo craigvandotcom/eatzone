@@ -9,6 +9,7 @@
  */
 
 import { openrouter } from '@/lib/ai/openrouter';
+import { AIAnalysisResponse, ZonedIngredient } from '../types/test-types';
 
 // Mock prompts module since Jest can't handle markdown imports
 jest.mock('@/lib/prompts', () => ({
@@ -186,7 +187,7 @@ Ingredients to zone: ${ingredients.join(', ')}`,
       expect(parsedResponse.zonedIngredients).toHaveLength(3);
 
       // Check zoned ingredient structure
-      parsedResponse.zonedIngredients.forEach((ingredient: any) => {
+      parsedResponse.zonedIngredients.forEach((ingredient: ZonedIngredient) => {
         expect(ingredient).toHaveProperty('name');
         expect(ingredient).toHaveProperty('zone');
         expect(ingredient).toHaveProperty('reasoning');

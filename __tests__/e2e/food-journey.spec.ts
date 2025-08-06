@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ExtendedPage } from '../types/test-types';
 
 /**
  * Food Tracking Journey - E2E Tests
@@ -32,7 +33,7 @@ test.describe('Food Tracking Journey', () => {
       }
     });
 
-    (page as any).consoleErrors = consoleErrors;
+    (page as ExtendedPage).consoleErrors = consoleErrors;
 
     // Mock camera API for testing
     await page.addInitScript(() => {
@@ -112,7 +113,7 @@ test.describe('Food Tracking Journey', () => {
     }
 
     // Verify no critical console errors
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     expect(consoleErrors).toHaveLength(0);
   });
 
@@ -171,7 +172,7 @@ test.describe('Food Tracking Journey', () => {
         await saveButton.click();
 
         // Check for success message or redirect
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle');
 
         // Verify we're still on a valid page (not error page)
         expect(page.url()).toMatch(/\/(app|foods|dashboard)/);
@@ -316,7 +317,7 @@ test.describe('Food Tracking Journey', () => {
     }
 
     // Verify no critical console errors during navigation
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     expect(consoleErrors).toHaveLength(0);
   });
 

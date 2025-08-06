@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ExtendedPage } from '../types/test-types';
 
 /**
  * Site Health Check - Automated E2E Tests
@@ -25,7 +26,7 @@ test.describe('Site Health', () => {
     });
 
     // Store errors for assertions
-    (page as any).consoleErrors = consoleErrors;
+    (page as ExtendedPage).consoleErrors = consoleErrors;
   });
 
   test('home page loads correctly', async ({ page }) => {
@@ -52,7 +53,7 @@ test.describe('Site Health', () => {
     expect(ctaVisible).toBe(true);
 
     // Verify no critical console errors
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     expect(consoleErrors).toHaveLength(0);
   });
 
@@ -100,7 +101,7 @@ test.describe('Site Health', () => {
     ).toBeVisible();
 
     // Verify no critical console errors
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     expect(consoleErrors).toHaveLength(0);
   });
 

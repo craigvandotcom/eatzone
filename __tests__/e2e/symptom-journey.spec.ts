@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ExtendedPage } from '../types/test-types';
 
 /**
  * Symptom Tracking Journey - E2E Tests
@@ -31,7 +32,7 @@ test.describe('Symptom Tracking Journey', () => {
       }
     });
 
-    (page as any).consoleErrors = consoleErrors;
+    (page as ExtendedPage).consoleErrors = consoleErrors;
   });
 
   test('symptom entry interface loads correctly', async ({ page }) => {
@@ -83,7 +84,7 @@ test.describe('Symptom Tracking Journey', () => {
     }
 
     // Verify no critical console errors
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     expect(consoleErrors).toHaveLength(0);
   });
 
@@ -269,7 +270,7 @@ test.describe('Symptom Tracking Journey', () => {
       await saveButton.click();
 
       // Wait for potential redirect or success message
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
 
       // Verify we're on a valid page (not error page)
       expect(page.url()).toMatch(/\/(app|symptoms|dashboard)/);
@@ -339,7 +340,8 @@ test.describe('Symptom Tracking Journey', () => {
           // Try to interact with symptoms tab if it exists
           if ((await element.getAttribute('role')) === 'tab') {
             await element.click();
-            await page.waitForTimeout(500);
+            // Wait for tab content to load
+            await page.waitForLoadState('networkidle');
           }
 
           break;
@@ -354,7 +356,7 @@ test.describe('Symptom Tracking Journey', () => {
     }
 
     // Verify no critical console errors during navigation
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     expect(consoleErrors).toHaveLength(0);
   });
 

@@ -20,6 +20,17 @@ jest.mock('@/lib/utils/logger', () => ({
 }));
 
 import { logger } from '@/lib/utils/logger';
+import {
+  SupabaseError,
+  AuthError,
+  CameraError,
+  APIError,
+  ErrorClassifier,
+  ErrorHandler,
+  ErrorLogger,
+  ErrorSanitizer,
+  MockFetchResponse,
+} from '../types/test-types';
 
 describe('Error Handling Utilities', () => {
   beforeEach(() => {
@@ -32,7 +43,7 @@ describe('Error Handling Utilities', () => {
 
   describe('Database Error Handling Patterns', () => {
     it('should classify Supabase error codes correctly', () => {
-      const classifySupabaseError = (error: any) => {
+      const classifySupabaseError = (error: SupabaseError) => {
         if (error.code === 'PGRST116') {
           return 'not_found';
         }
@@ -85,7 +96,11 @@ describe('Error Handling Utilities', () => {
     });
 
     it('should validate database connection before operations', () => {
-      const isValidConnection = (client: any) => {
+      const isValidConnection = (client: {
+        url?: string;
+        key?: string;
+        connected?: boolean;
+      }) => {
         if (!client) return false;
         if (typeof client.from !== 'function') return false;
         if (!client.auth) return false;
@@ -111,7 +126,7 @@ describe('Error Handling Utilities', () => {
 
   describe('Authentication Error Handling Patterns', () => {
     it('should classify auth error types correctly', () => {
-      const classifyAuthError = (error: any) => {
+      const classifyAuthError = (error: AuthError) => {
         if (error.message?.includes('JWT expired')) {
           return 'session_expired';
         }
@@ -228,7 +243,7 @@ describe('Error Handling Utilities', () => {
 
   describe('Camera and MediaDevices Error Handling', () => {
     it('should classify camera error types correctly', () => {
-      const classifyCameraError = (error: any) => {
+      const classifyCameraError = (error: CameraError) => {
         switch (error.name) {
           case 'NotAllowedError':
             return 'permission_denied';
@@ -403,7 +418,8 @@ describe('Error Handling Utilities', () => {
       try {
         await fetch('/api/test');
         fail('Should have thrown timeout error');
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const apiError = error as APIError;
         expect(error.name).toBe('TIMEOUT');
         expect(error.message).toBe('Network timeout');
       }
@@ -418,7 +434,8 @@ describe('Error Handling Utilities', () => {
       try {
         await fetch('/api/test');
         fail('Should have thrown network error');
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const apiError = error as APIError;
         expect(error.name).toBe('NETWORK_ERROR');
         expect(error.message).toBe('Network request failed');
       }
@@ -436,7 +453,9 @@ describe('Error Handling Utilities', () => {
           }),
       };
 
-      global.fetch = jest.fn().mockResolvedValue(rateLimitResponse as any);
+      global.fetch = jest
+        .fn()
+        .mockResolvedValue(rateLimitResponse as MockFetchResponse);
 
       const response = await fetch('/api/test');
       expect(response.status).toBe(429);
@@ -454,7 +473,9 @@ describe('Error Handling Utilities', () => {
           }),
       };
 
-      global.fetch = jest.fn().mockResolvedValue(serverErrorResponse as any);
+      global.fetch = jest
+        .fn()
+        .mockResolvedValue(serverErrorResponse as MockFetchResponse);
 
       const response = await fetch('/api/test');
       expect(response.status).toBe(500);
@@ -468,14 +489,17 @@ describe('Error Handling Utilities', () => {
         json: () => Promise.reject(new SyntaxError('Unexpected token')),
       };
 
-      global.fetch = jest.fn().mockResolvedValue(invalidJsonResponse as any);
+      global.fetch = jest
+        .fn()
+        .mockResolvedValue(invalidJsonResponse as MockFetchResponse);
 
       const response = await fetch('/api/test');
 
       try {
         await response.json();
         fail('Should have thrown JSON parsing error');
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const apiError = error as APIError;
         expect(error).toBeInstanceOf(SyntaxError);
         expect(error.message).toBe('Unexpected token');
       }
@@ -494,7 +518,7 @@ describe('Error Handling Utilities', () => {
       };
 
       // Simulate API key error handling
-      const handleApiError = (error: any) => {
+      const handleApiError: ErrorHandler = error => {
         if (error.status === 401 && error.error?.code === 'invalid_api_key') {
           return 'Invalid API key. Please check your OpenRouter configuration.';
         }
@@ -517,7 +541,7 @@ describe('Error Handling Utilities', () => {
         status: 400,
       };
 
-      const handleApiError = (error: any) => {
+      const handleApiError: ErrorHandler = error => {
         if (error.status === 400 && error.error?.code === 'model_not_found') {
           return 'AI model is temporarily unavailable. Please try again later.';
         }
@@ -540,7 +564,7 @@ describe('Error Handling Utilities', () => {
         status: 429,
       };
 
-      const handleApiError = (error: any) => {
+      const handleApiError: ErrorHandler = error => {
         if (
           error.status === 429 &&
           error.error?.type === 'insufficient_quota'
@@ -565,7 +589,7 @@ describe('Error Handling Utilities', () => {
         status: 408,
       };
 
-      const handleApiError = (error: any) => {
+      const handleApiError: ErrorHandler = error => {
         if (error.status === 408 || error.error?.type === 'timeout_error') {
           return 'AI processing took too long. Please try with a smaller image or simpler request.';
         }
@@ -764,7 +788,7 @@ describe('Error Handling Utilities', () => {
 
   describe('Error Logging and Monitoring', () => {
     it('should log errors with appropriate severity levels', () => {
-      const logError = (error: any, context: string) => {
+      const logError: ErrorLogger = (error, context) => {
         if (error.status >= 500) {
           logger.error('Server error', { error, context });
         } else if (error.status >= 400) {
@@ -797,7 +821,7 @@ describe('Error Handling Utilities', () => {
     });
 
     it('should sanitize sensitive data from error logs', () => {
-      const sanitizeError = (error: any) => {
+      const sanitizeError: ErrorSanitizer = error => {
         const sanitized = { ...error };
 
         // Remove sensitive fields

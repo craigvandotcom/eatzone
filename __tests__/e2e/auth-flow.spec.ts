@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ExtendedPage, TestCredentials } from '../types/test-types';
 
 /**
  * Authentication Flow - E2E Tests
@@ -13,11 +14,14 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Authentication Flow', () => {
-  const TEST_EMAIL = 'craigvh89@gmail.com';
-  const TEST_PASSWORD = '4FJwhFWHs8oBKNjO'; // TODO: Update this with actual password
+  // Get test credentials from environment variables
+  const testCredentials: TestCredentials = {
+    email: process.env.TEST_USER_EMAIL || '',
+    password: process.env.TEST_USER_PASSWORD || '',
+  };
 
   // Skip auth tests if credentials are not configured
-  const skipAuthTests = !process.env.CI && TEST_PASSWORD === '4FJwhFWHs8oBKNjO';
+  const skipAuthTests = !testCredentials.email || !testCredentials.password;
 
   test.beforeEach(async ({ page }) => {
     // Monitor console errors
@@ -36,14 +40,14 @@ test.describe('Authentication Flow', () => {
       }
     });
 
-    // Store errors for assertions
-    (page as any).consoleErrors = consoleErrors;
+    // Store errors for assertions with proper typing
+    (page as ExtendedPage).consoleErrors = consoleErrors;
   });
 
   test('login with existing account works correctly', async ({ page }) => {
     test.skip(
       skipAuthTests,
-      'Skipping: Update TEST_PASSWORD with actual password for craigvh89@gmail.com'
+      'Skipping: Set TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables'
     );
     // Navigate to login page
     await page.goto('/login');
@@ -58,8 +62,12 @@ test.describe('Authentication Flow', () => {
     ).toBeVisible();
 
     // Fill in credentials
-    await page.getByRole('textbox', { name: /email/i }).fill(TEST_EMAIL);
-    await page.getByRole('textbox', { name: /password/i }).fill(TEST_PASSWORD);
+    await page
+      .getByRole('textbox', { name: /email/i })
+      .fill(testCredentials.email);
+    await page
+      .getByRole('textbox', { name: /password/i })
+      .fill(testCredentials.password);
 
     // Submit login form
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -71,19 +79,23 @@ test.describe('Authentication Flow', () => {
     await expect(page.getByText(/body compass/i).first()).toBeVisible();
 
     // Verify no critical console errors during login
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     expect(consoleErrors).toHaveLength(0);
   });
 
   test('session persists across page refreshes', async ({ page }) => {
     test.skip(
       skipAuthTests,
-      'Skipping: Update TEST_PASSWORD with actual password for craigvh89@gmail.com'
+      'Skipping: Set TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables'
     );
     // Login first
     await page.goto('/login');
-    await page.getByRole('textbox', { name: /email/i }).fill(TEST_EMAIL);
-    await page.getByRole('textbox', { name: /password/i }).fill(TEST_PASSWORD);
+    await page
+      .getByRole('textbox', { name: /email/i })
+      .fill(testCredentials.email);
+    await page
+      .getByRole('textbox', { name: /password/i })
+      .fill(testCredentials.password);
     await page.getByRole('button', { name: /sign in/i }).click();
 
     // Verify we're logged in
@@ -100,12 +112,16 @@ test.describe('Authentication Flow', () => {
   test('protected routes are accessible after login', async ({ page }) => {
     test.skip(
       skipAuthTests,
-      'Skipping: Update TEST_PASSWORD with actual password for craigvh89@gmail.com'
+      'Skipping: Set TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables'
     );
     // Login first
     await page.goto('/login');
-    await page.getByRole('textbox', { name: /email/i }).fill(TEST_EMAIL);
-    await page.getByRole('textbox', { name: /password/i }).fill(TEST_PASSWORD);
+    await page
+      .getByRole('textbox', { name: /email/i })
+      .fill(testCredentials.email);
+    await page
+      .getByRole('textbox', { name: /password/i })
+      .fill(testCredentials.password);
     await page.getByRole('button', { name: /sign in/i }).click();
 
     // Verify access to dashboard
@@ -125,12 +141,16 @@ test.describe('Authentication Flow', () => {
   test('logout functionality works correctly', async ({ page }) => {
     test.skip(
       skipAuthTests,
-      'Skipping: Update TEST_PASSWORD with actual password for craigvh89@gmail.com'
+      'Skipping: Set TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables'
     );
     // Login first
     await page.goto('/login');
-    await page.getByRole('textbox', { name: /email/i }).fill(TEST_EMAIL);
-    await page.getByRole('textbox', { name: /password/i }).fill(TEST_PASSWORD);
+    await page
+      .getByRole('textbox', { name: /email/i })
+      .fill(testCredentials.email);
+    await page
+      .getByRole('textbox', { name: /password/i })
+      .fill(testCredentials.password);
     await page.getByRole('button', { name: /sign in/i }).click();
 
     // Verify we're logged in
@@ -185,7 +205,8 @@ test.describe('Authentication Flow', () => {
       .catch(() => false);
 
     // At minimum, should not redirect to dashboard
-    await page.waitForTimeout(2000); // Give time for any redirect
+    // Wait for any potential redirect or error message to appear
+    await page.waitForLoadState('networkidle');
     expect(page.url()).not.toContain('/app');
   });
 
@@ -203,9 +224,15 @@ test.describe('Authentication Flow', () => {
     await expect(page.getByPlaceholder('Create a password')).toBeVisible();
 
     // Fill in credentials (same test email)
-    await page.getByRole('textbox', { name: /email/i }).fill(TEST_EMAIL);
-    await page.getByPlaceholder('Create a password').fill(TEST_PASSWORD);
-    await page.getByPlaceholder('Confirm your password').fill(TEST_PASSWORD);
+    await page
+      .getByRole('textbox', { name: /email/i })
+      .fill(testCredentials.email);
+    await page
+      .getByPlaceholder('Create a password')
+      .fill(testCredentials.password);
+    await page
+      .getByPlaceholder('Confirm your password')
+      .fill(testCredentials.password);
 
     // Check the terms agreement checkbox
     await page.getByRole('checkbox', { name: /understand/i }).check();
@@ -214,7 +241,8 @@ test.describe('Authentication Flow', () => {
     await page.getByRole('button', { name: /create account/i }).click();
 
     // Handle both scenarios gracefully
-    await page.waitForTimeout(3000); // Allow time for processing
+    // Wait for form submission to complete
+    await page.waitForLoadState('networkidle');
 
     const currentUrl = page.url();
 
@@ -253,7 +281,7 @@ test.describe('Authentication Flow', () => {
     }
 
     // Verify no critical console errors during signup
-    const consoleErrors = (page as any).consoleErrors || [];
+    const consoleErrors = (page as ExtendedPage).consoleErrors || [];
     const criticalErrors = consoleErrors.filter(
       (error: string) =>
         !error.includes('AuthApiError') &&

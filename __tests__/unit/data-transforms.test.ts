@@ -10,6 +10,7 @@
  */
 
 import { generateTimestamp, getTodayDate, isToday } from '@/lib/db';
+import { ImportDataValidation } from '../types/test-types';
 
 // Mock data for testing
 const mockFood = {
@@ -358,7 +359,11 @@ describe('Data Transformations', () => {
       };
 
       // Validation function
-      const validateImportData = (data: any) => {
+      const validateImportData = (data: {
+        foods?: unknown[];
+        symptoms?: unknown[];
+        settings?: unknown;
+      }): ImportDataValidation => {
         if (!data.foods || !Array.isArray(data.foods)) return false;
         if (!data.symptoms || !Array.isArray(data.symptoms)) return false;
 

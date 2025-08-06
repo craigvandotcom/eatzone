@@ -1,5 +1,5 @@
 import type { Config } from 'jest';
-import nextJest from 'next/jest';
+import nextJest from 'next/jest.js';
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
@@ -53,9 +53,9 @@ const customJestConfig: Config = {
   // Ignore patterns
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
 
-  // Transform ignore patterns
+  // Transform ignore patterns - allow transforming specific node_modules
   transformIgnorePatterns: [
-    '/node_modules/',
+    '/node_modules/(?!(uncrypto|@upstash)/)',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
 

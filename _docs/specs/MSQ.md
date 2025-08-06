@@ -174,7 +174,7 @@ Rate each of the following symptoms based upon your typical health profile for t
 
 **Date/Time:** \***\*\_\_\_\*\***
 
-**Reviewed by:** ****\*\*\*\*****\_\_\_\_****\*\*\*\*****
+**Reviewed by:** \***\*\*\*\*\*\*\***\_\_\_\_\***\*\*\*\*\*\*\***
 
 ---
 

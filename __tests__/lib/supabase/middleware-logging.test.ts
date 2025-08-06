@@ -1,6 +1,6 @@
 /**
  * Simple test to verify cookie error logging behavior
- * 
+ *
  * Since the middleware involves complex Next.js server internals,
  * this test focuses on verifying the error logging logic in isolation
  */
@@ -39,10 +39,10 @@ describe('Middleware Cookie Error Logging', () => {
         // Simulate a failing cookie.set operation
         throw new Error('Cookie storage full');
       } catch (error) {
-        console.error('Failed to set request cookie:', { 
-          name, 
+        console.error('Failed to set request cookie:', {
+          name,
           error,
-          ...errorContext 
+          ...errorContext,
         });
       }
     });
@@ -75,7 +75,11 @@ describe('Middleware Cookie Error Logging', () => {
 
   it('should include cookie options in response cookie errors', () => {
     const cookiesToSet = [
-      { name: 'secure-cookie', value: 'test', options: { httpOnly: true, secure: true } },
+      {
+        name: 'secure-cookie',
+        value: 'test',
+        options: { httpOnly: true, secure: true },
+      },
     ];
 
     // Mock error context that would be extracted from request
@@ -92,10 +96,10 @@ describe('Middleware Cookie Error Logging', () => {
         // Simulate a failing response cookie.set operation
         throw new Error('Response header too large');
       } catch (error) {
-        console.error('Failed to set response cookie:', { 
-          name, 
+        console.error('Failed to set response cookie:', {
+          name,
           error,
-          ...errorContext 
+          ...errorContext,
         });
       }
     });
@@ -128,10 +132,10 @@ describe('Middleware Cookie Error Logging', () => {
       // Simulate cookie error
       throw new Error('Cookie error');
     } catch (error) {
-      console.error('Failed to set request cookie:', { 
-        name: 'test', 
+      console.error('Failed to set request cookie:', {
+        name: 'test',
         error,
-        ...errorContext 
+        ...errorContext,
       });
     }
 

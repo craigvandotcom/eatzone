@@ -24,7 +24,7 @@ export function OrganicCompositionBar({
   }
 
   const organicCount = safeIngredients.filter(
-    (ing) => ing.organic === true,
+    ing => ing.organic === true
   ).length;
   const organicPercent = (organicCount / totalIngredients) * 100;
 

@@ -42,7 +42,38 @@ interface AnalyzeImageErrorResponse {
 }
 
 export async function POST(request: NextRequest) {
+  logger.info('Image analysis request received');
+
   try {
+    // Log environment check
+    if (!process.env.OPENROUTER_API_KEY) {
+      logger.error('OPENROUTER_API_KEY is not configured');
+      return NextResponse.json(
+        {
+          error: {
+            message: 'AI service not configured. Please contact support.',
+            code: 'SERVICE_NOT_CONFIGURED',
+            statusCode: 503,
+          },
+        },
+        { status: 503 }
+      );
+    }
+
+    // Log prompt availability
+    if (!prompts?.imageAnalysis) {
+      logger.error('Image analysis prompt not loaded');
+      return NextResponse.json(
+        {
+          error: {
+            message: 'AI service configuration error.',
+            code: 'PROMPT_NOT_LOADED',
+            statusCode: 500,
+          },
+        },
+        { status: 500 }
+      );
+    }
     // Rate limiting check - only if Redis is configured
     if (ratelimit) {
       const forwardedFor = request.headers.get('x-forwarded-for');
@@ -82,6 +113,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Log before API call
+    logger.debug('Calling OpenRouter API with image data', {
+      imageDataLength: image.length,
+      promptLength: prompts.imageAnalysis.length,
+    });
 
     // Call OpenRouter with vision model
     const response = await openrouter.chat.completions.create({
@@ -189,7 +226,14 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    logger.error('Error in analyze-image API', error);
+    // Enhanced error logging
+    const errorDetails = {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error?.constructor?.name,
+    };
+
+    logger.error('Error in analyze-image API', error, errorDetails);
 
     // Handle different types of errors
     if (error instanceof z.ZodError) {
@@ -205,18 +249,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle OpenRouter API errors
-    if (error instanceof Error && error.message.includes('API')) {
-      return NextResponse.json(
-        {
-          error: {
-            message: 'AI service temporarily unavailable',
-            code: 'AI_SERVICE_ERROR',
-            statusCode: 503,
-          },
-        } as AnalyzeImageErrorResponse,
-        { status: 503 }
-      );
+    // Handle OpenRouter API errors more specifically
+    if (error instanceof Error) {
+      // Check for specific OpenRouter errors
+      if (
+        error.message.includes('401') ||
+        error.message.includes('Unauthorized')
+      ) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'AI service authentication failed',
+              code: 'AI_AUTH_ERROR',
+              statusCode: 503,
+            },
+          } as AnalyzeImageErrorResponse,
+          { status: 503 }
+        );
+      }
+
+      if (error.message.includes('API') || error.message.includes('fetch')) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'AI service temporarily unavailable',
+              code: 'AI_SERVICE_ERROR',
+              statusCode: 503,
+            },
+          } as AnalyzeImageErrorResponse,
+          { status: 503 }
+        );
+      }
     }
 
     // Generic server error

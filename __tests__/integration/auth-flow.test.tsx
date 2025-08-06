@@ -1,6 +1,6 @@
 /**
  * Auth Flow Integration Tests
- * 
+ *
  * Tests the critical auth flows implemented in Phase 1:
  * - Profile creation retry logic
  * - Webhook security validation
@@ -39,7 +39,9 @@ describe('Auth Flow Integration', () => {
       const mockFrom = {
         upsert: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { id: userId, email }, error: null }),
+        single: jest
+          .fn()
+          .mockResolvedValue({ data: { id: userId, email }, error: null }),
       };
       mockSupabase.from.mockReturnValue(mockFrom);
 
@@ -62,7 +64,8 @@ describe('Auth Flow Integration', () => {
       const mockFrom = {
         upsert: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
-        single: jest.fn()
+        single: jest
+          .fn()
           .mockRejectedValueOnce(new Error('Network error'))
           .mockResolvedValueOnce({ data: { id: userId, email }, error: null }),
       };
@@ -70,7 +73,11 @@ describe('Auth Flow Integration', () => {
 
       // First attempt fails
       await expect(
-        mockSupabase.from('users').upsert({ id: userId, email }).select().single()
+        mockSupabase
+          .from('users')
+          .upsert({ id: userId, email })
+          .select()
+          .single()
       ).rejects.toThrow('Network error');
 
       // Second attempt succeeds
@@ -110,11 +117,15 @@ describe('Auth Flow Integration', () => {
         { type: 'DELETE', table: 'auth.users', record: {} }, // Wrong type
         { type: 'INSERT', table: 'public.users', record: {} }, // Wrong table
         { type: 'INSERT', table: 'auth.users' }, // Missing record
-        { type: 'INSERT', table: 'auth.users', record: { email: 'test@example.com' } }, // Missing id
+        {
+          type: 'INSERT',
+          table: 'auth.users',
+          record: { email: 'test@example.com' },
+        }, // Missing id
       ];
 
       invalidPayloads.forEach((payload: any) => {
-        const isValid = 
+        const isValid =
           payload.type === 'INSERT' &&
           payload.table === 'auth.users' &&
           payload.record &&
@@ -140,13 +151,16 @@ describe('Auth Flow Integration', () => {
 
     it('should handle auth state changes', async () => {
       const authStateChanges: string[] = [];
-      
+
       // Mock auth state change subscription
-      mockSupabase.auth.onAuthStateChange.mockImplementation((callback) => {
+      mockSupabase.auth.onAuthStateChange.mockImplementation(callback => {
         // Simulate state changes
-        setTimeout(() => callback('SIGNED_IN', { user: { id: 'test-user' } }), 0);
+        setTimeout(
+          () => callback('SIGNED_IN', { user: { id: 'test-user' } }),
+          0
+        );
         setTimeout(() => callback('SIGNED_OUT', null), 10);
-        
+
         return {
           data: { subscription: { unsubscribe: jest.fn() } },
         };

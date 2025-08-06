@@ -7,7 +7,7 @@ const webhookSecret = Deno.env.get('WEBHOOK_SECRET'); // Optional shared secret
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-serve(async (req) => {
+serve(async req => {
   try {
     // Security checks
     // 1. Validate request method
@@ -32,7 +32,7 @@ serve(async (req) => {
 
     // Parse and validate the webhook payload
     const payload = await req.json();
-    
+
     // 4. Validate webhook payload structure
     if (!payload.type || !payload.table || !payload.record) {
       console.error('Invalid webhook payload structure');
@@ -62,10 +62,13 @@ serve(async (req) => {
 
     if (existingProfile) {
       console.log('User profile already exists, skipping creation');
-      return new Response(JSON.stringify({ success: true, message: 'Profile already exists' }), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({ success: true, message: 'Profile already exists' }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
     }
 
     // Create user profile with upsert for safety

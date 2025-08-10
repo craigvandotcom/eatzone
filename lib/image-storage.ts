@@ -89,26 +89,35 @@ export async function base64ToFile(
 /**
  * Generate a unique filename for food images
  * @param userId - User ID
- * @returns Unique filename with timestamp
+ * @param foodId - Food entry ID for grouping related images
+ * @param imageIndex - Index of image (1-based for readability)
+ * @returns Unique filename with food ID and index
  */
-export function generateImageFilename(userId: string): string {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  return `${userId}/foods/${timestamp}.jpg`;
+export function generateImageFilename(
+  userId: string,
+  foodId: string,
+  imageIndex: number = 1
+): string {
+  return `${userId}/foods/${foodId}_${imageIndex}.jpg`;
 }
 
 /**
- * Upload image to Supabase Storage
+ * Upload a single image to Supabase Storage
  * @param imageData - Base64 image data
  * @param userId - User ID for organizing files
+ * @param foodId - Food entry ID
+ * @param imageIndex - Index of the image (for multi-image support)
  * @returns Promise<string | null> - Public URL or null if failed
  */
-export async function uploadFoodImage(
+export async function uploadSingleImage(
   imageData: string,
-  userId: string
+  userId: string,
+  foodId: string,
+  imageIndex: number = 1
 ): Promise<string | null> {
   try {
-    // Generate unique filename
-    const filename = generateImageFilename(userId);
+    // Generate unique filename with food ID and index
+    const filename = generateImageFilename(userId, foodId, imageIndex);
 
     // Convert base64 to resized file
     const file = await base64ToFile(imageData, filename);
@@ -122,7 +131,7 @@ export async function uploadFoodImage(
       });
 
     if (error) {
-      logger.error('Image upload failed', error);
+      logger.error(`Image upload failed for index ${imageIndex}`, error);
       return null;
     }
 
@@ -133,9 +142,62 @@ export async function uploadFoodImage(
 
     return publicUrlData.publicUrl;
   } catch (error) {
-    logger.error('Image processing failed', error);
+    logger.error(`Image processing failed for index ${imageIndex}`, error);
     return null;
   }
+}
+
+/**
+ * Upload image to Supabase Storage (backward compatible single image)
+ * @param imageData - Base64 image data
+ * @param userId - User ID for organizing files
+ * @returns Promise<string | null> - Public URL or null if failed
+ */
+export async function uploadFoodImage(
+  imageData: string,
+  userId: string
+): Promise<string | null> {
+  // Generate a temporary food ID for backward compatibility
+  const tempFoodId = new Date().toISOString().replace(/[:.]/g, '-');
+  return uploadSingleImage(imageData, userId, tempFoodId, 1);
+}
+
+/**
+ * Upload multiple images for a food entry
+ * @param images - Array of base64 image data
+ * @param userId - User ID for organizing files
+ * @param foodId - Food entry ID to link images together
+ * @returns Promise<string[]> - Array of public URLs (successful uploads only)
+ */
+export async function uploadFoodImages(
+  images: string[],
+  userId: string,
+  foodId: string
+): Promise<string[]> {
+  if (images.length === 0) return [];
+
+  // Upload all images in parallel for better performance
+  const uploadPromises = images.map((image, index) =>
+    uploadSingleImage(image, userId, foodId, index + 1)
+  );
+
+  const results = await Promise.allSettled(uploadPromises);
+
+  // Filter out failed uploads and extract URLs
+  const successfulUrls = results
+    .filter(
+      (result): result is PromiseFulfilledResult<string | null> =>
+        result.status === 'fulfilled' && result.value !== null
+    )
+    .map(result => result.value as string);
+
+  if (successfulUrls.length < images.length) {
+    logger.warn(
+      `Only ${successfulUrls.length} of ${images.length} images uploaded successfully`
+    );
+  }
+
+  return successfulUrls;
 }
 
 /**
@@ -164,4 +226,28 @@ export async function deleteFoodImage(imageUrl: string): Promise<boolean> {
     logger.error('Image deletion processing failed', error);
     return false;
   }
+}
+
+/**
+ * Delete multiple images from Supabase Storage
+ * @param imageUrls - Array of public URLs to delete
+ * @returns Promise<number> - Number of successfully deleted images
+ */
+export async function deleteFoodImages(imageUrls: string[]): Promise<number> {
+  if (imageUrls.length === 0) return 0;
+
+  const deletePromises = imageUrls.map(url => deleteFoodImage(url));
+  const results = await Promise.allSettled(deletePromises);
+
+  const successCount = results.filter(
+    result => result.status === 'fulfilled' && result.value === true
+  ).length;
+
+  if (successCount < imageUrls.length) {
+    logger.warn(
+      `Only ${successCount} of ${imageUrls.length} images deleted successfully`
+    );
+  }
+
+  return successCount;
 }

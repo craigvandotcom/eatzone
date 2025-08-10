@@ -19,10 +19,15 @@ if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
   });
 }
 
-// Zod schema for request validation
-const analyzeImageSchema = z.object({
-  image: z.string().min(1, 'Image data is required'),
-});
+// Zod schema for request validation - supports both single and multiple images
+const analyzeImageSchema = z
+  .object({
+    image: z.string().min(1, 'Image data is required').optional(),
+    images: z.array(z.string().min(1)).optional(),
+  })
+  .refine(data => data.image || (data.images && data.images.length > 0), {
+    message: 'Either image or images array is required',
+  });
 
 // Type for the API response
 interface AnalyzeImageResponse {
@@ -98,15 +103,36 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate the request body
     const body = await request.json();
-    const { image } = analyzeImageSchema.parse(body);
+    const validatedData = analyzeImageSchema.parse(body);
 
-    // Validate image format
-    if (!image.startsWith('data:image/')) {
+    // Handle both single image and multiple images
+    const images: string[] =
+      validatedData.images ||
+      (validatedData.image ? [validatedData.image] : []);
+
+    // Validate all images have correct format
+    for (const img of images) {
+      if (!img.startsWith('data:image/')) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Invalid image format. Expected base64 data URL.',
+              code: 'INVALID_IMAGE_FORMAT',
+              statusCode: 400,
+            },
+          } as AnalyzeImageErrorResponse,
+          { status: 400 }
+        );
+      }
+    }
+
+    // Limit number of images to prevent abuse
+    if (images.length > 5) {
       return NextResponse.json(
         {
           error: {
-            message: 'Invalid image format. Expected base64 data URL.',
-            code: 'INVALID_IMAGE_FORMAT',
+            message: 'Too many images. Maximum 5 images allowed per request.',
+            code: 'TOO_MANY_IMAGES',
             statusCode: 400,
           },
         } as AnalyzeImageErrorResponse,
@@ -116,31 +142,42 @@ export async function POST(request: NextRequest) {
 
     // Log before API call
     logger.debug('Calling OpenRouter API with image data', {
-      imageDataLength: image.length,
+      imageCount: images.length,
       promptLength: prompts.imageAnalysis.length,
     });
 
-    // Call OpenRouter with vision model
+    // Build content array with text prompt followed by all images
+    const contentArray: Array<{
+      type: string;
+      text?: string;
+      image_url?: { url: string };
+    }> = [
+      {
+        type: 'text',
+        text:
+          images.length > 1
+            ? `${prompts.imageAnalysis}\n\nNote: Multiple images provided. Please analyze all images together as they represent the same meal from different angles.`
+            : prompts.imageAnalysis,
+      },
+      ...images.map(img => ({
+        type: 'image_url' as const,
+        image_url: {
+          url: img,
+        },
+      })),
+    ];
+
+    // Call OpenRouter with vision model - single request with all images
     const response = await openrouter.chat.completions.create({
       model: 'openai/gpt-4o',
       messages: [
         {
           role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: prompts.imageAnalysis, // Use the imported prompt
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: image,
-              },
-            },
-          ],
+          // @ts-expect-error OpenRouter types don't fully support multi-modal content arrays
+          content: contentArray,
         },
       ],
-      max_tokens: 300,
+      max_tokens: 400, // Slightly increased for multi-image analysis
       temperature: 0.1, // Low temperature for more consistent results
     });
 

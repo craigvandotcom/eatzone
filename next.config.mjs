@@ -12,7 +12,15 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'], // Modern, efficient formats
     minimumCacheTTL: 31536000, // 1 year cache for better performance
-    // Removed unoptimized: true for production optimization
+    // Allow images from Supabase storage
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
 
   // PERFORMANCE: Conservative optimizations (removed experimental features that cause webpack issues)

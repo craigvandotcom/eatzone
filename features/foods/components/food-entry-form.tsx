@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Edit2,
   Trash2,
@@ -400,7 +399,7 @@ export function FoodEntryForm({
                 <Skeleton className="h-12 w-full" />
               </div>
             ) : (
-              <ScrollArea className="max-h-40 mt-2">
+              <div className="mt-2">
                 <div className="space-y-2">
                   {ingredients.map((ingredient, index) => (
                     <div
@@ -486,7 +485,7 @@ export function FoodEntryForm({
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
+              </div>
             )}
           </div>
         )}

@@ -30,31 +30,54 @@ export const isToday = (timestamp: string): boolean => {
 
 // FOOD OPERATIONS
 export const addFood = async (
-  food: Omit<Food, 'id' | 'timestamp'> & { image?: string }
+  food: Omit<Food, 'id' | 'timestamp'> & { image?: string; images?: string[] }
 ): Promise<string> => {
   const { data: user } = await supabase.auth.getUser();
   if (!user.user) throw new Error('User not authenticated');
 
+  // Generate food ID early for image naming
+  const foodId = crypto.randomUUID();
+
   // Import image storage utilities
-  const { uploadFoodImage } = await import('./image-storage');
+  const { uploadFoodImage, uploadFoodImages } = await import('./image-storage');
 
   let photo_url: string | undefined;
+  let image_urls: string[] = [];
   let zonedIngredients = food.ingredients;
 
   // Parallel operations: image upload + ingredient zoning
   const operations: Promise<unknown>[] = [];
 
-  // 1. Image upload (if provided)
-  if (food.image) {
+  // 1. Image upload (handle both single and multiple images)
+  if (food.images && food.images.length > 0) {
+    // Multiple images provided
+    operations.push(
+      uploadFoodImages(food.images, user.user.id, foodId)
+        .then(urls => {
+          image_urls = urls;
+          photo_url = urls[0] || undefined; // First image as primary for backward compat
+          return urls;
+        })
+        .catch(() => {
+          // Graceful degradation - continue without images
+          image_urls = [];
+          photo_url = undefined;
+          return [];
+        })
+    );
+  } else if (food.image) {
+    // Single image provided (backward compatibility)
     operations.push(
       uploadFoodImage(food.image, user.user.id)
         .then(url => {
           photo_url = url || undefined;
+          if (url) image_urls = [url];
           return url;
         })
         .catch(() => {
           // Graceful degradation - continue without image
           photo_url = undefined;
+          image_urls = [];
           return null;
         })
     );
@@ -137,12 +160,14 @@ export const addFood = async (
 
   // Create food entry with results
   const newFood = {
+    id: foodId, // Use the pre-generated ID
     name: food.name,
     ingredients: zonedIngredients,
     notes: food.notes,
     meal_type: food.meal_type,
     status: finalStatus,
-    photo_url,
+    photo_url, // Keep for backward compatibility
+    image_urls: image_urls.length > 0 ? image_urls : null, // New field for multiple images
     user_id: user.user.id,
     timestamp: generateTimestamp(),
   };

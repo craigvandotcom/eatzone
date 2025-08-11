@@ -30,33 +30,48 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
     ing => ing.zone === 'yellow'
   ).length;
   const redCount = safeIngredients.filter(ing => ing.zone === 'red').length;
-  const analyzedCount = greenCount + yellowCount + redCount;
+  const unzonedCount = safeIngredients.filter(
+    ing => ing.zone === 'unzoned'
+  ).length;
+  const zonedCount = greenCount + yellowCount + redCount;
 
-  if (analyzedCount === 0) {
-    // No zone data, show default state
+  if (zonedCount === 0 && unzonedCount > 0) {
+    // Only unzoned ingredients, show all gray
     return (
       <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
         <div
           className="transition-all duration-500"
           style={{
-            backgroundColor: getZoneColor('yellow'),
+            backgroundColor: getZoneColor('unzoned', 'hex'),
             width: '100%',
             height: '100%',
           }}
-          title="Unanalyzed ingredients"
+          title={`${unzonedCount} unzoned ingredient${unzonedCount !== 1 ? 's' : ''} - zoning needed`}
         ></div>
       </div>
     );
   }
 
-  const greenPercent = (greenCount / analyzedCount) * 100;
-  const yellowPercent = (yellowCount / analyzedCount) * 100;
-  const redPercent = (redCount / analyzedCount) * 100;
+  if (zonedCount === 0) {
+    // No ingredients at all
+    return (
+      <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
+        <div className="h-full bg-gray-300 w-full animate-pulse"></div>
+      </div>
+    );
+  }
+
+  // Calculate percentages for display
+  const totalDisplayCount = totalIngredients; // Use all ingredients for display proportions
+  const greenPercent = (greenCount / totalDisplayCount) * 100;
+  const yellowPercent = (yellowCount / totalDisplayCount) * 100;
+  const redPercent = (redCount / totalDisplayCount) * 100;
+  const unzonedPercent = (unzonedCount / totalDisplayCount) * 100;
 
   return (
     <div
       className="flex h-3 w-full rounded-full overflow-hidden border border-gray-400 bg-gray-200"
-      title={`Green: ${greenCount}, Yellow: ${yellowCount}, Red: ${redCount}`}
+      title={`Green: ${greenCount}, Yellow: ${yellowCount}, Red: ${redCount}${unzonedCount > 0 ? `, Unzoned: ${unzonedCount}` : ''}`}
     >
       {greenPercent > 0 && (
         <div
@@ -85,6 +100,16 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
             width: `${redPercent}%`,
             minWidth: redPercent > 0 ? '2px' : '0px',
             ...getZoneBgStyle('red'), // Fallback inline style
+          }}
+        />
+      )}
+      {unzonedPercent > 0 && (
+        <div
+          className={`${getZoneBgClass('unzoned')} transition-all duration-500`}
+          style={{
+            width: `${unzonedPercent}%`,
+            minWidth: unzonedPercent > 0 ? '2px' : '0px',
+            ...getZoneBgStyle('unzoned'), // Fallback inline style
           }}
         />
       )}

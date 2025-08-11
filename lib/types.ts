@@ -32,7 +32,8 @@ export interface Food {
   name: string; // e.g., "Lunch" or a user-defined name
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   ingredients: Ingredient[]; // A food entry is defined by its ingredients
-  photo_url?: string; // Renamed from 'image' to match Supabase schema
+  photo_url?: string; // Primary image for backward compatibility
+  image_urls?: string[]; // Array of all image URLs (includes photo_url if present)
   notes?: string;
   meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'beverage'; // Optional meal categorization
   status: 'pending_review' | 'analyzing' | 'processed';
@@ -50,7 +51,7 @@ export interface Ingredient {
     | 'roasted'
     | 'other';
   foodGroup: string; // AI-provided category (flexible for MVP)
-  zone: 'green' | 'yellow' | 'red';
+  zone: 'green' | 'yellow' | 'red' | 'unzoned';
 }
 
 export interface Symptom {
@@ -64,3 +65,35 @@ export interface Symptom {
 // Export types for backward compatibility with existing imports
 export type { Symptom as SymptomType };
 export type { Ingredient as IngredientType };
+
+// OpenRouter API types for proper type safety
+export interface OpenRouterTextContent {
+  type: 'text';
+  text: string;
+}
+
+export interface OpenRouterImageContent {
+  type: 'image_url';
+  image_url: {
+    url: string;
+  };
+}
+
+export type OpenRouterMessageContent =
+  | OpenRouterTextContent
+  | OpenRouterImageContent;
+
+export interface OpenRouterMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string | OpenRouterMessageContent[];
+}
+
+export interface OpenRouterChatCompletionRequest {
+  model: string;
+  messages: OpenRouterMessage[];
+  max_tokens?: number;
+  temperature?: number;
+}
+
+// Re-export common types for convenience
+export type { Database } from './supabase/types';

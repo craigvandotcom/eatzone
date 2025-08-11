@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Edit2,
   Trash2,
@@ -86,7 +85,7 @@ export function FoodEntryForm({
           name: ingredient.name,
           organic: ingredient.organic || false,
           foodGroup: 'other' as const, // Default value
-          zone: 'yellow' as const, // Default value
+          zone: 'unzoned' as const, // Default value - will be zoned later
         })
       );
 
@@ -140,7 +139,7 @@ export function FoodEntryForm({
           name: currentIngredient.trim(),
           organic: false,
           foodGroup: 'other',
-          zone: 'yellow',
+          zone: 'unzoned',
         },
       ]);
       setCurrentIngredient('');
@@ -197,7 +196,7 @@ export function FoodEntryForm({
         name: currentIngredient.trim(),
         organic: false,
         foodGroup: 'other',
-        zone: 'yellow', // Default zone
+        zone: 'unzoned', // Default zone - will be zoned during submission
       });
     }
 
@@ -237,7 +236,7 @@ export function FoodEntryForm({
 
           // Ensure required fields have defaults if API didn't provide them
           if (!enriched.foodGroup) enriched.foodGroup = 'other';
-          if (!enriched.zone) enriched.zone = 'yellow';
+          if (!enriched.zone) enriched.zone = 'unzoned';
           if (typeof enriched.organic !== 'boolean') enriched.organic = false;
 
           return enriched;
@@ -283,7 +282,7 @@ export function FoodEntryForm({
         name: ing.name,
         organic: typeof ing.organic === 'boolean' ? ing.organic : false,
         foodGroup: ing.foodGroup || 'other',
-        zone: ing.zone || 'yellow',
+        zone: ing.zone || 'unzoned',
       }));
 
       onAddFood({
@@ -400,7 +399,7 @@ export function FoodEntryForm({
                 <Skeleton className="h-12 w-full" />
               </div>
             ) : (
-              <ScrollArea className="max-h-40 mt-2">
+              <div className="mt-2">
                 <div className="space-y-2">
                   {ingredients.map((ingredient, index) => (
                     <div
@@ -418,7 +417,9 @@ export function FoodEntryForm({
                                 ? getZoneColor('yellow', 'hex')
                                 : ingredient.zone === 'red'
                                   ? getZoneColor('red', 'hex')
-                                  : '#9ca3af',
+                                  : ingredient.zone === 'unzoned'
+                                    ? getZoneColor('unzoned', 'hex')
+                                    : getZoneColor('unzoned', 'hex'),
                         }}
                         title={`Zone: ${ingredient.zone || 'unzoned'}`}
                       />
@@ -484,7 +485,7 @@ export function FoodEntryForm({
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
+              </div>
             )}
           </div>
         )}

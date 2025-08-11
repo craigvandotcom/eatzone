@@ -10,16 +10,20 @@ global.TextDecoder = TextDecoder as any;
 // Polyfill Web APIs for Next.js API route testing
 if (typeof global.Request === 'undefined') {
   global.Request = class Request {
-    public url: string;
+    private _url: string;
     public method: string;
     public headers: Headers;
     private _body: any;
 
     constructor(url: string, init?: RequestInit) {
-      this.url = url;
+      this._url = url;
       this.method = init?.method || 'GET';
       this.headers = new Headers(init?.headers);
       this._body = init?.body;
+    }
+
+    get url() {
+      return this._url;
     }
 
     async json() {

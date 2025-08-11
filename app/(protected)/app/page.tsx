@@ -11,6 +11,7 @@ import {
   Leaf,
   Settings,
   BarChart3,
+  RefreshCw,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CameraCapture } from '@/features/camera/components/camera-capture';
@@ -120,6 +121,33 @@ function Dashboard() {
 
   const handleAddSymptom = () => {
     router.push('/app/symptoms/add');
+  };
+
+  const handleRetryZoning = async (e: React.MouseEvent, foodId: string) => {
+    e.stopPropagation(); // Prevent triggering the edit food handler
+
+    try {
+      const { retryFoodZoningManually } = await import(
+        '@/lib/background-zoning'
+      );
+      const success = await retryFoodZoningManually(foodId);
+
+      if (success) {
+        // Refresh dashboard data to show updated zones
+        retryDashboard();
+      }
+    } catch (error) {
+      console.error('Manual retry failed:', error);
+    }
+  };
+
+  // Helper function to check if food needs zoning retry
+  const needsZoningRetry = (food: Food): boolean => {
+    return (
+      food.status === 'analyzing' ||
+      food.ingredients?.some(ing => ing.zone === 'unzoned') ||
+      false
+    );
   };
 
   // Desktop sidebar navigation
@@ -318,13 +346,24 @@ function Dashboard() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex-shrink-0 w-16 sm:w-20 md:w-24 ml-1 sm:ml-2 space-y-1.5">
-                              <FoodCompositionBar
-                                ingredients={food.ingredients || []}
-                              />
-                              <OrganicCompositionBar
-                                ingredients={food.ingredients || []}
-                              />
+                            <div className="flex-shrink-0 flex items-center space-x-2 ml-1 sm:ml-2">
+                              <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
+                                <FoodCompositionBar
+                                  ingredients={food.ingredients || []}
+                                />
+                                <OrganicCompositionBar
+                                  ingredients={food.ingredients || []}
+                                />
+                              </div>
+                              {needsZoningRetry(food) && (
+                                <button
+                                  onClick={e => handleRetryZoning(e, food.id)}
+                                  className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0"
+                                  title="Retry ingredient zoning"
+                                >
+                                  <RefreshCw className="h-3 w-3 text-gray-600" />
+                                </button>
+                              )}
                             </div>
                           </button>
                         ))}

@@ -21,6 +21,7 @@ export function FoodCategoryProgress({
   const radius = size / 2;
   const centerX = size / 2;
   const centerY = size / 2;
+  // Only count zoned ingredients for health assessment - unzoned ingredients are excluded intentionally
   const totalCount = greenCount + yellowCount + redCount;
 
   // Calculate angles for each section (in degrees)

@@ -5,6 +5,8 @@ import { prompts } from '@/lib/prompts'; // Import from our new module
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { logger } from '@/lib/utils/logger';
+import { APP_CONFIG } from '@/lib/config/constants';
+import type { OpenRouterMessageContent } from '@/lib/types';
 
 // Rate limiting setup using Vercel's Upstash integration env vars
 let ratelimit: Ratelimit | null = null;
@@ -15,7 +17,10 @@ if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
       url: process.env.KV_REST_API_URL,
       token: process.env.KV_REST_API_TOKEN,
     }),
-    limiter: Ratelimit.slidingWindow(10, '60 s'), // 10 requests per minute for image analysis
+    limiter: Ratelimit.slidingWindow(
+      APP_CONFIG.RATE_LIMIT.IMAGE_ANALYSIS_REQUESTS_PER_MINUTE,
+      APP_CONFIG.RATE_LIMIT.RATE_LIMIT_WINDOW
+    ),
   });
 }
 
@@ -127,11 +132,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Limit number of images to prevent abuse
-    if (images.length > 5) {
+    if (images.length > APP_CONFIG.IMAGE.MAX_IMAGES_PER_REQUEST) {
       return NextResponse.json(
         {
           error: {
-            message: 'Too many images. Maximum 5 images allowed per request.',
+            message: `Too many images. Maximum ${APP_CONFIG.IMAGE.MAX_IMAGES_PER_REQUEST} images allowed per request.`,
             code: 'TOO_MANY_IMAGES',
             statusCode: 400,
           },
@@ -147,11 +152,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Build content array with text prompt followed by all images
-    const contentArray: Array<{
-      type: string;
-      text?: string;
-      image_url?: { url: string };
-    }> = [
+    const contentArray: OpenRouterMessageContent[] = [
       {
         type: 'text',
         text:
@@ -173,7 +174,6 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          // @ts-expect-error OpenRouter types don't fully support multi-modal content arrays
           content: contentArray,
         },
       ],

@@ -207,23 +207,48 @@ export async function uploadFoodImages(
  */
 export async function deleteFoodImage(imageUrl: string): Promise<boolean> {
   try {
-    // Extract path from public URL
-    const url = new URL(imageUrl);
-    const pathSegments = url.pathname.split('/');
-    const filename = pathSegments.slice(-3).join('/'); // Get last 3 segments: userId/foods/filename.jpg
+    // Validate input URL
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      logger.error('Invalid image URL provided for deletion', { imageUrl });
+      return false;
+    }
+
+    // Extract path from public URL with proper error handling
+    let url: URL;
+    let pathSegments: string[];
+    let filename: string;
+
+    try {
+      url = new URL(imageUrl);
+      pathSegments = url.pathname.split('/');
+      filename = pathSegments.slice(-3).join('/'); // Get last 3 segments: userId/foods/filename.jpg
+
+      // Validate that we extracted a reasonable filename
+      if (!filename || filename.length < 5 || !filename.includes('/')) {
+        throw new Error(`Invalid filename extracted: ${filename}`);
+      }
+    } catch (urlError) {
+      logger.error('Failed to parse image URL for deletion', urlError, {
+        imageUrl: imageUrl.substring(0, 100), // Log first 100 chars for debugging
+      });
+      return false;
+    }
 
     const { error } = await supabase.storage
       .from('food-images')
       .remove([filename]);
 
     if (error) {
-      logger.error('Image deletion failed', error);
+      logger.error('Image deletion failed', error, { filename });
       return false;
     }
 
+    logger.debug('Image deleted successfully', { filename });
     return true;
   } catch (error) {
-    logger.error('Image deletion processing failed', error);
+    logger.error('Image deletion processing failed', error, {
+      imageUrl: imageUrl?.substring(0, 100),
+    });
     return false;
   }
 }

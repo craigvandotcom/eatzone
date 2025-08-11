@@ -7,6 +7,7 @@ import { render, screen, waitFor } from '@/__tests__/setup/test-utils';
 import userEvent from '@testing-library/user-event';
 import Dashboard from '@/app/(protected)/app/page';
 import { useDashboardData } from '@/lib/hooks';
+import * as hooks from '@/lib/hooks';
 import { mockFoods } from '@/__tests__/fixtures/foods';
 import { mockSymptoms } from '@/__tests__/fixtures/symptoms';
 
@@ -33,6 +34,10 @@ jest.mock('swr', () => ({
 // Mock the hooks module
 jest.mock('@/lib/hooks', () => ({
   useDashboardData: jest.fn(),
+  useRecentFoods: jest.fn(),
+  useFoodStats: jest.fn(),
+  useRecentSymptoms: jest.fn(),
+  useTodaysSymptoms: jest.fn(),
 }));
 
 const mockFoodStats = {
@@ -168,10 +173,10 @@ describe('Dashboard Integration', () => {
 
       // Should show error message (may be in NetworkRetryState component)
       expect(
-        screen.getByText(
+        screen.getAllByText(
           /connection failed|failed to load|network connection failed/i
-        )
-      ).toBeInTheDocument();
+        ).length
+      ).toBeGreaterThan(0);
 
       // Should have retry button available
       const retryButtons = screen.getAllByText(/retry/i);
@@ -190,10 +195,10 @@ describe('Dashboard Integration', () => {
 
       // Should show error message for stats
       expect(
-        screen.getByText(
+        screen.getAllByText(
           /database connection lost|failed to load|connection failed/i
-        )
-      ).toBeInTheDocument();
+        ).length
+      ).toBeGreaterThan(0);
 
       // Should have retry button available
       const retryButtons = screen.getAllByText(/retry/i);

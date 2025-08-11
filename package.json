@@ -29,7 +29,8 @@
     "db:status": "npx ts-node scripts/db-status.ts",
     "supabase:types": "supabase gen types typescript --project-id ecvbexxmqlghzosgoiww > lib/supabase/types.ts",
     "supabase:types:prod": "supabase gen types typescript --project-id YOUR_PROD_PROJECT_ID > lib/supabase/types.ts",
-    "supabase:status": "supabase projects list"
+    "supabase:status": "supabase projects list",
+    "db:migrate:image-urls": "npx ts-node scripts/migrate-image-urls-chunked.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

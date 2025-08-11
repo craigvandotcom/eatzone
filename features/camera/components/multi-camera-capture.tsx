@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera, Edit3, Upload, X, Check, Plus } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
+import { APP_CONFIG } from '@/lib/config/constants';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -21,7 +22,7 @@ export function MultiCameraCapture({
   onCapture,
   onManualEntry,
   title,
-  maxImages = 3,
+  maxImages = APP_CONFIG.IMAGE.MAX_CAMERA_IMAGES,
 }: MultiCameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -132,29 +133,59 @@ export function MultiCameraCapture({
     onOpenChange(false);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     const remainingSlots = maxImages - capturedImages.length;
     const filesToProcess = files.slice(0, remainingSlots);
 
-    Promise.all(
-      filesToProcess.map(file => {
-        return new Promise<string>((resolve, reject) => {
+    try {
+      // First validate all files on server-side
+      const validationPromises = filesToProcess.map(async file => {
+        // Convert file to base64 for validation
+        const base64Data = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
-      })
-    ).then(newImages => {
-      const updatedImages = [...capturedImages, ...newImages];
+
+        // Validate with server
+        const response = await fetch('/api/upload-validation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: file.name,
+            mimeType: file.type,
+            size: file.size,
+            base64Data,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'File validation failed');
+        }
+
+        return base64Data;
+      });
+
+      // Wait for all validations to complete
+      const validatedImages = await Promise.all(validationPromises);
+
+      const updatedImages = [...capturedImages, ...validatedImages];
       setCapturedImages(updatedImages);
+
       if (updatedImages.length >= maxImages) {
         setShowCamera(false);
       }
-    });
+    } catch (error) {
+      logger.error('File upload validation failed', error);
+      setError(
+        error instanceof Error ? error.message : 'File validation failed'
+      );
+    }
   };
 
   const handleDone = () => {

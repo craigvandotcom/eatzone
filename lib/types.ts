@@ -65,3 +65,35 @@ export interface Symptom {
 // Export types for backward compatibility with existing imports
 export type { Symptom as SymptomType };
 export type { Ingredient as IngredientType };
+
+// OpenRouter API types for proper type safety
+export interface OpenRouterTextContent {
+  type: 'text';
+  text: string;
+}
+
+export interface OpenRouterImageContent {
+  type: 'image_url';
+  image_url: {
+    url: string;
+  };
+}
+
+export type OpenRouterMessageContent =
+  | OpenRouterTextContent
+  | OpenRouterImageContent;
+
+export interface OpenRouterMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string | OpenRouterMessageContent[];
+}
+
+export interface OpenRouterChatCompletionRequest {
+  model: string;
+  messages: OpenRouterMessage[];
+  max_tokens?: number;
+  temperature?: number;
+}
+
+// Re-export common types for convenience
+export type { Database } from './supabase/types';

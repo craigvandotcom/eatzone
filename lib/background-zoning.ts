@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/utils/logger';
 import type { Food, Ingredient } from '@/lib/types';
+import { APP_CONFIG } from '@/lib/config/constants';
 
 // Type for zoning API response
 interface ZonedIngredientData {
@@ -10,25 +11,59 @@ interface ZonedIngredientData {
   organic: boolean;
 }
 
+// Enhanced food type with retry tracking
+interface FoodWithRetryInfo extends Food {
+  retry_count?: number;
+  last_retry_at?: string;
+}
+
 // Get Supabase client
 const supabase = createClient();
 
-// Maximum retry attempts per food entry (reserved for future use)
-// const MAX_RETRY_ATTEMPTS = 3;
+// Exponential backoff delay calculation
+function calculateRetryDelay(attemptNumber: number): number {
+  const baseDelay = APP_CONFIG.BACKGROUND.BASE_RETRY_DELAY_MS;
+  const multiplier = APP_CONFIG.BACKGROUND.RETRY_MULTIPLIER;
+  const maxDelay = APP_CONFIG.BACKGROUND.MAX_RETRY_DELAY_MS;
+
+  const delay = baseDelay * Math.pow(multiplier, attemptNumber - 1);
+  return Math.min(delay, maxDelay);
+}
+
+// Check if enough time has passed since last retry
+function shouldRetry(
+  lastRetryAt: string | null,
+  attemptNumber: number
+): boolean {
+  if (!lastRetryAt) return true;
+
+  const lastRetry = new Date(lastRetryAt);
+  const now = new Date();
+  const timeSinceLastRetry = now.getTime() - lastRetry.getTime();
+  const requiredDelay = calculateRetryDelay(attemptNumber);
+
+  return timeSinceLastRetry >= requiredDelay;
+}
 
 /**
- * Background service to retry failed zoning operations
- * This is a simple MVP implementation that can be called periodically
+ * Enhanced background service with exponential backoff and monitoring
+ * Tracks retry attempts and implements smart retry logic
  */
 export async function retryFailedZoning(): Promise<void> {
   try {
-    // Find foods that need zoning retry (status = 'analyzing')
+    // Find foods that need zoning retry with retry tracking
     const { data: foodsToRetry, error } = await supabase
       .from('foods')
-      .select('*')
+      .select(
+        `
+        *,
+        retry_count,
+        last_retry_at
+      `
+      )
       .eq('status', 'analyzing')
       .order('timestamp', { ascending: false })
-      .limit(10); // Process max 10 at a time to avoid overwhelming API
+      .limit(APP_CONFIG.BACKGROUND.BATCH_SIZE);
 
     if (error) {
       logger.error('Failed to fetch foods for retry', error);
@@ -36,24 +71,50 @@ export async function retryFailedZoning(): Promise<void> {
     }
 
     if (!foodsToRetry || foodsToRetry.length === 0) {
-      return; // Nothing to retry
+      logger.debug('No foods need zoning retry');
+      return;
     }
 
     logger.info(`Found ${foodsToRetry.length} foods needing zoning retry`);
 
-    // Process each food entry
-    for (const food of foodsToRetry) {
-      await retryFoodZoning(food);
+    // Filter foods that are ready for retry (respecting exponential backoff)
+    const foodsReadyForRetry = foodsToRetry.filter(
+      (food: FoodWithRetryInfo) => {
+        const retryCount = food.retry_count || 0;
+
+        // Skip if max retries exceeded
+        if (retryCount >= APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS) {
+          logger.warn(
+            `Food ${food.id} exceeded max retry attempts (${retryCount}/${APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS})`
+          );
+          return false;
+        }
+
+        // Check if enough time has passed since last retry
+        return shouldRetry(food.last_retry_at || null, retryCount + 1);
+      }
+    );
+
+    logger.info(
+      `${foodsReadyForRetry.length} foods ready for retry after backoff filtering`
+    );
+
+    // Process each eligible food entry
+    for (const food of foodsReadyForRetry) {
+      await retryFoodZoning(food as FoodWithRetryInfo);
     }
+
+    // Log monitoring information
+    await logMonitoringStats();
   } catch (error) {
     logger.error('Background zoning retry failed', error);
   }
 }
 
 /**
- * Retry zoning for a specific food entry
+ * Retry zoning for a specific food entry with retry tracking
  */
-async function retryFoodZoning(food: Food): Promise<void> {
+async function retryFoodZoning(food: FoodWithRetryInfo): Promise<void> {
   try {
     const ingredients = food.ingredients as Ingredient[];
     const unzonedIngredients = ingredients.filter(
@@ -117,16 +178,46 @@ async function retryFoodZoning(food: Food): Promise<void> {
         logger.warn(`Some ingredients still unzoned for food ${food.id}`);
       }
     } else {
-      // Zoning failed again - could implement retry limit here
+      // Zoning failed again - increment retry counter
+      const retryCount = (food.retry_count || 0) + 1;
+
       logger.warn(
-        `Zoning retry failed for food ${food.id}: ${response.status}`
+        `Zoning retry failed for food ${food.id}: ${response.status} (attempt ${retryCount}/${APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS})`
       );
 
-      // For now, keep it as 'analyzing' for future retries
-      // In a more sophisticated system, you could increment a retry counter
+      // Update retry tracking
+      await updateFoodRetryInfo(food.id, retryCount);
+
+      // Mark as failed if max retries exceeded
+      if (retryCount >= APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS) {
+        logger.error(
+          `Food ${food.id} marked as failed after ${retryCount} retry attempts`
+        );
+        await updateFoodStatus(
+          food.id,
+          'pending_review',
+          food.ingredients as Ingredient[]
+        );
+      }
     }
   } catch (error) {
     logger.error(`Failed to retry zoning for food ${food.id}`, error);
+
+    // Increment retry counter even on exception
+    const retryCount = (food.retry_count || 0) + 1;
+    await updateFoodRetryInfo(food.id, retryCount);
+
+    // Mark as failed if max retries exceeded
+    if (retryCount >= APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS) {
+      logger.error(
+        `Food ${food.id} marked as failed after ${retryCount} retry attempts due to error`
+      );
+      await updateFoodStatus(
+        food.id,
+        'pending_review',
+        food.ingredients as Ingredient[]
+      );
+    }
   }
 }
 
@@ -135,7 +226,7 @@ async function retryFoodZoning(food: Food): Promise<void> {
  */
 async function updateFoodStatus(
   foodId: string,
-  status: 'analyzing' | 'processed',
+  status: 'pending_review' | 'analyzing' | 'processed',
   ingredients: Ingredient[]
 ): Promise<void> {
   const { error } = await supabase
@@ -184,7 +275,13 @@ export async function retryFoodZoningManually(
   try {
     const { data: food, error } = await supabase
       .from('foods')
-      .select('*')
+      .select(
+        `
+        *,
+        retry_count,
+        last_retry_at
+      `
+      )
       .eq('id', foodId)
       .single();
 
@@ -193,10 +290,152 @@ export async function retryFoodZoningManually(
       return false;
     }
 
-    await retryFoodZoning(food);
+    await retryFoodZoning(food as FoodWithRetryInfo);
     return true;
   } catch (error) {
     logger.error(`Manual retry failed for food ${foodId}`, error);
     return false;
+  }
+}
+
+/**
+ * Update food retry tracking information
+ */
+async function updateFoodRetryInfo(
+  foodId: string,
+  retryCount: number
+): Promise<void> {
+  const { error } = await supabase
+    .from('foods')
+    .update({
+      retry_count: retryCount,
+      last_retry_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', foodId);
+
+  if (error) {
+    logger.error(`Failed to update retry info for ${foodId}`, error);
+  }
+}
+
+/**
+ * Log monitoring statistics for stuck entries
+ */
+async function logMonitoringStats(): Promise<void> {
+  try {
+    // Count entries by retry status
+    const { data: retryStats, error } = await supabase
+      .from('foods')
+      .select('retry_count, status')
+      .eq('status', 'analyzing');
+
+    if (error) {
+      logger.error('Failed to fetch monitoring stats', error);
+      return;
+    }
+
+    if (!retryStats || retryStats.length === 0) {
+      return;
+    }
+
+    // Calculate stats
+    const totalAnalyzing = retryStats.length;
+    const highRetryCount = retryStats.filter(
+      f => (f.retry_count || 0) >= APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS - 1
+    ).length;
+    const avgRetryCount =
+      retryStats.reduce((sum, f) => sum + (f.retry_count || 0), 0) /
+      totalAnalyzing;
+
+    logger.info('Background zoning monitoring stats', {
+      totalAnalyzing,
+      highRetryCount,
+      avgRetryCount: Math.round(avgRetryCount * 100) / 100,
+      maxRetryLimit: APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS,
+    });
+
+    // Alert on concerning patterns
+    if (highRetryCount > 0) {
+      logger.warn(`⚠️ ${highRetryCount} entries approaching max retry limit`);
+    }
+
+    if (totalAnalyzing > APP_CONFIG.BACKGROUND.BATCH_SIZE * 3) {
+      logger.warn(
+        `⚠️ Large backlog detected: ${totalAnalyzing} entries stuck in analyzing state`
+      );
+    }
+  } catch (error) {
+    logger.error('Failed to generate monitoring stats', error);
+  }
+}
+
+/**
+ * Get detailed monitoring information for admin/debug purposes
+ */
+export async function getMonitoringInfo(): Promise<{
+  stuckEntries: number;
+  highRetryEntries: number;
+  totalAnalyzing: number;
+  oldestStuckEntry?: string;
+}> {
+  try {
+    const { data: analyzingFoods, error } = await supabase
+      .from('foods')
+      .select(
+        `
+        id,
+        created_at,
+        retry_count,
+        last_retry_at
+      `
+      )
+      .eq('status', 'analyzing')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      logger.error('Failed to fetch monitoring info', error);
+      return {
+        stuckEntries: 0,
+        highRetryEntries: 0,
+        totalAnalyzing: 0,
+      };
+    }
+
+    if (!analyzingFoods || analyzingFoods.length === 0) {
+      return {
+        stuckEntries: 0,
+        highRetryEntries: 0,
+        totalAnalyzing: 0,
+      };
+    }
+
+    // Calculate monitoring metrics
+    const now = new Date();
+    const stuckThreshold = 24 * 60 * 60 * 1000; // 24 hours
+
+    const stuckEntries = analyzingFoods.filter(food => {
+      const createdAt = new Date(food.created_at);
+      return now.getTime() - createdAt.getTime() > stuckThreshold;
+    }).length;
+
+    const highRetryEntries = analyzingFoods.filter(
+      food =>
+        (food.retry_count || 0) >= APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS - 1
+    ).length;
+
+    return {
+      stuckEntries,
+      highRetryEntries,
+      totalAnalyzing: analyzingFoods.length,
+      oldestStuckEntry: analyzingFoods[0]?.id,
+    };
+  } catch (error) {
+    logger.error('Failed to get monitoring info', error);
+    return {
+      stuckEntries: 0,
+      highRetryEntries: 0,
+      totalAnalyzing: 0,
+    };
   }
 }

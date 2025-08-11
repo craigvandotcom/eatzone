@@ -11,13 +11,15 @@ describe('/api/analyze-image - Basic Validation', () => {
         {
           name: 'chicken breast',
           zone: 'green' as const,
-          foodGroup: 'proteins',
+          group: 'Quality Animal Proteins',
+          category: 'Proteins',
           organic: false,
         },
         {
           name: 'broccoli',
           zone: 'green' as const,
-          foodGroup: 'vegetables',
+          group: 'Cruciferous Vegetables',
+          category: 'Vegetables',
           organic: true,
         }
       ]
@@ -32,7 +34,7 @@ describe('/api/analyze-image - Basic Validation', () => {
     sampleResponse.ingredients.forEach(ingredient => {
       expect(ingredient).toHaveProperty('name');
       expect(ingredient).toHaveProperty('zone');
-      expect(ingredient).toHaveProperty('foodGroup');
+      expect(ingredient).toHaveProperty('group');
       expect(ingredient).toHaveProperty('organic');
       
       expect(typeof ingredient.name).toBe('string');

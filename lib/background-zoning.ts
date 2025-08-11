@@ -7,7 +7,8 @@ import { APP_CONFIG } from '@/lib/config/constants';
 interface ZonedIngredientData {
   name: string;
   zone: 'green' | 'yellow' | 'red' | 'unzoned';
-  foodGroup: string;
+  category?: string;
+  group: string;
   organic: boolean;
 }
 
@@ -150,7 +151,7 @@ async function retryFoodZoning(food: FoodWithRetryInfo): Promise<void> {
               ...ing,
               ...zonedData,
               // Ensure required fields have proper types
-              foodGroup: zonedData.foodGroup || 'other',
+              group: zonedData.group || 'other',
               zone: zonedData.zone || 'unzoned',
               organic:
                 typeof zonedData.organic === 'boolean'

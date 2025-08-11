@@ -5,7 +5,8 @@ import { Food, Symptom, User } from './types';
 interface ZonedIngredientData {
   name: string;
   zone: 'green' | 'yellow' | 'red' | 'unzoned';
-  foodGroup: string;
+  category?: string;
+  group: string;
   organic: boolean;
 }
 
@@ -114,7 +115,8 @@ export const addFood = async (
                     ...ing,
                     ...zonedData,
                     // Ensure required fields have proper types
-                    foodGroup: zonedData.foodGroup || 'other',
+                    category: zonedData.category,
+                    group: zonedData.group || 'other',
                     zone: zonedData.zone || 'unzoned',
                     organic:
                       typeof zonedData.organic === 'boolean'

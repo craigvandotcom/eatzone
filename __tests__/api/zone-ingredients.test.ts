@@ -31,15 +31,21 @@ describe('/api/zone-ingredients - Basic Validation', () => {
     const sampleIngredient = {
       name: 'spinach',
       zone: 'green' as const,
-      foodGroup: 'vegetables',
+      group: 'Leafy Greens',
+      category: 'Vegetables',
       organic: false,
     };
 
     // Test the structure that our API should return
     expect(sampleIngredient).toHaveProperty('name');
     expect(sampleIngredient).toHaveProperty('zone');
-    expect(sampleIngredient).toHaveProperty('foodGroup');
+    expect(sampleIngredient).toHaveProperty('group');
     expect(sampleIngredient).toHaveProperty('organic');
+    // Category is optional
+    if (sampleIngredient.category) {
+      expect(typeof sampleIngredient.category).toBe('string');
+    }
+    expect(typeof sampleIngredient.group).toBe('string');
     
     expect(['green', 'yellow', 'red', 'unzoned']).toContain(sampleIngredient.zone);
     expect(typeof sampleIngredient.organic).toBe('boolean');

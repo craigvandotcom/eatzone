@@ -26,14 +26,16 @@ const zoneIngredientsSchema = z.object({
 const zonedIngredientSchema = z.object({
   name: z.string(),
   zone: z.enum(['green', 'yellow', 'red']),
-  foodGroup: z.string(), // Accept any string from AI
+  category: z.string().optional(), // Main classification (e.g., "Proteins", "Vegetables")
+  group: z.string(), // Primary classification (e.g., "Low-Sugar Berries", "Quality Animal Proteins")
 });
 
 // Type for AI response
 type AIIngredientResponse = {
   name: string;
   zone?: string;
-  foodGroup: string;
+  category?: string;
+  group: string;
 };
 
 type AIResponse = {
@@ -102,7 +104,8 @@ export async function POST(request: NextRequest) {
       (ingredient: AIIngredientResponse) => ({
         name: ingredient.name,
         zone: ingredient.zone?.toLowerCase(), // Convert to lowercase
-        foodGroup: ingredient.foodGroup, // Use AI category directly
+        category: ingredient.category, // Main classification
+        group: ingredient.group, // Primary classification
       })
     );
 

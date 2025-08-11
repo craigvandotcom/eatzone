@@ -60,7 +60,8 @@ describe('FoodEntryForm', () => {
           {
             name: 'Spinach',
             organic: false,
-            foodGroup: 'vegetables',
+            group: 'Leafy Greens',
+            category: 'Vegetables',
             zone: 'green',
           },
         ],

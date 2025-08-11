@@ -50,7 +50,8 @@ export interface Ingredient {
     | 'grilled'
     | 'roasted'
     | 'other';
-  foodGroup: string; // AI-provided category (flexible for MVP)
+  category?: string; // Main classification (e.g., "Proteins", "Vegetables", "Fruits")
+  group: string; // Primary classification (e.g., "Low-Sugar Berries", "Quality Animal Proteins", "Leafy Greens")
   zone: 'green' | 'yellow' | 'red' | 'unzoned';
 }
 

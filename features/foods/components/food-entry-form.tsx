@@ -17,6 +17,7 @@ import {
   ChevronUp,
   Loader2,
   AlertCircle,
+  Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -31,6 +32,12 @@ import {
 } from '@/components/ui/loading-states';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/utils/logger';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, 'id'>) => void;
@@ -84,7 +91,7 @@ export function FoodEntryForm({
         (ingredient: { name: string; organic: boolean }) => ({
           name: ingredient.name,
           organic: ingredient.organic || false,
-          foodGroup: 'other' as const, // Default value
+          group: 'other' as const, // Default value
           zone: 'unzoned' as const, // Default value - will be zoned later
         })
       );
@@ -138,7 +145,7 @@ export function FoodEntryForm({
         {
           name: currentIngredient.trim(),
           organic: false,
-          foodGroup: 'other',
+          group: 'other',
           zone: 'unzoned',
         },
       ]);
@@ -195,7 +202,7 @@ export function FoodEntryForm({
       finalIngredientsList.push({
         name: currentIngredient.trim(),
         organic: false,
-        foodGroup: 'other',
+        group: 'other',
         zone: 'unzoned', // Default zone - will be zoned during submission
       });
     }
@@ -209,7 +216,12 @@ export function FoodEntryForm({
     setIsZoning(true);
 
     try {
-      const ingredientNames = finalIngredientsList.map(ing => ing.name);
+      // Send ingredients that need zoning or missing category/group data
+      const ingredientsNeedingZoning = finalIngredientsList.filter(
+        ing => ing.zone === 'unzoned' || !ing.category || !ing.group
+      );
+      
+      const ingredientNames = ingredientsNeedingZoning.map(ing => ing.name);
 
       const zoneResponse = await fetch('/api/zone-ingredients', {
         method: 'POST',
@@ -235,9 +247,10 @@ export function FoodEntryForm({
           };
 
           // Ensure required fields have defaults if API didn't provide them
-          if (!enriched.foodGroup) enriched.foodGroup = 'other';
+          if (!enriched.group) enriched.group = 'other';
           if (!enriched.zone) enriched.zone = 'unzoned';
           if (typeof enriched.organic !== 'boolean') enriched.organic = false;
+          
 
           return enriched;
         });
@@ -281,7 +294,8 @@ export function FoodEntryForm({
       const validatedIngredients = enrichedIngredients.map(ing => ({
         name: ing.name,
         organic: typeof ing.organic === 'boolean' ? ing.organic : false,
-        foodGroup: ing.foodGroup || 'other',
+        category: ing.category,
+        group: ing.group || 'other',
         zone: ing.zone || 'unzoned',
       }));
 
@@ -304,12 +318,13 @@ export function FoodEntryForm({
   };
 
   return (
-    <div className={cn('relative', className)}>
-      <FormLoadingOverlay
-        isVisible={isSubmitting && isZoning}
-        message="Analyzing ingredients with AI..."
-      />
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <TooltipProvider>
+      <div className={cn('relative', className)}>
+        <FormLoadingOverlay
+          isVisible={isSubmitting && isZoning}
+          message="Analyzing ingredients with AI..."
+        />
+        <form onSubmit={handleSubmit} className="space-y-4">
         {/* Image Display */}
         {editingFood?.photo_url && (
           <div className="mb-4">
@@ -446,6 +461,27 @@ export function FoodEntryForm({
                               organic
                             </span>
                           )}
+                          {/* Info icon for zoned ingredients */}
+                          {ingredient.zone !== 'unzoned' && ingredient.group && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                  aria-label="Ingredient classification info"
+                                >
+                                  <Info className="h-3 w-3" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="text-xs space-y-1">
+                                  <div><strong>Category:</strong> {ingredient.category || 'Unknown'}</div>
+                                  <div><strong>Group:</strong> {ingredient.group}</div>
+                                  <div><strong>Zone:</strong> <span className={`capitalize ${getZoneTextClass(ingredient.zone)}`}>{ingredient.zone}</span></div>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
                         </div>
                       )}
                       <div className="flex gap-1 px-2">
@@ -540,5 +576,6 @@ export function FoodEntryForm({
         </div>
       </form>
     </div>
+    </TooltipProvider>
   );
 }

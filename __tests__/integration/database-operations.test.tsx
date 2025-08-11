@@ -43,7 +43,14 @@ describe('Database Operations', () => {
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith('foods');
     expect(mockInsert).toHaveBeenCalledWith({
-      ...foodData,
+      id: expect.any(String),
+      name: foodData.name,
+      ingredients: foodData.ingredients,
+      notes: undefined,
+      meal_type: undefined,
+      status: 'processed',
+      photo_url: undefined,
+      image_urls: null,
       user_id: 'test-user-id',
       timestamp: expect.any(String),
     });

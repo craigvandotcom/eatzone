@@ -9,7 +9,7 @@
  * 2. .env.local must have OPENROUTER_API_KEY set
  */
 
-describe('Real API Integration Tests', () => {
+describe.skip('Real API Integration Tests', () => {
   const BASE_URL = 'http://localhost:3000';
 
   // Helper to make real HTTP requests

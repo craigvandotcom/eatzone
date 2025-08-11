@@ -321,6 +321,10 @@ describe('CameraCapture', () => {
 
   describe('Error Handling', () => {
     it('should handle getUserMedia errors gracefully', async () => {
+      // Mock logger to prevent console noise during tests
+      const mockLogger = { error: jest.fn() };
+      jest.doMock('@/lib/utils/logger', () => ({ logger: mockLogger }));
+      
       mockGetUserMedia.mockRejectedValueOnce(
         new Error('NotAllowedError: Permission denied')
       );

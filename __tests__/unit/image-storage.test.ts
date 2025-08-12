@@ -3,10 +3,7 @@
  * Tests image processing, upload, and deletion functionality
  */
 
-import {
-  generateImageFilename,
-  IMAGE_CONFIG,
-} from '@/lib/image-storage';
+import { generateImageFilename, IMAGE_CONFIG } from '@/lib/image-storage';
 
 // Note: Most image-storage functions depend heavily on Supabase client and browser APIs
 // These tests focus on pure functions and configuration
@@ -26,7 +23,9 @@ describe('Image Storage Utils', () => {
 
     it('should handle various user IDs and food IDs', () => {
       expect(generateImageFilename('abc', 'xyz')).toBe('abc/foods/xyz_1.jpg');
-      expect(generateImageFilename('user-with-dash', 'food-123', 5)).toBe('user-with-dash/foods/food-123_5.jpg');
+      expect(generateImageFilename('user-with-dash', 'food-123', 5)).toBe(
+        'user-with-dash/foods/food-123_5.jpg'
+      );
     });
   });
 

@@ -32,6 +32,11 @@ import {
 } from '@/components/ui/loading-states';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/utils/logger';
+import { sanitizeIngredientName } from '@/lib/security/sanitization';
+import {
+  processFoodSubmission,
+  type FoodSubmissionData,
+} from '@/lib/services/food-submission';
 import {
   Tooltip,
   TooltipContent,
@@ -140,10 +145,17 @@ export function FoodEntryForm({
   const handleIngredientKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && currentIngredient.trim()) {
       e.preventDefault();
+      const sanitizedName = sanitizeIngredientName(currentIngredient.trim());
+
+      if (sanitizedName.length === 0) {
+        toast.error('Please enter a valid ingredient name.');
+        return;
+      }
+
       setIngredients([
         ...ingredients,
         {
-          name: currentIngredient.trim(),
+          name: sanitizedName,
           organic: false,
           group: 'other',
           zone: 'unzoned',
@@ -197,117 +209,42 @@ export function FoodEntryForm({
     e.preventDefault();
     if (isSubmitting) return;
 
-    const finalIngredientsList = [...ingredients];
-    if (currentIngredient.trim()) {
-      finalIngredientsList.push({
-        name: currentIngredient.trim(),
-        organic: false,
-        group: 'other',
-        zone: 'unzoned', // Default zone - will be zoned during submission
-      });
-    }
-
-    if (finalIngredientsList.length === 0) {
-      toast.error('Please add at least one ingredient.');
-      return;
-    }
-
     setIsSubmitting(true);
     setIsZoning(true);
 
     try {
-      // Send ingredients that need zoning or missing category/group data
-      const ingredientsNeedingZoning = finalIngredientsList.filter(
-        ing => ing.zone === 'unzoned' || !ing.category || !ing.group
-      );
-      
-      const ingredientNames = ingredientsNeedingZoning.map(ing => ing.name);
+      // Use the new service to process the submission
+      const submissionData: FoodSubmissionData = {
+        name,
+        ingredients,
+        currentIngredient,
+        notes,
+        selectedDateTime,
+      };
 
-      const zoneResponse = await fetch('/api/zone-ingredients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredients: ingredientNames }),
-      });
+      const result = await processFoodSubmission(submissionData);
 
-      let enrichedIngredients = finalIngredientsList;
-
-      if (zoneResponse.ok) {
-        const { ingredients: zonedData } = await zoneResponse.json();
-
-        const zonedMap = new Map(
-          zonedData.map((item: any) => [item.name, item])
-        );
-
-        enrichedIngredients = finalIngredientsList.map(ing => {
-          const zonedData = zonedMap.get(ing.name);
-
-          const enriched = {
-            ...ing,
-            ...(zonedData || {}),
-          };
-
-          // Ensure required fields have defaults if API didn't provide them
-          if (!enriched.group) enriched.group = 'other';
-          if (!enriched.zone) enriched.zone = 'unzoned';
-          if (typeof enriched.organic !== 'boolean') enriched.organic = false;
-          
-
-          return enriched;
-        });
-
-        setIsZoning(false);
-        toast.success('Ingredients successfully analyzed and zoned!');
-      } else {
-        setIsZoning(false);
-        // Handle specific error responses
-        try {
-          const errorData = await zoneResponse.json();
-          const errorMessage =
-            errorData?.error?.message || 'Could not zone ingredients';
-
-          logger.error('Zoning API error', undefined, {
-            status: zoneResponse.status,
-            errorData,
-          });
-
-          if (zoneResponse.status === 429) {
-            toast.error(
-              'Too many requests. Please wait a moment and try again.'
-            );
-          } else if (zoneResponse.status === 400) {
-            toast.error('Invalid ingredients data. Please check your input.');
-          } else {
-            toast.warning(errorMessage + '. Saving with default values.');
-          }
-        } catch {
-          logger.error('Failed to parse error response from zoning API');
-          toast.warning(
-            'Could not zone ingredients. Saving with default values.'
-          );
+      if (!result.success) {
+        if (result.error?.type === 'validation') {
+          toast.error(result.error.message);
+        } else {
+          toast.error(result.error?.message || 'Failed to process food entry');
         }
+        return;
       }
 
-      const foodName =
-        name.trim() || `Meal with ${enrichedIngredients[0].name}`;
+      // Show warnings if any
+      if (result.warnings && result.warnings.length > 0) {
+        result.warnings.forEach(warning => toast.warning(warning));
+      } else {
+        toast.success('Food entry saved successfully!');
+      }
 
-      // Final validation of enriched ingredients
-      const validatedIngredients = enrichedIngredients.map(ing => ({
-        name: ing.name,
-        organic: typeof ing.organic === 'boolean' ? ing.organic : false,
-        category: ing.category,
-        group: ing.group || 'other',
-        zone: ing.zone || 'unzoned',
-      }));
-
-      onAddFood({
-        name: foodName,
-        ingredients: validatedIngredients,
-        notes: notes.trim(),
-        status: 'processed',
-        timestamp: selectedDateTime.toISOString(),
-      });
-
-      onClose();
+      // Submit the processed food
+      if (result.food) {
+        onAddFood(result.food);
+        onClose();
+      }
     } catch (error) {
       logger.error('Submission failed', error);
       toast.error('Failed to save food entry.');
@@ -325,257 +262,271 @@ export function FoodEntryForm({
           message="Analyzing ingredients with AI..."
         />
         <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Image Display */}
-        {editingFood?.photo_url && (
-          <div className="mb-4">
-            <Label>Food Image</Label>
-            <div className="mt-2 relative w-full max-w-md mx-auto">
-              <img
-                src={editingFood.photo_url}
-                alt="Food entry"
-                className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
-              />
+          {/* Image Display */}
+          {editingFood?.photo_url && (
+            <div className="mb-4">
+              <Label>Food Image</Label>
+              <div className="mt-2 relative w-full max-w-md mx-auto">
+                <img
+                  src={editingFood.photo_url}
+                  alt="Food entry"
+                  className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
+                />
+              </div>
             </div>
+          )}
+          <div>
+            <Label htmlFor="meal-summary">Meal Summary (optional)</Label>
+            <Input
+              id="meal-summary"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
+            />
           </div>
-        )}
-        <div>
-          <Label htmlFor="meal-summary">Meal Summary (optional)</Label>
-          <Input
-            id="meal-summary"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
-          />
-        </div>
 
-        <div>
-          <Label>Date & Time</Label>
-          <DayTimePicker
-            value={selectedDateTime}
-            onChange={setSelectedDateTime}
-            className="mt-2"
-          />
-        </div>
+          <div>
+            <Label>Date & Time</Label>
+            <DayTimePicker
+              value={selectedDateTime}
+              onChange={setSelectedDateTime}
+              className="mt-2"
+            />
+          </div>
 
-        <div>
-          <Label htmlFor="ingredient-input">Ingredients</Label>
-          {isAnalyzing ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                <span className="text-sm text-blue-700">
-                  Analyzing image...
+          <div>
+            <Label htmlFor="ingredient-input">Ingredients</Label>
+            {isAnalyzing ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="text-sm text-blue-700">
+                    Analyzing image...
+                  </span>
+                </div>
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : (
+              <>
+                <Input
+                  id="ingredient-input"
+                  value={currentIngredient}
+                  onChange={e => setCurrentIngredient(e.target.value)}
+                  onKeyPress={handleIngredientKeyPress}
+                  placeholder="Type ingredient and press Enter"
+                  autoFocus={!imageData} // Don't autofocus if we're analyzing an image
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {hasAnalyzed
+                    ? 'AI analysis complete! Add more ingredients or edit existing ones.'
+                    : 'Press Enter to add each ingredient'}
+                </p>
+              </>
+            )}
+
+            {analysisError && (
+              <div
+                className={`flex items-center gap-2 p-3 ${getZoneBgClass('red', 'light')} rounded-md mt-2`}
+              >
+                <AlertCircle className={`h-4 w-4 ${getZoneTextClass('red')}`} />
+                <span className={`text-sm ${getZoneTextClass('red')}`}>
+                  {analysisError}
                 </span>
               </div>
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ) : (
-            <>
-              <Input
-                id="ingredient-input"
-                value={currentIngredient}
-                onChange={e => setCurrentIngredient(e.target.value)}
-                onKeyPress={handleIngredientKeyPress}
-                placeholder="Type ingredient and press Enter"
-                autoFocus={!imageData} // Don't autofocus if we're analyzing an image
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {hasAnalyzed
-                  ? 'AI analysis complete! Add more ingredients or edit existing ones.'
-                  : 'Press Enter to add each ingredient'}
-              </p>
-            </>
-          )}
+            )}
+          </div>
 
-          {analysisError && (
-            <div
-              className={`flex items-center gap-2 p-3 ${getZoneBgClass('red', 'light')} rounded-md mt-2`}
-            >
-              <AlertCircle className={`h-4 w-4 ${getZoneTextClass('red')}`} />
-              <span className={`text-sm ${getZoneTextClass('red')}`}>
-                {analysisError}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Ingredients List */}
-        {(ingredients.length > 0 || isAnalyzing) && (
-          <div>
-            <Label>
-              {isAnalyzing
-                ? 'Analyzing ingredients...'
-                : `Added Ingredients (${ingredients.length})`}
-            </Label>
-            {isAnalyzing ? (
-              <div className="space-y-2 mt-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            ) : (
-              <div className="mt-2">
-                <div className="space-y-2">
-                  {ingredients.map((ingredient, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
-                    >
-                      {/* Zone color indicator bar */}
-                      <div
-                        className="absolute left-0 top-0 bottom-0 w-1"
-                        style={{
-                          backgroundColor:
-                            ingredient.zone === 'green'
-                              ? getZoneColor('green', 'hex')
-                              : ingredient.zone === 'yellow'
-                                ? getZoneColor('yellow', 'hex')
-                                : ingredient.zone === 'red'
-                                  ? getZoneColor('red', 'hex')
-                                  : ingredient.zone === 'unzoned'
-                                    ? getZoneColor('unzoned', 'hex')
-                                    : getZoneColor('unzoned', 'hex'),
-                        }}
-                        title={`Zone: ${ingredient.zone || 'unzoned'}`}
-                      />
-
-                      {/* Ingredient Row */}
-                      {editingIndex === index ? (
-                        <Input
-                          value={editingValue}
-                          onChange={e => setEditingValue(e.target.value)}
-                          onKeyPress={e => handleEditKeyPress(e, index)}
-                          onBlur={() => handleSaveEdit(index)}
-                          className="flex-1 h-8 mx-2 ml-3"
-                          autoFocus
-                        />
-                      ) : (
-                        <div className="flex-1 pl-3 pr-2 flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium">
-                            {ingredient.name}
-                          </span>
-                          {ingredient.organic && (
-                            <span
-                              className={`text-xs ${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} px-1.5 py-0.5 rounded-full`}
-                            >
-                              organic
-                            </span>
-                          )}
-                          {/* Info icon for zoned ingredients */}
-                          {ingredient.zone !== 'unzoned' && ingredient.group && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
-                                  aria-label="Ingredient classification info"
-                                >
-                                  <Info className="h-3 w-3" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <div className="text-xs space-y-1">
-                                  <div><strong>Category:</strong> {ingredient.category || 'Unknown'}</div>
-                                  <div><strong>Group:</strong> {ingredient.group}</div>
-                                  <div><strong>Zone:</strong> <span className={`capitalize ${getZoneTextClass(ingredient.zone)}`}>{ingredient.zone}</span></div>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                      )}
-                      <div className="flex gap-1 px-2">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleOrganic(index)}
-                          className={`p-1 transition-colors ${
-                            ingredient.organic
-                              ? `${getZoneTextClass('green')} hover:opacity-80`
-                              : `text-gray-400 hover:${getZoneTextClass('green')}`
-                          }`}
-                          title={
-                            ingredient.organic
-                              ? 'Mark as non-organic'
-                              : 'Mark as organic'
-                          }
-                        >
-                          <Leaf className="h-3 w-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleEditIngredient(index)}
-                          className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                          title="Edit ingredient"
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteIngredient(index)}
-                          className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
-                          title="Delete ingredient"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+          {/* Ingredients List */}
+          {(ingredients.length > 0 || isAnalyzing) && (
+            <div>
+              <Label>
+                {isAnalyzing
+                  ? 'Analyzing ingredients...'
+                  : `Added Ingredients (${ingredients.length})`}
+              </Label>
+              {isAnalyzing ? (
+                <div className="space-y-2 mt-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
                 </div>
+              ) : (
+                <div className="mt-2">
+                  <div className="space-y-2">
+                    {ingredients.map((ingredient, index) => (
+                      <div
+                        key={index}
+                        className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
+                      >
+                        {/* Zone color indicator bar */}
+                        <div
+                          className="absolute left-0 top-0 bottom-0 w-1"
+                          style={{
+                            backgroundColor:
+                              ingredient.zone === 'green'
+                                ? getZoneColor('green', 'hex')
+                                : ingredient.zone === 'yellow'
+                                  ? getZoneColor('yellow', 'hex')
+                                  : ingredient.zone === 'red'
+                                    ? getZoneColor('red', 'hex')
+                                    : ingredient.zone === 'unzoned'
+                                      ? getZoneColor('unzoned', 'hex')
+                                      : getZoneColor('unzoned', 'hex'),
+                          }}
+                          title={`Zone: ${ingredient.zone || 'unzoned'}`}
+                        />
+
+                        {/* Ingredient Row */}
+                        {editingIndex === index ? (
+                          <Input
+                            value={editingValue}
+                            onChange={e => setEditingValue(e.target.value)}
+                            onKeyPress={e => handleEditKeyPress(e, index)}
+                            onBlur={() => handleSaveEdit(index)}
+                            className="flex-1 h-8 mx-2 ml-3"
+                            autoFocus
+                          />
+                        ) : (
+                          <div className="flex-1 pl-3 pr-2 flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium">
+                              {ingredient.name}
+                            </span>
+                            {ingredient.organic && (
+                              <span
+                                className={`text-xs ${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} px-1.5 py-0.5 rounded-full`}
+                              >
+                                organic
+                              </span>
+                            )}
+                            {/* Info icon for zoned ingredients */}
+                            {ingredient.zone !== 'unzoned' &&
+                              ingredient.group && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                      aria-label="Ingredient classification info"
+                                    >
+                                      <Info className="h-3 w-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <div className="text-xs space-y-1">
+                                      <div>
+                                        <strong>Category:</strong>{' '}
+                                        {ingredient.category || 'Unknown'}
+                                      </div>
+                                      <div>
+                                        <strong>Group:</strong>{' '}
+                                        {ingredient.group}
+                                      </div>
+                                      <div>
+                                        <strong>Zone:</strong>{' '}
+                                        <span
+                                          className={`capitalize ${getZoneTextClass(ingredient.zone)}`}
+                                        >
+                                          {ingredient.zone}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                          </div>
+                        )}
+                        <div className="flex gap-1 px-2">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleOrganic(index)}
+                            className={`p-1 transition-colors ${
+                              ingredient.organic
+                                ? `${getZoneTextClass('green')} hover:opacity-80`
+                                : `text-gray-400 hover:${getZoneTextClass('green')}`
+                            }`}
+                            title={
+                              ingredient.organic
+                                ? 'Mark as non-organic'
+                                : 'Mark as organic'
+                            }
+                          >
+                            <Leaf className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleEditIngredient(index)}
+                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Edit ingredient"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteIngredient(index)}
+                            className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
+                            title="Delete ingredient"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Collapsible Notes Section */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowNotes(!showNotes)}
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              {showNotes ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+              Add notes (optional)
+            </button>
+            {showNotes && (
+              <div className="mt-2">
+                <Textarea
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  placeholder="Any additional details..."
+                  rows={3}
+                />
               </div>
             )}
           </div>
-        )}
 
-        {/* Collapsible Notes Section */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            {showNotes ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-            Add notes (optional)
-          </button>
-          {showNotes && (
-            <div className="mt-2">
-              <Textarea
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="Any additional details..."
-                rows={3}
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 bg-transparent"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting || isAnalyzing}
-            className="relative"
-          >
-            {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
-            {isSubmitting
-              ? isZoning
-                ? 'Zoning ingredients...'
-                : 'Saving...'
-              : 'Save Food'}
-          </Button>
-        </div>
-      </form>
-    </div>
+          <div className="flex gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 bg-transparent"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting || isAnalyzing}
+              className="relative"
+            >
+              {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
+              {isSubmitting
+                ? isZoning
+                  ? 'Zoning ingredients...'
+                  : 'Saving...'
+                : 'Save Food'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </TooltipProvider>
   );
 }

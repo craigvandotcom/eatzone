@@ -264,9 +264,9 @@ describe('/api/analyze-image', () => {
   });
 
   describe('Rate Limiting', () => {
-    it('should not apply rate limiting when Redis is not configured', async () => {
-      // Make multiple requests quickly
-      const requests = Array(5)
+    it('should apply fallback rate limiting when Redis is not configured', async () => {
+      // Make requests quickly to trigger rate limiting
+      const requests = Array(15) // Exceed the limit of 10 per minute
         .fill(null)
         .map(() =>
           createMockRequest('/api/analyze-image', {
@@ -284,12 +284,16 @@ describe('/api/analyze-image', () => {
         )
       );
 
-      // All requests should succeed
+      // Make requests in sequence to trigger rate limiting
       const responses = await Promise.all(requests.map(req => POST(req)));
 
-      responses.forEach(response => {
-        expect(response.status).toBe(200);
-      });
+      // At least some requests should be rate limited (429)
+      const rateLimitedResponses = responses.filter(response => response.status === 429);
+      expect(rateLimitedResponses.length).toBeGreaterThan(0);
+      
+      // Some early requests should succeed (200)
+      const successfulResponses = responses.filter(response => response.status === 200);
+      expect(successfulResponses.length).toBeGreaterThan(0);
     });
   });
 

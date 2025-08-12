@@ -7,11 +7,11 @@ describe('/api/zone-ingredients - Basic Validation', () => {
   it('should validate ingredient zoning logic', () => {
     // Test the core zoning logic directly
     const testIngredients = ['spinach', 'sugar', 'olive oil'];
-    
+
     // Basic validation that we have the required fields
     expect(testIngredients).toBeInstanceOf(Array);
     expect(testIngredients.length).toBeGreaterThan(0);
-    
+
     // Test that each ingredient is a valid string
     testIngredients.forEach(ingredient => {
       expect(typeof ingredient).toBe('string');
@@ -22,7 +22,7 @@ describe('/api/zone-ingredients - Basic Validation', () => {
   it('should handle zone classification types', () => {
     const validZones = ['green', 'yellow', 'red', 'unzoned'];
     const testZone = 'green';
-    
+
     expect(validZones).toContain(testZone);
     expect(typeof testZone).toBe('string');
   });
@@ -46,8 +46,10 @@ describe('/api/zone-ingredients - Basic Validation', () => {
       expect(typeof sampleIngredient.category).toBe('string');
     }
     expect(typeof sampleIngredient.group).toBe('string');
-    
-    expect(['green', 'yellow', 'red', 'unzoned']).toContain(sampleIngredient.zone);
+
+    expect(['green', 'yellow', 'red', 'unzoned']).toContain(
+      sampleIngredient.zone
+    );
     expect(typeof sampleIngredient.organic).toBe('boolean');
   });
 });

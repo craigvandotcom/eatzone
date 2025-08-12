@@ -48,7 +48,13 @@ const sampleFoods: Omit<Food, 'id' | 'user_id' | 'timestamp'>[] = [
         category: 'Vegetables',
         zone: 'green',
       },
-      { name: 'Banana', organic: false, group: 'Higher-Sugar Fruits', category: 'Fruits', zone: 'yellow' },
+      {
+        name: 'Banana',
+        organic: false,
+        group: 'Higher-Sugar Fruits',
+        category: 'Fruits',
+        zone: 'yellow',
+      },
       {
         name: 'Coconut Milk',
         organic: true,
@@ -77,7 +83,13 @@ const sampleFoods: Omit<Food, 'id' | 'user_id' | 'timestamp'>[] = [
         category: 'Vegetables',
         zone: 'green',
       },
-      { name: 'Olive Oil', organic: false, group: 'Cold-Use Oils', category: 'Fats & Oils', zone: 'green' },
+      {
+        name: 'Olive Oil',
+        organic: false,
+        group: 'Cold-Use Oils',
+        category: 'Fats & Oils',
+        zone: 'green',
+      },
       {
         name: 'Cherry Tomatoes',
         organic: true,
@@ -99,7 +111,13 @@ const sampleFoods: Omit<Food, 'id' | 'user_id' | 'timestamp'>[] = [
         category: 'Beverages',
         zone: 'yellow',
       },
-      { name: 'White Sugar', organic: false, group: 'Refined Sugars', category: 'Sweeteners', zone: 'red' },
+      {
+        name: 'White Sugar',
+        organic: false,
+        group: 'Refined Sugars',
+        category: 'Sweeteners',
+        zone: 'red',
+      },
       {
         name: 'Whole Milk',
         organic: false,

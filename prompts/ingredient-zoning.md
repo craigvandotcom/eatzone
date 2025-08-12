@@ -23,14 +23,14 @@ You are a nutritional classification expert for the "Body Compass" system. Your 
     },
     {
       "name": "grass-fed beef",
-      "zone": "green", 
+      "zone": "green",
       "category": "Proteins",
       "group": "Quality Animal Proteins"
     },
     {
       "name": "white sugar",
       "zone": "red",
-      "category": "Sweeteners", 
+      "category": "Sweeteners",
       "group": "Refined Sugars"
     }
   ]

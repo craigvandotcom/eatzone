@@ -15,7 +15,9 @@ describe('Background Zoning Configuration', () => {
       expect(APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS).toBeGreaterThan(0);
       expect(APP_CONFIG.BACKGROUND.BASE_RETRY_DELAY_MS).toBeGreaterThan(0);
       expect(APP_CONFIG.BACKGROUND.RETRY_MULTIPLIER).toBeGreaterThan(1);
-      expect(APP_CONFIG.BACKGROUND.MAX_RETRY_DELAY_MS).toBeGreaterThan(APP_CONFIG.BACKGROUND.BASE_RETRY_DELAY_MS);
+      expect(APP_CONFIG.BACKGROUND.MAX_RETRY_DELAY_MS).toBeGreaterThan(
+        APP_CONFIG.BACKGROUND.BASE_RETRY_DELAY_MS
+      );
       expect(APP_CONFIG.BACKGROUND.BATCH_SIZE).toBeGreaterThan(0);
     });
 
@@ -68,13 +70,21 @@ describe('Background Zoning Configuration', () => {
       const baseDelay = APP_CONFIG.BACKGROUND.BASE_RETRY_DELAY_MS;
 
       // Simulate shouldRetry logic
-      const shouldRetry = (lastRetryAt: string | null, attemptNumber: number): boolean => {
+      const shouldRetry = (
+        lastRetryAt: string | null,
+        attemptNumber: number
+      ): boolean => {
         if (!lastRetryAt) return true;
 
         const lastRetry = new Date(lastRetryAt);
         const timeSinceLastRetry = now - lastRetry.getTime();
-        const requiredDelay = baseDelay * Math.pow(APP_CONFIG.BACKGROUND.RETRY_MULTIPLIER, attemptNumber - 1);
-        const cappedDelay = Math.min(requiredDelay, APP_CONFIG.BACKGROUND.MAX_RETRY_DELAY_MS);
+        const requiredDelay =
+          baseDelay *
+          Math.pow(APP_CONFIG.BACKGROUND.RETRY_MULTIPLIER, attemptNumber - 1);
+        const cappedDelay = Math.min(
+          requiredDelay,
+          APP_CONFIG.BACKGROUND.MAX_RETRY_DELAY_MS
+        );
 
         return timeSinceLastRetry >= cappedDelay;
       };

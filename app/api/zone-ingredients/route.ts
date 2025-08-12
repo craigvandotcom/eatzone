@@ -2,22 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { openrouter } from '@/lib/ai/openrouter';
 import { prompts } from '@/lib/prompts';
 import { z } from 'zod';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { getRateLimiter } from '@/lib/rate-limit';
+import {
+  sanitizeAIPrompt,
+  sanitizeStringArray,
+} from '@/lib/security/sanitization';
+import {
+  validateAndParseJSON,
+  createValidationErrorResponse,
+} from '@/lib/middleware/request-validation';
+import { aiPerformanceMonitor } from '@/lib/monitoring/ai-performance';
 import { logger } from '@/lib/utils/logger';
-
-// Rate limiting setup using Vercel's Upstash integration env vars
-let ratelimit: Ratelimit | null = null;
-
-if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-  ratelimit = new Ratelimit({
-    redis: new Redis({
-      url: process.env.KV_REST_API_URL,
-      token: process.env.KV_REST_API_TOKEN,
-    }),
-    limiter: Ratelimit.slidingWindow(20, '60 s'), // 20 requests per minute
-  });
-}
 
 const zoneIngredientsSchema = z.object({
   ingredients: z.array(z.string()).min(1),
@@ -45,37 +40,75 @@ type AIResponse = {
 // No mapping needed - use AI categories directly
 
 export async function POST(request: NextRequest) {
+  // Start performance monitoring
+  const performanceId = aiPerformanceMonitor.startRequest('ingredient-zoning');
+
   try {
-    // Rate limiting check - only if Redis is configured
-    if (ratelimit) {
-      const forwardedFor = request.headers.get('x-forwarded-for');
-      const realIp = request.headers.get('x-real-ip');
-      const ip = forwardedFor?.split(',')[0] ?? realIp ?? '127.0.0.1';
+    // Rate limiting check - always enforced (Redis or memory fallback)
+    const rateLimiter = getRateLimiter();
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const ip = forwardedFor?.split(',')[0] ?? realIp ?? '127.0.0.1';
 
-      const { success } = await ratelimit.limit(ip);
+    const rateLimitResult = await rateLimiter.limitGeneric(ip, 20, 60 * 1000); // 20 requests per minute
 
-      if (!success) {
-        return NextResponse.json(
-          {
-            error: {
-              message: 'Too many requests. Please wait before trying again.',
-              code: 'RATE_LIMIT_EXCEEDED',
-              statusCode: 429,
-            },
+    if (!rateLimitResult.success) {
+      logger.warn('Rate limit exceeded for ingredient zoning', {
+        ip,
+        remaining: rateLimitResult.remaining,
+      });
+
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Too many requests. Please wait before trying again.',
+            code: 'RATE_LIMIT_EXCEEDED',
+            statusCode: 429,
           },
-          { status: 429 }
-        );
-      }
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '20',
+            'X-RateLimit-Remaining':
+              rateLimitResult.remaining?.toString() || '0',
+          },
+        }
+      );
     }
 
-    const body = await request.json();
-    const { ingredients } = zoneIngredientsSchema.parse(body);
+    // Validate and parse request with size limits
+    const validationResult = await validateAndParseJSON(request, 1024 * 1024); // 1MB limit
+    if (!validationResult.isValid) {
+      return createValidationErrorResponse(validationResult);
+    }
+
+    const { ingredients } = zoneIngredientsSchema.parse(validationResult.data);
+
+    // Sanitize ingredients array
+    const sanitizedIngredients = sanitizeStringArray(ingredients);
 
     logger.debug('Zoning request received', {
-      ingredientCount: ingredients.length,
+      ingredientCount: sanitizedIngredients.length,
+      originalCount: ingredients.length,
     });
 
-    const fullPrompt = `${prompts.ingredientZoning}\n\nInput: ${JSON.stringify(ingredients)}`;
+    if (sanitizedIngredients.length === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'No valid ingredients provided after sanitization',
+            code: 'INVALID_INGREDIENTS',
+            statusCode: 400,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize the AI prompt and use sanitized ingredients
+    const basePrompt = sanitizeAIPrompt(prompts.ingredientZoning);
+    const fullPrompt = `${basePrompt}\n\nInput: ${JSON.stringify(sanitizedIngredients)}`;
 
     logger.debug('Calling OpenRouter for ingredient zoning');
 
@@ -117,10 +150,27 @@ export async function POST(request: NextRequest) {
       ingredientCount: validatedIngredients.length,
     });
 
+    // Record successful performance metrics
+    aiPerformanceMonitor.endRequest(performanceId, {
+      service: 'ingredient-zoning',
+      success: true,
+      model: 'anthropic/claude-3.5-sonnet',
+      requestSize: JSON.stringify(sanitizedIngredients).length,
+      responseSize: aiResponse.length,
+    });
+
     return NextResponse.json({ ingredients: validatedIngredients });
   } catch (error) {
     logger.error('Error in zone-ingredients API', error);
-    // Add robust error handling here
+
+    // Record error in performance metrics
+    aiPerformanceMonitor.endRequest(performanceId, {
+      service: 'ingredient-zoning',
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      model: 'anthropic/claude-3.5-sonnet',
+    });
+
     return NextResponse.json(
       { error: 'Failed to zone ingredients' },
       { status: 500 }

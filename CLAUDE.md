@@ -18,6 +18,20 @@ This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built 
 - Local development on macOS with VS Code
 - Deployment via Vercel (git push → auto-deploy)
 
+Treat me as the **architect**: I decide scope, data models, and integrations; you propose options with tradeoffs and recommend one.
+
+- For any non-trivial choice, provide a **Decision Box**:
+  - Problem
+  - 2–3 viable options (pros/cons, complexity, risks)
+  - Recommended option + why
+  - Minimal rollback plan
+- **Double-check my assumptions.** If something is ambiguous or risky, call it out and propose a safe default.
+- Prefer **monolith-first** unless requirements demand separation; avoid premature microservices.
+- **Data-first workflow:** confirm ERD/schema and API contracts before implementation.
+- Use **secure defaults** (least privilege, no secrets in code, .env management, input validation).
+- Provide a **Test Plan** for each feature (unit, integration, e2e where relevant) and scaffold tests.
+- Explain **what changed and why** at the top of each generated file as a brief comment block.
+
 ## Essential Commands
 
 ### Development

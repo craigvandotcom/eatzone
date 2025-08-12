@@ -44,8 +44,8 @@ describe('FoodEntryForm', () => {
     await user.type(ingredientInput, 'Organic Spinach');
     await user.keyboard('{Enter}');
 
-    // Check that the ingredient appears in the ingredients list
-    expect(screen.getByText('Organic Spinach')).toBeInTheDocument();
+    // Check that the ingredient appears in the ingredients list (sanitized to lowercase)
+    expect(screen.getByText('organic spinach')).toBeInTheDocument();
 
     // Check that the input is cleared after adding
     expect(ingredientInput).toHaveValue('');
@@ -58,11 +58,10 @@ describe('FoodEntryForm', () => {
       json: async () => ({
         ingredients: [
           {
-            name: 'Spinach',
-            organic: false,
-            group: 'Leafy Greens',
-            category: 'Vegetables',
+            name: 'spinach', // Service normalizes ingredient names to lowercase
             zone: 'green',
+            category: 'Vegetables',
+            group: 'Leafy Greens',
           },
         ],
       }),
@@ -84,14 +83,21 @@ describe('FoodEntryForm', () => {
     const saveButton = screen.getByRole('button', { name: /save/i });
     await user.click(saveButton);
 
-    // Should call onAddFood with the form data
+    // Should call onAddFood with the processed food object from the service
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Healthy lunch',
           ingredients: expect.arrayContaining([
-            expect.objectContaining({ name: 'Spinach' }),
+            expect.objectContaining({ 
+              name: 'spinach', // Normalized by sanitization service
+              zone: 'green',
+              category: 'Vegetables',
+              group: 'Leafy Greens',
+            }),
           ]),
+          status: 'processed', // Added by the service
+          notes: '', // Default empty notes
         })
       );
     });

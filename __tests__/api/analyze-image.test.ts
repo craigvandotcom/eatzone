@@ -168,6 +168,38 @@ describe('/api/analyze-image', () => {
       expect(data.mealSummary).toBe('apple');
       expect(data.ingredients).toEqual([{ name: 'apple', isOrganic: true }]);
     });
+
+    it('should handle snake_case AI responses and transform to camelCase', async () => {
+      // AI returns snake_case instead of camelCase - should be transformed
+      mockCreate.mockResolvedValueOnce(
+        mockOpenRouterResponse(
+          JSON.stringify({
+            meal_summary: 'mint gum', // snake_case
+            ingredients: [
+              { name: 'xylitol', organic: false }, // "organic" instead of "isOrganic"
+              { name: 'gum base', organic: false },
+            ],
+          })
+        )
+      );
+
+      const request = createMockRequest('/api/analyze-image', {
+        method: 'POST',
+        body: {
+          image: createTestImageDataUrl('valid'),
+        },
+      });
+
+      const response = await POST(request);
+      apiAssertions.expectSuccess(response);
+
+      const data = await response.json();
+      expect(data.mealSummary).toBe('mint gum'); // Transformed to camelCase
+      expect(data.ingredients).toEqual([
+        { name: 'xylitol', isOrganic: false }, // Transformed to isOrganic
+        { name: 'gum base', isOrganic: false },
+      ]);
+    });
   });
 
   describe('Error Cases', () => {

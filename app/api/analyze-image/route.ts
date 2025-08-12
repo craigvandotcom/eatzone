@@ -22,16 +22,55 @@ const analyzeImageSchema = z
     message: 'Either image or images array is required',
   });
 
-// Zod schema for AI response validation
-const aiResponseSchema = z.object({
-  mealSummary: z.string().min(1, 'Meal summary is required'),
-  ingredients: z.array(
-    z.object({
-      name: z.string().min(1, 'Ingredient name is required'),
-      isOrganic: z.boolean(),
-    })
-  ),
-});
+// Types for AI response transformation
+interface RawAIIngredient {
+  name: string;
+  isOrganic?: boolean;
+  organic?: boolean;
+}
+
+interface RawAIResponse {
+  mealSummary?: string;
+  meal_summary?: string;
+  ingredients?: RawAIIngredient[];
+}
+
+// Zod schema for AI response validation with fallback handling
+const aiResponseSchema = z.preprocess(
+  (data: unknown) => {
+    if (!data || typeof data !== 'object') return data;
+    
+    const rawData = data as RawAIResponse;
+    const transformed: { mealSummary?: string; ingredients?: Array<{ name: string; isOrganic: boolean }> } = {};
+    
+    // Handle mealSummary vs meal_summary
+    if (rawData.mealSummary) {
+      transformed.mealSummary = rawData.mealSummary;
+    } else if (rawData.meal_summary) {
+      transformed.mealSummary = rawData.meal_summary;
+    }
+    
+    // Handle ingredients array
+    if (Array.isArray(rawData.ingredients)) {
+      transformed.ingredients = rawData.ingredients.map((ingredient: RawAIIngredient) => ({
+        name: ingredient.name,
+        // Handle isOrganic vs organic
+        isOrganic: ingredient.isOrganic !== undefined ? ingredient.isOrganic : ingredient.organic ?? false,
+      }));
+    }
+    
+    return transformed;
+  },
+  z.object({
+    mealSummary: z.string().min(1, 'Meal summary is required'),
+    ingredients: z.array(
+      z.object({
+        name: z.string().min(1, 'Ingredient name is required'),
+        isOrganic: z.boolean(),
+      })
+    ),
+  })
+);
 
 // Type for the API response
 type AnalyzeImageResponse = z.infer<typeof aiResponseSchema>;

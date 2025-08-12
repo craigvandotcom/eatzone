@@ -20,22 +20,25 @@ const zoneIngredientsSchema = z.object({
 
 const zonedIngredientSchema = z.object({
   name: z.string(),
-  zone: z.enum(['green', 'yellow', 'red']),
+  zone: z.enum(['green', 'yellow', 'red', 'unzoned']),
   category: z.string().optional(), // Main classification (e.g., "Proteins", "Vegetables")
   group: z.string(), // Primary classification (e.g., "Low-Sugar Berries", "Quality Animal Proteins")
 });
 
-// Type for AI response
-type AIIngredientResponse = {
-  name: string;
-  zone?: string;
-  category?: string;
-  group: string;
-};
+// Zod schemas for AI response validation
+const aiIngredientResponseSchema = z.object({
+  name: z.string().min(1, 'Ingredient name is required'),
+  zone: z.string().optional(),
+  category: z.string().optional(),
+  group: z.string().min(1, 'Group is required'),
+});
 
-type AIResponse = {
-  ingredients?: AIIngredientResponse[];
-};
+const aiResponseSchema = z.object({
+  ingredients: z.array(aiIngredientResponseSchema).optional(),
+});
+
+// Type for AI response
+type AIIngredientResponse = z.infer<typeof aiIngredientResponseSchema>;
 
 // No mapping needed - use AI categories directly
 
@@ -78,12 +81,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate and parse request with size limits
-    const validationResult = await validateAndParseJSON(request, 1024 * 1024); // 1MB limit
-    if (!validationResult.isValid) {
-      return createValidationErrorResponse(validationResult);
+    const requestValidationResult = await validateAndParseJSON(request, 1024 * 1024); // 1MB limit
+    if (!requestValidationResult.isValid) {
+      return createValidationErrorResponse(requestValidationResult);
     }
 
-    const { ingredients } = zoneIngredientsSchema.parse(validationResult.data);
+    const { ingredients } = zoneIngredientsSchema.parse(requestValidationResult.data);
 
     // Sanitize ingredients array
     const sanitizedIngredients = sanitizeStringArray(ingredients);
@@ -126,20 +129,69 @@ export async function POST(request: NextRequest) {
     // Log the actual AI response for debugging
     logger.debug('AI Response received', { responseLength: aiResponse.length });
 
-    const parsedResponse = JSON.parse(aiResponse) as AIResponse;
+    // Parse and validate AI response with robust error handling
+    let rawAiResponse: unknown;
+    try {
+      rawAiResponse = JSON.parse(aiResponse);
+    } catch (parseError) {
+      logger.error('Failed to parse AI response JSON', parseError, {
+        rawResponse: aiResponse.substring(0, 200) + '...',
+      });
+      throw new Error('AI returned invalid JSON response');
+    }
+
+    // Validate AI response structure with zod
+    const aiValidationResult = aiResponseSchema.safeParse(rawAiResponse);
+    if (!aiValidationResult.success) {
+      logger.error('AI response validation failed', undefined, {
+        errors: aiValidationResult.error.issues,
+        rawResponse: rawAiResponse,
+      });
+      throw new Error(
+        `AI response validation failed: ${aiValidationResult.error.issues
+          .map(issue => `${issue.path.join('.')} - ${issue.message}`)
+          .join(', ')}`
+      );
+    }
+
+    const parsedResponse = aiValidationResult.data;
 
     logger.debug('Parsed AI response', {
       ingredientCount: parsedResponse.ingredients?.length,
     });
 
-    // Normalize AI response - only convert zone to lowercase
-    const normalizedIngredients = parsedResponse.ingredients?.map(
-      (ingredient: AIIngredientResponse) => ({
-        name: ingredient.name,
-        zone: ingredient.zone?.toLowerCase(), // Convert to lowercase
-        category: ingredient.category, // Main classification
-        group: ingredient.group, // Primary classification
-      })
+    // Ensure we have ingredients array
+    if (
+      !parsedResponse.ingredients ||
+      parsedResponse.ingredients.length === 0
+    ) {
+      logger.warn('AI response contained no ingredients');
+      return NextResponse.json({ ingredients: [] });
+    }
+
+    // Normalize AI response with proper zone handling
+    const normalizedIngredients = parsedResponse.ingredients.map(
+      (ingredient: AIIngredientResponse) => {
+        // Convert zone to lowercase, default to 'unzoned' if not provided or invalid
+        let normalizedZone: 'green' | 'yellow' | 'red' | 'unzoned' = 'unzoned'; // Safe default
+        if (ingredient.zone && typeof ingredient.zone === 'string') {
+          const lowerZone = ingredient.zone.toLowerCase().trim();
+          if (['green', 'yellow', 'red', 'unzoned'].includes(lowerZone)) {
+            normalizedZone = lowerZone as
+              | 'green'
+              | 'yellow'
+              | 'red'
+              | 'unzoned';
+          }
+        }
+
+        return {
+          name: ingredient.name,
+          zone: normalizedZone,
+          category: ingredient.category, // Main classification
+          group: ingredient.group, // Primary classification
+        };
+      }
     );
 
     const validatedIngredients = z

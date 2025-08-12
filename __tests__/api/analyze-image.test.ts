@@ -288,11 +288,15 @@ describe('/api/analyze-image', () => {
       const responses = await Promise.all(requests.map(req => POST(req)));
 
       // At least some requests should be rate limited (429)
-      const rateLimitedResponses = responses.filter(response => response.status === 429);
+      const rateLimitedResponses = responses.filter(
+        response => response.status === 429
+      );
       expect(rateLimitedResponses.length).toBeGreaterThan(0);
-      
+
       // Some early requests should succeed (200)
-      const successfulResponses = responses.filter(response => response.status === 200);
+      const successfulResponses = responses.filter(
+        response => response.status === 200
+      );
       expect(successfulResponses.length).toBeGreaterThan(0);
     });
   });

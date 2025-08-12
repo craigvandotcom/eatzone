@@ -22,14 +22,19 @@ const analyzeImageSchema = z
     message: 'Either image or images array is required',
   });
 
+// Zod schema for AI response validation
+const aiResponseSchema = z.object({
+  mealSummary: z.string().min(1, 'Meal summary is required'),
+  ingredients: z.array(
+    z.object({
+      name: z.string().min(1, 'Ingredient name is required'),
+      isOrganic: z.boolean(),
+    })
+  ),
+});
+
 // Type for the API response
-interface AnalyzeImageResponse {
-  mealSummary: string;
-  ingredients: {
-    name: string;
-    isOrganic: boolean;
-  }[];
-}
+type AnalyzeImageResponse = z.infer<typeof aiResponseSchema>;
 
 interface AnalyzeImageErrorResponse {
   error: {
@@ -111,13 +116,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Comprehensive request validation (size, format, count)
-    const validationResult = await validateImageAnalysisRequest(request);
-    if (!validationResult.isValid) {
-      return createValidationErrorResponse(validationResult);
+    const requestValidationResult = await validateImageAnalysisRequest(request);
+    if (!requestValidationResult.isValid) {
+      return createValidationErrorResponse(requestValidationResult);
     }
 
     // Parse the validated data
-    const body = validationResult.data;
+    const body = requestValidationResult.data;
     const validatedData = analyzeImageSchema.parse(body);
 
     // Handle both single image and multiple images
@@ -176,19 +181,16 @@ export async function POST(request: NextRequest) {
       responseLength: aiResponseText.length,
     });
 
-    // Parse the AI response as JSON with markdown fallback
-    let aiResponse: {
-      mealSummary: string;
-      ingredients: { name: string; isOrganic: boolean }[];
-    };
+    // Parse and validate the AI response with robust error handling
+    let rawAiResponse: unknown;
     try {
-      aiResponse = JSON.parse(aiResponseText);
+      rawAiResponse = JSON.parse(aiResponseText);
     } catch {
       // If direct JSON parsing fails, try to extract JSON from markdown
       try {
         const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)\s*```/);
         if (jsonMatch) {
-          aiResponse = JSON.parse(jsonMatch[1]);
+          rawAiResponse = JSON.parse(jsonMatch[1]);
           logger.debug('Successfully extracted JSON from markdown wrapper');
         } else {
           throw new Error('No JSON found in response');
@@ -203,14 +205,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate that we got the expected structure
-    if (
-      typeof aiResponse !== 'object' ||
-      typeof aiResponse.mealSummary !== 'string' ||
-      !Array.isArray(aiResponse.ingredients)
-    ) {
-      throw new Error('AI response was not in the expected format');
+    // Validate AI response structure with zod
+    const aiValidationResult = aiResponseSchema.safeParse(rawAiResponse);
+    if (!aiValidationResult.success) {
+      logger.error('AI response validation failed', undefined, {
+        errors: aiValidationResult.error.issues,
+        rawResponse: rawAiResponse,
+      });
+      throw new Error(
+        `AI response validation failed: ${aiValidationResult.error.issues
+          .map(issue => `${issue.path.join('.')} - ${issue.message}`)
+          .join(', ')}`
+      );
     }
+
+    const aiResponse = aiValidationResult.data;
 
     // Server-side validation and normalization process
     const normalizedIngredients = aiResponse.ingredients

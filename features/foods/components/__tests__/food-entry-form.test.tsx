@@ -89,7 +89,7 @@ describe('FoodEntryForm', () => {
         expect.objectContaining({
           name: 'Healthy lunch',
           ingredients: expect.arrayContaining([
-            expect.objectContaining({ 
+            expect.objectContaining({
               name: 'spinach', // Normalized by sanitization service
               zone: 'green',
               category: 'Vegetables',

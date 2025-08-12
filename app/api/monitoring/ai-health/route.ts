@@ -86,7 +86,7 @@ function calculateOverallHealth(
       requestsLastHour: number;
       topErrors?: Array<{ error: string; count: number }>;
     };
-    
+
     // Check success rate
     if (stats.successRate < 0.95 && stats.totalRequests > 10) {
       issues.push(
@@ -172,7 +172,9 @@ function calculateOverallHealth(
     }
     if (
       Object.keys(healthSummary).some(service => {
-        const serviceStats = healthSummary[service] as { averageResponseTime: number };
+        const serviceStats = healthSummary[service] as {
+          averageResponseTime: number;
+        };
         return serviceStats.averageResponseTime > 6000;
       })
     ) {

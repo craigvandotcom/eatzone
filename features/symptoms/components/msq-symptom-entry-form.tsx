@@ -21,10 +21,12 @@ import {
   searchSymptoms,
   getSymptomsByCategories,
   getSymptomById,
+  isValidSymptomId,
   type SearchResult
 } from '@/lib/msq/search';
 import { debounce } from '@/lib/utils/debounce';
 import { cn } from '@/lib/utils';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface SelectedSymptom {
   symptom_id: string;
@@ -60,6 +62,10 @@ export function MSQSymptomEntryForm({
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [msqMode, setMSQMode] = useState(false);
+  
+  // Error handling state
+  const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Get category overview for empty state
   const categoryOverview = useMemo(() => getSymptomsByCategories(), []);
@@ -121,10 +127,22 @@ export function MSQSymptomEntryForm({
     setIsSearching(false);
   };
 
-  // Add symptom to selection
+  // Add symptom to selection with validation
   const addSymptom = (symptomId: string) => {
+    // Validate symptom ID
+    if (!isValidSymptomId(symptomId)) {
+      setError(`Invalid symptom ID: ${symptomId}`);
+      return;
+    }
+    
     const symptom = getSymptomById(symptomId);
-    if (!symptom) return;
+    if (!symptom) {
+      setError(`Symptom not found: ${symptomId}`);
+      return;
+    }
+    
+    // Clear error on successful operation
+    setError(null);
 
     // Check if already selected
     const existing = selectedSymptoms.find(s => s.symptom_id === symptomId);
@@ -145,13 +163,37 @@ export function MSQSymptomEntryForm({
     }
   };
 
-  // Set score for a symptom
+  // Set score for a symptom with validation
   const setSymptomScore = (symptomId: string, score: MSQScore) => {
+    // Validate score range (0-4)
+    if (score < 0 || score > 4 || !Number.isInteger(score)) {
+      setError(`Invalid score: ${score}. Score must be between 0 and 4.`);
+      return;
+    }
+    
+    // Validate symptom ID
+    if (!isValidSymptomId(symptomId)) {
+      setError(`Invalid symptom ID: ${symptomId}`);
+      return;
+    }
+    
     setSelectedSymptoms(symptoms => 
       symptoms.map(s => 
         s.symptom_id === symptomId ? { ...s, score } : s
       )
     );
+    
+    // Clear error on successful operation
+    setError(null);
+    
+    // Clear validation error for this symptom if it exists
+    if (validationErrors[symptomId]) {
+      setValidationErrors(prev => {
+        const updated = { ...prev };
+        delete updated[symptomId];
+        return updated;
+      });
+    }
   };
 
   // Remove symptom from selection
@@ -184,24 +226,70 @@ export function MSQSymptomEntryForm({
     return baseStyle;
   };
 
-  // Submit symptoms
+  // Submit symptoms with comprehensive validation
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validSymptoms = selectedSymptoms.filter(s => s.score !== undefined);
-    if (validSymptoms.length === 0) return;
-
-    // Submit each symptom individually (current behavior for backward compatibility)
-    validSymptoms.forEach(symptom => {
-      const symptomData: Omit<Symptom, 'id' | 'timestamp'> = {
-        symptom_id: symptom.symptom_id,
-        category: symptom.category,
-        name: symptom.name,
-        score: symptom.score!,
-        notes: notes.trim() || undefined,
-      };
-      onAddSymptom(symptomData);
+    // Clear previous errors
+    setError(null);
+    setValidationErrors({});
+    
+    // Validate selected symptoms
+    const newValidationErrors: Record<string, string> = {};
+    const validSymptoms = selectedSymptoms.filter(s => {
+      // Check if symptom has a score
+      if (s.score === undefined) {
+        newValidationErrors[s.symptom_id] = 'Score is required';
+        return false;
+      }
+      
+      // Validate symptom ID
+      if (!isValidSymptomId(s.symptom_id)) {
+        newValidationErrors[s.symptom_id] = 'Invalid symptom ID';
+        return false;
+      }
+      
+      // Validate score range
+      if (s.score < 0 || s.score > 4 || !Number.isInteger(s.score)) {
+        newValidationErrors[s.symptom_id] = 'Score must be between 0 and 4';
+        return false;
+      }
+      
+      return true;
     });
+    
+    // If there are validation errors, show them and return
+    if (Object.keys(newValidationErrors).length > 0) {
+      setValidationErrors(newValidationErrors);
+      setError('Please fix the validation errors before submitting.');
+      return;
+    }
+    
+    if (validSymptoms.length === 0) {
+      setError('Please select at least one symptom and set its score.');
+      return;
+    }
+
+    try {
+      // Sanitize notes input
+      const sanitizedNotes = notes.trim() ? DOMPurify.sanitize(notes.trim()) : undefined;
+      
+      // Submit each symptom individually (current behavior for backward compatibility)
+      validSymptoms.forEach(symptom => {
+        const symptomData: Omit<Symptom, 'id' | 'timestamp'> = {
+          symptom_id: symptom.symptom_id,
+          category: symptom.category,
+          name: symptom.name,
+          score: symptom.score!,
+          notes: sanitizedNotes,
+        };
+        onAddSymptom(symptomData);
+      });
+    } catch (err) {
+      setError('Failed to submit symptoms. Please try again.');
+      console.error('Error submitting symptoms:', err);
+      return;
+    }
 
     // Reset form
     setSelectedSymptoms([]);
@@ -216,6 +304,25 @@ export function MSQSymptomEntryForm({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        {/* Error Display */}
+        {error && (
+          <div className="flex-shrink-0 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <div className="text-red-600 text-sm">
+                <strong>Error:</strong> {error}
+              </div>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                className="ml-auto text-red-400 hover:text-red-600"
+                title="Dismiss error"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Search Input - Fixed Header */}
         <div className="flex-shrink-0 pb-4">
           <Label htmlFor="symptom-search">Search Symptoms</Label>
@@ -356,7 +463,11 @@ export function MSQSymptomEntryForm({
                   {selectedSymptoms.map((symptom) => (
                     <div
                       key={symptom.symptom_id}
-                      className="bg-blue-50 border border-blue-200 rounded-lg p-3"
+                      className={`bg-blue-50 rounded-lg p-3 ${
+                        validationErrors[symptom.symptom_id] 
+                          ? 'border-2 border-red-300' 
+                          : 'border border-blue-200'
+                      }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2 flex-1">
@@ -404,6 +515,13 @@ export function MSQSymptomEntryForm({
                           </button>
                         </div>
                       </div>
+                      
+                      {/* Validation Error for this symptom */}
+                      {validationErrors[symptom.symptom_id] && (
+                        <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                          {validationErrors[symptom.symptom_id]}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

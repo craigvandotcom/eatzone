@@ -7,7 +7,7 @@ describe('External Service Health Checks', () => {
   describe('OpenRouter API Connectivity', () => {
     it('should be able to reach OpenRouter API endpoint', async () => {
       const apiKey = process.env.OPENROUTER_API_KEY;
-      
+
       if (!apiKey) {
         console.warn('OPENROUTER_API_KEY not set - skipping connectivity test');
         return;
@@ -16,7 +16,7 @@ describe('External Service Health Checks', () => {
       try {
         const response = await fetch('https://openrouter.ai/api/v1/models', {
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
         });
@@ -58,7 +58,7 @@ describe('External Service Health Checks', () => {
     it('should have API configuration values within expected ranges', () => {
       const maxFileSize = process.env.MAX_IMAGE_FILE_SIZE || '10485760';
       const maxImages = process.env.MAX_IMAGES_PER_REQUEST || '5';
-      
+
       expect(parseInt(maxFileSize)).toBeGreaterThan(0);
       expect(parseInt(maxImages)).toBeGreaterThan(0);
       expect(parseInt(maxImages)).toBeLessThanOrEqual(10);

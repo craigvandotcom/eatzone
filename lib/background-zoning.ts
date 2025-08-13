@@ -7,15 +7,12 @@ import { APP_CONFIG } from '@/lib/config/constants';
 interface ZonedIngredientData {
   name: string;
   zone: 'green' | 'yellow' | 'red' | 'unzoned';
-  foodGroup: string;
+  category?: string;
+  group: string;
   organic: boolean;
 }
 
-// Enhanced food type with retry tracking
-interface FoodWithRetryInfo extends Food {
-  retry_count?: number;
-  last_retry_at?: string;
-}
+// Food type now includes retry tracking fields in the base interface
 
 // Get Supabase client
 const supabase = createClient();
@@ -79,7 +76,7 @@ export async function retryFailedZoning(): Promise<void> {
 
     // Filter foods that are ready for retry (respecting exponential backoff)
     const foodsReadyForRetry = foodsToRetry.filter(
-      (food: FoodWithRetryInfo) => {
+      (food: Food) => {
         const retryCount = food.retry_count || 0;
 
         // Skip if max retries exceeded
@@ -101,7 +98,7 @@ export async function retryFailedZoning(): Promise<void> {
 
     // Process each eligible food entry
     for (const food of foodsReadyForRetry) {
-      await retryFoodZoning(food as FoodWithRetryInfo);
+      await retryFoodZoning(food);
     }
 
     // Log monitoring information
@@ -114,7 +111,7 @@ export async function retryFailedZoning(): Promise<void> {
 /**
  * Retry zoning for a specific food entry with retry tracking
  */
-async function retryFoodZoning(food: FoodWithRetryInfo): Promise<void> {
+async function retryFoodZoning(food: Food): Promise<void> {
   try {
     const ingredients = food.ingredients as Ingredient[];
     const unzonedIngredients = ingredients.filter(
@@ -150,7 +147,7 @@ async function retryFoodZoning(food: FoodWithRetryInfo): Promise<void> {
               ...ing,
               ...zonedData,
               // Ensure required fields have proper types
-              foodGroup: zonedData.foodGroup || 'other',
+              group: zonedData.group || 'other',
               zone: zonedData.zone || 'unzoned',
               organic:
                 typeof zonedData.organic === 'boolean'
@@ -290,7 +287,7 @@ export async function retryFoodZoningManually(
       return false;
     }
 
-    await retryFoodZoning(food as FoodWithRetryInfo);
+    await retryFoodZoning(food);
     return true;
   } catch (error) {
     logger.error(`Manual retry failed for food ${foodId}`, error);

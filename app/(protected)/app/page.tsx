@@ -356,13 +356,21 @@ function Dashboard() {
                                 />
                               </div>
                               {needsZoningRetry(food) && (
-                                <button
+                                <div
                                   onClick={e => handleRetryZoning(e, food.id)}
-                                  className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0"
+                                  className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0 cursor-pointer"
                                   title="Retry ingredient zoning"
+                                  role="button"
+                                  tabIndex={0}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      handleRetryZoning(e as any, food.id);
+                                    }
+                                  }}
                                 >
                                   <RefreshCw className="h-3 w-3 text-gray-600" />
-                                </button>
+                                </div>
                               )}
                             </div>
                           </button>

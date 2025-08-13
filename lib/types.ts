@@ -37,6 +37,8 @@ export interface Food {
   notes?: string;
   meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'beverage'; // Optional meal categorization
   status: 'pending_review' | 'analyzing' | 'processed';
+  retry_count?: number; // Number of retry attempts for background zoning
+  last_retry_at?: string; // ISO 8601 timestamp of last retry attempt
 }
 
 export interface Ingredient {
@@ -50,7 +52,8 @@ export interface Ingredient {
     | 'grilled'
     | 'roasted'
     | 'other';
-  foodGroup: string; // AI-provided category (flexible for MVP)
+  category?: string; // Main classification (e.g., "Proteins", "Vegetables", "Fruits")
+  group: string; // Primary classification (e.g., "Low-Sugar Berries", "Quality Animal Proteins", "Leafy Greens")
   zone: 'green' | 'yellow' | 'red' | 'unzoned';
 }
 

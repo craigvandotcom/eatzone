@@ -5,19 +5,22 @@ export const mockIngredients: Ingredient[] = [
     name: 'Organic Spinach',
     organic: true,
     zone: 'green',
-    foodGroup: 'vegetables',
+    category: 'Vegetables',
+    group: 'Leafy Greens',
   },
   {
     name: 'Wild Salmon',
     organic: false,
     zone: 'green',
-    foodGroup: 'protein',
+    category: 'Proteins',
+    group: 'Wild-Caught Seafood',
   },
   {
     name: 'White Sugar',
     organic: false,
     zone: 'red',
-    foodGroup: 'sweets',
+    category: 'Sweeteners',
+    group: 'Refined Sugars',
   },
 ];
 

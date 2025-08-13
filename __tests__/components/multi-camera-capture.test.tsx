@@ -122,22 +122,26 @@ describe('MultiCameraCapture', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Unable to access camera. Please check permissions.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Unable to access camera. Please check permissions.')
+        ).toBeInTheDocument();
       });
     });
 
     it('should cleanup camera stream when closed', async () => {
       const mockTrack = { stop: jest.fn() };
       const mockStream = { getTracks: () => [mockTrack] };
-      
+
       mockGetUserMedia.mockResolvedValue(mockStream);
 
       let rerender: any;
       await act(async () => {
-        const result = render(<MultiCameraCapture {...defaultProps} open={true} />);
+        const result = render(
+          <MultiCameraCapture {...defaultProps} open={true} />
+        );
         rerender = result.rerender;
       });
-      
+
       // Close the component
       await act(async () => {
         rerender(<MultiCameraCapture {...defaultProps} open={false} />);
@@ -156,7 +160,7 @@ describe('MultiCameraCapture', () => {
 
     it('should call onManualEntry when manual button clicked', async () => {
       const user = userEvent.setup();
-      
+
       await act(async () => {
         render(<MultiCameraCapture {...defaultProps} />);
       });
@@ -172,7 +176,7 @@ describe('MultiCameraCapture', () => {
 
     it('should call onOpenChange when cancel button clicked', async () => {
       const user = userEvent.setup();
-      
+
       await act(async () => {
         render(<MultiCameraCapture {...defaultProps} />);
       });
@@ -193,8 +197,9 @@ describe('MultiCameraCapture', () => {
       await waitFor(() => {
         // Find the green button with Check icon (the done button)
         const buttons = screen.getAllByRole('button');
-        const doneButton = buttons.find(btn => 
-          btn.className.includes('bg-green-500') && btn.querySelector('svg')
+        const doneButton = buttons.find(
+          btn =>
+            btn.className.includes('bg-green-500') && btn.querySelector('svg')
         );
         expect(doneButton).toBeDisabled();
       });

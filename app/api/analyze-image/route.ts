@@ -2,27 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { openrouter } from '@/lib/ai/openrouter';
 import { z } from 'zod';
 import { prompts } from '@/lib/prompts'; // Import from our new module
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { getRateLimiter } from '@/lib/rate-limit';
+import { sanitizeAIPrompt } from '@/lib/security/sanitization';
+import {
+  validateImageAnalysisRequest,
+  createValidationErrorResponse,
+} from '@/lib/middleware/request-validation';
 import { logger } from '@/lib/utils/logger';
-import { APP_CONFIG } from '@/lib/config/constants';
+import { aiPerformanceMonitor } from '@/lib/monitoring/ai-performance';
 import type { OpenRouterMessageContent } from '@/lib/types';
-
-// Rate limiting setup using Vercel's Upstash integration env vars
-let ratelimit: Ratelimit | null = null;
-
-if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-  ratelimit = new Ratelimit({
-    redis: new Redis({
-      url: process.env.KV_REST_API_URL,
-      token: process.env.KV_REST_API_TOKEN,
-    }),
-    limiter: Ratelimit.slidingWindow(
-      APP_CONFIG.RATE_LIMIT.IMAGE_ANALYSIS_REQUESTS_PER_MINUTE,
-      APP_CONFIG.RATE_LIMIT.RATE_LIMIT_WINDOW
-    ),
-  });
-}
 
 // Zod schema for request validation - supports both single and multiple images
 const analyzeImageSchema = z
@@ -34,14 +22,58 @@ const analyzeImageSchema = z
     message: 'Either image or images array is required',
   });
 
-// Type for the API response
-interface AnalyzeImageResponse {
-  mealSummary: string;
-  ingredients: {
-    name: string;
-    isOrganic: boolean;
-  }[];
+// Types for AI response transformation
+interface RawAIIngredient {
+  name: string;
+  isOrganic?: boolean;
+  organic?: boolean;
 }
+
+interface RawAIResponse {
+  mealSummary?: string;
+  meal_summary?: string;
+  ingredients?: RawAIIngredient[];
+}
+
+// Zod schema for AI response validation with fallback handling
+const aiResponseSchema = z.preprocess(
+  (data: unknown) => {
+    if (!data || typeof data !== 'object') return data;
+    
+    const rawData = data as RawAIResponse;
+    const transformed: { mealSummary?: string; ingredients?: Array<{ name: string; isOrganic: boolean }> } = {};
+    
+    // Handle mealSummary vs meal_summary
+    if (rawData.mealSummary) {
+      transformed.mealSummary = rawData.mealSummary;
+    } else if (rawData.meal_summary) {
+      transformed.mealSummary = rawData.meal_summary;
+    }
+    
+    // Handle ingredients array
+    if (Array.isArray(rawData.ingredients)) {
+      transformed.ingredients = rawData.ingredients.map((ingredient: RawAIIngredient) => ({
+        name: ingredient.name,
+        // Handle isOrganic vs organic
+        isOrganic: ingredient.isOrganic !== undefined ? ingredient.isOrganic : ingredient.organic ?? false,
+      }));
+    }
+    
+    return transformed;
+  },
+  z.object({
+    mealSummary: z.string().min(1, 'Meal summary is required'),
+    ingredients: z.array(
+      z.object({
+        name: z.string().min(1, 'Ingredient name is required'),
+        isOrganic: z.boolean(),
+      })
+    ),
+  })
+);
+
+// Type for the API response
+type AnalyzeImageResponse = z.infer<typeof aiResponseSchema>;
 
 interface AnalyzeImageErrorResponse {
   error: {
@@ -53,6 +85,9 @@ interface AnalyzeImageErrorResponse {
 
 export async function POST(request: NextRequest) {
   logger.info('Image analysis request received');
+
+  // Start performance monitoring
+  const performanceId = aiPerformanceMonitor.startRequest('image-analysis');
 
   try {
     // Log environment check
@@ -84,30 +119,49 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    // Rate limiting check - only if Redis is configured
-    if (ratelimit) {
-      const forwardedFor = request.headers.get('x-forwarded-for');
-      const realIp = request.headers.get('x-real-ip');
-      const ip = forwardedFor?.split(',')[0] ?? realIp ?? '127.0.0.1';
+    // Rate limiting check - always enforced (Redis or memory fallback)
+    const rateLimiter = getRateLimiter();
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const ip = forwardedFor?.split(',')[0] ?? realIp ?? '127.0.0.1';
 
-      const { success } = await ratelimit.limit(ip);
+    const rateLimitResult = await rateLimiter.limitImageAnalysis(ip);
 
-      if (!success) {
-        return NextResponse.json(
-          {
-            error: {
-              message: 'Too many requests. Please wait before trying again.',
-              code: 'RATE_LIMIT_EXCEEDED',
-              statusCode: 429,
-            },
+    if (!rateLimitResult.success) {
+      logger.warn('Rate limit exceeded for image analysis', {
+        ip,
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime,
+      });
+
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Too many requests. Please wait before trying again.',
+            code: 'RATE_LIMIT_EXCEEDED',
+            statusCode: 429,
           },
-          { status: 429 }
-        );
-      }
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit?.toString() || '10',
+            'X-RateLimit-Remaining':
+              rateLimitResult.remaining?.toString() || '0',
+            'X-RateLimit-Reset': rateLimitResult.resetTime?.toString() || '',
+          },
+        }
+      );
     }
 
-    // Parse and validate the request body
-    const body = await request.json();
+    // Comprehensive request validation (size, format, count)
+    const requestValidationResult = await validateImageAnalysisRequest(request);
+    if (!requestValidationResult.isValid) {
+      return createValidationErrorResponse(requestValidationResult);
+    }
+
+    // Parse the validated data
+    const body = requestValidationResult.data;
     const validatedData = analyzeImageSchema.parse(body);
 
     // Handle both single image and multiple images
@@ -115,50 +169,24 @@ export async function POST(request: NextRequest) {
       validatedData.images ||
       (validatedData.image ? [validatedData.image] : []);
 
-    // Validate all images have correct format
-    for (const img of images) {
-      if (!img.startsWith('data:image/')) {
-        return NextResponse.json(
-          {
-            error: {
-              message: 'Invalid image format. Expected base64 data URL.',
-              code: 'INVALID_IMAGE_FORMAT',
-              statusCode: 400,
-            },
-          } as AnalyzeImageErrorResponse,
-          { status: 400 }
-        );
-      }
-    }
-
-    // Limit number of images to prevent abuse
-    if (images.length > APP_CONFIG.IMAGE.MAX_IMAGES_PER_REQUEST) {
-      return NextResponse.json(
-        {
-          error: {
-            message: `Too many images. Maximum ${APP_CONFIG.IMAGE.MAX_IMAGES_PER_REQUEST} images allowed per request.`,
-            code: 'TOO_MANY_IMAGES',
-            statusCode: 400,
-          },
-        } as AnalyzeImageErrorResponse,
-        { status: 400 }
-      );
-    }
-
     // Log before API call
     logger.debug('Calling OpenRouter API with image data', {
       imageCount: images.length,
       promptLength: prompts.imageAnalysis.length,
     });
 
-    // Build content array with text prompt followed by all images
+    // Sanitize the AI prompt to prevent injection attacks
+    const basePrompt = sanitizeAIPrompt(prompts.imageAnalysis);
+    const multiImageNote =
+      images.length > 1
+        ? '\n\nNote: Multiple images provided. Please analyze all images together as they represent the same meal from different angles.'
+        : '';
+
+    // Build content array with sanitized text prompt followed by all images
     const contentArray: OpenRouterMessageContent[] = [
       {
         type: 'text',
-        text:
-          images.length > 1
-            ? `${prompts.imageAnalysis}\n\nNote: Multiple images provided. Please analyze all images together as they represent the same meal from different angles.`
-            : prompts.imageAnalysis,
+        text: basePrompt + multiImageNote,
       },
       ...images.map(img => ({
         type: 'image_url' as const,
@@ -192,19 +220,16 @@ export async function POST(request: NextRequest) {
       responseLength: aiResponseText.length,
     });
 
-    // Parse the AI response as JSON with markdown fallback
-    let aiResponse: {
-      mealSummary: string;
-      ingredients: { name: string; isOrganic: boolean }[];
-    };
+    // Parse and validate the AI response with robust error handling
+    let rawAiResponse: unknown;
     try {
-      aiResponse = JSON.parse(aiResponseText);
+      rawAiResponse = JSON.parse(aiResponseText);
     } catch {
       // If direct JSON parsing fails, try to extract JSON from markdown
       try {
         const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)\s*```/);
         if (jsonMatch) {
-          aiResponse = JSON.parse(jsonMatch[1]);
+          rawAiResponse = JSON.parse(jsonMatch[1]);
           logger.debug('Successfully extracted JSON from markdown wrapper');
         } else {
           throw new Error('No JSON found in response');
@@ -219,14 +244,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate that we got the expected structure
-    if (
-      typeof aiResponse !== 'object' ||
-      typeof aiResponse.mealSummary !== 'string' ||
-      !Array.isArray(aiResponse.ingredients)
-    ) {
-      throw new Error('AI response was not in the expected format');
+    // Validate AI response structure with zod
+    const aiValidationResult = aiResponseSchema.safeParse(rawAiResponse);
+    if (!aiValidationResult.success) {
+      logger.error('AI response validation failed', undefined, {
+        errors: aiValidationResult.error.issues,
+        rawResponse: rawAiResponse,
+      });
+      throw new Error(
+        `AI response validation failed: ${aiValidationResult.error.issues
+          .map(issue => `${issue.path.join('.')} - ${issue.message}`)
+          .join(', ')}`
+      );
     }
+
+    const aiResponse = aiValidationResult.data;
 
     // Server-side validation and normalization process
     const normalizedIngredients = aiResponse.ingredients
@@ -254,6 +286,20 @@ export async function POST(request: NextRequest) {
         array.findIndex(item => item.name === ingredient.name) === index
     );
 
+    // Record successful performance metrics
+    aiPerformanceMonitor.endRequest(performanceId, {
+      service: 'image-analysis',
+      success: true,
+      model: 'openai/gpt-4o',
+      requestSize: JSON.stringify(images).length,
+      responseSize: aiResponseText.length,
+      tokenUsage: {
+        prompt: 0, // OpenRouter doesn't provide this in the current response
+        completion: aiResponseText.length,
+        total: aiResponseText.length,
+      },
+    });
+
     // Return standardized response
     return NextResponse.json(
       {
@@ -271,6 +317,14 @@ export async function POST(request: NextRequest) {
     };
 
     logger.error('Error in analyze-image API', error, errorDetails);
+
+    // Record error in performance metrics
+    aiPerformanceMonitor.endRequest(performanceId, {
+      service: 'image-analysis',
+      success: false,
+      error: errorDetails.message,
+      model: 'openai/gpt-4o',
+    });
 
     // Handle different types of errors
     if (error instanceof z.ZodError) {

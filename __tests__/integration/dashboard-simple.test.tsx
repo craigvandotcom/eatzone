@@ -22,7 +22,7 @@ const MockDashboard = () => (
 describe('Dashboard Basic Structure', () => {
   it('should render dashboard elements', () => {
     const { container } = render(<MockDashboard />);
-    
+
     expect(container.textContent).toContain('Body Compass');
     expect(container.textContent).toContain('Foods');
     expect(container.textContent).toContain('Symptoms');
@@ -30,9 +30,11 @@ describe('Dashboard Basic Structure', () => {
 
   it('should handle loading and empty states', () => {
     const { container } = render(<MockDashboard />);
-    
+
     expect(container.textContent).toContain('Loading recent foods');
     expect(container.textContent).toContain('No foods logged yet');
-    expect(container.textContent).toContain('Tap the eat icon below to get started');
+    expect(container.textContent).toContain(
+      'Tap the eat icon below to get started'
+    );
   });
 });

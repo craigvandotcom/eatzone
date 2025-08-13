@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SymptomEntryForm } from '@/features/symptoms/components/symptom-entry-form';
+import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
 import { getSymptomById, updateSymptom as dbUpdateSymptom } from '@/lib/db';
 import type { Symptom } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
@@ -84,7 +84,7 @@ export default function EditSymptomPage({
 
       {/* Form Content */}
       <main className="px-4 py-6">
-        <SymptomEntryForm
+        <MSQSymptomEntryForm
           onAddSymptom={handleUpdateSymptom}
           onClose={handleClose}
           editingSymptom={symptom}

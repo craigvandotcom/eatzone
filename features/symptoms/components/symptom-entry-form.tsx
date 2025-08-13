@@ -15,7 +15,7 @@ import type { ZoneType } from '@/lib/utils/zone-colors';
 
 interface LocalSymptom {
   name: string;
-  severity: number;
+  score: number;
 }
 
 interface SymptomEntryFormProps {
@@ -35,7 +35,7 @@ export function SymptomEntryForm({
   const [symptoms, setSymptoms] = useState<LocalSymptom[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState('');
-  const [severitySelectionIndex, setSeveritySelectionIndex] = useState<
+  const [scoreSelectionIndex, setScoreSelectionIndex] = useState<
     number | null
   >(null);
   const [notes, setNotes] = useState('');
@@ -47,7 +47,7 @@ export function SymptomEntryForm({
       setSymptoms([
         {
           name: editingSymptom.name,
-          severity: editingSymptom.severity,
+          score: editingSymptom.score,
         },
       ]);
       setNotes(editingSymptom.notes || '');
@@ -66,35 +66,35 @@ export function SymptomEntryForm({
         ...symptoms,
         {
           name: currentSymptom.trim(),
-          severity: 0, // Set to 0 to indicate it needs to be set
+          score: 0, // Set to 0 to indicate it needs to be set
         },
       ]);
       setCurrentSymptom('');
-      // Automatically open severity selection for the new symptom
-      setSeveritySelectionIndex(symptoms.length);
+      // Automatically open score selection for the new symptom
+      setScoreSelectionIndex(symptoms.length);
     }
   };
 
   const handleDeleteSymptom = (index: number) => {
     setSymptoms(symptoms.filter((_, i) => i !== index));
-    setSeveritySelectionIndex(null);
+    setScoreSelectionIndex(null);
   };
 
   const handleEditSymptom = (index: number) => {
     setEditingIndex(index);
     setEditingValue(symptoms[index].name);
-    setSeveritySelectionIndex(null);
+    setScoreSelectionIndex(null);
   };
 
-  const handleToggleSeveritySelection = (index: number) => {
-    setSeveritySelectionIndex(severitySelectionIndex === index ? null : index);
+  const handleToggleScoreSelection = (index: number) => {
+    setScoreSelectionIndex(scoreSelectionIndex === index ? null : index);
   };
 
-  const handleSelectSeverity = (index: number, severity: number) => {
+  const handleSelectScore = (index: number, score: number) => {
     const updatedSymptoms = [...symptoms];
-    updatedSymptoms[index].severity = severity;
+    updatedSymptoms[index].score = score;
     setSymptoms(updatedSymptoms);
-    setSeveritySelectionIndex(null); // Close severity selection
+    setScoreSelectionIndex(null); // Close score selection
   };
 
   const handleSaveEdit = (index: number) => {
@@ -122,27 +122,29 @@ export function SymptomEntryForm({
     }
   };
 
-  const getSeverityZone = (severity: number): ZoneType => {
-    if (severity <= 2) return 'green';
-    if (severity <= 4) return 'yellow';
+  const getScoreZone = (score: number): ZoneType => {
+    if (score === 0) return 'green';
+    if (score <= 2) return 'yellow';
     return 'red';
   };
 
-  const getSeverityColor = (severity: number) => {
-    const zone = getSeverityZone(severity);
+  const getScoreColor = (score: number) => {
+    const zone = getScoreZone(score);
     return `${getZoneBgClass(zone, 'light')} ${getZoneTextClass(zone)}`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validSymptoms = symptoms.filter(symptom => symptom.severity > 0);
+    const validSymptoms = symptoms.filter(symptom => symptom.score > 0);
     if (validSymptoms.length === 0) return;
 
     // Submit each valid symptom individually
     validSymptoms.forEach(localSymptom => {
       const symptom: Omit<Symptom, 'id' | 'timestamp'> = {
+        symptom_id: 'other_custom', // Legacy form - custom symptom
+        category: 'Other',
         name: localSymptom.name,
-        severity: localSymptom.severity,
+        score: localSymptom.score as 0 | 1 | 2 | 3 | 4,
         notes: notes.trim() || undefined,
       };
       onAddSymptom(symptom);
@@ -155,7 +157,7 @@ export function SymptomEntryForm({
     setShowNotes(false);
     setEditingIndex(null);
     setEditingValue('');
-    setSeveritySelectionIndex(null);
+    setScoreSelectionIndex(null);
     onClose();
   };
 
@@ -189,8 +191,8 @@ export function SymptomEntryForm({
                     className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
                   >
                     {/* Normal Symptom Row */}
-                    {severitySelectionIndex !== index &&
-                      symptom.severity > 0 && (
+                    {scoreSelectionIndex !== index &&
+                      symptom.score > 0 && (
                         <>
                           {editingIndex === index ? (
                             <Input
@@ -207,9 +209,9 @@ export function SymptomEntryForm({
                                 {symptom.name}
                               </span>
                               <span
-                                className={`text-xs px-1.5 py-0.5 rounded-full ${getSeverityColor(symptom.severity)}`}
+                                className={`text-xs px-1.5 py-0.5 rounded-full ${getScoreColor(symptom.score)}`}
                               >
-                                {symptom.severity}/5
+                                {symptom.score}/4
                               </span>
                             </div>
                           )}
@@ -217,16 +219,16 @@ export function SymptomEntryForm({
                             <button
                               type="button"
                               onClick={() =>
-                                handleToggleSeveritySelection(index)
+                                handleToggleScoreSelection(index)
                               }
                               className={`p-1 transition-colors ${
-                                symptom.severity >= 4
+                                symptom.score >= 4
                                   ? getZoneTextClass('red')
-                                  : symptom.severity >= 3
+                                  : symptom.score >= 3
                                     ? getZoneTextClass('yellow')
                                     : getZoneTextClass('green')
                               } hover:opacity-80`}
-                              title="Adjust severity"
+                              title="Adjust score"
                             >
                               <Target className="h-3 w-3" />
                             </button>
@@ -251,14 +253,14 @@ export function SymptomEntryForm({
                       )}
 
                     {/* Severity Selection Row - Horizontal Multiple Choice */}
-                    {severitySelectionIndex === index && (
+                    {scoreSelectionIndex === index && (
                       <div className="flex-1 min-w-0 px-3 flex items-center justify-center">
                         <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map(level => (
+                          {[0, 1, 2, 3, 4].map(level => (
                             <button
                               key={level}
                               type="button"
-                              onClick={() => handleSelectSeverity(index, level)}
+                              onClick={() => handleSelectScore(index, level)}
                               className={`w-10 h-8 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-110 ${
                                 level <= 2
                                   ? `${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} hover:${getZoneBgClass('green', 'medium')} border-2 border-zone-green/30`
@@ -317,12 +319,12 @@ export function SymptomEntryForm({
           </Button>
           <Button
             type="submit"
-            disabled={symptoms.filter(s => s.severity > 0).length === 0}
+            disabled={symptoms.filter(s => s.score > 0).length === 0}
             className="flex-1 relative"
           >
             {editingSymptom
               ? 'Update Symptom'
-              : `Add Symptoms (${symptoms.filter(s => s.severity > 0).length})`}
+              : `Add Symptoms (${symptoms.filter(s => s.score > 0).length})`}
           </Button>
         </div>
       </form>

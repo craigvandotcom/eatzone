@@ -59,10 +59,42 @@ export interface Ingredient {
 
 export interface Symptom {
   id: string;
-  name: string;
-  severity: number; // 1-5
+  symptom_id: string; // MSQ symptom identifier (e.g., 'head_headaches')
+  category: string; // MSQ category (e.g., 'Head', 'Eyes', 'Digestive Tract')
+  name: string; // Standardized MSQ symptom name (e.g., 'Headaches')
+  score: 0 | 1 | 2 | 3 | 4; // MSQ scale: 0=Never, 1=Occasional/mild, 2=Occasional/severe, 3=Frequent/mild, 4=Frequent/severe
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   notes?: string;
+}
+
+// MSQ-specific types
+export type MSQScore = 0 | 1 | 2 | 3 | 4;
+
+export interface MSQSymptomEntry {
+  symptom_id: string;
+  category: string;
+  name: string;
+  score: MSQScore;
+  notes?: string;
+}
+
+// Future MSQ assessment types (for comprehensive MSQ implementation)
+export interface MSQAssessment {
+  id: string;
+  user_id: string;
+  period_start: string; // ISO date
+  period_end: string; // ISO date
+  total_score: number;
+  category_scores: Record<string, number>; // category name -> total score
+  completed_at: string; // ISO timestamp
+  notes?: string;
+}
+
+export interface MSQCategoryScore {
+  category: string;
+  score: number;
+  max_possible: number;
+  percentage: number;
 }
 
 // Export types for backward compatibility with existing imports

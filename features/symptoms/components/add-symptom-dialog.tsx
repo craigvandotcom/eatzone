@@ -16,7 +16,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { useIsMobile } from '@/components/ui/use-mobile';
-import { SymptomEntryForm } from './symptom-entry-form';
+import { MSQSymptomEntryForm } from './msq-symptom-entry-form';
 
 interface AddSymptomDialogProps {
   open: boolean;
@@ -139,7 +139,7 @@ export function AddSymptomDialog({
               } as React.CSSProperties
             }
           >
-            <SymptomEntryForm
+            <MSQSymptomEntryForm
               onAddSymptom={onAddSymptom}
               onClose={handleClose}
               editingSymptom={editingSymptom}
@@ -156,7 +156,7 @@ export function AddSymptomDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <SymptomEntryForm
+        <MSQSymptomEntryForm
           onAddSymptom={onAddSymptom}
           onClose={handleClose}
           editingSymptom={editingSymptom}

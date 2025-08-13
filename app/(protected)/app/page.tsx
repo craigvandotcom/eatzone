@@ -51,6 +51,9 @@ import { Food, Symptom } from '@/lib/types';
 // Import custom hooks
 import { useDashboardData } from '@/lib/hooks';
 
+// Import MSQ utilities
+import { getCategoryByName } from '@/lib/msq/search';
+
 type ViewType = 'food' | 'symptoms';
 
 function Dashboard() {
@@ -437,19 +440,28 @@ function Dashboard() {
                         >
                           <div className="flex items-center space-x-3">
                             <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-lg">⚡</span>
+                              <span className="text-white text-lg">
+                                {getCategoryByName(symptom.category)?.icon || '⚡'}
+                              </span>
                             </div>
                             <div className="text-left">
                               <p className="font-medium text-gray-900">
                                 {symptom.name}
                               </p>
                               <p className="text-sm text-gray-500">
-                                Severity: {symptom.severity}/5
+                                {symptom.category} • Score: {symptom.score}/4
                               </p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="text-xs">
-                            {symptom.severity}/5
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              symptom.score === 0 ? 'bg-gray-100 text-gray-700' :
+                              symptom.score <= 2 ? `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')}` :
+                              `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')}`
+                            }`}
+                          >
+                            {symptom.score}/4
                           </Badge>
                         </button>
                       ))}

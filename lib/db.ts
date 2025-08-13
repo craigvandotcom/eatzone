@@ -346,6 +346,111 @@ export const getSymptomById = async (
   return data;
 };
 
+// MSQ-SPECIFIC SYMPTOM OPERATIONS
+
+export const getSymptomsByCategory = async (
+  category: string
+): Promise<Symptom[]> => {
+  const { data, error } = await supabase
+    .from('symptoms')
+    .select('*')
+    .eq('category', category)
+    .order('timestamp', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+};
+
+export const getSymptomsByCategoryToday = async (
+  category: string
+): Promise<Symptom[]> => {
+  const today = getTodayDate();
+  const startRange = today + 'T00:00:00.000Z';
+  const endRange = today + 'T23:59:59.999Z';
+
+  const { data, error } = await supabase
+    .from('symptoms')
+    .select('*')
+    .eq('category', category)
+    .gte('timestamp', startRange)
+    .lte('timestamp', endRange)
+    .order('timestamp', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+};
+
+export const getSymptomsByScoreRange = async (
+  minScore: number,
+  maxScore: number,
+  limit?: number
+): Promise<Symptom[]> => {
+  let query = supabase
+    .from('symptoms')
+    .select('*')
+    .gte('score', minScore)
+    .lte('score', maxScore)
+    .order('timestamp', { ascending: false });
+
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+};
+
+export const getCategoryScoreSummary = async (
+  dateRange?: { start: string; end: string }
+): Promise<Record<string, { total: number; count: number; average: number }>> => {
+  let query = supabase
+    .from('symptoms')
+    .select('category, score');
+
+  if (dateRange) {
+    query = query
+      .gte('timestamp', dateRange.start)
+      .lte('timestamp', dateRange.end);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  // Group by category and calculate summary stats
+  const summary: Record<string, { total: number; count: number; average: number }> = {};
+  
+  data?.forEach(symptom => {
+    if (!summary[symptom.category]) {
+      summary[symptom.category] = { total: 0, count: 0, average: 0 };
+    }
+    summary[symptom.category].total += symptom.score;
+    summary[symptom.category].count += 1;
+  });
+
+  // Calculate averages
+  Object.keys(summary).forEach(category => {
+    summary[category].average = summary[category].total / summary[category].count;
+  });
+
+  return summary;
+};
+
+export const getSymptomsByDateRange = async (
+  startDate: string,
+  endDate: string
+): Promise<Symptom[]> => {
+  const { data, error } = await supabase
+    .from('symptoms')
+    .select('*')
+    .gte('timestamp', startDate)
+    .lte('timestamp', endDate)
+    .order('timestamp', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+};
+
 // UTILITY OPERATIONS
 export const clearAllData = async (): Promise<void> => {
   // Clear user's foods and symptoms

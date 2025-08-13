@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     logger.debug('Calling OpenRouter for ingredient zoning');
 
     const response = await openrouter.chat.completions.create({
-      model: 'anthropic/claude-3.5-sonnet', // Better for structured JSON
+      model: 'anthropic/claude-3.7-sonnet', // Better for structured JSON with improved reasoning
       messages: [{ role: 'user', content: fullPrompt }],
       response_format: { type: 'json_object' },
       max_tokens: 1024,
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
     aiPerformanceMonitor.endRequest(performanceId, {
       service: 'ingredient-zoning',
       success: true,
-      model: 'anthropic/claude-3.5-sonnet',
+      model: 'anthropic/claude-3.7-sonnet',
       requestSize: JSON.stringify(sanitizedIngredients).length,
       responseSize: aiResponse.length,
     });
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
       service: 'ingredient-zoning',
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
-      model: 'anthropic/claude-3.5-sonnet',
+      model: 'anthropic/claude-3.7-sonnet',
     });
 
     return NextResponse.json(

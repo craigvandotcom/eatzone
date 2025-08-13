@@ -37,6 +37,8 @@ export interface Food {
   notes?: string;
   meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'beverage'; // Optional meal categorization
   status: 'pending_review' | 'analyzing' | 'processed';
+  retry_count?: number; // Number of retry attempts for background zoning
+  last_retry_at?: string; // ISO 8601 timestamp of last retry attempt
 }
 
 export interface Ingredient {

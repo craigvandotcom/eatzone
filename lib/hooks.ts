@@ -340,13 +340,13 @@ export const useSymptomTrends = (days: number = 7) => {
           symptomsByDay[day].push(symptom);
         });
 
-        // Calculate average severity per day
+        // Calculate average score per day (MSQ 0-4 scale)
         const trendData = Object.entries(symptomsByDay).map(
           ([day, symptoms]) => ({
             day,
             count: symptoms.length,
-            averageSeverity:
-              symptoms.reduce((sum, s) => sum + s.severity, 0) /
+            averageScore:
+              symptoms.reduce((sum, s) => sum + s.score, 0) /
               symptoms.length,
           })
         );

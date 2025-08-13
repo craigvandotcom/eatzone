@@ -38,6 +38,7 @@ interface MSQSymptomEntryFormProps {
   onClose: () => void;
   editingSymptom?: Symptom | null;
   className?: string;
+  isSubmitting?: boolean;
 }
 
 export function MSQSymptomEntryForm({
@@ -45,6 +46,7 @@ export function MSQSymptomEntryForm({
   onClose,
   editingSymptom,
   className,
+  isSubmitting = false,
 }: MSQSymptomEntryFormProps) {
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -450,12 +452,16 @@ export function MSQSymptomEntryForm({
             </Button>
             <Button
               type="submit"
-              disabled={selectedSymptoms.filter(s => s.score !== undefined).length === 0}
+              disabled={selectedSymptoms.filter(s => s.score !== undefined).length === 0 || isSubmitting}
               className="flex-1"
             >
-              {editingSymptom
-                ? 'Update Symptom'
-                : `Add Symptoms (${selectedSymptoms.filter(s => s.score !== undefined).length})`}
+              {isSubmitting ? (
+                editingSymptom ? 'Updating...' : 'Adding Symptoms...'
+              ) : (
+                editingSymptom
+                  ? 'Update Symptom'
+                  : `Add Symptoms (${selectedSymptoms.filter(s => s.score !== undefined).length})`
+              )}
             </Button>
           </div>
         </div>

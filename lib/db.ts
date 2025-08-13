@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { Food, Symptom, User } from './types';
+import { getSymptomById as getMSQSymptomById } from './msq/search';
+import { sanitizeUserNote } from './security/sanitization';
 
 // Type for zoning API response
 interface ZonedIngredientData {
@@ -251,14 +253,48 @@ export const getFoodById = async (id: string): Promise<Food | undefined> => {
 };
 
 // SYMPTOM OPERATIONS
+
+/**
+ * Validate symptom data before database insertion
+ */
+function validateSymptomData(symptom: Omit<Symptom, 'id' | 'timestamp'>): void {
+  // Validate symptom_id exists in MSQ database
+  const msqSymptom = getMSQSymptomById(symptom.symptom_id);
+  if (!msqSymptom) {
+    throw new Error(`Invalid symptom_id: ${symptom.symptom_id}`);
+  }
+
+  // Validate score is in valid MSQ range
+  const validScores = [0, 1, 2, 3, 4] as const;
+  if (!validScores.includes(symptom.score)) {
+    throw new Error(`Invalid score: ${symptom.score}. Must be 0-4`);
+  }
+
+  // Validate category and name match MSQ data
+  if (symptom.category !== msqSymptom.category) {
+    throw new Error(`Category mismatch for symptom_id: ${symptom.symptom_id}`);
+  }
+
+  if (symptom.name !== msqSymptom.name) {
+    throw new Error(`Name mismatch for symptom_id: ${symptom.symptom_id}`);
+  }
+}
+
 export const addSymptom = async (
   symptom: Omit<Symptom, 'id' | 'timestamp'>
 ): Promise<string> => {
   const { data: user } = await supabase.auth.getUser();
   if (!user.user) throw new Error('User not authenticated');
 
+  // Validate symptom data
+  validateSymptomData(symptom);
+
+  // Sanitize notes if present
+  const sanitizedNotes = symptom.notes ? sanitizeUserNote(symptom.notes) : undefined;
+
   const newSymptom = {
     ...symptom,
+    notes: sanitizedNotes,
     user_id: user.user.id,
     timestamp: generateTimestamp(),
   };

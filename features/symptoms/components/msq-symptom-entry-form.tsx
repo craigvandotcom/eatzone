@@ -3,7 +3,7 @@
 import type React from 'react';
 import type { Symptom, MSQScore } from '@/lib/types';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -91,6 +91,11 @@ export function MSQSymptomEntryForm({
     }, 300),
     []
   );
+
+  // Cleanup debounced search on unmount
+  useEffect(() => {
+    return () => debouncedSearch.cancel();
+  }, [debouncedSearch]);
 
   // Pre-populate form when editing
   useEffect(() => {
@@ -203,8 +208,8 @@ export function MSQSymptomEntryForm({
     );
   };
 
-  // Get score button styling based on score value
-  const getScoreButtonStyle = (score: number, currentScore?: number) => {
+  // Get score button styling based on score value (memoized for performance)
+  const getScoreButtonStyle = useCallback((score: number, currentScore?: number) => {
     const isSelected = currentScore === score;
     
     let baseStyle = 'w-10 h-8 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 border-2 ';
@@ -224,10 +229,10 @@ export function MSQSymptomEntryForm({
     }
     
     return baseStyle;
-  };
+  }, []);
 
   // Submit symptoms with comprehensive validation
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Clear previous errors
@@ -274,8 +279,8 @@ export function MSQSymptomEntryForm({
       // Sanitize notes input
       const sanitizedNotes = notes.trim() ? DOMPurify.sanitize(notes.trim()) : undefined;
       
-      // Submit each symptom individually (current behavior for backward compatibility)
-      validSymptoms.forEach(symptom => {
+      // Submit symptoms with Promise.all for better error handling
+      const symptomPromises = validSymptoms.map(async (symptom) => {
         const symptomData: Omit<Symptom, 'id' | 'timestamp'> = {
           symptom_id: symptom.symptom_id,
           category: symptom.category,
@@ -283,8 +288,10 @@ export function MSQSymptomEntryForm({
           score: symptom.score!,
           notes: sanitizedNotes,
         };
-        onAddSymptom(symptomData);
+        return onAddSymptom(symptomData);
       });
+      
+      await Promise.all(symptomPromises);
     } catch (err) {
       setError('Failed to submit symptoms. Please try again.');
       console.error('Error submitting symptoms:', err);

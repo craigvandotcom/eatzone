@@ -6,10 +6,10 @@
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
-): (...args: Parameters<T>) => void {
+): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let timeoutId: NodeJS.Timeout | null = null;
 
-  return (...args: Parameters<T>) => {
+  const debouncedFn = (...args: Parameters<T>) => {
     // Clear the previous timeout if it exists
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -20,6 +20,16 @@ export function debounce<T extends (...args: any[]) => any>(
       func(...args);
     }, delay);
   };
+
+  // Add cancel method
+  debouncedFn.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+
+  return debouncedFn;
 }
 
 /**

@@ -113,7 +113,7 @@ export function LoginFormClient() {
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center space-x-2">
             <Shield className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Body Compass</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Puls</h1>
           </div>
           <p className="text-gray-600">Sign in to your account</p>
 

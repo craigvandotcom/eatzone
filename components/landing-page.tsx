@@ -50,7 +50,7 @@ export default function LandingPage() {
       color: 'from-purple-400 to-pink-500',
     },
     {
-      icon: BarChart3,
+      icon: Smartphone,
       title: 'Comprehensive Tracking',
       description: 'Monitor foods, symptoms, and more in one unified app',
       color: 'from-amber-400 to-orange-500',

@@ -61,12 +61,12 @@ export function LoginFormClient() {
   // Check for redirect message
   const redirectMessage = searchParams.get('message');
 
-  // Temporarily disable redirect to debug infinite loop
-  // useEffect(() => {
-  //   if (!authLoading && isAuthenticated) {
-  //     router.push('/app');
-  //   }
-  // }, [isAuthenticated, authLoading, router]);
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/app');
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   useEffect(() => {
     if (redirectMessage === 'signup_success') {

@@ -40,17 +40,23 @@ export async function updateSession(request: NextRequest) {
   // Allow API routes to be accessed without authentication
   // (they should handle their own auth if needed)
   const isApiRoute = request.nextUrl.pathname.startsWith('/api/');
+  
+  // Define public paths that don't require authentication
+  const isPublicPath = 
+    request.nextUrl.pathname === '/' ||
+    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/signup') ||
+    request.nextUrl.pathname.startsWith('/auth');
 
-  if (
-    !user &&
-    !isApiRoute &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/signup') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/api/') &&
-    request.nextUrl.pathname !== '/'
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  // Redirect authenticated users from public pages to dashboard
+  if (user && isPublicPath && !isApiRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/app';
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect unauthenticated users trying to access protected routes
+  if (!user && !isApiRoute && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

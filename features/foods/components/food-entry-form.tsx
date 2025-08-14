@@ -38,11 +38,9 @@ import {
   type FoodSubmissionData,
 } from '@/lib/services/food-submission';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+  MobileTooltip,
+  MobileTooltipProvider,
+} from '@/components/ui/mobile-tooltip';
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, 'id'>) => void;
@@ -255,7 +253,7 @@ export function FoodEntryForm({
   };
 
   return (
-    <TooltipProvider>
+    <MobileTooltipProvider>
       <div className={cn('relative', className)}>
         <FormLoadingOverlay
           isVisible={isSubmitting && isZoning}
@@ -401,17 +399,8 @@ export function FoodEntryForm({
                             {/* Info icon for zoned ingredients */}
                             {ingredient.zone !== 'unzoned' &&
                               ingredient.group && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
-                                      aria-label="Ingredient classification info"
-                                    >
-                                      <Info className="h-3 w-3" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
+                                <MobileTooltip
+                                  content={
                                     <div className="text-xs space-y-1">
                                       <div>
                                         <strong>Category:</strong>{' '}
@@ -430,8 +419,18 @@ export function FoodEntryForm({
                                         </span>
                                       </div>
                                     </div>
-                                  </TooltipContent>
-                                </Tooltip>
+                                  }
+                                  side="top"
+                                  align="center"
+                                >
+                                  <button
+                                    type="button"
+                                    className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                    aria-label="Ingredient classification info"
+                                  >
+                                    <Info className="h-3 w-3" />
+                                  </button>
+                                </MobileTooltip>
                               )}
                           </div>
                         )}
@@ -527,6 +526,6 @@ export function FoodEntryForm({
           </div>
         </form>
       </div>
-    </TooltipProvider>
+    </MobileTooltipProvider>
   );
 }

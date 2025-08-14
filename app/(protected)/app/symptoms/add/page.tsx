@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
 import { addSymptom as dbAddSymptom } from '@/lib/db';
+import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { toast } from 'sonner';
 
@@ -21,6 +22,10 @@ export default function AddSymptomPage() {
     setIsSubmitting(true);
     try {
       await dbAddSymptom(symptom);
+
+      // Invalidate SWR cache to trigger immediate refresh
+      await mutate('dashboard-data');
+
       toast.success('Symptom added successfully');
       router.push('/app');
     } catch (error) {

@@ -302,11 +302,11 @@ export function MSQSymptomEntryForm({
   };
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <div className={cn(className)}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Error Display */}
         {error && (
-          <div className="flex-shrink-0 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start">
               <div className="text-red-600 text-sm">
                 <strong>Error:</strong> {error}
@@ -323,8 +323,8 @@ export function MSQSymptomEntryForm({
           </div>
         )}
         
-        {/* Search Input - Fixed Header */}
-        <div className="flex-shrink-0 pb-4">
+        {/* Search Input */}
+        <div>
           <Label htmlFor="symptom-search">Search Symptoms</Label>
           <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -348,14 +348,12 @@ export function MSQSymptomEntryForm({
           </div>
         </div>
 
-        {/* Main Content Area - Scrollable */}
-        <div className="flex-1 min-h-0 space-y-4">
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <div className="flex flex-col min-h-0">
-              <Label className="text-sm text-gray-600 flex-shrink-0">Matching symptoms:</Label>
-              <div className="flex-1 mt-2 min-h-0">
-                <div className="h-full overflow-y-auto space-y-2 pr-1" style={{ maxHeight: '300px' }}>
+        {/* Search Results */}
+        {searchResults.length > 0 && (
+          <div>
+            <Label className="text-sm text-gray-600">Matching symptoms:</Label>
+            <div className="mt-2">
+              <div className="space-y-2">
                   {searchResults.map((result) => {
                     const isSelected = selectedSymptoms.some(s => s.symptom_id === result.symptom.id);
                     const selectedSymptom = selectedSymptoms.find(s => s.symptom_id === result.symptom.id);
@@ -406,32 +404,32 @@ export function MSQSymptomEntryForm({
                       </div>
                     );
                   })}
-                </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Empty State - Category Overview */}
-          {!isSearching && searchQuery.trim().length === 0 && searchResults.length === 0 && (
-            <div className="flex flex-col min-h-0 space-y-4">
-              {!msqMode && (
-                <div className="text-center py-4 flex-shrink-0">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setMSQMode(true)}
-                    className="mb-4"
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Complete MSQ Assessment (65+ symptoms)
-                  </Button>
-                </div>
-              )}
-              
-              <div className="flex flex-col min-h-0">
-                <Label className="text-sm text-gray-600 flex-shrink-0">Quick Categories:</Label>
-                <div className="overflow-y-auto mt-2" style={{ maxHeight: '400px' }}>
-                  <div className="grid grid-cols-2 gap-2">
+        {/* Empty State - Category Overview */}
+        {!isSearching && searchQuery.trim().length === 0 && searchResults.length === 0 && (
+          <div className="space-y-4">
+            {!msqMode && (
+              <div className="text-center py-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMSQMode(true)}
+                  className="mb-4"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Complete MSQ Assessment (65+ symptoms)
+                </Button>
+              </div>
+            )}
+            
+            <div>
+              <Label className="text-sm text-gray-600">Quick Categories:</Label>
+              <div className="mt-2">
+                <div className="grid grid-cols-2 gap-2">
                     {categoryOverview.map(({ category }) => (
                       <div
                         key={category.name}
@@ -448,18 +446,18 @@ export function MSQSymptomEntryForm({
                         <div className="text-xs text-gray-500">({category.count})</div>
                       </div>
                     ))}
-                  </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Selected Symptoms */}
-          {selectedSymptoms.length > 0 && (
-            <div className="flex flex-col min-h-0">
-              <Label className="flex-shrink-0">Selected Symptoms ({selectedSymptoms.length})</Label>
-              <div className="overflow-y-auto mt-2" style={{ maxHeight: '200px' }}>
-                <div className="space-y-2 pr-1">
+        {/* Selected Symptoms */}
+        {selectedSymptoms.length > 0 && (
+          <div>
+            <Label>Selected Symptoms ({selectedSymptoms.length})</Label>
+            <div className="mt-2">
+              <div className="space-y-2">
                   {selectedSymptoms.map((symptom) => (
                     <div
                       key={symptom.symptom_id}
@@ -524,16 +522,13 @@ export function MSQSymptomEntryForm({
                       )}
                     </div>
                   ))}
-                </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Bottom Section - Fixed */}
-        <div className="flex-shrink-0 space-y-4 pt-4 border-t">
-          {/* Collapsible Notes Section */}
-          <div>
+        {/* Collapsible Notes Section */}
+        <div>
             <button
               type="button"
               onClick={() => setShowNotes(!showNotes)}
@@ -556,10 +551,10 @@ export function MSQSymptomEntryForm({
                 />
               </div>
             )}
-          </div>
+        </div>
 
-          {/* Submit Buttons */}
-          <div className="flex gap-2">
+        {/* Submit Buttons */}
+        <div className="flex gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
@@ -581,7 +576,6 @@ export function MSQSymptomEntryForm({
                   : `Add Symptoms (${selectedSymptoms.filter(s => s.score !== undefined).length})`
               )}
             </Button>
-          </div>
         </div>
       </form>
     </div>

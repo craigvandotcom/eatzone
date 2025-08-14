@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
 import { getSymptomById, updateSymptom as dbUpdateSymptom } from '@/lib/db';
+import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 
@@ -45,6 +46,10 @@ export default function EditSymptomPage({
   ) => {
     if (symptom) {
       await dbUpdateSymptom(symptom.id, updatedSymptom);
+
+      // Invalidate SWR cache to trigger immediate refresh
+      await mutate('dashboard-data');
+
       router.push('/app');
     }
   };
@@ -66,9 +71,9 @@ export default function EditSymptomPage({
   }
 
   return (
-    <div className="bg-background">
+    <div className="h-screen-dynamic bg-background flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background border-b">
+      <header className="flex-shrink-0 z-10 bg-background border-b">
         <div className="flex items-center px-4 py-3">
           <Button
             variant="ghost"
@@ -83,7 +88,7 @@ export default function EditSymptomPage({
       </header>
 
       {/* Form Content */}
-      <main className="px-4 py-6">
+      <main className="flex-1 overflow-y-auto px-4 py-6">
         <MSQSymptomEntryForm
           onAddSymptom={handleUpdateSymptom}
           onClose={handleClose}

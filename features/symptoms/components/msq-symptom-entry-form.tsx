@@ -436,11 +436,13 @@ export function MSQSymptomEntryForm({
             <div>
               <Label className="text-sm text-gray-600">Quick Categories:</Label>
               <div className="mt-2">
-                <div className="grid grid-cols-2 gap-2">
-                    {categoryOverview.map(({ category }) => (
+                <div className="space-y-2">
+                    {categoryOverview
+                      .sort((a, b) => a.category.name.localeCompare(b.category.name))
+                      .map(({ category }) => (
                       <div
                         key={category.name}
-                        className="p-2 bg-gray-50 rounded-lg text-center hover:bg-gray-100 transition-colors cursor-pointer"
+                        className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                         onClick={() => {
                           const query = category.name.toLowerCase();
                           setSearchQuery(query);
@@ -448,9 +450,11 @@ export function MSQSymptomEntryForm({
                           debouncedSearch(query);
                         }}
                       >
-                        <div className="text-lg mb-1">{category.icon}</div>
-                        <div className="text-xs font-medium">{category.name}</div>
-                        <div className="text-xs text-gray-500">({category.count})</div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">{category.icon}</span>
+                          <span className="text-sm font-medium flex-1">{category.name}</span>
+                          <span className="text-xs text-gray-500">({category.count})</span>
+                        </div>
                       </div>
                     ))}
                 </div>

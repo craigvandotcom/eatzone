@@ -38,9 +38,10 @@ import {
   type FoodSubmissionData,
 } from '@/lib/services/food-submission';
 import {
-  MobileTooltip,
-  MobileTooltipProvider,
-} from '@/components/ui/mobile-tooltip';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, 'id'>) => void;
@@ -253,8 +254,7 @@ export function FoodEntryForm({
   };
 
   return (
-    <MobileTooltipProvider>
-      <div className={cn('relative', className)}>
+    <div className={cn('relative', className)}>
         <FormLoadingOverlay
           isVisible={isSubmitting && isZoning}
           message="Analyzing ingredients with AI..."
@@ -399,38 +399,39 @@ export function FoodEntryForm({
                             {/* Info icon for zoned ingredients */}
                             {ingredient.zone !== 'unzoned' &&
                               ingredient.group && (
-                                <MobileTooltip
-                                  content={
-                                    <div className="text-xs space-y-1">
-                                      <div>
-                                        <strong>Category:</strong>{' '}
-                                        {ingredient.category || 'Unknown'}
-                                      </div>
-                                      <div>
-                                        <strong>Group:</strong>{' '}
-                                        {ingredient.group}
-                                      </div>
-                                      <div>
-                                        <strong>Zone:</strong>{' '}
-                                        <span
-                                          className={`capitalize ${getZoneTextClass(ingredient.zone)}`}
-                                        >
-                                          {ingredient.zone}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  }
-                                  side="top"
-                                  align="center"
-                                >
-                                  <button
-                                    type="button"
-                                    className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
-                                    aria-label="Ingredient classification info"
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <button
+                                      type="button"
+                                      className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                      aria-label="Ingredient classification info"
+                                    >
+                                      <Info className="h-3 w-3" />
+                                    </button>
+                                  </PopoverTrigger>
+                                  <PopoverContent 
+                                    side="top"
+                                    align="center"
+                                    className="text-xs space-y-1"
                                   >
-                                    <Info className="h-3 w-3" />
-                                  </button>
-                                </MobileTooltip>
+                                    <div>
+                                      <strong>Category:</strong>{' '}
+                                      {ingredient.category || 'Unknown'}
+                                    </div>
+                                    <div>
+                                      <strong>Group:</strong>{' '}
+                                      {ingredient.group}
+                                    </div>
+                                    <div>
+                                      <strong>Zone:</strong>{' '}
+                                      <span
+                                        className={`capitalize ${getZoneTextClass(ingredient.zone)}`}
+                                      >
+                                        {ingredient.zone}
+                                      </span>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
                               )}
                           </div>
                         )}
@@ -525,7 +526,6 @@ export function FoodEntryForm({
             </Button>
           </div>
         </form>
-      </div>
-    </MobileTooltipProvider>
+    </div>
   );
 }

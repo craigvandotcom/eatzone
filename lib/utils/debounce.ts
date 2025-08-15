@@ -1,6 +1,6 @@
 /**
  * Debounce utility function
- * Delays function execution until after delay milliseconds have elapsed 
+ * Delays function execution until after delay milliseconds have elapsed
  * since the last time it was invoked
  */
 export function debounce<T extends (...args: any[]) => any>(

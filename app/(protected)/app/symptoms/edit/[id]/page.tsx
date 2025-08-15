@@ -5,7 +5,11 @@ import { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
-import { getSymptomById, updateSymptom as dbUpdateSymptom, deleteSymptom } from '@/lib/db';
+import {
+  getSymptomById,
+  updateSymptom as dbUpdateSymptom,
+  deleteSymptom,
+} from '@/lib/db';
 import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
@@ -25,14 +29,14 @@ export default function EditSymptomPage({
     const loadSymptom = async () => {
       try {
         const resolvedParams = await params;
-        
+
         // Check if component is still mounted before updating state
         if (!isMountedRef.current) return;
-        
+
         const symptomData = await getSymptomById(resolvedParams.id);
-        
+
         if (!isMountedRef.current) return;
-        
+
         if (symptomData) {
           setSymptom(symptomData);
         } else {
@@ -41,7 +45,7 @@ export default function EditSymptomPage({
         }
       } catch (error) {
         if (!isMountedRef.current) return;
-        
+
         logger.error('Error loading symptom', error);
         router.back();
       } finally {
@@ -65,8 +69,11 @@ export default function EditSymptomPage({
     updatedSymptom: Omit<Symptom, 'id' | 'timestamp'>
   ) => {
     try {
-      if (symptom) {
+      if (symptom && isMountedRef.current) {
         await dbUpdateSymptom(symptom.id, updatedSymptom);
+
+        // Check if component is still mounted before state updates
+        if (!isMountedRef.current) return;
 
         // Invalidate SWR cache to trigger immediate refresh
         await mutate('dashboard-data');
@@ -75,16 +82,24 @@ export default function EditSymptomPage({
         router.push('/app');
       }
     } catch (error) {
-      console.error('Failed to update symptom:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update symptom. Please try again.';
+      if (!isMountedRef.current) return;
+
+      logger.error('Failed to update symptom', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to update symptom. Please try again.';
       toast.error(errorMessage);
     }
   };
 
   const handleDeleteSymptom = async () => {
-    if (symptom) {
+    if (symptom && isMountedRef.current) {
       try {
         await deleteSymptom(symptom.id);
+
+        // Check if component is still mounted before state updates
+        if (!isMountedRef.current) return;
 
         // Invalidate SWR cache to trigger immediate refresh
         await mutate('dashboard-data');
@@ -92,8 +107,13 @@ export default function EditSymptomPage({
         toast.success('Symptom deleted successfully');
         router.push('/app');
       } catch (error) {
-        console.error('Failed to delete symptom:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete symptom. Please try again.';
+        if (!isMountedRef.current) return;
+
+        logger.error('Failed to delete symptom', error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Failed to delete symptom. Please try again.';
         toast.error(errorMessage);
       }
     }

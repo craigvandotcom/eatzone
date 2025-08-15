@@ -39,26 +39,34 @@ interface RawAIResponse {
 const aiResponseSchema = z.preprocess(
   (data: unknown) => {
     if (!data || typeof data !== 'object') return data;
-    
+
     const rawData = data as RawAIResponse;
-    const transformed: { mealSummary?: string; ingredients?: Array<{ name: string; isOrganic: boolean }> } = {};
-    
+    const transformed: {
+      mealSummary?: string;
+      ingredients?: Array<{ name: string; isOrganic: boolean }>;
+    } = {};
+
     // Handle mealSummary vs meal_summary
     if (rawData.mealSummary) {
       transformed.mealSummary = rawData.mealSummary;
     } else if (rawData.meal_summary) {
       transformed.mealSummary = rawData.meal_summary;
     }
-    
+
     // Handle ingredients array
     if (Array.isArray(rawData.ingredients)) {
-      transformed.ingredients = rawData.ingredients.map((ingredient: RawAIIngredient) => ({
-        name: ingredient.name,
-        // Handle isOrganic vs organic
-        isOrganic: ingredient.isOrganic !== undefined ? ingredient.isOrganic : ingredient.organic ?? false,
-      }));
+      transformed.ingredients = rawData.ingredients.map(
+        (ingredient: RawAIIngredient) => ({
+          name: ingredient.name,
+          // Handle isOrganic vs organic
+          isOrganic:
+            ingredient.isOrganic !== undefined
+              ? ingredient.isOrganic
+              : (ingredient.organic ?? false),
+        })
+      );
     }
-    
+
     return transformed;
   },
   z.object({

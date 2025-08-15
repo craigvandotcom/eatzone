@@ -290,7 +290,9 @@ export const addSymptom = async (
   validateSymptomData(symptom);
 
   // Sanitize notes if present
-  const sanitizedNotes = symptom.notes ? sanitizeUserNote(symptom.notes) : undefined;
+  const sanitizedNotes = symptom.notes
+    ? sanitizeUserNote(symptom.notes)
+    : undefined;
 
   const newSymptom = {
     ...symptom,
@@ -437,12 +439,13 @@ export const getSymptomsByScoreRange = async (
   return data || [];
 };
 
-export const getCategoryScoreSummary = async (
-  dateRange?: { start: string; end: string }
-): Promise<Record<string, { total: number; count: number; average: number }>> => {
-  let query = supabase
-    .from('symptoms')
-    .select('category, score');
+export const getCategoryScoreSummary = async (dateRange?: {
+  start: string;
+  end: string;
+}): Promise<
+  Record<string, { total: number; count: number; average: number }>
+> => {
+  let query = supabase.from('symptoms').select('category, score');
 
   if (dateRange) {
     query = query
@@ -454,8 +457,11 @@ export const getCategoryScoreSummary = async (
   if (error) throw error;
 
   // Group by category and calculate summary stats
-  const summary: Record<string, { total: number; count: number; average: number }> = {};
-  
+  const summary: Record<
+    string,
+    { total: number; count: number; average: number }
+  > = {};
+
   data?.forEach(symptom => {
     if (!summary[symptom.category]) {
       summary[symptom.category] = { total: 0, count: 0, average: 0 };
@@ -466,7 +472,8 @@ export const getCategoryScoreSummary = async (
 
   // Calculate averages
   Object.keys(summary).forEach(category => {
-    summary[category].average = summary[category].total / summary[category].count;
+    summary[category].average =
+      summary[category].total / summary[category].count;
   });
 
   return summary;

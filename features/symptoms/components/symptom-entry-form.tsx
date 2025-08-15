@@ -35,9 +35,9 @@ export function SymptomEntryForm({
   const [symptoms, setSymptoms] = useState<LocalSymptom[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState('');
-  const [scoreSelectionIndex, setScoreSelectionIndex] = useState<
-    number | null
-  >(null);
+  const [scoreSelectionIndex, setScoreSelectionIndex] = useState<number | null>(
+    null
+  );
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
 
@@ -191,66 +191,63 @@ export function SymptomEntryForm({
                     className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
                   >
                     {/* Normal Symptom Row */}
-                    {scoreSelectionIndex !== index &&
-                      symptom.score > 0 && (
-                        <>
-                          {editingIndex === index ? (
-                            <Input
-                              value={editingValue}
-                              onChange={e => setEditingValue(e.target.value)}
-                              onKeyPress={e => handleEditKeyPress(e, index)}
-                              onBlur={() => handleSaveEdit(index)}
-                              className="flex-1 h-8 mx-2"
-                              autoFocus
-                            />
-                          ) : (
-                            <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
-                              <span className="text-sm font-medium">
-                                {symptom.name}
-                              </span>
-                              <span
-                                className={`text-xs px-1.5 py-0.5 rounded-full ${getScoreColor(symptom.score)}`}
-                              >
-                                {symptom.score}/4
-                              </span>
-                            </div>
-                          )}
-                          <div className="flex gap-1 px-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleToggleScoreSelection(index)
-                              }
-                              className={`p-1 transition-colors ${
-                                symptom.score >= 4
-                                  ? getZoneTextClass('red')
-                                  : symptom.score >= 3
-                                    ? getZoneTextClass('yellow')
-                                    : getZoneTextClass('green')
-                              } hover:opacity-80`}
-                              title="Adjust score"
+                    {scoreSelectionIndex !== index && symptom.score > 0 && (
+                      <>
+                        {editingIndex === index ? (
+                          <Input
+                            value={editingValue}
+                            onChange={e => setEditingValue(e.target.value)}
+                            onKeyPress={e => handleEditKeyPress(e, index)}
+                            onBlur={() => handleSaveEdit(index)}
+                            className="flex-1 h-8 mx-2"
+                            autoFocus
+                          />
+                        ) : (
+                          <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium">
+                              {symptom.name}
+                            </span>
+                            <span
+                              className={`text-xs px-1.5 py-0.5 rounded-full ${getScoreColor(symptom.score)}`}
                             >
-                              <Target className="h-3 w-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleEditSymptom(index)}
-                              className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                              title="Edit symptom"
-                            >
-                              <Edit2 className="h-3 w-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteSymptom(index)}
-                              className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
-                              title="Delete symptom"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
+                              {symptom.score}/4
+                            </span>
                           </div>
-                        </>
-                      )}
+                        )}
+                        <div className="flex gap-1 px-2">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleScoreSelection(index)}
+                            className={`p-1 transition-colors ${
+                              symptom.score >= 4
+                                ? getZoneTextClass('red')
+                                : symptom.score >= 3
+                                  ? getZoneTextClass('yellow')
+                                  : getZoneTextClass('green')
+                            } hover:opacity-80`}
+                            title="Adjust score"
+                          >
+                            <Target className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleEditSymptom(index)}
+                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Edit symptom"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSymptom(index)}
+                            className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
+                            title="Delete symptom"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </>
+                    )}
 
                     {/* Severity Selection Row - Horizontal Multiple Choice */}
                     {scoreSelectionIndex === index && (

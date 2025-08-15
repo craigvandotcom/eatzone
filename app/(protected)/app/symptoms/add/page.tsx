@@ -9,6 +9,7 @@ import { addSymptom as dbAddSymptom } from '@/lib/db';
 import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { toast } from 'sonner';
+import { logger } from '@/lib/utils/logger';
 
 export default function AddSymptomPage() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function AddSymptomPage() {
     symptom: Omit<Symptom, 'id' | 'timestamp'>
   ) => {
     if (isSubmitting) return;
-    
+
     setIsSubmitting(true);
     try {
       await dbAddSymptom(symptom);
@@ -29,8 +30,11 @@ export default function AddSymptomPage() {
       toast.success('Symptom added successfully');
       router.push('/app');
     } catch (error) {
-      console.error('Failed to add symptom:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add symptom. Please try again.';
+      logger.error('Failed to add symptom', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to add symptom. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

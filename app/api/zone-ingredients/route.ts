@@ -81,12 +81,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate and parse request with size limits
-    const requestValidationResult = await validateAndParseJSON(request, 1024 * 1024); // 1MB limit
+    const requestValidationResult = await validateAndParseJSON(
+      request,
+      1024 * 1024
+    ); // 1MB limit
     if (!requestValidationResult.isValid) {
       return createValidationErrorResponse(requestValidationResult);
     }
 
-    const { ingredients } = zoneIngredientsSchema.parse(requestValidationResult.data);
+    const { ingredients } = zoneIngredientsSchema.parse(
+      requestValidationResult.data
+    );
 
     // Sanitize ingredients array
     const sanitizedIngredients = sanitizeStringArray(ingredients);

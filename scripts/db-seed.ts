@@ -141,7 +141,7 @@ const sampleSymptoms: Omit<Symptom, 'id' | 'user_id' | 'timestamp'>[] = [
   },
   {
     symptom_id: 'energy_fatigue',
-    category: 'Energy/Activity', 
+    category: 'Energy/Activity',
     name: 'Fatigue/sluggishness',
     score: 3,
     notes: 'Around 3 PM, usual afternoon slump',

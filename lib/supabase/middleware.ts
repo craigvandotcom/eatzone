@@ -40,9 +40,9 @@ export async function updateSession(request: NextRequest) {
   // Allow API routes to be accessed without authentication
   // (they should handle their own auth if needed)
   const isApiRoute = request.nextUrl.pathname.startsWith('/api/');
-  
+
   // Define public paths that don't require authentication
-  const isPublicPath = 
+  const isPublicPath =
     request.nextUrl.pathname === '/' ||
     request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/signup') ||

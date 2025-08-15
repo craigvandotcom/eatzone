@@ -278,7 +278,7 @@ select {
 }
 
 /* Prevent body scroll when drawer is open */
-body:has([data-state='open']) {
+body:has([data-vaul-drawer][data-state='open']) {
   overflow: hidden;
   position: fixed;
   width: 100%;

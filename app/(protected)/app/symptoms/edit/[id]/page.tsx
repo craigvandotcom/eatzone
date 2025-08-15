@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
-import { getSymptomById, updateSymptom as dbUpdateSymptom } from '@/lib/db';
+import { getSymptomById, updateSymptom as dbUpdateSymptom, deleteSymptom } from '@/lib/db';
 import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
@@ -81,6 +81,24 @@ export default function EditSymptomPage({
     }
   };
 
+  const handleDeleteSymptom = async () => {
+    if (symptom) {
+      try {
+        await deleteSymptom(symptom.id);
+
+        // Invalidate SWR cache to trigger immediate refresh
+        await mutate('dashboard-data');
+
+        toast.success('Symptom deleted successfully');
+        router.push('/app');
+      } catch (error) {
+        console.error('Failed to delete symptom:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete symptom. Please try again.';
+        toast.error(errorMessage);
+      }
+    }
+  };
+
   const handleClose = () => {
     router.back();
   };
@@ -119,6 +137,7 @@ export default function EditSymptomPage({
         <MSQSymptomEntryForm
           onAddSymptom={handleUpdateSymptom}
           onClose={handleClose}
+          onDelete={handleDeleteSymptom}
           editingSymptom={symptom}
         />
       </main>

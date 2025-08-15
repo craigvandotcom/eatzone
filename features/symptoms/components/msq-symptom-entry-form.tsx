@@ -27,6 +27,17 @@ import {
 import { debounce } from '@/lib/utils/debounce';
 import { cn } from '@/lib/utils';
 import DOMPurify from 'isomorphic-dompurify';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface SelectedSymptom {
   symptom_id: string;
@@ -38,6 +49,7 @@ interface SelectedSymptom {
 interface MSQSymptomEntryFormProps {
   onAddSymptom: (symptom: Omit<Symptom, 'id' | 'timestamp'>) => void;
   onClose: () => void;
+  onDelete?: () => void;
   editingSymptom?: Symptom | null;
   className?: string;
   isSubmitting?: boolean;
@@ -46,6 +58,7 @@ interface MSQSymptomEntryFormProps {
 export function MSQSymptomEntryForm({
   onAddSymptom,
   onClose,
+  onDelete,
   editingSymptom,
   className,
   isSubmitting = false,
@@ -566,14 +579,45 @@ export function MSQSymptomEntryForm({
 
         {/* Submit Buttons */}
         <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 bg-transparent"
-            >
-              Cancel
-            </Button>
+            {editingSymptom && onDelete ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Symptom Entry</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this symptom entry? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1 bg-transparent"
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={selectedSymptoms.filter(s => s.score !== undefined).length === 0 || isSubmitting}

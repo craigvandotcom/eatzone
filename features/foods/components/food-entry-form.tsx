@@ -42,10 +42,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, 'id'>) => void;
   onClose: () => void;
+  onDelete?: () => void;
   editingFood?: Food | null;
   imageData?: string; // Base64 image data for AI analysis
   className?: string;
@@ -54,6 +66,7 @@ interface FoodEntryFormProps {
 export function FoodEntryForm({
   onAddFood,
   onClose,
+  onDelete,
   editingFood,
   imageData,
   className,
@@ -504,25 +517,58 @@ export function FoodEntryForm({
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 bg-transparent"
-            >
-              Cancel
-            </Button>
+            {editingFood && onDelete ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Food Entry</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this food entry? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1 bg-transparent"
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={isSubmitting || isAnalyzing}
-              className="relative"
+              className="flex-1"
             >
               {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
               {isSubmitting
                 ? isZoning
                   ? 'Zoning ingredients...'
                   : 'Saving...'
-                : 'Save Food'}
+                : editingFood
+                  ? 'Update Food'
+                  : 'Add Food'}
             </Button>
           </div>
         </form>

@@ -1,7 +1,12 @@
 // MSQ symptom search and filtering logic
 // Provides fuzzy matching and smart ranking for symptom search interface
 
-import { MSQ_SYMPTOMS, MSQ_CATEGORIES, type MSQSymptom, type MSQCategory } from './symptom-index';
+import {
+  MSQ_SYMPTOMS,
+  MSQ_CATEGORIES,
+  type MSQSymptom,
+  type MSQCategory,
+} from './symptom-index';
 
 export interface SearchResult {
   symptom: MSQSymptom;
@@ -16,7 +21,10 @@ export interface SearchResult {
  * @param maxResults Maximum number of results to return (default: 20)
  * @returns Array of search results sorted by relevance
  */
-export function searchSymptoms(query: string, maxResults: number = 20): SearchResult[] {
+export function searchSymptoms(
+  query: string,
+  maxResults: number = 20
+): SearchResult[] {
   if (!query || query.trim().length === 0) {
     return [];
   }
@@ -44,7 +52,10 @@ export function searchSymptoms(query: string, maxResults: number = 20): SearchRe
  * @param query Normalized search query
  * @returns SearchResult if match found, undefined otherwise
  */
-function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | undefined {
+function scoreSymptomMatch(
+  symptom: MSQSymptom,
+  query: string
+): SearchResult | undefined {
   const symptomName = symptom.name.toLowerCase();
   const categoryName = symptom.category.toLowerCase();
 
@@ -54,7 +65,7 @@ function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | u
       symptom,
       relevanceScore: 100,
       matchType: 'exact',
-      matchedTerm: symptom.name
+      matchedTerm: symptom.name,
     };
   }
 
@@ -66,7 +77,7 @@ function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | u
         symptom,
         relevanceScore: 95,
         matchType: 'exact',
-        matchedTerm: term
+        matchedTerm: term,
       };
     }
   }
@@ -77,7 +88,7 @@ function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | u
       symptom,
       relevanceScore: 90,
       matchType: 'partial',
-      matchedTerm: symptom.name
+      matchedTerm: symptom.name,
     };
   }
 
@@ -89,7 +100,7 @@ function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | u
         symptom,
         relevanceScore: 85,
         matchType: 'searchterm',
-        matchedTerm: term
+        matchedTerm: term,
       };
     }
   }
@@ -97,12 +108,12 @@ function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | u
   // 5. Contains match in symptom name
   if (symptomName.includes(query)) {
     const position = symptomName.indexOf(query);
-    const score = 80 - (position * 2); // Earlier matches score higher
+    const score = 80 - position * 2; // Earlier matches score higher
     return {
       symptom,
       relevanceScore: Math.max(score, 60),
       matchType: 'partial',
-      matchedTerm: symptom.name
+      matchedTerm: symptom.name,
     };
   }
 
@@ -111,12 +122,12 @@ function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | u
     const normalizedTerm = term.toLowerCase();
     if (normalizedTerm.includes(query)) {
       const position = normalizedTerm.indexOf(query);
-      const score = 75 - (position * 2);
+      const score = 75 - position * 2;
       return {
         symptom,
         relevanceScore: Math.max(score, 50),
         matchType: 'searchterm',
-        matchedTerm: term
+        matchedTerm: term,
       };
     }
   }
@@ -127,7 +138,7 @@ function scoreSymptomMatch(symptom: MSQSymptom, query: string): SearchResult | u
       symptom,
       relevanceScore: 40,
       matchType: 'category',
-      matchedTerm: symptom.category
+      matchedTerm: symptom.category,
     };
   }
 
@@ -144,7 +155,9 @@ export function getSymptomsByCategories(): Array<{
 }> {
   return MSQ_CATEGORIES.map(category => ({
     category,
-    symptoms: MSQ_SYMPTOMS.filter(symptom => symptom.category === category.name)
+    symptoms: MSQ_SYMPTOMS.filter(
+      symptom => symptom.category === category.name
+    ),
   }));
 }
 
@@ -171,7 +184,9 @@ export function getSymptomById(symptomId: string): MSQSymptom | undefined {
  * @param categoryName Name of the MSQ category
  * @returns MSQ category or undefined if not found
  */
-export function getCategoryByName(categoryName: string): MSQCategory | undefined {
+export function getCategoryByName(
+  categoryName: string
+): MSQCategory | undefined {
   return MSQ_CATEGORIES.find(category => category.name === categoryName);
 }
 
@@ -182,18 +197,18 @@ export function getCategoryByName(categoryName: string): MSQCategory | undefined
  */
 export function getSearchSuggestions(query: string): string[] {
   const normalizedQuery = query.toLowerCase().trim();
-  
+
   if (normalizedQuery.length === 0) {
     // Return popular symptom names for empty query
     return [
       'headache',
       'fatigue',
-      'nausea', 
+      'nausea',
       'bloating',
       'anxiety',
       'joint pain',
       'insomnia',
-      'dizziness'
+      'dizziness',
     ];
   }
 
@@ -203,23 +218,23 @@ export function getSearchSuggestions(query: string): string[] {
 
   // Find search terms that start with the query
   const suggestions = new Set<string>();
-  
+
   for (const symptom of MSQ_SYMPTOMS) {
     // Add symptom name if it starts with query
     if (symptom.name.toLowerCase().startsWith(normalizedQuery)) {
       suggestions.add(symptom.name.toLowerCase());
     }
-    
+
     // Add search terms that start with query
     for (const term of symptom.searchTerms) {
       if (term.toLowerCase().startsWith(normalizedQuery)) {
         suggestions.add(term.toLowerCase());
       }
     }
-    
+
     if (suggestions.size >= 8) break; // Limit suggestions
   }
-  
+
   return Array.from(suggestions).slice(0, 8);
 }
 
@@ -238,10 +253,10 @@ export function isValidSymptomId(symptomId: string): boolean {
  */
 export function getCategoryCounts(): Record<string, number> {
   const counts: Record<string, number> = {};
-  
+
   for (const category of MSQ_CATEGORIES) {
     counts[category.name] = category.count;
   }
-  
+
   return counts;
 }

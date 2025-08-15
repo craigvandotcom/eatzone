@@ -9,24 +9,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  ChevronDown, 
-  ChevronUp, 
-  X,
-  FileText
-} from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, X, FileText } from 'lucide-react';
 import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
-import { 
+import {
   searchSymptoms,
   getSymptomsByCategories,
   getSymptomById,
   isValidSymptomId,
-  type SearchResult
+  type SearchResult,
 } from '@/lib/msq/search';
 import { debounce } from '@/lib/utils/debounce';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 import DOMPurify from 'isomorphic-dompurify';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface SelectedSymptom {
   symptom_id: string;
@@ -38,6 +44,7 @@ interface SelectedSymptom {
 interface MSQSymptomEntryFormProps {
   onAddSymptom: (symptom: Omit<Symptom, 'id' | 'timestamp'>) => void;
   onClose: () => void;
+  onDelete?: () => void;
   editingSymptom?: Symptom | null;
   className?: string;
   isSubmitting?: boolean;
@@ -46,6 +53,7 @@ interface MSQSymptomEntryFormProps {
 export function MSQSymptomEntryForm({
   onAddSymptom,
   onClose,
+  onDelete,
   editingSymptom,
   className,
   isSubmitting = false,
@@ -56,39 +64,44 @@ export function MSQSymptomEntryForm({
   const [isSearching, setIsSearching] = useState(false);
 
   // Selected symptoms state
-  const [selectedSymptoms, setSelectedSymptoms] = useState<SelectedSymptom[]>([]);
-  
+  const [selectedSymptoms, setSelectedSymptoms] = useState<SelectedSymptom[]>(
+    []
+  );
+
   // UI state
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [msqMode, setMSQMode] = useState(false);
-  
+
   // Error handling state
   const [error, setError] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   // Get category overview for empty state
   const categoryOverview = useMemo(() => getSymptomsByCategories(), []);
 
   // Debounced search function
   const debouncedSearch = useMemo(
-    () => debounce((query: string) => {
-      if (query.trim().length === 0) {
-        setSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
-      
-      if (query.trim().length < 2) {
-        setSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
+    () =>
+      debounce((query: string) => {
+        if (query.trim().length === 0) {
+          setSearchResults([]);
+          setIsSearching(false);
+          return;
+        }
 
-      const results = searchSymptoms(query.trim(), 15);
-      setSearchResults(results);
-      setIsSearching(false);
-    }, 300),
+        if (query.trim().length < 2) {
+          setSearchResults([]);
+          setIsSearching(false);
+          return;
+        }
+
+        const results = searchSymptoms(query.trim(), 15);
+        setSearchResults(results);
+        setIsSearching(false);
+      }, 300),
     []
   );
 
@@ -101,12 +114,14 @@ export function MSQSymptomEntryForm({
   useEffect(() => {
     if (editingSymptom) {
       // Convert existing symptom to MSQ format for editing
-      setSelectedSymptoms([{
-        symptom_id: editingSymptom.symptom_id,
-        category: editingSymptom.category,
-        name: editingSymptom.name,
-        score: editingSymptom.score
-      }]);
+      setSelectedSymptoms([
+        {
+          symptom_id: editingSymptom.symptom_id,
+          category: editingSymptom.category,
+          name: editingSymptom.name,
+          score: editingSymptom.score,
+        },
+      ]);
       setNotes(editingSymptom.notes || '');
       setShowNotes(!!editingSymptom.notes);
     } else {
@@ -139,13 +154,13 @@ export function MSQSymptomEntryForm({
       setError(`Invalid symptom ID: ${symptomId}`);
       return;
     }
-    
+
     const symptom = getSymptomById(symptomId);
     if (!symptom) {
       setError(`Symptom not found: ${symptomId}`);
       return;
     }
-    
+
     // Clear error on successful operation
     setError(null);
 
@@ -157,11 +172,11 @@ export function MSQSymptomEntryForm({
       symptom_id: symptom.id,
       category: symptom.category,
       name: symptom.name,
-      score: undefined // Will be set when user clicks score
+      score: undefined, // Will be set when user clicks score
     };
 
     setSelectedSymptoms([...selectedSymptoms, newSymptom]);
-    
+
     // Clear search after selection to show category overview
     if (!msqMode) {
       clearSearch();
@@ -175,22 +190,20 @@ export function MSQSymptomEntryForm({
       setError(`Invalid score: ${score}. Score must be between 0 and 4.`);
       return;
     }
-    
+
     // Validate symptom ID
     if (!isValidSymptomId(symptomId)) {
       setError(`Invalid symptom ID: ${symptomId}`);
       return;
     }
-    
-    setSelectedSymptoms(symptoms => 
-      symptoms.map(s => 
-        s.symptom_id === symptomId ? { ...s, score } : s
-      )
+
+    setSelectedSymptoms(symptoms =>
+      symptoms.map(s => (s.symptom_id === symptomId ? { ...s, score } : s))
     );
-    
+
     // Clear error on successful operation
     setError(null);
-    
+
     // Clear validation error for this symptom if it exists
     if (validationErrors[symptomId]) {
       setValidationErrors(prev => {
@@ -203,42 +216,46 @@ export function MSQSymptomEntryForm({
 
   // Remove symptom from selection
   const removeSymptom = (symptomId: string) => {
-    setSelectedSymptoms(symptoms => 
+    setSelectedSymptoms(symptoms =>
       symptoms.filter(s => s.symptom_id !== symptomId)
     );
   };
 
   // Get score button styling based on score value (memoized for performance)
-  const getScoreButtonStyle = useCallback((score: number, currentScore?: number) => {
-    const isSelected = currentScore === score;
-    
-    let baseStyle = 'w-10 h-8 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 border-2 ';
-    
-    if (score === 0) {
-      baseStyle += isSelected 
-        ? 'bg-gray-200 text-gray-800 border-gray-400'
-        : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100';
-    } else if (score <= 2) {
-      baseStyle += isSelected
-        ? `${getZoneBgClass('yellow', 'medium')} ${getZoneTextClass('yellow')} border-yellow-400`
-        : `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')} border-yellow-200 hover:${getZoneBgClass('yellow', 'medium')}`;
-    } else {
-      baseStyle += isSelected
-        ? `${getZoneBgClass('red', 'medium')} ${getZoneTextClass('red')} border-red-400`
-        : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')} border-red-200 hover:${getZoneBgClass('red', 'medium')}`;
-    }
-    
-    return baseStyle;
-  }, []);
+  const getScoreButtonStyle = useCallback(
+    (score: number, currentScore?: number) => {
+      const isSelected = currentScore === score;
+
+      let baseStyle =
+        'w-10 h-8 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 border-2 ';
+
+      if (score === 0) {
+        baseStyle += isSelected
+          ? 'bg-gray-200 text-gray-800 border-gray-400'
+          : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100';
+      } else if (score <= 2) {
+        baseStyle += isSelected
+          ? `${getZoneBgClass('yellow', 'medium')} ${getZoneTextClass('yellow')} border-yellow-400`
+          : `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')} border-yellow-200 hover:${getZoneBgClass('yellow', 'medium')}`;
+      } else {
+        baseStyle += isSelected
+          ? `${getZoneBgClass('red', 'medium')} ${getZoneTextClass('red')} border-red-400`
+          : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')} border-red-200 hover:${getZoneBgClass('red', 'medium')}`;
+      }
+
+      return baseStyle;
+    },
+    []
+  );
 
   // Submit symptoms with comprehensive validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Clear previous errors
     setError(null);
     setValidationErrors({});
-    
+
     // Validate selected symptoms
     const newValidationErrors: Record<string, string> = {};
     const validSymptoms = selectedSymptoms.filter(s => {
@@ -247,29 +264,29 @@ export function MSQSymptomEntryForm({
         newValidationErrors[s.symptom_id] = 'Score is required';
         return false;
       }
-      
+
       // Validate symptom ID
       if (!isValidSymptomId(s.symptom_id)) {
         newValidationErrors[s.symptom_id] = 'Invalid symptom ID';
         return false;
       }
-      
+
       // Validate score range
       if (s.score < 0 || s.score > 4 || !Number.isInteger(s.score)) {
         newValidationErrors[s.symptom_id] = 'Score must be between 0 and 4';
         return false;
       }
-      
+
       return true;
     });
-    
+
     // If there are validation errors, show them and return
     if (Object.keys(newValidationErrors).length > 0) {
       setValidationErrors(newValidationErrors);
       setError('Please fix the validation errors before submitting.');
       return;
     }
-    
+
     if (validSymptoms.length === 0) {
       setError('Please select at least one symptom and set its score.');
       return;
@@ -277,10 +294,12 @@ export function MSQSymptomEntryForm({
 
     try {
       // Sanitize notes input
-      const sanitizedNotes = notes.trim() ? DOMPurify.sanitize(notes.trim()) : undefined;
-      
+      const sanitizedNotes = notes.trim()
+        ? DOMPurify.sanitize(notes.trim())
+        : undefined;
+
       // Submit symptoms with Promise.all for better error handling
-      const symptomPromises = validSymptoms.map(async (symptom) => {
+      const symptomPromises = validSymptoms.map(async symptom => {
         const symptomData: Omit<Symptom, 'id' | 'timestamp'> = {
           symptom_id: symptom.symptom_id,
           category: symptom.category,
@@ -290,11 +309,11 @@ export function MSQSymptomEntryForm({
         };
         return onAddSymptom(symptomData);
       });
-      
+
       await Promise.all(symptomPromises);
     } catch (err) {
       setError('Failed to submit symptoms. Please try again.');
-      console.error('Error submitting symptoms:', err);
+      logger.error('Error submitting symptoms', err);
       return;
     }
 
@@ -329,7 +348,7 @@ export function MSQSymptomEntryForm({
             </div>
           </div>
         )}
-        
+
         {/* Search Input */}
         <div>
           <Label htmlFor="symptom-search">Search Symptoms</Label>
@@ -361,107 +380,137 @@ export function MSQSymptomEntryForm({
             <Label className="text-sm text-gray-600">Matching symptoms:</Label>
             <div className="mt-2">
               <div className="space-y-2">
-                  {searchResults.map((result) => {
-                    const isSelected = selectedSymptoms.some(s => s.symptom_id === result.symptom.id);
-                    const selectedSymptom = selectedSymptoms.find(s => s.symptom_id === result.symptom.id);
-                    
-                    return (
-                      <div
-                        key={result.symptom.id}
-                        className={`p-3 rounded-lg border transition-colors ${
-                          isSelected ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 hover:bg-gray-100 border-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 flex-1">
-                            <span className="text-lg">{result.symptom.categoryIcon}</span>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{result.symptom.name}</div>
-                              <div className="text-xs text-gray-500">{result.symptom.category} category</div>
+                {searchResults.map(result => {
+                  const isSelected = selectedSymptoms.some(
+                    s => s.symptom_id === result.symptom.id
+                  );
+                  const selectedSymptom = selectedSymptoms.find(
+                    s => s.symptom_id === result.symptom.id
+                  );
+
+                  return (
+                    <div
+                      key={result.symptom.id}
+                      className={`p-3 rounded-lg border transition-colors ${
+                        isSelected
+                          ? 'bg-blue-50 border-blue-200'
+                          : 'bg-gray-50 hover:bg-gray-100 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 flex-1">
+                          <span className="text-lg">
+                            {result.symptom.categoryIcon}
+                          </span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">
+                              {result.symptom.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {result.symptom.category} category
                             </div>
                           </div>
-                          
-                          {/* Score Buttons */}
-                          {!isSelected ? (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => addSymptom(result.symptom.id)}
-                              className="ml-2"
-                            >
-                              Add
-                            </Button>
-                          ) : (
-                            <div className="flex gap-1 ml-2">
-                              {[0, 1, 2, 3, 4].map(score => (
-                                <button
-                                  key={score}
-                                  type="button"
-                                  onClick={() => setSymptomScore(result.symptom.id, score as MSQScore)}
-                                  className={getScoreButtonStyle(score, selectedSymptom?.score)}
-                                  title={`Score: ${score}`}
-                                >
-                                  {score}
-                                </button>
-                              ))}
-                            </div>
-                          )}
                         </div>
+
+                        {/* Score Buttons */}
+                        {!isSelected ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addSymptom(result.symptom.id)}
+                            className="ml-2"
+                          >
+                            Add
+                          </Button>
+                        ) : (
+                          <div className="flex gap-1 ml-2">
+                            {[0, 1, 2, 3, 4].map(score => (
+                              <button
+                                key={score}
+                                type="button"
+                                onClick={() =>
+                                  setSymptomScore(
+                                    result.symptom.id,
+                                    score as MSQScore
+                                  )
+                                }
+                                className={getScoreButtonStyle(
+                                  score,
+                                  selectedSymptom?.score
+                                )}
+                                title={`Score: ${score}`}
+                              >
+                                {score}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         )}
 
         {/* Empty State - Category Overview */}
-        {!isSearching && searchQuery.trim().length === 0 && searchResults.length === 0 && (
-          <div className="space-y-4">
-            {!msqMode && (
-              <div className="text-center py-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setMSQMode(true)}
-                  className="mb-4"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Complete MSQ Assessment (65+ symptoms)
-                </Button>
-              </div>
-            )}
-            
-            <div>
-              <Label className="text-sm text-gray-600">Quick Categories:</Label>
-              <div className="mt-2">
-                <div className="space-y-2">
+        {!isSearching &&
+          searchQuery.trim().length === 0 &&
+          searchResults.length === 0 && (
+            <div className="space-y-4">
+              {!msqMode && (
+                <div className="text-center py-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setMSQMode(true)}
+                    className="mb-4"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Complete MSQ Assessment (65+ symptoms)
+                  </Button>
+                </div>
+              )}
+
+              <div>
+                <Label className="text-sm text-gray-600">
+                  Quick Categories:
+                </Label>
+                <div className="mt-2">
+                  <div className="space-y-2">
                     {categoryOverview
-                      .sort((a, b) => a.category.name.localeCompare(b.category.name))
+                      .sort((a, b) =>
+                        a.category.name.localeCompare(b.category.name)
+                      )
                       .map(({ category }) => (
-                      <div
-                        key={category.name}
-                        className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                        onClick={() => {
-                          const query = category.name.toLowerCase();
-                          setSearchQuery(query);
-                          setIsSearching(true);
-                          debouncedSearch(query);
-                        }}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg">{category.icon}</span>
-                          <span className="text-sm font-medium flex-1">{category.name}</span>
-                          <span className="text-xs text-gray-500">({category.count})</span>
+                        <div
+                          key={category.name}
+                          className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                          onClick={() => {
+                            const query = category.name.toLowerCase();
+                            setSearchQuery(query);
+                            setIsSearching(true);
+                            debouncedSearch(query);
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg">{category.icon}</span>
+                            <span className="text-sm font-medium flex-1">
+                              {category.name}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({category.count})
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Selected Symptoms */}
         {selectedSymptoms.length > 0 && (
@@ -469,70 +518,82 @@ export function MSQSymptomEntryForm({
             <Label>Selected Symptoms ({selectedSymptoms.length})</Label>
             <div className="mt-2">
               <div className="space-y-2">
-                  {selectedSymptoms.map((symptom) => (
-                    <div
-                      key={symptom.symptom_id}
-                      className={`bg-blue-50 rounded-lg p-3 ${
-                        validationErrors[symptom.symptom_id] 
-                          ? 'border-2 border-red-300' 
-                          : 'border border-blue-200'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2 flex-1">
-                          <span className="font-medium text-sm">{symptom.name}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {symptom.category}
-                          </Badge>
-                          {symptom.score !== undefined && (
-                            <Badge 
-                              className={`text-xs ${
-                                symptom.score === 0 ? 'bg-gray-100 text-gray-700' :
-                                symptom.score <= 2 ? `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')}` :
-                                `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')}`
-                              }`}
-                            >
-                              {symptom.score}/4
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-1">
-                          {/* Score Buttons */}
-                          <div className="flex gap-1">
-                            {[0, 1, 2, 3, 4].map(score => (
-                              <button
-                                key={score}
-                                type="button"
-                                onClick={() => setSymptomScore(symptom.symptom_id, score as MSQScore)}
-                                className={getScoreButtonStyle(score, symptom.score)}
-                                title={`Score: ${score}`}
-                              >
-                                {score}
-                              </button>
-                            ))}
-                          </div>
-                          
-                          {/* Remove Button */}
-                          <button
-                            type="button"
-                            onClick={() => removeSymptom(symptom.symptom_id)}
-                            className={`p-1 ml-2 text-gray-400 hover:${getZoneTextClass('red')} transition-colors`}
-                            title="Remove symptom"
+                {selectedSymptoms.map(symptom => (
+                  <div
+                    key={symptom.symptom_id}
+                    className={`bg-blue-50 rounded-lg p-3 ${
+                      validationErrors[symptom.symptom_id]
+                        ? 'border-2 border-red-300'
+                        : 'border border-blue-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 flex-1">
+                        <span className="font-medium text-sm">
+                          {symptom.name}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {symptom.category}
+                        </Badge>
+                        {symptom.score !== undefined && (
+                          <Badge
+                            className={`text-xs ${
+                              symptom.score === 0
+                                ? 'bg-gray-100 text-gray-700'
+                                : symptom.score <= 2
+                                  ? `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')}`
+                                  : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')}`
+                            }`}
                           >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
+                            {symptom.score}/4
+                          </Badge>
+                        )}
                       </div>
-                      
-                      {/* Validation Error for this symptom */}
-                      {validationErrors[symptom.symptom_id] && (
-                        <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
-                          {validationErrors[symptom.symptom_id]}
+
+                      <div className="flex items-center gap-1">
+                        {/* Score Buttons */}
+                        <div className="flex gap-1">
+                          {[0, 1, 2, 3, 4].map(score => (
+                            <button
+                              key={score}
+                              type="button"
+                              onClick={() =>
+                                setSymptomScore(
+                                  symptom.symptom_id,
+                                  score as MSQScore
+                                )
+                              }
+                              className={getScoreButtonStyle(
+                                score,
+                                symptom.score
+                              )}
+                              title={`Score: ${score}`}
+                            >
+                              {score}
+                            </button>
+                          ))}
                         </div>
-                      )}
+
+                        {/* Remove Button */}
+                        <button
+                          type="button"
+                          onClick={() => removeSymptom(symptom.symptom_id)}
+                          className={`p-1 ml-2 text-gray-400 hover:${getZoneTextClass('red')} transition-colors`}
+                          title="Remove symptom"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
-                  ))}
+
+                    {/* Validation Error for this symptom */}
+                    {validationErrors[symptom.symptom_id] && (
+                      <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                        {validationErrors[symptom.symptom_id]}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -540,32 +601,63 @@ export function MSQSymptomEntryForm({
 
         {/* Collapsible Notes Section */}
         <div>
-            <button
-              type="button"
-              onClick={() => setShowNotes(!showNotes)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              {showNotes ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-              Add notes (optional)
-            </button>
-            {showNotes && (
-              <div className="mt-2">
-                <Textarea
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  placeholder="Any additional details..."
-                  rows={3}
-                />
-              </div>
+          <button
+            type="button"
+            onClick={() => setShowNotes(!showNotes)}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            {showNotes ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
             )}
+            Add notes (optional)
+          </button>
+          {showNotes && (
+            <div className="mt-2">
+              <Textarea
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="Any additional details..."
+                rows={3}
+              />
+            </div>
+          )}
         </div>
 
         {/* Submit Buttons */}
         <div className="flex gap-2 pt-4">
+          {editingSymptom && onDelete ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Symptom Entry</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this symptom entry? This
+                    action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
             <Button
               type="button"
               variant="outline"
@@ -574,19 +666,23 @@ export function MSQSymptomEntryForm({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={selectedSymptoms.filter(s => s.score !== undefined).length === 0 || isSubmitting}
-              className="flex-1"
-            >
-              {isSubmitting ? (
-                editingSymptom ? 'Updating...' : 'Adding Symptoms...'
-              ) : (
-                editingSymptom
-                  ? 'Update Symptom'
-                  : `Add Symptoms (${selectedSymptoms.filter(s => s.score !== undefined).length})`
-              )}
-            </Button>
+          )}
+          <Button
+            type="submit"
+            disabled={
+              selectedSymptoms.filter(s => s.score !== undefined).length ===
+                0 || isSubmitting
+            }
+            className="flex-1"
+          >
+            {isSubmitting
+              ? editingSymptom
+                ? 'Updating...'
+                : 'Adding Symptoms...'
+              : editingSymptom
+                ? 'Update Symptom'
+                : `Add Symptoms (${selectedSymptoms.filter(s => s.score !== undefined).length})`}
+          </Button>
         </div>
       </form>
     </div>

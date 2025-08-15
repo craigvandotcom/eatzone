@@ -3,7 +3,7 @@
 import type React from 'react';
 import type { Food, Ingredient } from '@/lib/types';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,10 +42,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface FoodEntryFormProps {
   onAddFood: (food: Omit<Food, 'id'>) => void;
   onClose: () => void;
+  onDelete?: () => void;
   editingFood?: Food | null;
   imageData?: string; // Base64 image data for AI analysis
   className?: string;
@@ -54,6 +66,7 @@ interface FoodEntryFormProps {
 export function FoodEntryForm({
   onAddFood,
   onClose,
+  onDelete,
   editingFood,
   imageData,
   className,
@@ -73,48 +86,90 @@ export function FoodEntryForm({
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isZoning, setIsZoning] = useState(false);
+  const analysisAbortControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
 
-  // AI Analysis function
-  const analyzeImage = async (imageData: string) => {
-    setIsAnalyzing(true);
-    setAnalysisError(null);
-
-    try {
-      const response = await fetch('/api/analyze-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageData }),
-      });
-
-      if (!response.ok) throw new Error('Analysis failed');
-
-      const { mealSummary, ingredients: ingredientData } =
-        await response.json();
-
-      const aiIngredients: Ingredient[] = ingredientData.map(
-        (ingredient: { name: string; organic: boolean }) => ({
-          name: ingredient.name,
-          organic: ingredient.organic || false,
-          group: 'other' as const, // Default value
-          zone: 'unzoned' as const, // Default value - will be zoned later
-        })
-      );
-
-      setIngredients(aiIngredients);
-      // Set the meal summary as the default name if not already set
-      if (!name && mealSummary) {
-        setName(mealSummary);
+  // AI Analysis function with race condition protection
+  const analyzeImage = useCallback(
+    async (imageData: string) => {
+      // Cancel any existing analysis
+      if (analysisAbortControllerRef.current) {
+        analysisAbortControllerRef.current.abort();
       }
-      setHasAnalyzed(true);
-      toast.success(`Found ${ingredientData.length} ingredients for review.`);
-    } catch (error) {
-      logger.error('Image analysis failed', error);
-      setAnalysisError('AI analysis failed. Please add ingredients manually.');
-      toast.error('AI analysis failed. Please add ingredients manually.');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
+
+      // Create new abort controller for this request
+      const abortController = new AbortController();
+      analysisAbortControllerRef.current = abortController;
+
+      if (!isMountedRef.current) return;
+
+      setIsAnalyzing(true);
+      setAnalysisError(null);
+
+      try {
+        const response = await fetch('/api/analyze-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageData }),
+          signal: abortController.signal,
+        });
+
+        // Check if request was aborted
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        if (!response.ok) throw new Error('Analysis failed');
+
+        const { mealSummary, ingredients: ingredientData } =
+          await response.json();
+
+        // Check again if component is still mounted and request wasn't aborted
+        if (!isMountedRef.current || abortController.signal.aborted) {
+          return;
+        }
+
+        const aiIngredients: Ingredient[] = ingredientData.map(
+          (ingredient: { name: string; organic: boolean }) => ({
+            name: ingredient.name,
+            organic: ingredient.organic || false,
+            group: 'other' as const, // Default value
+            zone: 'unzoned' as const, // Default value - will be zoned later
+          })
+        );
+
+        setIngredients(aiIngredients);
+        // Set the meal summary as the default name if not already set
+        if (!name && mealSummary) {
+          setName(mealSummary);
+        }
+        setHasAnalyzed(true);
+        toast.success(`Found ${ingredientData.length} ingredients for review.`);
+      } catch (error) {
+        // Don't show error if request was aborted
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
+
+        if (!isMountedRef.current) return;
+
+        logger.error('Image analysis failed', error);
+        setAnalysisError(
+          'AI analysis failed. Please add ingredients manually.'
+        );
+        toast.error('AI analysis failed. Please add ingredients manually.');
+      } finally {
+        if (isMountedRef.current) {
+          setIsAnalyzing(false);
+        }
+        // Clear the abort controller reference
+        if (analysisAbortControllerRef.current === abortController) {
+          analysisAbortControllerRef.current = null;
+        }
+      }
+    },
+    [name]
+  );
 
   // Pre-populate form when editing or analyze image when provided
   useEffect(() => {
@@ -139,7 +194,19 @@ export function FoodEntryForm({
         analyzeImage(imageData);
       }
     }
-  }, [editingFood, imageData]);
+  }, [editingFood, imageData, analyzeImage]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      // Cancel any ongoing analysis
+      if (analysisAbortControllerRef.current) {
+        analysisAbortControllerRef.current.abort();
+        analysisAbortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   const handleIngredientKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && currentIngredient.trim()) {
@@ -255,255 +322,285 @@ export function FoodEntryForm({
 
   return (
     <div className={cn('relative', className)}>
-        <FormLoadingOverlay
-          isVisible={isSubmitting && isZoning}
-          message="Analyzing ingredients with AI..."
-        />
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Image Display */}
-          {editingFood?.photo_url && (
-            <div className="mb-4">
-              <Label>Food Image</Label>
-              <div className="mt-2 relative w-full max-w-md mx-auto">
-                <img
-                  src={editingFood.photo_url}
-                  alt="Food entry"
-                  className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
-                />
-              </div>
+      <FormLoadingOverlay
+        isVisible={isSubmitting && isZoning}
+        message="Analyzing ingredients with AI..."
+      />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Image Display */}
+        {editingFood?.photo_url && (
+          <div className="mb-4">
+            <Label>Food Image</Label>
+            <div className="mt-2 relative w-full max-w-md mx-auto">
+              <img
+                src={editingFood.photo_url}
+                alt="Food entry"
+                className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
+              />
             </div>
-          )}
-          <div>
-            <Label htmlFor="meal-summary">Meal Summary (optional)</Label>
-            <Input
-              id="meal-summary"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
-            />
           </div>
+        )}
+        <div>
+          <Label htmlFor="meal-summary">Meal Summary (optional)</Label>
+          <Input
+            id="meal-summary"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="e.g., chicken salad, latte, steak & veg (auto-generated from AI analysis)"
+          />
+        </div>
 
-          <div>
-            <Label>Date & Time</Label>
-            <DayTimePicker
-              value={selectedDateTime}
-              onChange={setSelectedDateTime}
-              className="mt-2"
-            />
-          </div>
+        <div>
+          <Label>Date & Time</Label>
+          <DayTimePicker
+            value={selectedDateTime}
+            onChange={setSelectedDateTime}
+            className="mt-2"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor="ingredient-input">Ingredients</Label>
-            {isAnalyzing ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                  <span className="text-sm text-blue-700">
-                    Analyzing image...
-                  </span>
-                </div>
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ) : (
-              <>
-                <Input
-                  id="ingredient-input"
-                  value={currentIngredient}
-                  onChange={e => setCurrentIngredient(e.target.value)}
-                  onKeyPress={handleIngredientKeyPress}
-                  placeholder="Type ingredient and press Enter"
-                  autoFocus={!imageData} // Don't autofocus if we're analyzing an image
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {hasAnalyzed
-                    ? 'AI analysis complete! Add more ingredients or edit existing ones.'
-                    : 'Press Enter to add each ingredient'}
-                </p>
-              </>
-            )}
-
-            {analysisError && (
-              <div
-                className={`flex items-center gap-2 p-3 ${getZoneBgClass('red', 'light')} rounded-md mt-2`}
-              >
-                <AlertCircle className={`h-4 w-4 ${getZoneTextClass('red')}`} />
-                <span className={`text-sm ${getZoneTextClass('red')}`}>
-                  {analysisError}
+        <div>
+          <Label htmlFor="ingredient-input">Ingredients</Label>
+          {isAnalyzing ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
+                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                <span className="text-sm text-blue-700">
+                  Analyzing image...
                 </span>
               </div>
-            )}
-          </div>
-
-          {/* Ingredients List */}
-          {(ingredients.length > 0 || isAnalyzing) && (
-            <div>
-              <Label>
-                {isAnalyzing
-                  ? 'Analyzing ingredients...'
-                  : `Added Ingredients (${ingredients.length})`}
-              </Label>
-              {isAnalyzing ? (
-                <div className="space-y-2 mt-2">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                </div>
-              ) : (
-                <div className="mt-2">
-                  <div className="space-y-2">
-                    {ingredients.map((ingredient, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
-                      >
-                        {/* Zone color indicator bar */}
-                        <div
-                          className="absolute left-0 top-0 bottom-0 w-1"
-                          style={{
-                            backgroundColor:
-                              ingredient.zone === 'green'
-                                ? getZoneColor('green', 'hex')
-                                : ingredient.zone === 'yellow'
-                                  ? getZoneColor('yellow', 'hex')
-                                  : ingredient.zone === 'red'
-                                    ? getZoneColor('red', 'hex')
-                                    : ingredient.zone === 'unzoned'
-                                      ? getZoneColor('unzoned', 'hex')
-                                      : getZoneColor('unzoned', 'hex'),
-                          }}
-                          title={`Zone: ${ingredient.zone || 'unzoned'}`}
-                        />
-
-                        {/* Ingredient Row */}
-                        {editingIndex === index ? (
-                          <Input
-                            value={editingValue}
-                            onChange={e => setEditingValue(e.target.value)}
-                            onKeyPress={e => handleEditKeyPress(e, index)}
-                            onBlur={() => handleSaveEdit(index)}
-                            className="flex-1 h-8 mx-2 ml-3"
-                            autoFocus
-                          />
-                        ) : (
-                          <div className="flex-1 pl-3 pr-2 flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium">
-                              {ingredient.name}
-                            </span>
-                            {ingredient.organic && (
-                              <span
-                                className={`text-xs ${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} px-1.5 py-0.5 rounded-full`}
-                              >
-                                organic
-                              </span>
-                            )}
-                            {/* Info icon for zoned ingredients */}
-                            {ingredient.zone !== 'unzoned' &&
-                              ingredient.group && (
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
-                                      aria-label="Ingredient classification info"
-                                    >
-                                      <Info className="h-3 w-3" />
-                                    </button>
-                                  </PopoverTrigger>
-                                  <PopoverContent 
-                                    side="top"
-                                    align="center"
-                                    className="text-xs space-y-1"
-                                  >
-                                    <div>
-                                      <strong>Category:</strong>{' '}
-                                      {ingredient.category || 'Unknown'}
-                                    </div>
-                                    <div>
-                                      <strong>Group:</strong>{' '}
-                                      {ingredient.group}
-                                    </div>
-                                    <div>
-                                      <strong>Zone:</strong>{' '}
-                                      <span
-                                        className={`capitalize ${getZoneTextClass(ingredient.zone)}`}
-                                      >
-                                        {ingredient.zone}
-                                      </span>
-                                    </div>
-                                  </PopoverContent>
-                                </Popover>
-                              )}
-                          </div>
-                        )}
-                        <div className="flex gap-1 px-2">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleOrganic(index)}
-                            className={`p-1 transition-colors ${
-                              ingredient.organic
-                                ? `${getZoneTextClass('green')} hover:opacity-80`
-                                : `text-gray-400 hover:${getZoneTextClass('green')}`
-                            }`}
-                            title={
-                              ingredient.organic
-                                ? 'Mark as non-organic'
-                                : 'Mark as organic'
-                            }
-                          >
-                            <Leaf className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditIngredient(index)}
-                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                            title="Edit ingredient"
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteIngredient(index)}
-                            className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
-                            title="Delete ingredient"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <Skeleton className="h-10 w-full" />
             </div>
+          ) : (
+            <>
+              <Input
+                id="ingredient-input"
+                value={currentIngredient}
+                onChange={e => setCurrentIngredient(e.target.value)}
+                onKeyPress={handleIngredientKeyPress}
+                placeholder="Type ingredient and press Enter"
+                autoFocus={!imageData} // Don't autofocus if we're analyzing an image
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {hasAnalyzed
+                  ? 'AI analysis complete! Add more ingredients or edit existing ones.'
+                  : 'Press Enter to add each ingredient'}
+              </p>
+            </>
           )}
 
-          {/* Collapsible Notes Section */}
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowNotes(!showNotes)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          {analysisError && (
+            <div
+              className={`flex items-center gap-2 p-3 ${getZoneBgClass('red', 'light')} rounded-md mt-2`}
             >
-              {showNotes ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-              Add notes (optional)
-            </button>
-            {showNotes && (
+              <AlertCircle className={`h-4 w-4 ${getZoneTextClass('red')}`} />
+              <span className={`text-sm ${getZoneTextClass('red')}`}>
+                {analysisError}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Ingredients List */}
+        {(ingredients.length > 0 || isAnalyzing) && (
+          <div>
+            <Label>
+              {isAnalyzing
+                ? 'Analyzing ingredients...'
+                : `Added Ingredients (${ingredients.length})`}
+            </Label>
+            {isAnalyzing ? (
+              <div className="space-y-2 mt-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            ) : (
               <div className="mt-2">
-                <Textarea
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  placeholder="Any additional details..."
-                  rows={3}
-                />
+                <div className="space-y-2">
+                  {ingredients.map((ingredient, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
+                    >
+                      {/* Zone color indicator bar */}
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-1"
+                        style={{
+                          backgroundColor:
+                            ingredient.zone === 'green'
+                              ? getZoneColor('green', 'hex')
+                              : ingredient.zone === 'yellow'
+                                ? getZoneColor('yellow', 'hex')
+                                : ingredient.zone === 'red'
+                                  ? getZoneColor('red', 'hex')
+                                  : ingredient.zone === 'unzoned'
+                                    ? getZoneColor('unzoned', 'hex')
+                                    : getZoneColor('unzoned', 'hex'),
+                        }}
+                        title={`Zone: ${ingredient.zone || 'unzoned'}`}
+                      />
+
+                      {/* Ingredient Row */}
+                      {editingIndex === index ? (
+                        <Input
+                          value={editingValue}
+                          onChange={e => setEditingValue(e.target.value)}
+                          onKeyPress={e => handleEditKeyPress(e, index)}
+                          onBlur={() => handleSaveEdit(index)}
+                          className="flex-1 h-8 mx-2 ml-3"
+                          autoFocus
+                        />
+                      ) : (
+                        <div className="flex-1 pl-3 pr-2 flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium">
+                            {ingredient.name}
+                          </span>
+                          {ingredient.organic && (
+                            <span
+                              className={`text-xs ${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} px-1.5 py-0.5 rounded-full`}
+                            >
+                              organic
+                            </span>
+                          )}
+                          {/* Info icon for zoned ingredients */}
+                          {ingredient.zone !== 'unzoned' &&
+                            ingredient.group && (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                    aria-label="Ingredient classification info"
+                                  >
+                                    <Info className="h-3 w-3" />
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  side="top"
+                                  align="center"
+                                  className="text-xs space-y-1"
+                                >
+                                  <div>
+                                    <strong>Category:</strong>{' '}
+                                    {ingredient.category || 'Unknown'}
+                                  </div>
+                                  <div>
+                                    <strong>Group:</strong> {ingredient.group}
+                                  </div>
+                                  <div>
+                                    <strong>Zone:</strong>{' '}
+                                    <span
+                                      className={`capitalize ${getZoneTextClass(ingredient.zone)}`}
+                                    >
+                                      {ingredient.zone}
+                                    </span>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                        </div>
+                      )}
+                      <div className="flex gap-1 px-2">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleOrganic(index)}
+                          className={`p-1 transition-colors ${
+                            ingredient.organic
+                              ? `${getZoneTextClass('green')} hover:opacity-80`
+                              : `text-gray-400 hover:${getZoneTextClass('green')}`
+                          }`}
+                          title={
+                            ingredient.organic
+                              ? 'Mark as non-organic'
+                              : 'Mark as organic'
+                          }
+                        >
+                          <Leaf className="h-3 w-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEditIngredient(index)}
+                          className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Edit ingredient"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteIngredient(index)}
+                          className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
+                          title="Delete ingredient"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
+        )}
 
-          <div className="flex gap-2 pt-4">
+        {/* Collapsible Notes Section */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowNotes(!showNotes)}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            {showNotes ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+            Add notes (optional)
+          </button>
+          {showNotes && (
+            <div className="mt-2">
+              <Textarea
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="Any additional details..."
+                rows={3}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-2 pt-4">
+          {editingFood && onDelete ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Food Entry</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this food entry? This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
             <Button
               type="button"
               variant="outline"
@@ -512,20 +609,23 @@ export function FoodEntryForm({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || isAnalyzing}
-              className="relative"
-            >
-              {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
-              {isSubmitting
-                ? isZoning
-                  ? 'Zoning ingredients...'
-                  : 'Saving...'
-                : 'Save Food'}
-            </Button>
-          </div>
-        </form>
+          )}
+          <Button
+            type="submit"
+            disabled={isSubmitting || isAnalyzing}
+            className="flex-1"
+          >
+            {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
+            {isSubmitting
+              ? isZoning
+                ? 'Zoning ingredients...'
+                : 'Saving...'
+              : editingFood
+                ? 'Update Food'
+                : 'Add Food'}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

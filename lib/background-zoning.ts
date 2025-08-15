@@ -75,22 +75,20 @@ export async function retryFailedZoning(): Promise<void> {
     logger.info(`Found ${foodsToRetry.length} foods needing zoning retry`);
 
     // Filter foods that are ready for retry (respecting exponential backoff)
-    const foodsReadyForRetry = foodsToRetry.filter(
-      (food: Food) => {
-        const retryCount = food.retry_count || 0;
+    const foodsReadyForRetry = foodsToRetry.filter((food: Food) => {
+      const retryCount = food.retry_count || 0;
 
-        // Skip if max retries exceeded
-        if (retryCount >= APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS) {
-          logger.warn(
-            `Food ${food.id} exceeded max retry attempts (${retryCount}/${APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS})`
-          );
-          return false;
-        }
-
-        // Check if enough time has passed since last retry
-        return shouldRetry(food.last_retry_at || null, retryCount + 1);
+      // Skip if max retries exceeded
+      if (retryCount >= APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS) {
+        logger.warn(
+          `Food ${food.id} exceeded max retry attempts (${retryCount}/${APP_CONFIG.BACKGROUND.MAX_RETRY_ATTEMPTS})`
+        );
+        return false;
       }
-    );
+
+      // Check if enough time has passed since last retry
+      return shouldRetry(food.last_retry_at || null, retryCount + 1);
+    });
 
     logger.info(
       `${foodsReadyForRetry.length} foods ready for retry after backoff filtering`

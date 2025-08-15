@@ -2,9 +2,9 @@
 // Comprehensive index of all MSQ symptoms for search-first interface
 
 export interface MSQSymptom {
-  id: string;           // Unique identifier: 'category_symptomname'
-  name: string;         // Standardized symptom name from MSQ
-  category: string;     // MSQ category name
+  id: string; // Unique identifier: 'category_symptomname'
+  name: string; // Standardized symptom name from MSQ
+  category: string; // MSQ category name
   categoryIcon: string; // Emoji for visual identification
   searchTerms: string[]; // Alternative search terms for better matching
   description?: string; // Optional clarification
@@ -25,28 +25,55 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Headaches',
     category: 'Head',
     categoryIcon: '🧠',
-    searchTerms: ['headache', 'head pain', 'migraine', 'tension headache', 'cluster headache']
+    searchTerms: [
+      'headache',
+      'head pain',
+      'migraine',
+      'tension headache',
+      'cluster headache',
+    ],
   },
   {
     id: 'head_faintness',
     name: 'Faintness',
     category: 'Head',
     categoryIcon: '🧠',
-    searchTerms: ['faint', 'fainting', 'lightheaded', 'light headed', 'weak', 'dizzy']
+    searchTerms: [
+      'faint',
+      'fainting',
+      'lightheaded',
+      'light headed',
+      'weak',
+      'dizzy',
+    ],
   },
   {
     id: 'head_dizziness',
     name: 'Dizziness',
     category: 'Head',
     categoryIcon: '🧠',
-    searchTerms: ['dizzy', 'vertigo', 'spinning', 'balance', 'unsteady', 'wobbly']
+    searchTerms: [
+      'dizzy',
+      'vertigo',
+      'spinning',
+      'balance',
+      'unsteady',
+      'wobbly',
+    ],
   },
   {
     id: 'head_insomnia',
     name: 'Insomnia',
     category: 'Head',
     categoryIcon: '🧠',
-    searchTerms: ['insomnia', 'sleepless', 'sleep problems', 'cant sleep', 'trouble sleeping', 'sleep disorder']
+    searchTerms: [
+      'insomnia',
+      'sleepless',
+      'sleep problems',
+      'cant sleep',
+      'trouble sleeping',
+      'sleep disorder',
+    ],
   },
 
   // EYES CATEGORY (4 symptoms)
@@ -55,28 +82,53 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Watery or itchy eyes',
     category: 'Eyes',
     categoryIcon: '👁️',
-    searchTerms: ['watery eyes', 'itchy eyes', 'eye itch', 'tears', 'tearing', 'eye irritation']
+    searchTerms: [
+      'watery eyes',
+      'itchy eyes',
+      'eye itch',
+      'tears',
+      'tearing',
+      'eye irritation',
+    ],
   },
   {
     id: 'eyes_swollen_eyelids',
     name: 'Swollen, reddened/sticky eyelids',
     category: 'Eyes',
     categoryIcon: '👁️',
-    searchTerms: ['swollen eyelids', 'puffy eyes', 'red eyelids', 'sticky eyes', 'crusty eyes']
+    searchTerms: [
+      'swollen eyelids',
+      'puffy eyes',
+      'red eyelids',
+      'sticky eyes',
+      'crusty eyes',
+    ],
   },
   {
     id: 'eyes_bags_circles',
     name: 'Bags, dark circles',
     category: 'Eyes',
     categoryIcon: '👁️',
-    searchTerms: ['eye bags', 'dark circles', 'under eye bags', 'tired eyes', 'puffy eyes']
+    searchTerms: [
+      'eye bags',
+      'dark circles',
+      'under eye bags',
+      'tired eyes',
+      'puffy eyes',
+    ],
   },
   {
     id: 'eyes_blurred_vision',
     name: 'Blurred or tunnel vision (does not include near or far-sightedness)',
     category: 'Eyes',
     categoryIcon: '👁️',
-    searchTerms: ['blurred vision', 'tunnel vision', 'blurry', 'vision problems', 'sight problems']
+    searchTerms: [
+      'blurred vision',
+      'tunnel vision',
+      'blurry',
+      'vision problems',
+      'sight problems',
+    ],
   },
 
   // EARS CATEGORY (4 symptoms)
@@ -85,28 +137,47 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Itchy ears',
     category: 'Ears',
     categoryIcon: '👂',
-    searchTerms: ['itchy ears', 'ear itch', 'ears itch', 'ear irritation']
+    searchTerms: ['itchy ears', 'ear itch', 'ears itch', 'ear irritation'],
   },
   {
     id: 'ears_aches_infections',
     name: 'Earaches, ear infections',
     category: 'Ears',
     categoryIcon: '👂',
-    searchTerms: ['earache', 'ear ache', 'ear pain', 'ear infection', 'ear hurt']
+    searchTerms: [
+      'earache',
+      'ear ache',
+      'ear pain',
+      'ear infection',
+      'ear hurt',
+    ],
   },
   {
     id: 'ears_drainage',
     name: 'Drainage from ear',
     category: 'Ears',
     categoryIcon: '👂',
-    searchTerms: ['ear drainage', 'ear discharge', 'fluid from ear', 'ear leak', 'ear wax']
+    searchTerms: [
+      'ear drainage',
+      'ear discharge',
+      'fluid from ear',
+      'ear leak',
+      'ear wax',
+    ],
   },
   {
     id: 'ears_ringing_hearing_loss',
     name: 'Ringing/hearing loss',
     category: 'Ears',
     categoryIcon: '👂',
-    searchTerms: ['ear ringing', 'tinnitus', 'hearing loss', 'deaf', 'hard of hearing', 'buzzing ears']
+    searchTerms: [
+      'ear ringing',
+      'tinnitus',
+      'hearing loss',
+      'deaf',
+      'hard of hearing',
+      'buzzing ears',
+    ],
   },
 
   // NOSE CATEGORY (5 symptoms)
@@ -115,35 +186,65 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Stuffy nose',
     category: 'Nose',
     categoryIcon: '👃',
-    searchTerms: ['stuffy nose', 'blocked nose', 'congested', 'nasal congestion', 'clogged nose']
+    searchTerms: [
+      'stuffy nose',
+      'blocked nose',
+      'congested',
+      'nasal congestion',
+      'clogged nose',
+    ],
   },
   {
     id: 'nose_sinus_problems',
     name: 'Sinus problems',
     category: 'Nose',
     categoryIcon: '👃',
-    searchTerms: ['sinus problems', 'sinus pain', 'sinus pressure', 'sinusitis', 'sinus infection']
+    searchTerms: [
+      'sinus problems',
+      'sinus pain',
+      'sinus pressure',
+      'sinusitis',
+      'sinus infection',
+    ],
   },
   {
     id: 'nose_hay_fever',
     name: 'Hay fever',
     category: 'Nose',
     categoryIcon: '👃',
-    searchTerms: ['hay fever', 'allergic rhinitis', 'seasonal allergies', 'pollen allergy', 'allergy']
+    searchTerms: [
+      'hay fever',
+      'allergic rhinitis',
+      'seasonal allergies',
+      'pollen allergy',
+      'allergy',
+    ],
   },
   {
     id: 'nose_sneezing_attacks',
     name: 'Sneezing attacks',
     category: 'Nose',
     categoryIcon: '👃',
-    searchTerms: ['sneezing', 'sneeze attacks', 'sneezing fits', 'achoo', 'sneeze']
+    searchTerms: [
+      'sneezing',
+      'sneeze attacks',
+      'sneezing fits',
+      'achoo',
+      'sneeze',
+    ],
   },
   {
     id: 'nose_excessive_mucous',
     name: 'Excessive mucous',
     category: 'Nose',
     categoryIcon: '👃',
-    searchTerms: ['excessive mucus', 'runny nose', 'mucous', 'phlegm', 'post nasal drip']
+    searchTerms: [
+      'excessive mucus',
+      'runny nose',
+      'mucous',
+      'phlegm',
+      'post nasal drip',
+    ],
   },
 
   // MOUTH/THROAT CATEGORY (5 symptoms)
@@ -152,35 +253,66 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Chronic coughing',
     category: 'Mouth/Throat',
     categoryIcon: '🗣️',
-    searchTerms: ['chronic cough', 'persistent cough', 'coughing', 'cough', 'hack']
+    searchTerms: [
+      'chronic cough',
+      'persistent cough',
+      'coughing',
+      'cough',
+      'hack',
+    ],
   },
   {
     id: 'throat_gagging_clearing',
     name: 'Gagging/throat clearing',
     category: 'Mouth/Throat',
     categoryIcon: '🗣️',
-    searchTerms: ['gagging', 'throat clearing', 'clear throat', 'gag', 'throat scratch']
+    searchTerms: [
+      'gagging',
+      'throat clearing',
+      'clear throat',
+      'gag',
+      'throat scratch',
+    ],
   },
   {
     id: 'throat_sore_hoarseness',
     name: 'Sore throat, hoarseness',
     category: 'Mouth/Throat',
     categoryIcon: '🗣️',
-    searchTerms: ['sore throat', 'hoarse', 'hoarseness', 'scratchy throat', 'throat pain', 'raspy voice']
+    searchTerms: [
+      'sore throat',
+      'hoarse',
+      'hoarseness',
+      'scratchy throat',
+      'throat pain',
+      'raspy voice',
+    ],
   },
   {
     id: 'throat_swollen_discolored',
     name: 'Swollen/discolored tongue, gums, lips',
     category: 'Mouth/Throat',
     categoryIcon: '🗣️',
-    searchTerms: ['swollen tongue', 'swollen gums', 'swollen lips', 'discolored tongue', 'tongue problems']
+    searchTerms: [
+      'swollen tongue',
+      'swollen gums',
+      'swollen lips',
+      'discolored tongue',
+      'tongue problems',
+    ],
   },
   {
     id: 'throat_canker_sores',
     name: 'Canker sores',
     category: 'Mouth/Throat',
     categoryIcon: '🗣️',
-    searchTerms: ['canker sores', 'mouth sores', 'mouth ulcers', 'oral ulcers', 'sores in mouth']
+    searchTerms: [
+      'canker sores',
+      'mouth sores',
+      'mouth ulcers',
+      'oral ulcers',
+      'sores in mouth',
+    ],
   },
 
   // SKIN CATEGORY (5 symptoms)
@@ -189,35 +321,69 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Acne',
     category: 'Skin',
     categoryIcon: '🫧',
-    searchTerms: ['acne', 'pimples', 'breakout', 'zits', 'blackheads', 'whiteheads']
+    searchTerms: [
+      'acne',
+      'pimples',
+      'breakout',
+      'zits',
+      'blackheads',
+      'whiteheads',
+    ],
   },
   {
     id: 'skin_hives_rashes',
     name: 'Hives, rashes, dry skin',
     category: 'Skin',
     categoryIcon: '🫧',
-    searchTerms: ['hives', 'rash', 'rashes', 'dry skin', 'eczema', 'dermatitis', 'skin irritation']
+    searchTerms: [
+      'hives',
+      'rash',
+      'rashes',
+      'dry skin',
+      'eczema',
+      'dermatitis',
+      'skin irritation',
+    ],
   },
   {
     id: 'skin_hair_loss',
     name: 'Hair loss',
     category: 'Skin',
     categoryIcon: '🫧',
-    searchTerms: ['hair loss', 'balding', 'thinning hair', 'losing hair', 'alopecia']
+    searchTerms: [
+      'hair loss',
+      'balding',
+      'thinning hair',
+      'losing hair',
+      'alopecia',
+    ],
   },
   {
     id: 'skin_flushing_hot_flashes',
     name: 'Flushing, hot flashes',
     category: 'Skin',
     categoryIcon: '🫧',
-    searchTerms: ['flushing', 'hot flashes', 'hot flush', 'red face', 'blushing', 'heat waves']
+    searchTerms: [
+      'flushing',
+      'hot flashes',
+      'hot flush',
+      'red face',
+      'blushing',
+      'heat waves',
+    ],
   },
   {
     id: 'skin_excessive_sweating',
     name: 'Excessive sweating',
     category: 'Skin',
     categoryIcon: '🫧',
-    searchTerms: ['excessive sweating', 'hyperhidrosis', 'sweating', 'perspiration', 'sweat']
+    searchTerms: [
+      'excessive sweating',
+      'hyperhidrosis',
+      'sweating',
+      'perspiration',
+      'sweat',
+    ],
   },
 
   // HEART CATEGORY (3 symptoms)
@@ -226,21 +392,39 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Irregular/skipped beats',
     category: 'Heart',
     categoryIcon: '❤️',
-    searchTerms: ['irregular heartbeat', 'skipped beats', 'heart palpitations', 'arrhythmia', 'heart flutter']
+    searchTerms: [
+      'irregular heartbeat',
+      'skipped beats',
+      'heart palpitations',
+      'arrhythmia',
+      'heart flutter',
+    ],
   },
   {
     id: 'heart_rapid_pounding',
     name: 'Rapid/pounding beats',
     category: 'Heart',
     categoryIcon: '❤️',
-    searchTerms: ['rapid heartbeat', 'pounding heart', 'fast heart rate', 'tachycardia', 'racing heart']
+    searchTerms: [
+      'rapid heartbeat',
+      'pounding heart',
+      'fast heart rate',
+      'tachycardia',
+      'racing heart',
+    ],
   },
   {
     id: 'heart_chest_pain',
     name: 'Chest pain',
     category: 'Heart',
     categoryIcon: '❤️',
-    searchTerms: ['chest pain', 'chest ache', 'heart pain', 'chest pressure', 'angina']
+    searchTerms: [
+      'chest pain',
+      'chest ache',
+      'heart pain',
+      'chest pressure',
+      'angina',
+    ],
   },
 
   // LUNGS CATEGORY (4 symptoms)
@@ -249,28 +433,50 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Chest congestion',
     category: 'Lungs',
     categoryIcon: '🫁',
-    searchTerms: ['chest congestion', 'lung congestion', 'chest tightness', 'phlegm in chest']
+    searchTerms: [
+      'chest congestion',
+      'lung congestion',
+      'chest tightness',
+      'phlegm in chest',
+    ],
   },
   {
     id: 'lungs_asthma_bronchitis',
     name: 'Asthma, bronchitis',
     category: 'Lungs',
     categoryIcon: '🫁',
-    searchTerms: ['asthma', 'bronchitis', 'wheezing', 'breathing problems', 'lung inflammation']
+    searchTerms: [
+      'asthma',
+      'bronchitis',
+      'wheezing',
+      'breathing problems',
+      'lung inflammation',
+    ],
   },
   {
     id: 'lungs_shortness_breath',
     name: 'Shortness of breath',
     category: 'Lungs',
     categoryIcon: '🫁',
-    searchTerms: ['shortness of breath', 'short of breath', 'breathless', 'winded', 'dyspnea']
+    searchTerms: [
+      'shortness of breath',
+      'short of breath',
+      'breathless',
+      'winded',
+      'dyspnea',
+    ],
   },
   {
     id: 'lungs_difficulty_breathing',
     name: 'Difficulty breathing',
     category: 'Lungs',
     categoryIcon: '🫁',
-    searchTerms: ['difficulty breathing', 'trouble breathing', 'hard to breathe', 'labored breathing']
+    searchTerms: [
+      'difficulty breathing',
+      'trouble breathing',
+      'hard to breathe',
+      'labored breathing',
+    ],
   },
 
   // DIGESTIVE TRACT CATEGORY (7 symptoms)
@@ -279,49 +485,86 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Nausea, vomiting',
     category: 'Digestive Tract',
     categoryIcon: '🍽️',
-    searchTerms: ['nausea', 'vomiting', 'nauseous', 'sick to stomach', 'throw up', 'queasy']
+    searchTerms: [
+      'nausea',
+      'vomiting',
+      'nauseous',
+      'sick to stomach',
+      'throw up',
+      'queasy',
+    ],
   },
   {
     id: 'digestive_diarrhea',
     name: 'Diarrhea',
     category: 'Digestive Tract',
     categoryIcon: '🍽️',
-    searchTerms: ['diarrhea', 'loose stools', 'runny stool', 'frequent bowel movements']
+    searchTerms: [
+      'diarrhea',
+      'loose stools',
+      'runny stool',
+      'frequent bowel movements',
+    ],
   },
   {
     id: 'digestive_constipation',
     name: 'Constipation',
     category: 'Digestive Tract',
     categoryIcon: '🍽️',
-    searchTerms: ['constipation', 'constipated', 'hard stools', 'difficulty pooping', 'irregular bowel']
+    searchTerms: [
+      'constipation',
+      'constipated',
+      'hard stools',
+      'difficulty pooping',
+      'irregular bowel',
+    ],
   },
   {
     id: 'digestive_bloated',
     name: 'Bloated feeling',
     category: 'Digestive Tract',
     categoryIcon: '🍽️',
-    searchTerms: ['bloated', 'bloating', 'swollen belly', 'distended', 'gassy']
+    searchTerms: ['bloated', 'bloating', 'swollen belly', 'distended', 'gassy'],
   },
   {
     id: 'digestive_belching_gas',
     name: 'Belching, passing gas',
     category: 'Digestive Tract',
     categoryIcon: '🍽️',
-    searchTerms: ['belching', 'burping', 'passing gas', 'flatulence', 'gassy', 'gas']
+    searchTerms: [
+      'belching',
+      'burping',
+      'passing gas',
+      'flatulence',
+      'gassy',
+      'gas',
+    ],
   },
   {
     id: 'digestive_heartburn',
     name: 'Heartburn',
     category: 'Digestive Tract',
     categoryIcon: '🍽️',
-    searchTerms: ['heartburn', 'acid reflux', 'indigestion', 'GERD', 'burning chest']
+    searchTerms: [
+      'heartburn',
+      'acid reflux',
+      'indigestion',
+      'GERD',
+      'burning chest',
+    ],
   },
   {
     id: 'digestive_stomach_pain',
     name: 'Intestinal/stomach pain',
     category: 'Digestive Tract',
     categoryIcon: '🍽️',
-    searchTerms: ['stomach pain', 'intestinal pain', 'abdominal pain', 'belly ache', 'gut pain']
+    searchTerms: [
+      'stomach pain',
+      'intestinal pain',
+      'abdominal pain',
+      'belly ache',
+      'gut pain',
+    ],
   },
 
   // JOINTS/MUSCLE CATEGORY (5 symptoms)
@@ -330,35 +573,65 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Pain or aches in joints',
     category: 'Joints/Muscle',
     categoryIcon: '🦴',
-    searchTerms: ['joint pain', 'joint aches', 'joint stiffness', 'knee pain', 'elbow pain', 'shoulder pain']
+    searchTerms: [
+      'joint pain',
+      'joint aches',
+      'joint stiffness',
+      'knee pain',
+      'elbow pain',
+      'shoulder pain',
+    ],
   },
   {
     id: 'joints_arthritis',
     name: 'Arthritis',
     category: 'Joints/Muscle',
     categoryIcon: '🦴',
-    searchTerms: ['arthritis', 'rheumatoid arthritis', 'osteoarthritis', 'joint inflammation']
+    searchTerms: [
+      'arthritis',
+      'rheumatoid arthritis',
+      'osteoarthritis',
+      'joint inflammation',
+    ],
   },
   {
     id: 'joints_stiffness',
     name: 'Stiffness/limited movement',
     category: 'Joints/Muscle',
     categoryIcon: '🦴',
-    searchTerms: ['stiffness', 'stiff joints', 'limited movement', 'restricted motion', 'immobility']
+    searchTerms: [
+      'stiffness',
+      'stiff joints',
+      'limited movement',
+      'restricted motion',
+      'immobility',
+    ],
   },
   {
     id: 'joints_muscle_pain',
     name: 'Pain or aches in muscles',
     category: 'Joints/Muscle',
     categoryIcon: '🦴',
-    searchTerms: ['muscle pain', 'muscle aches', 'sore muscles', 'muscle cramps', 'myalgia']
+    searchTerms: [
+      'muscle pain',
+      'muscle aches',
+      'sore muscles',
+      'muscle cramps',
+      'myalgia',
+    ],
   },
   {
     id: 'joints_weakness_tiredness',
     name: 'Feeling of weakness or tiredness',
     category: 'Joints/Muscle',
     categoryIcon: '🦴',
-    searchTerms: ['weakness', 'tired muscles', 'muscle fatigue', 'weak', 'muscle tiredness']
+    searchTerms: [
+      'weakness',
+      'tired muscles',
+      'muscle fatigue',
+      'weak',
+      'muscle tiredness',
+    ],
   },
 
   // WEIGHT CATEGORY (6 symptoms)
@@ -367,42 +640,77 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Binge eating/drinking',
     category: 'Weight',
     categoryIcon: '⚖️',
-    searchTerms: ['binge eating', 'overeating', 'food binges', 'compulsive eating', 'eating disorder']
+    searchTerms: [
+      'binge eating',
+      'overeating',
+      'food binges',
+      'compulsive eating',
+      'eating disorder',
+    ],
   },
   {
     id: 'weight_food_cravings',
     name: 'Craving certain foods',
     category: 'Weight',
     categoryIcon: '⚖️',
-    searchTerms: ['food cravings', 'cravings', 'craving sweets', 'craving carbs', 'food addiction']
+    searchTerms: [
+      'food cravings',
+      'cravings',
+      'craving sweets',
+      'craving carbs',
+      'food addiction',
+    ],
   },
   {
     id: 'weight_excessive',
     name: 'Excessive weight',
     category: 'Weight',
     categoryIcon: '⚖️',
-    searchTerms: ['excessive weight', 'overweight', 'obesity', 'weight gain', 'heavy']
+    searchTerms: [
+      'excessive weight',
+      'overweight',
+      'obesity',
+      'weight gain',
+      'heavy',
+    ],
   },
   {
     id: 'weight_compulsive_eating',
     name: 'Compulsive eating',
     category: 'Weight',
     categoryIcon: '⚖️',
-    searchTerms: ['compulsive eating', 'emotional eating', 'stress eating', 'mindless eating']
+    searchTerms: [
+      'compulsive eating',
+      'emotional eating',
+      'stress eating',
+      'mindless eating',
+    ],
   },
   {
     id: 'weight_water_retention',
     name: 'Water retention',
     category: 'Weight',
     categoryIcon: '⚖️',
-    searchTerms: ['water retention', 'fluid retention', 'edema', 'swelling', 'puffy']
+    searchTerms: [
+      'water retention',
+      'fluid retention',
+      'edema',
+      'swelling',
+      'puffy',
+    ],
   },
   {
     id: 'weight_underweight',
     name: 'Underweight',
     category: 'Weight',
     categoryIcon: '⚖️',
-    searchTerms: ['underweight', 'weight loss', 'too thin', 'losing weight', 'skinny']
+    searchTerms: [
+      'underweight',
+      'weight loss',
+      'too thin',
+      'losing weight',
+      'skinny',
+    ],
   },
 
   // ENERGY/ACTIVITY CATEGORY (5 symptoms)
@@ -411,35 +719,68 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Fatigue/sluggishness',
     category: 'Energy/Activity',
     categoryIcon: '⚡',
-    searchTerms: ['fatigue', 'sluggish', 'tired', 'exhausted', 'low energy', 'lethargy']
+    searchTerms: [
+      'fatigue',
+      'sluggish',
+      'tired',
+      'exhausted',
+      'low energy',
+      'lethargy',
+    ],
   },
   {
     id: 'energy_apathy',
     name: 'Apathy, lethargy',
     category: 'Energy/Activity',
     categoryIcon: '⚡',
-    searchTerms: ['apathy', 'lethargy', 'unmotivated', 'listless', 'indifferent', 'no motivation']
+    searchTerms: [
+      'apathy',
+      'lethargy',
+      'unmotivated',
+      'listless',
+      'indifferent',
+      'no motivation',
+    ],
   },
   {
     id: 'energy_hyperactivity',
     name: 'Hyperactivity',
     category: 'Energy/Activity',
     categoryIcon: '⚡',
-    searchTerms: ['hyperactivity', 'hyperactive', 'restless', 'fidgety', 'hyper', 'ADHD']
+    searchTerms: [
+      'hyperactivity',
+      'hyperactive',
+      'restless',
+      'fidgety',
+      'hyper',
+      'ADHD',
+    ],
   },
   {
     id: 'energy_restless_leg',
     name: 'Restless leg',
     category: 'Energy/Activity',
     categoryIcon: '⚡',
-    searchTerms: ['restless leg', 'restless legs', 'leg cramps', 'leg twitching', 'RLS']
+    searchTerms: [
+      'restless leg',
+      'restless legs',
+      'leg cramps',
+      'leg twitching',
+      'RLS',
+    ],
   },
   {
     id: 'energy_jetlag',
     name: 'Jetlag',
     category: 'Energy/Activity',
     categoryIcon: '⚡',
-    searchTerms: ['jetlag', 'jet lag', 'time zone', 'travel fatigue', 'circadian rhythm']
+    searchTerms: [
+      'jetlag',
+      'jet lag',
+      'time zone',
+      'travel fatigue',
+      'circadian rhythm',
+    ],
   },
 
   // MIND CATEGORY (8 symptoms)
@@ -448,56 +789,103 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Poor memory',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['poor memory', 'memory problems', 'forgetful', 'memory loss', 'cant remember']
+    searchTerms: [
+      'poor memory',
+      'memory problems',
+      'forgetful',
+      'memory loss',
+      'cant remember',
+    ],
   },
   {
     id: 'mind_confusion',
     name: 'Confusion, poor comprehension',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['confusion', 'confused', 'poor comprehension', 'brain fog', 'unclear thinking']
+    searchTerms: [
+      'confusion',
+      'confused',
+      'poor comprehension',
+      'brain fog',
+      'unclear thinking',
+    ],
   },
   {
     id: 'mind_poor_concentration',
     name: 'Poor concentration',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['poor concentration', 'cant focus', 'distracted', 'attention problems', 'unfocused']
+    searchTerms: [
+      'poor concentration',
+      'cant focus',
+      'distracted',
+      'attention problems',
+      'unfocused',
+    ],
   },
   {
     id: 'mind_poor_coordination',
     name: 'Poor physical coordination',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['poor coordination', 'clumsy', 'uncoordinated', 'balance problems', 'motor skills']
+    searchTerms: [
+      'poor coordination',
+      'clumsy',
+      'uncoordinated',
+      'balance problems',
+      'motor skills',
+    ],
   },
   {
     id: 'mind_decision_difficulty',
     name: 'Difficulty making decisions',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['difficulty making decisions', 'indecisive', 'cant decide', 'decision problems']
+    searchTerms: [
+      'difficulty making decisions',
+      'indecisive',
+      'cant decide',
+      'decision problems',
+    ],
   },
   {
     id: 'mind_stuttering',
     name: 'Stuttering or stammering',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['stuttering', 'stammering', 'speech problems', 'speech impediment', 'stutter']
+    searchTerms: [
+      'stuttering',
+      'stammering',
+      'speech problems',
+      'speech impediment',
+      'stutter',
+    ],
   },
   {
     id: 'mind_slurred_speech',
     name: 'Slurred speech',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['slurred speech', 'slurring', 'unclear speech', 'mumbling', 'speech problems']
+    searchTerms: [
+      'slurred speech',
+      'slurring',
+      'unclear speech',
+      'mumbling',
+      'speech problems',
+    ],
   },
   {
     id: 'mind_learning_disabilities',
     name: 'Learning disabilities',
     category: 'Mind',
     categoryIcon: '🧠',
-    searchTerms: ['learning disabilities', 'learning problems', 'dyslexia', 'ADHD', 'cognitive problems']
+    searchTerms: [
+      'learning disabilities',
+      'learning problems',
+      'dyslexia',
+      'ADHD',
+      'cognitive problems',
+    ],
   },
 
   // EMOTIONS CATEGORY (4 symptoms)
@@ -506,28 +894,57 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Mood swings',
     category: 'Emotions',
     categoryIcon: '😊',
-    searchTerms: ['mood swings', 'moody', 'emotional', 'mood changes', 'bipolar']
+    searchTerms: [
+      'mood swings',
+      'moody',
+      'emotional',
+      'mood changes',
+      'bipolar',
+    ],
   },
   {
     id: 'emotions_anxiety',
     name: 'Anxiety, fear, nervousness',
     category: 'Emotions',
     categoryIcon: '😊',
-    searchTerms: ['anxiety', 'anxious', 'fear', 'nervous', 'nervousness', 'panic', 'worry']
+    searchTerms: [
+      'anxiety',
+      'anxious',
+      'fear',
+      'nervous',
+      'nervousness',
+      'panic',
+      'worry',
+    ],
   },
   {
     id: 'emotions_anger',
     name: 'Anger, irritability, aggressiveness',
     category: 'Emotions',
     categoryIcon: '😊',
-    searchTerms: ['anger', 'angry', 'irritability', 'irritable', 'aggressive', 'agitation', 'rage']
+    searchTerms: [
+      'anger',
+      'angry',
+      'irritability',
+      'irritable',
+      'aggressive',
+      'agitation',
+      'rage',
+    ],
   },
   {
     id: 'emotions_depression',
     name: 'Depression',
     category: 'Emotions',
     categoryIcon: '😊',
-    searchTerms: ['depression', 'depressed', 'sad', 'sadness', 'melancholy', 'low mood']
+    searchTerms: [
+      'depression',
+      'depressed',
+      'sad',
+      'sadness',
+      'melancholy',
+      'low mood',
+    ],
   },
 
   // OTHER CATEGORY (4 symptoms)
@@ -536,29 +953,46 @@ export const MSQ_SYMPTOMS: MSQSymptom[] = [
     name: 'Frequent illness',
     category: 'Other',
     categoryIcon: '🔧',
-    searchTerms: ['frequent illness', 'always sick', 'frequent colds', 'weak immune system', 'infections']
+    searchTerms: [
+      'frequent illness',
+      'always sick',
+      'frequent colds',
+      'weak immune system',
+      'infections',
+    ],
   },
   {
     id: 'other_frequent_urination',
     name: 'Frequent or urgent urination',
     category: 'Other',
     categoryIcon: '🔧',
-    searchTerms: ['frequent urination', 'urgent urination', 'frequent peeing', 'bladder problems']
+    searchTerms: [
+      'frequent urination',
+      'urgent urination',
+      'frequent peeing',
+      'bladder problems',
+    ],
   },
   {
     id: 'other_genital_problems',
     name: 'Genital itch or discharge',
     category: 'Other',
     categoryIcon: '🔧',
-    searchTerms: ['genital itch', 'genital discharge', 'yeast infection', 'UTI', 'genital problems']
+    searchTerms: [
+      'genital itch',
+      'genital discharge',
+      'yeast infection',
+      'UTI',
+      'genital problems',
+    ],
   },
   {
     id: 'other_bone_pain',
     name: 'Bone pain',
     category: 'Other',
     categoryIcon: '🔧',
-    searchTerms: ['bone pain', 'bone ache', 'deep pain', 'skeletal pain']
-  }
+    searchTerms: ['bone pain', 'bone ache', 'deep pain', 'skeletal pain'],
+  },
 ];
 
 // MSQ Categories with metadata
@@ -577,7 +1011,7 @@ export const MSQ_CATEGORIES: MSQCategory[] = [
   { name: 'Energy/Activity', icon: '⚡', count: 5 },
   { name: 'Mind', icon: '🧠', count: 8 },
   { name: 'Emotions', icon: '😊', count: 4 },
-  { name: 'Other', icon: '🔧', count: 4 }
+  { name: 'Other', icon: '🔧', count: 4 },
 ];
 
 // Helper functions

@@ -1,14 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FoodEntryForm } from '@/features/foods/components/food-entry-form';
-import { getFoodById, updateFood as dbUpdateFood } from '@/lib/db';
+import { getFoodById, updateFood as dbUpdateFood, deleteFood } from '@/lib/db';
 import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
+import { toast } from 'sonner';
 
 export default function EditFoodPage({
   params,
@@ -18,12 +19,20 @@ export default function EditFoodPage({
   const router = useRouter();
   const [food, setFood] = useState<Food | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     const loadFood = async () => {
       try {
         const resolvedParams = await params;
+
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) return;
+
         const foodData = await getFoodById(resolvedParams.id);
+
+        if (!isMountedRef.current) return;
+
         if (foodData) {
           setFood(foodData);
         } else {
@@ -31,24 +40,76 @@ export default function EditFoodPage({
           router.back();
         }
       } catch (error) {
+        if (!isMountedRef.current) return;
+
         logger.error('Error loading food', error);
         router.back();
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
     loadFood();
   }, [params, router]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const handleUpdateFood = async (updatedFood: Omit<Food, 'id'>) => {
-    if (food) {
-      await dbUpdateFood(food.id, updatedFood);
+    if (food && isMountedRef.current) {
+      try {
+        await dbUpdateFood(food.id, updatedFood);
 
-      // Invalidate SWR cache to trigger immediate refresh
-      await mutate('dashboard-data');
+        // Check if component is still mounted before state updates
+        if (!isMountedRef.current) return;
 
-      router.push('/app');
+        // Invalidate SWR cache to trigger immediate refresh
+        await mutate('dashboard-data');
+
+        toast.success('Food updated successfully');
+        router.push('/app');
+      } catch (error) {
+        if (!isMountedRef.current) return;
+
+        logger.error('Failed to update food', error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Failed to update food. Please try again.';
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  const handleDeleteFood = async () => {
+    if (food && isMountedRef.current) {
+      try {
+        await deleteFood(food.id);
+
+        // Check if component is still mounted before state updates
+        if (!isMountedRef.current) return;
+
+        // Invalidate SWR cache to trigger immediate refresh
+        await mutate('dashboard-data');
+
+        toast.success('Food deleted successfully');
+        router.push('/app');
+      } catch (error) {
+        if (!isMountedRef.current) return;
+
+        logger.error('Failed to delete food', error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Failed to delete food. Please try again.';
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -90,6 +151,7 @@ export default function EditFoodPage({
         <FoodEntryForm
           onAddFood={handleUpdateFood}
           onClose={handleClose}
+          onDelete={handleDeleteFood}
           editingFood={food}
         />
       </main>

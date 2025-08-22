@@ -196,40 +196,44 @@ export function validateImageData(data: unknown): ValidationResult {
 export async function validateImageAnalysisRequest(
   request: NextRequest
 ): Promise<ValidationResult> {
-  console.log('=== VALIDATE IMAGE ANALYSIS REQUEST START ===');
-  
   // Validate request size first
-  console.log('=== VALIDATING REQUEST SIZE ===');
   const sizeValidation = await validateRequestSize(
     request,
     APP_CONFIG.IMAGE.MAX_FILE_SIZE * APP_CONFIG.IMAGE.MAX_IMAGES_PER_REQUEST
   );
-  console.log('=== SIZE VALIDATION RESULT ===', sizeValidation.isValid);
 
   if (!sizeValidation.isValid) {
-    console.log('=== SIZE VALIDATION FAILED ===', sizeValidation.error);
+    logger.debug('Image analysis request size validation failed', {
+      error: sizeValidation.error,
+      url: request.url,
+    });
     return sizeValidation;
   }
 
   // Parse and validate JSON
-  console.log('=== VALIDATING JSON ===');
   const jsonValidation = await validateAndParseJSON(request);
-  console.log('=== JSON VALIDATION RESULT ===', jsonValidation.isValid);
   if (!jsonValidation.isValid) {
-    console.log('=== JSON VALIDATION FAILED ===', jsonValidation.error);
+    logger.debug('Image analysis request JSON validation failed', {
+      error: jsonValidation.error,
+      url: request.url,
+    });
     return jsonValidation;
   }
 
   // Validate image data
-  console.log('=== VALIDATING IMAGE DATA ===');
   const imageValidation = validateImageData(jsonValidation.data);
-  console.log('=== IMAGE VALIDATION RESULT ===', imageValidation.isValid);
   if (!imageValidation.isValid) {
-    console.log('=== IMAGE VALIDATION FAILED ===', imageValidation.error);
+    logger.debug('Image analysis request image validation failed', {
+      error: imageValidation.error,
+      url: request.url,
+    });
     return imageValidation;
   }
 
-  console.log('=== ALL VALIDATIONS PASSED ===');
+  logger.debug('Image analysis request validation completed successfully', {
+    url: request.url,
+  });
+
   return {
     isValid: true,
     data: jsonValidation.data,

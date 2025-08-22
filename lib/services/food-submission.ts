@@ -131,7 +131,7 @@ async function zoneIngredients(ingredients: Ingredient[]): Promise<{
       } catch (error) {
         logger.warn(`Error zoning ingredient: ${ingredient.name}`, {
           error: error instanceof Error ? error.message : String(error),
-          ingredient: ingredient.name
+          ingredient: ingredient.name,
         });
         return { ingredient, zonedData: null };
       }

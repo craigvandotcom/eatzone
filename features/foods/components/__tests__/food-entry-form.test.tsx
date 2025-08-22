@@ -31,7 +31,9 @@ describe('FoodEntryForm', () => {
 
     expect(screen.getByLabelText(/meal summary/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/ingredients/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /add food/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /add food/i })
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
   });
 
@@ -118,7 +120,9 @@ describe('FoodEntryForm', () => {
     // Wait a moment for any async operations
     await waitFor(() => {
       // Form should still be present (not crashed)
-      expect(screen.getByRole('button', { name: /add food/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /add food/i })
+      ).toBeInTheDocument();
     });
   });
 

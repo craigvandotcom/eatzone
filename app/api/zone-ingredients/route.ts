@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       model: 'anthropic/claude-3.7-sonnet', // Better for structured JSON with improved reasoning
       messages: [{ role: 'user', content: fullPrompt }],
       response_format: { type: 'json_object' },
-      max_tokens: 1024,
+      max_tokens: 4096, // Further increased to handle long prompt + full response
       temperature: 0.1,
     });
 
@@ -203,8 +203,29 @@ export async function POST(request: NextRequest) {
       .array(zonedIngredientSchema)
       .parse(normalizedIngredients);
 
+    // Validate response completeness - check for truncated or missing ingredients
+    const outputNames = new Set(validatedIngredients.map(i => i.name));
+    const missingIngredients = sanitizedIngredients.filter(
+      name => !outputNames.has(name)
+    );
+    const truncatedIngredients = validatedIngredients.filter(
+      i =>
+        i.name.length < 3 ||
+        !sanitizedIngredients.some(input => input.includes(i.name))
+    );
+
+    if (missingIngredients.length > 0 || truncatedIngredients.length > 0) {
+      logger.warn('AI response quality issues detected', {
+        inputCount: sanitizedIngredients.length,
+        outputCount: validatedIngredients.length,
+        missingIngredients,
+        truncatedIngredients: truncatedIngredients.map(i => i.name),
+      });
+    }
+
     logger.debug('Final validated response', {
       ingredientCount: validatedIngredients.length,
+      qualityIssues: missingIngredients.length + truncatedIngredients.length,
     });
 
     // Record successful performance metrics
@@ -228,8 +249,121 @@ export async function POST(request: NextRequest) {
       model: 'anthropic/claude-3.7-sonnet',
     });
 
+    // Provide granular error responses based on error type
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Invalid request data',
+            code: 'VALIDATION_ERROR',
+            statusCode: 400,
+            details: error.issues.map(issue => ({
+              path: issue.path.join('.'),
+              message: issue.message,
+            })),
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof Error) {
+      // Check for specific error types based on message content
+      const errorMessage = error.message.toLowerCase();
+
+      if (
+        errorMessage.includes('rate limit') ||
+        errorMessage.includes('too many requests')
+      ) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Rate limit exceeded. Please try again later.',
+              code: 'RATE_LIMIT_EXCEEDED',
+              statusCode: 429,
+            },
+          },
+          { status: 429 }
+        );
+      }
+
+      if (
+        errorMessage.includes('invalid json') ||
+        errorMessage.includes('parse')
+      ) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Invalid JSON in request body',
+              code: 'INVALID_JSON',
+              statusCode: 400,
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        errorMessage.includes('ai returned invalid') ||
+        errorMessage.includes('ai response validation failed')
+      ) {
+        return NextResponse.json(
+          {
+            error: {
+              message:
+                'AI service returned invalid response. Please try again.',
+              code: 'AI_RESPONSE_ERROR',
+              statusCode: 502,
+            },
+          },
+          { status: 502 }
+        );
+      }
+
+      if (
+        errorMessage.includes('no response from ai') ||
+        errorMessage.includes('ai model')
+      ) {
+        return NextResponse.json(
+          {
+            error: {
+              message:
+                'AI service is currently unavailable. Please try again later.',
+              code: 'AI_SERVICE_UNAVAILABLE',
+              statusCode: 503,
+            },
+          },
+          { status: 503 }
+        );
+      }
+
+      if (
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('network')
+      ) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Request timeout. Please try again.',
+              code: 'REQUEST_TIMEOUT',
+              statusCode: 408,
+            },
+          },
+          { status: 408 }
+        );
+      }
+    }
+
+    // Default server error for unhandled cases
     return NextResponse.json(
-      { error: 'Failed to zone ingredients' },
+      {
+        error: {
+          message:
+            'Internal server error occurred while processing ingredients',
+          code: 'INTERNAL_SERVER_ERROR',
+          statusCode: 500,
+        },
+      },
       { status: 500 }
     );
   }

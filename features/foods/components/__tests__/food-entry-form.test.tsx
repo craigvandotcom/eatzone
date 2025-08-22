@@ -31,7 +31,9 @@ describe('FoodEntryForm', () => {
 
     expect(screen.getByLabelText(/meal summary/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/ingredients/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /add food/i })
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
   });
 
@@ -80,7 +82,7 @@ describe('FoodEntryForm', () => {
     const mealSummaryInput = screen.getByLabelText(/meal summary/i);
     await user.type(mealSummaryInput, 'Healthy lunch');
 
-    const saveButton = screen.getByRole('button', { name: /save/i });
+    const saveButton = screen.getByRole('button', { name: /add food/i });
     await user.click(saveButton);
 
     // Should call onAddFood with the processed food object from the service
@@ -110,7 +112,7 @@ describe('FoodEntryForm', () => {
 
     render(<FoodEntryForm onAddFood={mockOnSubmit} onClose={mockOnCancel} />);
 
-    const saveButton = screen.getByRole('button', { name: /save/i });
+    const saveButton = screen.getByRole('button', { name: /add food/i });
 
     // Should not throw an error when clicking save button
     expect(() => user.click(saveButton)).not.toThrow();
@@ -118,7 +120,9 @@ describe('FoodEntryForm', () => {
     // Wait a moment for any async operations
     await waitFor(() => {
       // Form should still be present (not crashed)
-      expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /add food/i })
+      ).toBeInTheDocument();
     });
   });
 

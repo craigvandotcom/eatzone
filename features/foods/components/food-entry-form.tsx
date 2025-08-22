@@ -88,10 +88,19 @@ export function FoodEntryForm({
   const [isZoning, setIsZoning] = useState(false);
   const analysisAbortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
+  const analysisInitiatedRef = useRef(false);
 
   // AI Analysis function with race condition protection
   const analyzeImage = useCallback(
-    async (imageData: string) => {
+    async (imageData: string, currentName?: string) => {
+      logger.debug('analyzeImage called', {
+        hasImageData: !!imageData,
+        imageDataLength: imageData?.length,
+        currentName,
+        isAnalyzing,
+        hasAnalyzed,
+      });
+
       // Cancel any existing analysis
       if (analysisAbortControllerRef.current) {
         analysisAbortControllerRef.current.abort();
@@ -103,10 +112,21 @@ export function FoodEntryForm({
 
       if (!isMountedRef.current) return;
 
+      // Validate image data format
+      if (!imageData || !imageData.startsWith('data:image/')) {
+        logger.error('Invalid image data format', {
+          imageData: imageData?.substring(0, 50),
+        });
+        setAnalysisError('Invalid image data. Please try capturing again.');
+        toast.error('Invalid image data. Please try capturing again.');
+        return;
+      }
+
       setIsAnalyzing(true);
       setAnalysisError(null);
 
       try {
+        logger.debug('Sending request to analyze-image API');
         const response = await fetch('/api/analyze-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -116,13 +136,26 @@ export function FoodEntryForm({
 
         // Check if request was aborted
         if (abortController.signal.aborted) {
+          logger.debug('Analysis request was aborted');
           return;
         }
 
-        if (!response.ok) throw new Error('Analysis failed');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          logger.error('Analysis API error', {
+            status: response.status,
+            errorData,
+          });
+          throw new Error(`Analysis failed with status ${response.status}`);
+        }
 
         const { mealSummary, ingredients: ingredientData } =
           await response.json();
+
+        logger.debug('Analysis successful', {
+          mealSummary,
+          ingredientCount: ingredientData?.length,
+        });
 
         // Check again if component is still mounted and request wasn't aborted
         if (!isMountedRef.current || abortController.signal.aborted) {
@@ -130,17 +163,17 @@ export function FoodEntryForm({
         }
 
         const aiIngredients: Ingredient[] = ingredientData.map(
-          (ingredient: { name: string; organic: boolean }) => ({
+          (ingredient: { name: string; organic: boolean }): Ingredient => ({
             name: ingredient.name,
             organic: ingredient.organic || false,
-            group: 'other' as const, // Default value
-            zone: 'unzoned' as const, // Default value - will be zoned later
+            group: 'other', // Default value
+            zone: 'unzoned', // Default value - will be zoned later
           })
         );
 
         setIngredients(aiIngredients);
         // Set the meal summary as the default name if not already set
-        if (!name && mealSummary) {
+        if (!currentName && mealSummary) {
           setName(mealSummary);
         }
         setHasAnalyzed(true);
@@ -148,6 +181,7 @@ export function FoodEntryForm({
       } catch (error) {
         // Don't show error if request was aborted
         if (error instanceof Error && error.name === 'AbortError') {
+          logger.debug('Analysis aborted by user');
           return;
         }
 
@@ -168,19 +202,22 @@ export function FoodEntryForm({
         }
       }
     },
-    [name]
+    [] // Empty dependency array for stable reference
   );
 
-  // Pre-populate form when editing or analyze image when provided
+  // Pre-populate form when editing food
   useEffect(() => {
     if (editingFood) {
+      logger.debug('Populating form for editing', { foodId: editingFood.id });
       setName(editingFood.name || '');
       setIngredients(editingFood.ingredients || []);
       setNotes(editingFood.notes || '');
       setShowNotes(!!editingFood.notes);
       setSelectedDateTime(new Date(editingFood.timestamp));
       setHasAnalyzed(false);
+      analysisInitiatedRef.current = false;
     } else {
+      logger.debug('Resetting form for new entry');
       setName('');
       setIngredients([]);
       setNotes('');
@@ -188,18 +225,41 @@ export function FoodEntryForm({
       setSelectedDateTime(new Date());
       setHasAnalyzed(false);
       setAnalysisError(null);
-
-      // Trigger AI analysis if image data is provided
-      if (imageData && !hasAnalyzed) {
-        analyzeImage(imageData);
-      }
+      analysisInitiatedRef.current = false;
     }
-  }, [editingFood, imageData, analyzeImage]);
+  }, [editingFood]);
 
-  // Cleanup on unmount
+  // Separate effect for image analysis
   useEffect(() => {
+    logger.debug('Image analysis effect triggered', {
+      hasImageData: !!imageData,
+      imageDataLength: imageData?.length,
+      isEditingFood: !!editingFood,
+      hasAnalyzed,
+      analysisInitiated: analysisInitiatedRef.current,
+    });
+
+    // Only analyze if we have image data, not editing, haven't analyzed, and haven't initiated
+    if (
+      imageData &&
+      !editingFood &&
+      !hasAnalyzed &&
+      !analysisInitiatedRef.current
+    ) {
+      logger.debug('Starting image analysis');
+      analysisInitiatedRef.current = true;
+      analyzeImage(imageData, name);
+    }
+  }, [imageData, editingFood, hasAnalyzed, analyzeImage, name]);
+
+  // Set mounted flag on mount and cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    logger.debug('Component mounted, isMountedRef set to true');
+
     return () => {
       isMountedRef.current = false;
+      logger.debug('Component unmounting, isMountedRef set to false');
       // Cancel any ongoing analysis
       if (analysisAbortControllerRef.current) {
         analysisAbortControllerRef.current.abort();

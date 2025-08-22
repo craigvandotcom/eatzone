@@ -203,20 +203,36 @@ export async function validateImageAnalysisRequest(
   );
 
   if (!sizeValidation.isValid) {
+    logger.debug('Image analysis request size validation failed', {
+      error: sizeValidation.error,
+      url: request.url,
+    });
     return sizeValidation;
   }
 
   // Parse and validate JSON
   const jsonValidation = await validateAndParseJSON(request);
   if (!jsonValidation.isValid) {
+    logger.debug('Image analysis request JSON validation failed', {
+      error: jsonValidation.error,
+      url: request.url,
+    });
     return jsonValidation;
   }
 
   // Validate image data
   const imageValidation = validateImageData(jsonValidation.data);
   if (!imageValidation.isValid) {
+    logger.debug('Image analysis request image validation failed', {
+      error: imageValidation.error,
+      url: request.url,
+    });
     return imageValidation;
   }
+
+  logger.debug('Image analysis request validation completed successfully', {
+    url: request.url,
+  });
 
   return {
     isValid: true,

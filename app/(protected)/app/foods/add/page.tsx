@@ -8,6 +8,8 @@ import { FoodEntryForm } from '@/features/foods/components/food-entry-form';
 import { addFood as dbAddFood } from '@/lib/db';
 import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
+import { toast } from 'sonner';
 
 export default function AddFoodPage() {
   const router = useRouter();
@@ -16,10 +18,26 @@ export default function AddFoodPage() {
   useEffect(() => {
     // Check if there's a pending image from camera capture
     const pendingImage = sessionStorage.getItem('pendingFoodImage');
+    logger.debug('Checking for pending image', {
+      hasPendingImage: !!pendingImage,
+      imageLength: pendingImage?.length,
+    });
+
     if (pendingImage) {
-      setImageData(pendingImage);
+      // Validate it's a proper base64 image
+      if (pendingImage.startsWith('data:image/')) {
+        logger.debug('Valid image data found, setting imageData state');
+        setImageData(pendingImage);
+      } else {
+        logger.error('Invalid image data retrieved from session', {
+          imageStart: pendingImage.substring(0, 50),
+        });
+        toast.error('Failed to load captured image. Please try again.');
+      }
       // Clear it after retrieval to prevent reuse
       sessionStorage.removeItem('pendingFoodImage');
+    } else {
+      logger.debug('No pending image found in sessionStorage');
     }
   }, []);
 

@@ -75,6 +75,10 @@ Return ONLY a valid JSON object with this EXACT structure. Field names must matc
 
 ## CRITICAL Response Rules
 
+- **ALWAYS return valid JSON, regardless of image quality or readability**
+- **If image is blurry, dark, or unreadable, return: {"mealSummary": "unknown", "ingredients": []}**
+- **NEVER return conversational text, explanations, or error messages**
+- **NEVER say you cannot read, analyze, or see the image - always return JSON**
 - **NEVER use markdown formatting, code blocks, or backticks**
 - **Return RAW JSON ONLY - no `json` wrapper**
 - **Always include mealSummary and ingredients fields** (exact spelling required)
@@ -90,3 +94,4 @@ Return ONLY a valid JSON object with this EXACT structure. Field names must matc
 - Organic banana: `{"mealSummary": "banana", "ingredients": [{"name": "banana", "isOrganic": true}]}`
 - Regular chicken breast: `{"mealSummary": "chicken breast", "ingredients": [{"name": "chicken breast", "isOrganic": false}]}`
 - Mixed salad with organic label: `{"mealSummary": "mixed salad", "ingredients": [{"name": "lettuce", "isOrganic": true}, {"name": "tomato", "isOrganic": true}, {"name": "cucumber", "isOrganic": true}]}`
+- **Unreadable/poor quality image: `{"mealSummary": "unknown", "ingredients": []}`**

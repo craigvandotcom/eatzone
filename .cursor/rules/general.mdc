@@ -15,609 +15,334 @@ alwaysApply: true
 **Date:** July 11, 2025
 **Author:** v0
 
-## Table of Contents
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-### 1. Project Overview
+## Context Files
 
-#### 1.1. Core Concept
+See @package.json for available npm commands and dependencies
+See @.env.example for required environment variables
+See @app/globals.css for CSS variables and theming system
 
-The Health Tracker is a mobile-first Progressive Web App (PWA) designed to be a "Body Compass." It allows users to perform high-speed, low-friction logging of daily inputs (liquids, food) and outputs (stools, symptoms). The primary goal is to empower users to identify patterns and correlations between their lifestyle choices and their physical well-being.
+## Project Overview
 
-#### 1.2. Guiding Philosophy
+This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis using Supabase for secure cloud storage and authentication.
 
-- **Capture First, Analyze Later:** The user experience is optimized for rapid data entry, particularly through camera-based capture. The system is designed to create placeholder entries that can be analyzed later (e.g., by an AI), removing the burden of detailed manual entry at the moment of consumption.
-- **Visual First Insights:** Data is presented through intuitive, high-impact visualizations. Instead of tables of data, the user sees progress bars, color-coded charts, and at-a-glance summaries to quickly assess their day.
-- **Frictionless Interaction:** As a PWA, the application provides a native app-like experience without the need for an app store. It's designed for offline access and quick loading, making it a reliable daily companion.
+**Development Context:**
 
-### 2. Core Features & Functionality
+- Solo developer project (no team coordination needed)
+- Local development on macOS with VS Code
+- Deployment via Vercel (git push → auto-deploy)
 
-The application is organized into four primary tracking categories, accessible via a main tab bar.
+Treat me as the **architect**: I decide scope, data models, and integrations; you propose options with tradeoffs and recommend one.
 
-| Category     | Icon | Purpose                                                             | Key Visualizations                                                                                                                                                                                                                                                                                                                                       |
-| ------------ | ---- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Liquids**  | 💧   | Track hydration, differentiating between water and other beverages. | - **Split Circular Progress:** Shows progress towards a daily water goal vs. total intake of other liquids.                                                                                                                                                                                                                                              |
-| **Foods**    | 🍽️   | Log foods and their constituent ingredients.                        | - **Food Category Pie Chart:** Shows the daily ratio of "Good" (green), "Maybe" (yellow), and "Bad" (red) ingredients. `<br>` - **Vertical Organic "Battery":** Shows the percentage of daily ingredients that were organic. `<br>` - **Dual-Bar System (per food entry):** Visualizes the health and organic composition of each individual food entry. |
-| **Stools**   | 💩   | Record bowel movements for digestive health tracking.               | - **Daily Count:** A simple, large number showing total movements for the day.                                                                                                                                                                                                                                                                           |
-| **Symptoms** | ⚡   | Log physical or emotional symptoms and their severity.              | - **Daily Count:** A simple, large number showing total symptoms logged for the day.                                                                                                                                                                                                                                                                     |
+- For any non-trivial choice, provide a **Decision Box**:
+  - Problem
+  - 2–3 viable options (pros/cons, complexity, risks)
+  - Recommended option + why
+  - Minimal rollback plan
+- **Double-check my assumptions.** If something is ambiguous or risky, call it out and propose a safe default.
+- Prefer **monolith-first** unless requirements demand separation; avoid premature microservices.
+- **Data-first workflow:** confirm ERD/schema and API contracts before implementation.
+- Use **secure defaults** (least privilege, no secrets in code, .env management, input validation).
+- Provide a **Test Plan** for each feature (unit, integration, e2e where relevant) and scaffold tests.
+- Explain **what changed and why** at the top of each generated file as a brief comment block.
 
-#### 2.1. Data Entry Methods
+## Essential Commands
 
-- **Quick Capture (Camera):** The primary interaction for Liquids, Foods, and Stools. Tapping the corresponding icon in the bottom navigation opens the camera. A photo is taken, and a placeholder entry is created with a status like "Analyzing...".
-  - Ideally, the camera would be able to capture the image and send it to the AI for analysis, and then display the results in the manual edit UI for the user to review and update.
-- **Manual Entry:** For each category, a detailed dialog allows for the manual creation or editing of entries. This includes:
+### Development
 
-- **Foods:** A sophisticated ingredient list manager with options for marking items as organic and specifying the cooking method.
-- **Liquids:** Type selection and volume entry.
-- **Stools:** A Bristol Stool Scale slider (1-7) and selectors for color and consistency.
-- **Symptoms:** A multi-entry system for logging several symptoms at once, each with a severity rating (1-5).
-- **Editing:** All entries in the "Recent Entries" list can be tapped to open the corresponding manual entry dialog, pre-filled with the entry's data for editing.
+- `pnpm dev` - Start development server at http://localhost:3000
+- `pnpm dev:clean` - Hard reset: clears .next, node_modules, and reinstalls dependencies
+- `pnpm type-check` - Run TypeScript compiler check without emitting files
 
-### 3. Technical Architecture
+### Code Quality & Build
 
-- **Framework:** **Next.js 15** with the App Router.
-- **Language:** **TypeScript**.
-- **Styling:** **Tailwind CSS** for utility-first styling.
-- **UI Components:** **shadcn/ui** provides the foundational, unstyled components (Dialog, Button, Input, Slider, etc.), which are then styled with Tailwind CSS.
-- **State Management:** **Reactive Data Layer** - State is managed through **Dexie.js** with **`dexie-react-hooks`** for reactive data binding. The `useLiveQuery` hook automatically updates components when underlying IndexedDB data changes, eliminating manual state synchronization.
-- **Data Persistence:** **Local-First Architecture** - All user data is stored locally on the user's device using **IndexedDB** (via **Dexie.js** library) for robust, privacy-focused storage. This approach ensures maximum user privacy and offline functionality.
-- **Deployment:** Hosted on **Vercel** for seamless integration with Next.js and serverless functions.
-- **PWA Implementation:**
+- `pnpm lint` - Run ESLint checks
+- `pnpm format` - Format code with Prettier
+- `pnpm format:check` - Check if code is formatted without making changes
+- `pnpm build:check` - Full production build + lint check (run before commits)
+- `pnpm build` - Production build
+- `pnpm start` - Serve production build
 
-- `public/manifest.json`: Defines the app's name, icons, theme colors, and display mode.
-- `public/sw.js`: A basic service worker that caches core application assets for offline access.
-- `app/layout.tsx`: Contains the necessary `<meta>` and `<link>` tags to ensure proper PWA behavior, including the viewport settings and Apple-specific tags for a native feel on iOS.
+### Testing & Pre-Commit Workflow
 
-#### 3.6. Project Structure
+**Testing Strategy:**
 
-The application follows a **feature-based architecture** organized around the four core tracking categories, with clear separation between shared and domain-specific code:
+- **Dual approach**: Jest for fast feedback, Playwright for E2E confidence
+- Follow testing trophy: focus on integration/component tests with unit test foundation
+- Test real Supabase auth flows and cloud data persistence
+- Reference @\_docs/guidelines/testing-strategy.md for complete strategy
 
-```
-puls/
-├── _docs/                          # Project Documentation
-│   ├── PRD.md                     # Product Requirements Document
-│   ├── roadmap.md                 # Development Roadmap
-│   ├── brand-identity.md          # Brand Guidelines
-│   └── development-workflow.md    # Development Process
-├── app/                           # Next.js App Router
-│   ├── (auth)/                   # Authentication Route Group
-│   │   ├── login/page.tsx        # Login Page
-│   │   └── signup/page.tsx       # Signup Page
-│   ├── (protected)/              # Protected Route Group
-│   │   ├── app/
-│   │   │   ├── page.tsx          # Main Health Tracker Dashboard
-│   │   │   └── insights/page.tsx # Analytics & Trends
-│   │   └── settings/page.tsx     # User Settings & Data Management
-│   ├── api/                      # API Routes
-│   │   ├── analyze/route.ts      # AI Analysis Endpoint
-│   │   └── auth/route.ts         # Authentication API
-│   ├── globals.css               # Global Styles
-│   ├── layout.tsx               # Root Layout
-│   └── page.tsx                 # Public Landing Page
-├── features/                     # Feature-Based Organization
-│   ├── liquids/                 # 💧 Liquid Tracking Feature
-│   │   ├── components/
-│   │   │   ├── add-liquid-dialog.tsx
-│   │   │   ├── liquid-entry-card.tsx
-│   │   │   ├── liquid-list.tsx
-│   │   │   └── split-circular-progress.tsx
-│   │   ├── hooks/
-│   │   │   ├── use-liquids.ts
-│   │   │   ├── use-water-stats.ts
-│   │   │   └── use-liquid-analysis.ts
-│   │   ├── types/
-│   │   │   └── liquid.types.ts
-│   │   ├── utils/
-│   │   │   └── liquid.utils.ts
-│   │   └── index.ts             # Feature exports
-│   ├── foods/                   # 🍽️ Food Tracking Feature
-│   │   ├── components/
-│   │   │   ├── add-food-dialog.tsx
-│   │   │   ├── food-entry-card.tsx
-│   │   │   ├── food-list.tsx
-│   │   │   ├── food-category-progress.tsx
-│   │   │   ├── food-composition-bar.tsx
-│   │   │   ├── organic-composition-bar.tsx
-│   │   │   └── vertical-progress-bar.tsx
-│   │   ├── hooks/
-│   │   │   ├── use-foods.ts
-│   │   │   ├── use-food-stats.ts
-│   │   │   └── use-food-analysis.ts
-│   │   ├── types/
-│   │   │   ├── food.types.ts
-│   │   │   └── ingredient.types.ts
-│   │   ├── utils/
-│   │   │   └── food.utils.ts
-│   │   └── index.ts             # Feature exports
-│   ├── stools/                  # 💩 Stool Tracking Feature
-│   │   ├── components/
-│   │   │   ├── add-stool-dialog.tsx
-│   │   │   ├── stool-entry-card.tsx
-│   │   │   ├── stool-list.tsx
-│   │   │   └── bristol-scale-display.tsx
-│   │   ├── hooks/
-│   │   │   ├── use-stools.ts
-│   │   │   └── use-stool-analysis.ts
-│   │   ├── types/
-│   │   │   └── stool.types.ts
-│   │   ├── utils/
-│   │   │   └── stool.utils.ts
-│   │   └── index.ts             # Feature exports
-│   ├── symptoms/                # ⚡ Symptom Tracking Feature
-│   │   ├── components/
-│   │   │   ├── add-symptom-dialog.tsx
-│   │   │   ├── symptom-entry-card.tsx
-│   │   │   ├── symptom-list.tsx
-│   │   │   └── symptom-severity-display.tsx
-│   │   ├── hooks/
-│   │   │   ├── use-symptoms.ts
-│   │   │   └── use-symptom-analysis.ts
-│   │   ├── types/
-│   │   │   └── symptom.types.ts
-│   │   ├── utils/
-│   │   │   └── symptom.utils.ts
-│   │   └── index.ts             # Feature exports
-│   ├── analytics/               # 📊 Analytics & Insights Feature
-│   │   ├── components/
-│   │   │   ├── trend-chart.tsx
-│   │   │   ├── correlation-matrix.tsx
-│   │   │   └── health-score-card.tsx
-│   │   ├── hooks/
-│   │   │   ├── use-trends.ts
-│   │   │   └── use-correlations.ts
-│   │   ├── types/
-│   │   │   └── analytics.types.ts
-│   │   ├── utils/
-│   │   │   └── analytics.utils.ts
-│   │   └── index.ts             # Feature exports
-│   └── auth/                    # 🔐 Authentication Feature
-│       ├── components/
-│       │   ├── login-form.tsx
-│       │   ├── signup-form.tsx
-│       │   └── auth-guard.tsx
-│       ├── hooks/
-│       │   ├── use-auth.ts
-│       │   └── use-session.ts
-│       ├── types/
-│       │   └── auth.types.ts
-│       ├── utils/
-│       │   └── auth.utils.ts
-│       └── index.ts             # Feature exports
-├── components/                   # Shared/Generic Components
-│   ├── ui/                      # shadcn/ui Base Components
-│   ├── layout/                  # Layout Components
-│   │   ├── header.tsx
-│   │   ├── navigation.tsx
-│   │   └── footer.tsx
-│   ├── shared/                  # Shared Business Components
-│   │   ├── camera-capture.tsx
-│   │   ├── data-export-import.tsx
-│   │   └── loading-states.tsx
-│   └── theme-provider.tsx
-├── lib/                         # Core Application Logic
-│   ├── db/                      # Database Layer
-│   │   ├── db.ts               # Main Dexie.js setup
-│   │   ├── migrations.ts       # Database migrations
-│   │   └── seed.ts             # Initial data seeding
-│   ├── api/                     # API utilities
-│   │   ├── client.ts           # API client setup
-│   │   └── endpoints.ts        # API endpoints
-│   ├── validations/             # Zod Schemas
-│   │   ├── auth.schemas.ts
-│   │   ├── liquid.schemas.ts
-│   │   ├── meal.schemas.ts
-│   │   ├── stool.schemas.ts
-│   │   └── symptom.schemas.ts
-│   ├── constants.ts             # App constants
-│   ├── types.ts                # Global TypeScript types
-│   └── utils.ts                # Utility functions
-├── middleware.ts               # Next.js Middleware (Route Protection)
-├── public/                     # Static Assets
-│   ├── manifest.json          # PWA Manifest
-│   ├── sw.js                  # Service Worker
-│   └── icons/                 # PWA Icons
-└── [config files]             # package.json, next.config.js, etc.
+**Development Commands:**
+
+- `pnpm test` - Run Jest unit/integration tests (fast feedback)
+- `pnpm test:watch` - Run Jest tests in watch mode during development
+- `pnpm test:coverage` - Run Jest tests with coverage report
+- `pnpm test:ci` - Run Jest tests optimized for CI environment
+
+**E2E Testing Commands:**
+
+- `pnpm test:e2e` - Run Playwright E2E tests (critical user journeys)
+- `pnpm test:e2e:ui` - Run Playwright with visual interface
+- `pnpm test:e2e:debug` - Run Playwright with step-through debugging
+- `pnpm test:e2e:headed` - Run Playwright in visible browser
+- `pnpm test:all` - Run both Jest and Playwright tests
+- `pnpm test:pwa` - Build and serve for PWA testing (offline, installability)
+
+**Testing Stack:**
+
+- **Jest** + **@testing-library/react** + **user-event** for component testing
+- **MSW** for API mocking (recommended over global mocks for new tests)
+- **Playwright MCP** for E2E and browser testing
+- **jest-axe** for accessibility validation
+- Global Supabase mocks in `__tests__/setup/jest.setup.ts`
+
+**Pre-flight Checks for Playwright Testing:**
+
+1. Ensure `.env.local` exists with valid Supabase credentials
+2. Run `pnpm build:check` to verify no build errors
+3. Kill any existing dev servers: `kill $(lsof -ti:3000) $(lsof -ti:3001) 2>/dev/null || true`
+4. Clear Next.js cache if needed: `rm -rf .next`
+5. For most stable results, use production build (`pnpm build && pnpm start`)
+
+**Testing Layers:**
+
+1. **Unit tests** - Utils, hooks logic, data transformations
+2. **Component tests** - User interactions, UI state, form validation
+3. **Integration tests** - Feature slices with real routing/data flow
+4. **E2E tests** - Critical user journeys via Playwright MCP
+
+**Pre-Commit Sequence:**
+
+```bash
+pnpm format          # Auto-format code
+pnpm lint           # ESLint checks
+pnpm type-check     # TypeScript validation
+pnpm test           # Run Jest unit/integration tests (fast)
+pnpm build:check    # Production build + lint
 ```
 
-**Key Architectural Principles:**
+**Pre-Release Validation:**
 
-- **Feature-Based Organization:** Each tracking category (liquids, foods, stools, symptoms) is a self-contained feature module
-- **Domain-Driven Design:** Clear boundaries between business domains with explicit exports
-- **Separation of Concerns:** Shared components are separate from feature-specific logic
-- **Scalability:** Easy to add new tracking categories as independent features
-- **Import Clarity:** Clean imports using feature barrel exports (e.g., `import { AddFoodDialog } from '@/features/foods'`)
-
-#### 3.1. Data Storage Strategy
-
-**Philosophy:** Privacy by Design - Local-First Storage
-
-The application follows a **local-first** data storage approach, prioritizing user privacy and data ownership:
-
-- **Primary Storage:** **IndexedDB** via **Dexie.js** library
-  - Stores all user health data locally on the device
-  - Supports complex data structures and relationships
-  - Enables robust offline functionality
-  - Provides transactional, asynchronous operations
-  - **Reactive State Management:** `dexie-react-hooks` provides `useLiveQuery` for automatic UI updates
-  - **Clean Data Layer:** Centralized database operations in `lib/db.ts` separate from UI components
-
-- **Privacy Benefits:**
-  - Zero sensitive health data stored on servers
-  - User maintains complete control over their data
-  - Eliminates data breach risks for personal health information
-  - Reduces regulatory compliance burden
-
-- **Data Export/Import:** Built-in functionality for users to:
-  - Export their complete data set as JSON
-  - Import previously exported data
-  - Migrate between devices manually
-  - Create personal backups
-
-#### 3.2. AI Analysis Flow (Privacy-Preserving)
-
-The AI analysis follows an **ephemeral processing** model that maintains privacy while optimizing for rapid iteration:
-
-**Architecture Strategy: Hybrid Workflow Approach**
-
-The system uses a **visual workflow orchestrator** (n8n) combined with an **AI API aggregator** (OpenRouter) to maximize iteration speed and flexibility:
-
-1. **Capture:** User takes photo on frontend
-2. **Webhook Trigger:** Frontend sends image to Next.js API route (`/api/analyze`)
-3. **Workflow Orchestration:** API route forwards request to n8n webhook URL
-4. **AI Processing:** n8n workflow handles the complex AI logic:
-   - Calls OpenRouter API with configurable model selection
-   - Processes AI response and formats to match data interfaces
-   - Handles error cases and validation
-   - Returns structured JSON to webhook response
-5. **No Persistence:** **Critical** - All processing remains ephemeral
-6. **Local Storage:** Frontend receives structured data and saves to IndexedDB
-
-**Key Privacy Principles:**
-
-- Server functions are stateless and ephemeral
-- No user data logged or persisted on servers
-- All processing happens in memory and is immediately discarded
-- User data only exists on their device and in transit during analysis
-
-**Architecture Benefits:**
-
-- **Rapid Iteration:** AI logic can be modified in n8n without code deployments
-- **Model Flexibility:** Easy switching between AI providers via OpenRouter
-- **Decoupled Design:** Main application is independent of AI implementation details
-- **Visual Development:** Complex AI workflows can be built and tested visually
-
-**Security & Performance Considerations:**
-
-- **API Security:** AI API keys stored as server-side environment variables only
-- **Rate Limiting:** IP-based rate limiting on `/api/analyze` endpoint to prevent abuse
-- **Data Validation:** **Zod** schema validation for all AI responses before client processing
-- **Error Handling:** Graceful fallbacks when AI analysis fails or returns malformed data
-- **Workflow Security:** n8n webhook endpoints secured with authentication tokens
-
-#### 3.2.1. Ingredient Processing Pipeline
-
-The core intelligence of the app lies in its ability to not just identify ingredients, but to enrich them with nutritional context (food group and zone). This is achieved through a two-stage pipeline that runs on the backend (e.g., within an n8n workflow) after a user submits a food entry.
-
-**Stage 1: Ingredient Identification (The "What")**
-
-This stage determines the list of ingredients from the user's input.
-
-- **Manual Input:** If the user types ingredients manually, this stage is complete. The system receives a direct list of strings (e.g., `["Chicken Breast", "Organic Tomatoes"]`).
-- **Camera Input:** When a photo is provided, a multimodal vision model (e.g., GPT-4o) is used with a prompt like: `"List the primary ingredients in this food. Return as a JSON array of strings."` The goal is to produce the same list of strings as the manual input.
-
-**Stage 2: Ingredient Enrichment (The "So What")**
-
-This stage takes each ingredient string and assigns it a `foodGroup` and a `zone` using a hybrid system that ensures both consistency and scalability.
-
-1.  **Curated Ingredient Database (The Source of Truth):**
-    - The system first queries a curated backend database (e.g., a Supabase table or Vercel KV store). This database is our hand-maintained source of truth.
-    - **Schema:** Each entry contains `ingredientName`, `foodGroup`, `defaultZone`, and `zoneModifiers` (e.g., rules for when `isOrganic` or `cookingMethod` changes the zone).
-    - **Happy Path:** If a match is found (e.g., "Tomato"), the system uses the high-quality, consistent data from our database. This is fast and aligns perfectly with our app's nutritional philosophy.
-
-2.  **AI Fallback (For Scalability):**
-    - If an ingredient is not found in our curated database (e.g., "Gochujang"), the system proceeds to an AI fallback.
-    - A second, more specific AI call is made with a detailed prompt instructing the AI to classify the ingredient into a `foodGroup` and `zone` based on our predefined philosophy (e.g., "Green foods are whole and unprocessed...").
-
-3.  **The Learning Loop (For Continuous Improvement):**
-    - Whenever the AI fallback is used, the ingredient and the AI's classification are logged.
-    - This log can be periodically reviewed. If "Gochujang" appears frequently, it can be officially analyzed and added to the Curated Ingredient Database, making the system progressively smarter and less reliant on the AI for that item.
-
-This hybrid approach provides the consistency of a curated list for common foods while using AI's power to handle the near-infinite variety of other ingredients, ensuring the app can scale without sacrificing the quality of its core insights.
-
-#### 3.3. User Authentication & Access Control
-
-**Authentication Philosophy:** Privacy-First with Local Account Management
-
-Given the privacy-first, local-storage architecture, user authentication serves primarily as a device-level access control mechanism rather than traditional server-side user management:
-
-**Authentication Strategy:**
-
-- **Local Account Creation:** User accounts are created and stored locally on the device
-- **Device-Based Sessions:** Authentication sessions are maintained locally using secure browser storage
-- **Optional Server Sync:** Authentication tokens can be used for optional multi-device sync (future feature)
-- **Privacy Protection:** No personal health data is transmitted during authentication
-
-**Application Structure:**
-
-Public Routes (No Authentication Required):
-├── / (Landing Page)
-├── /login (Sign In)
-├── /signup (Create Account)
-├── /about (App Information)
-└── /privacy (Privacy Policy)
-
-Protected Routes (Authentication Required):
-├── /app (Main Health Tracker Interface)
-├── /app/insights (Analytics & Trends)
-└── /app/settings (User Preferences & Data Management)
-
-For the MVP, the `/app/settings` page will serve as the central hub for account and data controls, consolidating functionality that might otherwise be on separate pages. This page will include:
-
-- **Account Management:**
-  - **Logout:** A button to end the current session.
-- **Data Management:**
-  - **Export Data:** A button to download all user data as a single JSON file.
-  - **Import Data:** An interface to upload a previously exported JSON file.
-  - **Delete All Data:** A clearly marked, high-friction option to permanently erase all locally stored health data.
-- **Appearance:**
-  - **Theme:** A toggle to switch between light and dark modes.
-
-**Implementation Details:**
-
-- **Local Authentication:** User credentials hashed and stored in IndexedDB
-- **Session Management:** JWT tokens stored in secure browser storage
-- **Biometric Integration:** Future support for WebAuthn/Touch ID/Face ID
-- **Data Isolation:** Each user account has isolated IndexedDB database
-
-**Security Considerations:**
-
-- **Local Password Hashing:** bcrypt or similar for local password storage
-- **Session Timeout:** Configurable auto-logout for security
-- **Device Fingerprinting:** Optional device recognition for enhanced security
-- **Rate Limiting:** Protection against brute force attacks on login
-
-**Data Recovery & Backup:**
-
-- **Primary Backup Method:** Export/Import Data functionality is the main recovery mechanism
-- **Device-Bound Accounts:** User accounts are tied to the device; no cloud-based account recovery
-- **Data Loss Prevention:** Clear user education about the importance of regular data exports
-- **No Password Recovery:** If a user forgets their password, they must reset the app and lose all data unless they have a manual backup
-
-#### 3.4. Desktop vs Mobile Experience Strategy
-
-**Core Philosophy:** Mobile-First with Responsive Desktop Support
-
-The Health Tracker is designed primarily for mobile use, but provides a thoughtful desktop experience that maintains functionality while encouraging mobile adoption:
-
-**Desktop Experience Strategy:**
-
-- **Responsive Design:** Mobile-optimized interface that scales appropriately to desktop
-- **Feature Parity:** All core functionality available on desktop with adapted UI
-- **Mobile Encouragement:** Clear messaging about optimal mobile experience
-- **Complementary Features:** Desktop-specific enhancements where appropriate
-
-**Device-Specific Implementations:**
-
-**Landing Page (`/`):**
-
-- **Mobile:** Streamlined app introduction with quick signup/login
-- **Desktop:** Comprehensive overview with:
-  - App demonstration and screenshots
-  - Feature highlights and benefits
-  - QR code for easy mobile access
-  - Download/install instructions
-  - "Better on mobile" messaging
-
-**Authentication (`/login`, `/signup`):**
-
-- **Mobile:** Full-screen forms optimized for touch
-- **Desktop:** Centered forms with explanatory content
-- **Both:** Consistent branding and security messaging
-
-**Main Application (`/app`):**
-
-- **Mobile:** Tab-based navigation with thumb-friendly interactions
-- **Desktop:** Sidebar navigation with larger content area
-- **Camera Features:**
-  - Mobile: Direct camera access for photo capture
-  - Desktop: File upload with drag-and-drop support
-- **Visual Feedback:** Adapted touch targets and hover states
-
-**Progressive Enhancement Approach:**
-
-**Base Experience (Works Everywhere):**
-
-- Manual data entry forms
-- Basic visualizations
-- Data export/import
-- Settings and preferences
-
-**Enhanced Mobile Features:**
-
-- Camera capture for quick logging
-- Push notifications for reminders
-- Offline functionality
-- Touch-optimized gestures
-
-**Desktop-Specific Enhancements:**
-
-- Keyboard shortcuts for power users
-- Drag-and-drop file uploads
-- Enhanced data visualization with hover details
-- Multi-window support for data analysis
-
-**Implementation Guidelines:**
-
-- **CSS Media Queries:** Responsive breakpoints for different screen sizes
-- **Feature Detection:** JavaScript-based capability detection
-- **Graceful Degradation:** Fallbacks for missing mobile features
-- **Performance Optimization:** Lazy loading for desktop-specific features
-
-**User Experience Considerations:**
-
-- **Clear Expectations:** Prominent messaging about mobile-first design
-- **Feature Availability:** Visual indicators for mobile-only features
-- **Cross-Device Continuity:** Consistent data and experience across devices
-- **Progressive Disclosure:** Advanced features revealed based on device capabilities
-
-#### 3.5. Future Architecture Considerations
-
-**Multi-Device Sync (Future):**
-If multi-device functionality becomes necessary, implement **End-to-End Encryption (E2EE)**:
-
-- Data encrypted on device before transmission
-- Server stores encrypted blobs it cannot read
-- Only user devices with proper keys can decrypt data
-- Maintains privacy-first approach even with cloud storage
-
-**Native App Migration:**
-Current PWA can be enhanced with **Capacitor** if native device integration is needed:
-
-- Maintains existing Next.js codebase
-- Adds native API access (HealthKit, Google Fit)
-- Preserves local-first data storage approach
-- Avoids full React Native rewrite
-
-**Important:** Capacitor packages the PWA as a static web app. The native app will make network requests to the deployed Vercel API endpoints (e.g., `https://your-app.vercel.app/api/analyze`) for AI functionality. This maintains the client-server separation while enabling native distribution.
-
-### 4. Design System & UI Standards
-
-A consistent and thoughtful design system is critical for creating a professional, intuitive, and scalable application. The following standards should guide all UI/UX development.
-
-#### 4.1. Color Palette
-
-Colors are based on HSL values defined in `app/globals.css` and `tailwind.config.ts`. The palette should be used consistently to create a clear visual hierarchy.
-
-- **Primary UI:**
-  - `background`: `hsl(var(--background))`
-  - `foreground`: `hsl(var(--foreground))`
-  - `card`: `hsl(var(--card))`
-  - `primary`: `hsl(var(--primary))` (for primary actions)
-  - `secondary`: `hsl(var(--secondary))` (for secondary elements)
-  - `accent`: `hsl(var(--accent))` (for highlights and active states)
-- **Health "Zone" Colors:** These are critical for at-a-glance insights.
-  - **Green (Good):** `hsl(142.1 76.2% 36.3%)` - Represents healthy, whole foods.
-  - **Yellow (Maybe):** `hsl(47.9 95.8% 53.1%)` - Represents processed foods or items to be consumed in moderation.
-  - **Red (Bad):** `hsl(0 84.2% 60.2%)` - Represents unhealthy items or potential triggers.
-- **Category-Specific Colors:**
-  - **Liquids:** Blue/Cyan gradient (`from-blue-400 to-cyan-500`)
-  - **Foods:** Green/Emerald gradient (`from-green-400 to-emerald-500`)
-  - **Stools:** Amber/Yellow gradient (`from-amber-400 to-yellow-500`)
-  - **Symptoms:** Red/Pink gradient (`from-red-400 to-pink-500`)
-
-#### 4.2. Typography
-
-- **Font:** The primary font is system-ui (`-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`) for a native feel.
-- **Hierarchy:**
-  - **Page Titles:** `text-xl` (20px), `font-semibold`
-  - **Section Headers:** `text-lg` (18px), `font-semibold`
-  - **Body/Paragraphs:** `text-base` (16px), `font-normal`
-  - **Labels/Metadata:** `text-sm` (14px), `font-medium`
-  - **Small/Helper Text:** `text-xs` (12px), `text-gray-500`
-
-#### 4.3. Spacing & Sizing
-
-- **Spacing Unit:** Follow a 4px grid system. Use Tailwind's spacing scale (e.g., `p-2` for 8px, `p-4` for 16px).
-- **Layout:** Main content areas should have a horizontal padding of `px-4`.
-- **Touch Targets:** All interactive elements (buttons, list items) must have a minimum height of `44px` to meet accessibility standards on mobile.
-- **Radius:** Use consistent border-radius values. `rounded-lg` (0.5rem) for cards and containers, `rounded-full` for circular elements.
-
-#### 4.4. Component Standards
-
-- **Buttons:**
-  - **Primary:** Solid background, for main CTAs.
-  - **Secondary/Outline:** Transparent background with a border, for less prominent actions.
-  - **Ghost:** No background or border, for tertiary actions or icon buttons.
-- **Inputs:** Use `Input` from `components/ui/input` with a corresponding `Label`.
-- **Dialogs:** All modals should use the `Dialog` component and be dismissible by clicking the overlay or pressing Escape.
-
-#### 4.5. Animation & Transitions
-
-- **Standard Duration:** `150ms` for all standard transitions (color, background, opacity).
-- **Easing:** Use `cubic-bezier(0.4, 0, 0.2, 1)` (Tailwind's `ease-in-out`) for a smooth, natural feel.
-- **Complex Animations:** For more significant animations (e.g., dialogs opening), a duration of `200-300ms` may be used.
-
-### 5. Data Structures (TypeScript Interfaces)
-
-The following interfaces define the shape of the data stored in the application.
-
-```typescript
-interface Food {
-  id: string;
-  name: string; // e.g., "Lunch" or a user-defined name
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  ingredients: Ingredient[]; // A food entry is defined by its ingredients.
-  image?: string;
-  notes?: string;
-  status: "pending_review" | "analyzing" | "processed";
-}
-
-interface Ingredient {
-  name: string;
-  isOrganic: boolean;
-  cookingMethod?:
-    | "raw"
-    | "fried"
-    | "steamed"
-    | "baked"
-    | "grilled"
-    | "roasted"
-    | "other";
-  foodGroup:
-    | "vegetable"
-    | "fruit"
-    | "protein"
-    | "grain"
-    | "dairy"
-    | "fat"
-    | "other";
-  zone: "green" | "yellow" | "red";
-}
-
-interface Liquid {
-  id: string;
-  name: string; // e.g. "Morning Coffee"
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  amount: number; // in ml
-  type: "water" | "coffee" | "tea" | "juice" | "soda" | "dairy" | "other";
-  notes?: string;
-  image?: string;
-}
-
-interface Symptom {
-  id: string;
-  name: string;
-  severity: number; // 1-5
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  notes?: string;
-}
-
-interface Stool {
-  id: string;
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  bristolScale: number; // 1-7
-  color: "brown" | "green" | "yellow" | "black" | "white" | "red" | "other";
-  hasBlood: boolean;
-  notes?: string;
-  image?: string;
-}
+```bash
+pnpm test:all       # Run both Jest and Playwright tests
 ```
 
-### 6. Key Component Breakdown
+**Browser Testing (when UI changes made):**
 
-#### 6.1. Data Layer Architecture
+- Use Playwright MCP tools for UI validation
+- Test critical workflows: auth, food/symptom tracking, camera
+- Check console for errors, validate real-time sync
+- Validate PWA features and responsive design
+- Run accessibility checks with axe-core
 
-- **`lib/db.ts`**: **Centralized Data Layer** - Contains all Dexie.js database operations (`addFood`, `getSymptoms`, `updateLiquid`, etc.). Components interact with data through these functions, not directly with Dexie.
-- **`lib/hooks/`**: **Custom React Hooks** - Data-specific hooks that encapsulate `useLiveQuery` calls and business logic (e.g., `useTodaysFoods`, `useSymptomTrends`).
+### Database
 
-#### 6.2. UI Components
+- `pnpm run db:reset` - Clear all user data from current Supabase session
+- `pnpm run db:seed` - Seed database with test data (development only)
+- `pnpm run db:status` - Check database connection and status
 
-- **`app/page.tsx`**: **Main Layout Component** - Orchestrates the overall UI layout and handles routing between different views. Data operations are delegated to the data layer.
-- **Dialogs (`components/add-*-dialog.tsx`)**: A suite of four highly specialized forms for manual data entry. They manage their own internal form state and call back to the data layer with complete data objects upon submission.
-- **`components/camera-capture.tsx`**: A reusable, self-contained camera module. It handles the complexities of accessing the device camera, displaying the video stream, and capturing a frame. It is agnostic about _what_ is being captured, simply returning a base64 image string to the parent.
+### Supabase CLI (Read-Only)
 
-#### 6.3. Visualization Components
+- `pnpm run supabase:types` - Generate TypeScript types from development database
+- `pnpm run supabase:types:prod` - Generate TypeScript types from production database (requires prod project ID)
+- `pnpm run supabase:status` - List Supabase projects (requires authentication)
 
-- `split-circular-progress.tsx`: Renders the two-part circle for the Liquids view.
-- `food-category-progress.tsx`: Renders the three-part pie chart for the Foods view.
-- `vertical-progress-bar.tsx`: Renders the "battery" for the daily organic total.
-- `food-composition-bar.tsx` & `
+**Note**: Supabase CLI is configured for read-only operations. We use remote projects only (no local instances).
+
+## Architecture Overview
+
+### Core Stack
+
+- **Next.js 15** with App Router and React Server Components
+- **React 19** with modern concurrent features
+- **TypeScript** with strict mode enabled
+- **Tailwind CSS** with shadcn/ui components
+- **Supabase** for secure cloud data storage with real-time sync
+- **PWA** with installation capabilities and real-time cloud sync
+
+### Key Directories
+
+- `/app` - Next.js App Router (auth pages, protected routes, API routes)
+- `/features` - Domain-specific functionality (auth, camera, foods, symptoms)
+- `/components` - UI components following shadcn/ui patterns
+- `/lib` - Core utilities (db.ts, types.ts, utils.ts, ai/)
+
+### Data & Auth
+
+- **Cloud-based**: Secure data storage with Supabase
+- **Supabase Auth**: Built-in authentication with session management
+- **Authentication**: Standard Supabase Auth with email/password
+- **Middleware protection** for `/app/(protected)/` routes with Supabase session validation
+
+### AI Integration
+
+- **OpenRouter API** for ingredient analysis
+- API routes handle processing
+- Prompts in `/prompts/` as markdown
+- Rate limiting via Upstash Redis
+
+## Development Guidelines
+
+### Git & Code Quality
+
+- **Branches**: `feature/`, `fix/`, `refactor/` + description (solo development)
+- **Commits**: `type: brief description` (feat, fix, docs, style, refactor, test, chore)
+- **Before pushing**: Always run `pnpm build:check`
+- **Deployment**: Direct push to main triggers Vercel auto-deployment
+
+### Best Practices
+
+**TypeScript & React:**
+
+- Strict mode, no `any` types
+- Functional components with Hooks
+- Keep state close to usage
+- Use react-hook-form + zod for forms
+
+**Performance & Styling:**
+
+- Code splitting with React.lazy()
+- Next.js Image optimization
+- Tailwind utilities only
+- Mobile-first responsive design
+
+**Database & PWA:**
+
+- All CRUD through `lib/db.ts` using Supabase client
+- Test with `pnpm db:reset` to clear user data
+- Verify real-time sync and cloud data persistence
+- Test iOS Safari compatibility and PWA installation
+
+**Testing Patterns:**
+
+- **Supabase Integration**: Use existing global mocks for consistent behavior; consider MSW for new API-heavy features
+- **Cloud-based Architecture**: Test data persistence, real-time sync, and authentication flows
+- **PWA Testing**: Verify installation process, service worker updates, and app-like experience
+- **Accessibility**: Query by role/label (Testing Library default), validate with jest-axe
+- **Component Isolation**: Test behavior, not implementation; avoid testing library internals
+
+### MCP Server Integration
+
+**Available MCP Servers:**
+
+- **Playwright MCP** - Browser automation and testing
+- **Context7 MCP** - Enhanced context understanding and knowledge retrieval
+
+**Browser Testing with Playwright MCP:**
+
+**When to Use:**
+
+- After UI/UX changes
+- Testing auth flows or protected routes
+- PWA functionality validation
+- Debugging browser-specific issues
+
+**IMPORTANT - Troubleshooting Webpack/Build Issues:**
+If you encounter webpack errors (e.g., "Cannot read properties of undefined (reading 'call')") when using Playwright:
+
+1. **Use production build instead of dev server** - The production build is more stable
+2. Kill any existing processes on ports 3000/3001
+3. Run `pnpm build` first, then `pnpm start`
+4. Production server runs on port 3000 by default
+
+**Starting Server for Playwright Testing (Recommended Approach):**
+
+```bash
+# OPTION 1: Production Build (More Stable - RECOMMENDED)
+# Kill any existing processes
+kill $(lsof -ti:3000) 2>/dev/null || true
+
+# Build and start production server
+pnpm build
+nohup pnpm start > /tmp/puls-prod.log 2>&1 & echo $!
+sleep 3  # Wait for server to start
+tail -20 /tmp/puls-prod.log
+
+# OPTION 2: Development Server (If needed for hot reload)
+# Only use if production build works but you need dev features
+kill $(lsof -ti:3001) 2>/dev/null || true
+nohup pnpm dev > /tmp/puls-dev.log 2>&1 & echo $!
+sleep 5  # Dev server takes longer
+tail -20 /tmp/puls-dev.log
+```
+
+**Port Handling:**
+
+- Production build: Always uses port 3000
+- Dev server: Uses 3000, or 3001 if 3000 is busy
+- Check logs to confirm which port is being used
+- Navigate to the correct URL based on server output
+
+**Quick Workflow:**
+
+1. Kill any existing processes: `kill $(lsof -ti:3000) 2>/dev/null || true`
+2. Build and start production server (see above)
+3. Navigate to `http://localhost:3000` with Playwright
+4. If you see an offline screen, click "Try Again" or check network
+5. Take snapshots, check console for errors
+6. Test critical user paths (auth, tracking, dashboard)
+7. Validate real-time data sync with Supabase
+8. Check accessibility (keyboard nav, ARIA)
+9. When done, kill the server: `kill <PID>` or `lsof -ti:3000 | xargs kill -9`
+
+**Common Playwright Issues & Solutions:**
+
+- **Blank page with console errors**: Use production build instead of dev server
+- **"Port in use" errors**: Kill existing processes before starting
+- **Offline state persisting**: Clear browser state or use incognito mode
+- **CSS/JS 404 errors**: Wait longer for compilation or use production build
+- **Manifest errors**: Normal in development, can be ignored
+
+**Context7 MCP Usage:**
+
+- Fetches up-to-date, version-specific documentation and code examples directly from source
+- Available via HTTP transport at `https://mcp.context7.com/mcp`
+- **How to use:** Write prompts naturally, then tell Claude to `use Context7` for current documentation
+- **Benefits:** Get working code answers with the latest API changes and best practices
+- **Use cases:** When you need current framework docs, library examples, or API references
+
+### Error Prevention
+
+- Always use `pnpm` not `npm`
+- Use `@/` path aliases
+- Verify `.env.local` for API issues
+- Check Supabase connection in browser network tab
+
+## Environment Configuration
+
+### Environment Files
+
+- **`.env.local`** - Local development environment (gitignored)
+  - Uses development Supabase project
+  - No Redis rate limiting (empty Redis vars)
+  - OpenRouter API key for AI features
+- **`.env.prod`** - Production secrets (gitignored)
+  - Uses production Supabase project
+  - Upstash Redis enabled for API rate limiting
+  - Used for Vercel production deployment
+- **`.env.example`** - Template showing required variables (committed)
+  - Reference for setting up local environment
+  - Documents all required environment variables
+  - Note: Using Supabase's new API key naming (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` instead of `ANON_KEY`)
+
+### Environment Modes
+
+- **Development**: No rate limiting, local Supabase project
+- **Production**: Full security enabled, Redis rate limiting active
+
+## Troubleshooting
+
+**Common Issues:**
+
+- **Build fails**: Run `pnpm type-check` first
+- **PWA not installing**: Check manifest.json and service worker
+- **Database issues**: Run `pnpm db:reset` or check Supabase dashboard
+- **API errors**: Verify OpenRouter API key in `.env.local`
+
+**Debug Commands:**
+
+- `pnpm dev:clean` - Hard reset development
+- `pnpm db:reset` - Clear all local data
+
+When working with this codebase, prioritize maintaining secure cloud storage with Supabase, PWA compatibility, and type safety throughout all changes.

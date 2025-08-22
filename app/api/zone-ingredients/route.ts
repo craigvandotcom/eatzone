@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       model: 'anthropic/claude-3.7-sonnet', // Better for structured JSON with improved reasoning
       messages: [{ role: 'user', content: fullPrompt }],
       response_format: { type: 'json_object' },
-      max_tokens: 1024,
+      max_tokens: 4096, // Further increased to handle long prompt + full response
       temperature: 0.1,
     });
 
@@ -203,8 +203,30 @@ export async function POST(request: NextRequest) {
       .array(zonedIngredientSchema)
       .parse(normalizedIngredients);
 
+    // Validate response completeness - check for truncated or missing ingredients
+    const inputNames = new Set(sanitizedIngredients);
+    const outputNames = new Set(validatedIngredients.map(i => i.name));
+    const missingIngredients = sanitizedIngredients.filter(
+      name => !outputNames.has(name)
+    );
+    const truncatedIngredients = validatedIngredients.filter(
+      i =>
+        i.name.length < 3 ||
+        !sanitizedIngredients.some(input => input.includes(i.name))
+    );
+
+    if (missingIngredients.length > 0 || truncatedIngredients.length > 0) {
+      logger.warn('AI response quality issues detected', {
+        inputCount: sanitizedIngredients.length,
+        outputCount: validatedIngredients.length,
+        missingIngredients,
+        truncatedIngredients: truncatedIngredients.map(i => i.name),
+      });
+    }
+
     logger.debug('Final validated response', {
       ingredientCount: validatedIngredients.length,
+      qualityIssues: missingIngredients.length + truncatedIngredients.length,
     });
 
     // Record successful performance metrics

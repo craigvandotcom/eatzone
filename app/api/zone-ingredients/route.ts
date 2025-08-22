@@ -204,7 +204,6 @@ export async function POST(request: NextRequest) {
       .parse(normalizedIngredients);
 
     // Validate response completeness - check for truncated or missing ingredients
-    const inputNames = new Set(sanitizedIngredients);
     const outputNames = new Set(validatedIngredients.map(i => i.name));
     const missingIngredients = sanitizedIngredients.filter(
       name => !outputNames.has(name)

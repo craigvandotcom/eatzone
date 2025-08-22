@@ -114,7 +114,9 @@ export function FoodEntryForm({
 
       // Validate image data format
       if (!imageData || !imageData.startsWith('data:image/')) {
-        logger.error('Invalid image data format', { imageData: imageData?.substring(0, 50) });
+        logger.error('Invalid image data format', {
+          imageData: imageData?.substring(0, 50),
+        });
         setAnalysisError('Invalid image data. Please try capturing again.');
         toast.error('Invalid image data. Please try capturing again.');
         return;
@@ -140,7 +142,10 @@ export function FoodEntryForm({
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
-          logger.error('Analysis API error', { status: response.status, errorData });
+          logger.error('Analysis API error', {
+            status: response.status,
+            errorData,
+          });
           throw new Error(`Analysis failed with status ${response.status}`);
         }
 
@@ -158,11 +163,11 @@ export function FoodEntryForm({
         }
 
         const aiIngredients: Ingredient[] = ingredientData.map(
-          (ingredient: { name: string; organic: boolean }) => ({
+          (ingredient: { name: string; organic: boolean }): Ingredient => ({
             name: ingredient.name,
             organic: ingredient.organic || false,
-            group: 'other' as const, // Default value
-            zone: 'unzoned' as const, // Default value - will be zoned later
+            group: 'other', // Default value
+            zone: 'unzoned', // Default value - will be zoned later
           })
         );
 
@@ -235,7 +240,12 @@ export function FoodEntryForm({
     });
 
     // Only analyze if we have image data, not editing, haven't analyzed, and haven't initiated
-    if (imageData && !editingFood && !hasAnalyzed && !analysisInitiatedRef.current) {
+    if (
+      imageData &&
+      !editingFood &&
+      !hasAnalyzed &&
+      !analysisInitiatedRef.current
+    ) {
       logger.debug('Starting image analysis');
       analysisInitiatedRef.current = true;
       analyzeImage(imageData, name);
@@ -246,7 +256,7 @@ export function FoodEntryForm({
   useEffect(() => {
     isMountedRef.current = true;
     logger.debug('Component mounted, isMountedRef set to true');
-    
+
     return () => {
       isMountedRef.current = false;
       logger.debug('Component unmounting, isMountedRef set to false');

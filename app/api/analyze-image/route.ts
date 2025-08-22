@@ -92,6 +92,7 @@ interface AnalyzeImageErrorResponse {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('=== IMAGE ANALYSIS API CALLED ===');
   logger.info('Image analysis request received');
 
   // Start performance monitoring
@@ -163,14 +164,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Comprehensive request validation (size, format, count)
+    console.log('=== BEFORE REQUEST VALIDATION ===');
     const requestValidationResult = await validateImageAnalysisRequest(request);
+    console.log('=== VALIDATION RESULT ===', requestValidationResult.isValid);
     if (!requestValidationResult.isValid) {
       return createValidationErrorResponse(requestValidationResult);
     }
 
     // Parse the validated data
     const body = requestValidationResult.data;
+    console.log('=== BEFORE SCHEMA PARSE ===');
     const validatedData = analyzeImageSchema.parse(body);
+    console.log('=== SCHEMA PARSE SUCCESS ===');
 
     // Handle both single image and multiple images
     const images: string[] =
@@ -205,6 +210,7 @@ export async function POST(request: NextRequest) {
     ];
 
     // Call OpenRouter with vision model - single request with all images
+    console.log('=== CALLING OPENROUTER API ===');
     const response = await openrouter.chat.completions.create({
       model: 'openai/gpt-4o',
       messages: [
@@ -216,6 +222,7 @@ export async function POST(request: NextRequest) {
       max_tokens: 400, // Slightly increased for multi-image analysis
       temperature: 0.1, // Low temperature for more consistent results
     });
+    console.log('=== OPENROUTER API SUCCESS ===');
 
     const aiResponseText = response.choices[0]?.message?.content;
 
@@ -318,12 +325,14 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     // Enhanced error logging
+    console.log('=== API ERROR CAUGHT ===', error);
     const errorDetails = {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       type: error?.constructor?.name,
     };
 
+    console.log('=== ERROR DETAILS ===', errorDetails);
     logger.error('Error in analyze-image API', error, errorDetails);
 
     // Record error in performance metrics

@@ -102,49 +102,68 @@ async function zoneIngredients(ingredients: Ingredient[]): Promise<{
       return { enrichedIngredients: ingredients, warnings };
     }
 
-    const ingredientNames = ingredientsNeedingZoning.map(ing => ing.name);
-
-    logger.debug('Sending ingredients for zoning', {
-      count: ingredientNames.length,
+    logger.debug('Sending ingredients for zoning individually', {
+      count: ingredientsNeedingZoning.length,
     });
 
-    const zoneResponse = await fetch('/api/zone-ingredients', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ingredients: ingredientNames }),
-    });
+    // Process each ingredient individually to avoid truncation issues
+    const zoningPromises = ingredientsNeedingZoning.map(async ingredient => {
+      try {
+        const response = await fetch('/api/zone-ingredients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ingredients: [ingredient.name] }),
+        });
 
-    if (!zoneResponse.ok) {
-      // Handle different error types
-      const errorData = await zoneResponse.json().catch(() => null);
-      const errorMessage =
-        errorData?.error?.message || 'Could not zone ingredients';
+        if (!response.ok) {
+          logger.warn(`Failed to zone ingredient: ${ingredient.name}`, {
+            status: response.status,
+          });
+          return { ingredient, zonedData: null };
+        }
 
-      logger.error('Zoning API error', undefined, {
-        status: zoneResponse.status,
-        errorData,
-      });
-
-      if (zoneResponse.status === 429) {
-        warnings.push('Too many requests. Please wait a moment and try again.');
-      } else if (zoneResponse.status === 400) {
-        warnings.push('Invalid ingredients data. Please check your input.');
-      } else {
-        warnings.push(errorMessage + '. Saving with default values.');
+        const { ingredients: zonedArray }: ZoningResponse =
+          await response.json();
+        return {
+          ingredient,
+          zonedData: zonedArray && zonedArray.length > 0 ? zonedArray[0] : null,
+        };
+      } catch (error) {
+        logger.warn(`Error zoning ingredient: ${ingredient.name}`, error);
+        return { ingredient, zonedData: null };
       }
-
-      return { enrichedIngredients: ingredients, warnings };
-    }
-
-    const { ingredients: zonedData }: ZoningResponse =
-      await zoneResponse.json();
-
-    logger.debug('Received zoning data', {
-      count: zonedData.length,
     });
 
-    // Create a map of zoned data
-    const zonedMap = new Map(zonedData.map(item => [item.name, item]));
+    // Process all ingredients in parallel
+    const zoningResults = await Promise.allSettled(zoningPromises);
+
+    // Build zoned data map
+    const zonedMap = new Map();
+    let successCount = 0;
+
+    zoningResults.forEach(result => {
+      if (result.status === 'fulfilled' && result.value.zonedData) {
+        zonedMap.set(result.value.ingredient.name, result.value.zonedData);
+        successCount++;
+      }
+    });
+
+    logger.debug('Individual zoning completed', {
+      total: ingredientsNeedingZoning.length,
+      successful: successCount,
+      failed: ingredientsNeedingZoning.length - successCount,
+    });
+
+    if (successCount === 0) {
+      warnings.push(
+        'Could not zone any ingredients. Saving with default values.'
+      );
+      return { enrichedIngredients: ingredients, warnings };
+    } else if (successCount < ingredientsNeedingZoning.length) {
+      warnings.push(
+        `Could only zone ${successCount} of ${ingredientsNeedingZoning.length} ingredients.`
+      );
+    }
 
     // Enrich ingredients with zoned data
     const enrichedIngredients = ingredients.map(ing => {
@@ -154,7 +173,7 @@ async function zoneIngredients(ingredients: Ingredient[]): Promise<{
         return {
           ...ing,
           zone: zonedData.zone as 'green' | 'yellow' | 'red',
-          category: zonedData.category || ing.category,
+          category: zonedData.category || ing.category || 'Other',
           group: zonedData.group || ing.group || 'other',
         };
       }

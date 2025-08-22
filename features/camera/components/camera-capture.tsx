@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
 import { Camera, Edit3, Upload } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
+import { toast } from 'sonner';
 
 interface CameraCaptureProps {
   open: boolean;
@@ -80,23 +81,39 @@ export function CameraCapture({
   };
 
   const captureImage = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current) {
+      logger.error('Missing video or canvas ref for capture');
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    if (!ctx) return;
+    if (!ctx) {
+      logger.error('Failed to get canvas context');
+      return;
+    }
 
     // Set canvas size to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+
+    logger.debug('Capturing image', {
+      videoWidth: video.videoWidth,
+      videoHeight: video.videoHeight,
+    });
 
     // Draw video frame to canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     // Get image data as base64
     const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+    logger.debug('Image captured successfully', {
+      dataLength: imageData.length,
+      dataStart: imageData.substring(0, 50),
+    });
 
     // Stop camera and close dialog
     stopCamera();
@@ -119,13 +136,30 @@ export function CameraCapture({
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      logger.debug('No file selected for upload');
+      return;
+    }
+
+    logger.debug('File selected for upload', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+    });
 
     const reader = new FileReader();
     reader.onload = () => {
       const imageData = reader.result as string;
+      logger.debug('File upload successful', {
+        dataLength: imageData.length,
+        dataStart: imageData.substring(0, 50),
+      });
       onOpenChange(false);
       onCapture(imageData);
+    };
+    reader.onerror = () => {
+      logger.error('File upload failed', reader.error);
+      toast.error('Failed to upload image. Please try again.');
     };
     reader.readAsDataURL(file);
   };

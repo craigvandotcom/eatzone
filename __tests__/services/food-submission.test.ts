@@ -100,7 +100,7 @@ describe('processFoodSubmission', () => {
       expect(result.success).toBe(true);
       expect(result.food?.ingredients[0].zone).toBe('unzoned');
       expect(result.warnings).toContain(
-        'Server error. Saving with default values.'
+        'Could not zone any ingredients. Saving with default values.'
       );
     });
   });
@@ -119,7 +119,7 @@ describe('processFoodSubmission', () => {
       expect(result.success).toBe(true);
       expect(result.food?.ingredients[0].zone).toBe('unzoned');
       expect(result.warnings).toContain(
-        'Could not process ingredient zones. Using default values.'
+        'Could not zone any ingredients. Saving with default values.'
       );
     });
   });

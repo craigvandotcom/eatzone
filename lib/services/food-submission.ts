@@ -129,7 +129,10 @@ async function zoneIngredients(ingredients: Ingredient[]): Promise<{
           zonedData: zonedArray && zonedArray.length > 0 ? zonedArray[0] : null,
         };
       } catch (error) {
-        logger.warn(`Error zoning ingredient: ${ingredient.name}`, error);
+        logger.warn(`Error zoning ingredient: ${ingredient.name}`, {
+          error: error instanceof Error ? error.message : String(error),
+          ingredient: ingredient.name
+        });
         return { ingredient, zonedData: null };
       }
     });

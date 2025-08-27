@@ -52,8 +52,8 @@ import { Food, Symptom } from '@/lib/types';
 // Import custom hooks
 import { useDashboardData } from '@/lib/hooks';
 
-// Import MSQ utilities
-import { getCategoryByName } from '@/lib/msq/search';
+// Import symptom utilities
+import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
 
 type ViewType = 'food' | 'symptoms';
 
@@ -442,7 +442,7 @@ function Dashboard() {
                           <div className="flex items-center space-x-3">
                             <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
                               <span className="text-white text-lg">
-                                {getCategoryByName(symptom.category)?.icon ||
+                                {getCategoryInfo(symptom.category)?.icon ||
                                   '⚡'}
                               </span>
                             </div>

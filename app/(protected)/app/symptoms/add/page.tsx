@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
-import { addSymptom as dbAddSymptom } from '@/lib/db';
+import { SymptomEntryForm } from '@/features/symptoms/components/symptom-entry-form';
+import { addSymptoms as dbAddSymptoms } from '@/lib/db';
 import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { toast } from 'sonner';
@@ -15,26 +15,29 @@ export default function AddSymptomPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddSymptom = async (
-    symptom: Omit<Symptom, 'id' | 'timestamp'>
+  const handleAddSymptoms = async (
+    symptoms: Omit<Symptom, 'id' | 'timestamp'>[]
   ) => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      await dbAddSymptom(symptom);
+      await dbAddSymptoms(symptoms);
 
       // Invalidate SWR cache to trigger immediate refresh
       await mutate('dashboard-data');
 
-      toast.success('Symptom added successfully');
+      const count = symptoms.length;
+      toast.success(
+        `${count} symptom${count > 1 ? 's' : ''} added successfully`
+      );
       router.push('/app');
     } catch (error) {
-      logger.error('Failed to add symptom', error);
+      logger.error('Failed to add symptoms', error);
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Failed to add symptom. Please try again.';
+          : 'Failed to add symptoms. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -64,8 +67,8 @@ export default function AddSymptomPage() {
 
       {/* Form Content */}
       <main className="flex-1 overflow-y-auto px-4 py-6">
-        <MSQSymptomEntryForm
-          onAddSymptom={handleAddSymptom}
+        <SymptomEntryForm
+          onAddSymptom={handleAddSymptoms}
           onClose={handleClose}
           isSubmitting={isSubmitting}
         />

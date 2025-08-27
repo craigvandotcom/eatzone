@@ -16,14 +16,16 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { useIsMobile } from '@/components/ui/use-mobile';
-import { MSQSymptomEntryForm } from './msq-symptom-entry-form';
+import { SymptomEntryForm } from './symptom-entry-form';
 
 interface AddSymptomDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddSymptom: (symptom: Omit<Symptom, 'id' | 'timestamp'>) => void;
+  onAddSymptom: (
+    symptoms: Omit<Symptom, 'id' | 'timestamp'>[]
+  ) => Promise<void>;
   onClose: () => void;
-  editingSymptom?: Symptom | null;
+  editingSymptom?: Symptom;
 }
 
 export function AddSymptomDialog({
@@ -139,10 +141,10 @@ export function AddSymptomDialog({
               } as React.CSSProperties
             }
           >
-            <MSQSymptomEntryForm
+            <SymptomEntryForm
               onAddSymptom={onAddSymptom}
               onClose={handleClose}
-              editingSymptom={editingSymptom}
+              editingSymptom={editingSymptom || undefined}
             />
           </div>
         </DrawerContent>
@@ -156,10 +158,10 @@ export function AddSymptomDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <MSQSymptomEntryForm
+        <SymptomEntryForm
           onAddSymptom={onAddSymptom}
           onClose={handleClose}
-          editingSymptom={editingSymptom}
+          editingSymptom={editingSymptom || undefined}
         />
       </DialogContent>
     </Dialog>

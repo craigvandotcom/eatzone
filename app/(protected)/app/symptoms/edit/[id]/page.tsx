@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
+import { SymptomEntryForm } from '@/features/symptoms/components/symptom-entry-form';
 import {
   getSymptomById,
   updateSymptom as dbUpdateSymptom,
@@ -154,8 +154,13 @@ export default function EditSymptomPage({
 
       {/* Form Content */}
       <main className="flex-1 overflow-y-auto px-4 py-6">
-        <MSQSymptomEntryForm
-          onAddSymptom={handleUpdateSymptom}
+        <SymptomEntryForm
+          onAddSymptom={async symptoms => {
+            // Handle single symptom update - use first symptom
+            if (symptoms.length > 0) {
+              await handleUpdateSymptom(symptoms[0]);
+            }
+          }}
           onClose={handleClose}
           onDelete={handleDeleteSymptom}
           editingSymptom={symptom}

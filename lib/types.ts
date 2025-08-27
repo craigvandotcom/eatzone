@@ -59,24 +59,20 @@ export interface Ingredient {
 
 export interface Symptom {
   id: string;
-  symptom_id: string; // MSQ symptom identifier (e.g., 'head_headaches')
-  category: string; // MSQ category (e.g., 'Head', 'Eyes', 'Digestive Tract')
-  name: string; // Standardized MSQ symptom name (e.g., 'Headaches')
-  score: 0 | 1 | 2 | 3 | 4; // MSQ scale: 0=Never, 1=Occasional/mild, 2=Occasional/severe, 3=Frequent/mild, 4=Frequent/severe
+  symptom_id: string; // Simplified symptom identifier (e.g., 'nausea', 'fatigue')
+  category: 'digestion' | 'energy' | 'mind' | 'recovery'; // New 4-category system
+  name: string; // Human-readable symptom name
+  score: -2 | -1 | 0 | 1 | 2; // Delta scale: -2=much worse, -1=worse, 0=baseline, +1=better, +2=much better
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   notes?: string;
 }
 
-// MSQ-specific types
-export type MSQScore = 0 | 1 | 2 | 3 | 4;
+// New symptom system types
+export type DeltaScore = -2 | -1 | 0 | 1 | 2;
+export type SymptomCategory = 'digestion' | 'energy' | 'mind' | 'recovery';
 
-export interface MSQSymptomEntry {
-  symptom_id: string;
-  category: string;
-  name: string;
-  score: MSQScore;
-  notes?: string;
-}
+// Legacy types - kept for backward compatibility during migration
+export type MSQScore = 0 | 1 | 2 | 3 | 4;
 
 // Future MSQ assessment types (for comprehensive MSQ implementation)
 export interface MSQAssessment {

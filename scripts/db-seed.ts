@@ -133,25 +133,25 @@ const sampleFoods: Omit<Food, 'id' | 'user_id' | 'timestamp'>[] = [
 
 const sampleSymptoms: Omit<Symptom, 'id' | 'user_id' | 'timestamp'>[] = [
   {
-    symptom_id: 'head_headaches',
-    category: 'Head',
-    name: 'Headaches',
-    score: 2,
-    notes: 'Started after lunch, went away after water',
+    symptom_id: 'fatigue',
+    category: 'energy',
+    name: 'Fatigue',
+    score: -1,
+    notes: 'Feeling more tired than usual after lunch',
   },
   {
-    symptom_id: 'energy_fatigue',
-    category: 'Energy/Activity',
-    name: 'Fatigue/sluggishness',
-    score: 3,
-    notes: 'Around 3 PM, usual afternoon slump',
-  },
-  {
-    symptom_id: 'digestive_stomach_pain',
-    category: 'Digestive Tract',
-    name: 'Intestinal/stomach pain',
+    symptom_id: 'bloat',
+    category: 'digestion',
+    name: 'Bloating',
     score: 1,
-    notes: 'Very mild, barely noticeable',
+    notes: 'Less bloated than yesterday',
+  },
+  {
+    symptom_id: 'anxiety',
+    category: 'mind',
+    name: 'Anxiety',
+    score: 0,
+    notes: 'Normal anxiety levels today',
   },
 ];
 

@@ -264,12 +264,6 @@ function validateSymptomData(symptom: Omit<Symptom, 'id' | 'timestamp'>): void {
     throw new Error(`Invalid symptom_id: ${symptom.symptom_id}`);
   }
 
-  // Validate score is in valid delta range (-2 to +2)
-  const validScores = [-2, -1, 0, 1, 2] as const;
-  if (!validScores.includes(symptom.score)) {
-    throw new Error(`Invalid score: ${symptom.score}. Must be -2 to +2`);
-  }
-
   // Validate category matches symptom definition
   if (symptom.category !== symptomDef.category) {
     throw new Error(
@@ -466,34 +460,11 @@ export const getSymptomsByCategoryToday = async (
   return data || [];
 };
 
-export const getSymptomsByScoreRange = async (
-  minScore: number,
-  maxScore: number,
-  limit?: number
-): Promise<Symptom[]> => {
-  let query = supabase
-    .from('symptoms')
-    .select('*')
-    .gte('score', minScore)
-    .lte('score', maxScore)
-    .order('timestamp', { ascending: false });
-
-  if (limit) {
-    query = query.limit(limit);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
-};
-
-export const getCategoryScoreSummary = async (dateRange?: {
+export const getCategorySummary = async (dateRange?: {
   start: string;
   end: string;
-}): Promise<
-  Record<string, { total: number; count: number; average: number }>
-> => {
-  let query = supabase.from('symptoms').select('category, score');
+}): Promise<Record<string, { count: number }>> => {
+  let query = supabase.from('symptoms').select('category');
 
   if (dateRange) {
     query = query
@@ -504,24 +475,14 @@ export const getCategoryScoreSummary = async (dateRange?: {
   const { data, error } = await query;
   if (error) throw error;
 
-  // Group by category and calculate summary stats
-  const summary: Record<
-    string,
-    { total: number; count: number; average: number }
-  > = {};
+  // Group by category and count occurrences
+  const summary: Record<string, { count: number }> = {};
 
   data?.forEach(symptom => {
     if (!summary[symptom.category]) {
-      summary[symptom.category] = { total: 0, count: 0, average: 0 };
+      summary[symptom.category] = { count: 0 };
     }
-    summary[symptom.category].total += symptom.score;
     summary[symptom.category].count += 1;
-  });
-
-  // Calculate averages
-  Object.keys(summary).forEach(category => {
-    summary[category].average =
-      summary[category].total / summary[category].count;
   });
 
   return summary;

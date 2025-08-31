@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Symptom, SymptomScore, SymptomCategory } from '@/lib/types';
+import { Symptom, SymptomCategory } from '@/lib/types';
 import {
   SYMPTOMS,
   SYMPTOM_CATEGORIES,
@@ -142,7 +142,6 @@ export function SymptomEntryForm({
         symptom_id: s.symptom_id,
         category: s.category,
         name: s.name,
-        score: 1 as SymptomScore, // Always 1 (present) since selection = presence
         notes: notes.trim() || undefined,
       }));
 

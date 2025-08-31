@@ -438,34 +438,6 @@ export function getCategoryInfo(
   return SYMPTOM_CATEGORIES.find(cat => cat.name === category);
 }
 
-// Simple symptom score descriptions
-export const SYMPTOM_SCORE_LABELS = {
-  '0': 'Baseline',
-  '1': 'Present',
-} as const;
-
-export const SYMPTOM_SCORE_DESCRIPTIONS = {
-  '0': 'Normal baseline - symptom not present',
-  '1': 'Symptom is present',
-} as const;
-
-// Legacy delta score descriptions (for migration reference)
-export const DELTA_SCORE_LABELS = {
-  '-2': 'Much Worse',
-  '-1': 'Worse',
-  '0': 'Baseline',
-  '1': 'Better',
-  '2': 'Much Better',
-} as const;
-
-export const DELTA_SCORE_DESCRIPTIONS = {
-  '-2': 'Significantly worse than usual - major flare or reaction',
-  '-1': 'Somewhat worse than usual - mild flare or reaction',
-  '0': 'Normal baseline - typical state for you',
-  '1': 'Somewhat better than usual - mild improvement',
-  '2': 'Significantly better than usual - major improvement',
-} as const;
-
 // Search functionality
 export function searchSymptoms(query: string): SymptomDefinition[] {
   if (!query.trim()) return [];

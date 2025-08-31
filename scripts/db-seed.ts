@@ -136,23 +136,15 @@ const sampleSymptoms: Omit<Symptom, 'id' | 'user_id' | 'timestamp'>[] = [
     symptom_id: 'fatigue',
     category: 'energy',
     name: 'Fatigue',
-    score: 1,
     notes: 'Feeling more tired than usual after lunch',
   },
   {
     symptom_id: 'bloat',
     category: 'digestion',
     name: 'Bloating',
-    score: 1,
     notes: 'Experiencing bloating after breakfast',
   },
-  {
-    symptom_id: 'anxiety',
-    category: 'mind',
-    name: 'Anxiety',
-    score: 0,
-    notes: 'Normal anxiety levels today',
-  },
+  // Note: Removed baseline anxiety entry since symptom existence implies presence
 ];
 
 async function seedDatabase(): Promise<void> {

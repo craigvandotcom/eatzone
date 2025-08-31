@@ -27,7 +27,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
     id: 'nausea',
     name: 'Nausea',
     category: 'digestion',
-    categoryIcon: '🍽️',
+    categoryIcon: '🦠',
     searchTerms: [
       'nausea',
       'sick',
@@ -41,7 +41,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
     id: 'diarrhea',
     name: 'Diarrhea',
     category: 'digestion',
-    categoryIcon: '🍽️',
+    categoryIcon: '🦠',
     searchTerms: [
       'diarrhea',
       'loose stools',
@@ -54,7 +54,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
     id: 'constipation',
     name: 'Constipation',
     category: 'digestion',
-    categoryIcon: '🍽️',
+    categoryIcon: '🦠',
     searchTerms: [
       'constipation',
       'blocked',
@@ -67,7 +67,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
     id: 'bloat',
     name: 'Bloating',
     category: 'digestion',
-    categoryIcon: '🍽️',
+    categoryIcon: '🦠',
     searchTerms: [
       'bloat',
       'bloating',
@@ -81,7 +81,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
     id: 'gas',
     name: 'Gas',
     category: 'digestion',
-    categoryIcon: '🍽️',
+    categoryIcon: '🦠',
     searchTerms: [
       'gas',
       'flatulence',
@@ -95,7 +95,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
     id: 'heartburn',
     name: 'Heartburn',
     category: 'digestion',
-    categoryIcon: '🍽️',
+    categoryIcon: '🦠',
     searchTerms: [
       'heartburn',
       'acid reflux',
@@ -109,7 +109,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
     id: 'abdominal_pain',
     name: 'Abdominal Pain',
     category: 'digestion',
-    categoryIcon: '🍽️',
+    categoryIcon: '🦠',
     searchTerms: [
       'abdominal pain',
       'stomach ache',
@@ -394,7 +394,7 @@ export const SYMPTOM_CATEGORIES: SymptomCategoryInfo[] = [
   {
     name: 'digestion',
     displayName: 'Digestion',
-    icon: '🍽️',
+    icon: '🦠',
     count: 7,
     description: 'Digestive system symptoms and gut health indicators',
   },

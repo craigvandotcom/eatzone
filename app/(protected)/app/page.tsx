@@ -451,21 +451,24 @@ function Dashboard() {
                                 {symptom.name}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {symptom.category} • Score: {symptom.score}/4
+                                {new Date(symptom.timestamp).toLocaleString(
+                                  'en-US',
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                    hour12: true,
+                                  }
+                                )}
                               </p>
                             </div>
                           </div>
                           <Badge
                             variant="outline"
-                            className={`text-xs ${
-                              symptom.score === 0
-                                ? 'bg-gray-100 text-gray-700'
-                                : symptom.score <= 2
-                                  ? `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')}`
-                                  : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')}`
-                            }`}
+                            className="text-xs capitalize"
                           >
-                            {symptom.score}/4
+                            {symptom.category}
                           </Badge>
                         </button>
                       ))}

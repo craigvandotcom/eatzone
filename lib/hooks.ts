@@ -410,7 +410,8 @@ export const useDashboardData = () => {
 
         // Process data client-side to avoid additional API calls
         const recentFoods = allFoods.slice(0, 5);
-        const recentSymptoms = allSymptoms.slice(0, 5);
+        // Use today's symptoms instead of limiting to 5 recent ones
+        const recentSymptoms = todaysSymptoms;
 
         // Calculate food stats client-side (eliminates duplicate getAllFoods call)
         const foodsToAnalyze =

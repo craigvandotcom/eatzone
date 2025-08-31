@@ -330,7 +330,7 @@ export const addSymptom = async (
 };
 
 export const addSymptoms = async (
-  symptoms: Omit<Symptom, 'id' | 'timestamp'>[]
+  symptoms: Omit<Symptom, 'id'>[]
 ): Promise<string[]> => {
   const { data: user } = await supabase.auth.getUser();
   if (!user.user) throw new Error('User not authenticated');
@@ -342,14 +342,12 @@ export const addSymptoms = async (
   // Validate all symptom data
   symptoms.forEach(symptom => validateSymptomData(symptom));
 
-  const timestamp = generateTimestamp();
-
   // Prepare symptoms for insertion
   const symptomsToInsert = symptoms.map(symptom => ({
     ...symptom,
     notes: symptom.notes ? sanitizeUserNote(symptom.notes) : undefined,
     user_id: user.user.id,
-    timestamp,
+    timestamp: symptom.timestamp || generateTimestamp(),
   }));
 
   const { data, error } = await supabase

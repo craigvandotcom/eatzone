@@ -1,5 +1,5 @@
-// New simplified symptom system for nutrition testing
-// 4 categories with delta rating scale optimized for food sensitivity tracking
+// Simplified symptom system for nutrition testing
+// 4 categories with simple 0/1 toggle optimized for food sensitivity tracking
 
 import { SymptomCategory } from '@/lib/types';
 
@@ -28,7 +28,14 @@ export const SYMPTOMS: SymptomDefinition[] = [
     name: 'Nausea',
     category: 'digestion',
     categoryIcon: '🍽️',
-    searchTerms: ['nausea', 'sick', 'queasy', 'upset stomach', 'vomiting'],
+    searchTerms: [
+      'nausea',
+      'sick',
+      'queasy',
+      'upset stomach',
+      'vomiting',
+      'digestion',
+    ],
   },
   {
     id: 'diarrhea',
@@ -40,6 +47,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'loose stools',
       'watery stools',
       'frequent bowel movements',
+      'digestion',
     ],
   },
   {
@@ -52,6 +60,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'blocked',
       'hard stools',
       'infrequent bowel movements',
+      'digestion',
     ],
   },
   {
@@ -59,14 +68,28 @@ export const SYMPTOMS: SymptomDefinition[] = [
     name: 'Bloating',
     category: 'digestion',
     categoryIcon: '🍽️',
-    searchTerms: ['bloat', 'bloating', 'swollen', 'distended', 'full feeling'],
+    searchTerms: [
+      'bloat',
+      'bloating',
+      'swollen',
+      'distended',
+      'full feeling',
+      'digestion',
+    ],
   },
   {
     id: 'gas',
     name: 'Gas',
     category: 'digestion',
     categoryIcon: '🍽️',
-    searchTerms: ['gas', 'flatulence', 'wind', 'belching', 'burping'],
+    searchTerms: [
+      'gas',
+      'flatulence',
+      'wind',
+      'belching',
+      'burping',
+      'digestion',
+    ],
   },
   {
     id: 'heartburn',
@@ -79,6 +102,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'GERD',
       'burning chest',
       'indigestion',
+      'digestion',
     ],
   },
   {
@@ -92,16 +116,24 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'belly pain',
       'cramps',
       'stomach cramps',
+      'digestion',
     ],
   },
 
-  // ENERGY CATEGORY (4 symptoms)
+  // ENERGY CATEGORY (5 symptoms)
   {
     id: 'fatigue',
     name: 'Fatigue',
     category: 'energy',
     categoryIcon: '⚡',
-    searchTerms: ['fatigue', 'tired', 'exhausted', 'worn out', 'drained'],
+    searchTerms: [
+      'fatigue',
+      'tired',
+      'exhausted',
+      'worn out',
+      'drained',
+      'energy',
+    ],
   },
   {
     id: 'apathy',
@@ -114,6 +146,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'indifferent',
       'unmotivated',
       'listless',
+      'energy',
     ],
   },
   {
@@ -127,6 +160,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'overstimulated',
       'hyper',
       'excessive energy',
+      'energy',
     ],
   },
   {
@@ -140,10 +174,25 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'fidgety',
       "can't sit still",
       'agitated',
+      'energy',
+    ],
+  },
+  {
+    id: 'inspiration',
+    name: 'Inspiration',
+    category: 'energy',
+    categoryIcon: '⚡',
+    searchTerms: [
+      'inspiration',
+      'inspired',
+      'motivated',
+      'creative',
+      'energized',
+      'energy',
     ],
   },
 
-  // MIND CATEGORY (7 symptoms)
+  // MIND CATEGORY (8 symptoms)
   {
     id: 'poor_memory',
     name: 'Poor Memory',
@@ -154,6 +203,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'forgetful',
       'memory problems',
       "can't remember",
+      'mind',
     ],
   },
   {
@@ -166,31 +216,49 @@ export const SYMPTOMS: SymptomDefinition[] = [
       "can't focus",
       'distracted',
       'attention problems',
+      'mind',
     ],
   },
   {
-    id: 'brain_fog_confusion',
-    name: 'Brain Fog/Confusion',
+    id: 'brain_fog',
+    name: 'Brain Fog',
     category: 'mind',
     categoryIcon: '🧠',
     searchTerms: [
       'brain fog',
-      'confusion',
       'cloudy thinking',
       'mental fog',
       'unclear thinking',
+      'foggy',
+      'mind',
     ],
   },
   {
-    id: 'decision_difficulty',
-    name: 'Decision Difficulty',
+    id: 'confusion',
+    name: 'Confusion',
     category: 'mind',
     categoryIcon: '🧠',
     searchTerms: [
-      'decision difficulty',
-      'indecisive',
-      "can't decide",
-      'decision paralysis',
+      'confusion',
+      'confused',
+      'disoriented',
+      'mixed up',
+      'bewildered',
+      'mind',
+    ],
+  },
+  {
+    id: 'decisiveness',
+    name: 'Decisiveness',
+    category: 'mind',
+    categoryIcon: '🧠',
+    searchTerms: [
+      'decisiveness',
+      'decisive',
+      'quick decisions',
+      'clear thinking',
+      'confident choices',
+      'mind',
     ],
   },
   {
@@ -204,6 +272,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'short temper',
       'easily annoyed',
       'cranky',
+      'mind',
     ],
   },
   {
@@ -218,6 +287,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'nervous',
       'panic',
       'stress',
+      'mind',
     ],
   },
   {
@@ -230,6 +300,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'moody',
       'emotional ups and downs',
       'unstable mood',
+      'mind',
     ],
   },
 
@@ -239,7 +310,13 @@ export const SYMPTOMS: SymptomDefinition[] = [
     name: 'Joint Aches',
     category: 'recovery',
     categoryIcon: '🦴',
-    searchTerms: ['joint aches', 'joint pain', 'aching joints', 'stiff joints'],
+    searchTerms: [
+      'joint aches',
+      'joint pain',
+      'aching joints',
+      'stiff joints',
+      'recovery',
+    ],
   },
   {
     id: 'muscle_aches',
@@ -251,6 +328,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'muscle pain',
       'sore muscles',
       'muscle soreness',
+      'recovery',
     ],
   },
   {
@@ -258,21 +336,42 @@ export const SYMPTOMS: SymptomDefinition[] = [
     name: 'Stiffness',
     category: 'recovery',
     categoryIcon: '🦴',
-    searchTerms: ['stiffness', 'stiff', 'rigid', 'tight muscles', 'inflexible'],
+    searchTerms: [
+      'stiffness',
+      'stiff',
+      'rigid',
+      'tight muscles',
+      'inflexible',
+      'recovery',
+    ],
   },
   {
     id: 'weakness',
     name: 'Weakness',
     category: 'recovery',
     categoryIcon: '🦴',
-    searchTerms: ['weakness', 'weak', 'feeble', 'lack of strength', 'frail'],
+    searchTerms: [
+      'weakness',
+      'weak',
+      'feeble',
+      'lack of strength',
+      'frail',
+      'recovery',
+    ],
   },
   {
     id: 'tiredness',
     name: 'Tiredness',
     category: 'recovery',
     categoryIcon: '🦴',
-    searchTerms: ['tiredness', 'tired', 'sleepy', 'drowsy', 'weary'],
+    searchTerms: [
+      'tiredness',
+      'tired',
+      'sleepy',
+      'drowsy',
+      'weary',
+      'recovery',
+    ],
   },
   {
     id: 'palpitations',
@@ -285,6 +384,7 @@ export const SYMPTOMS: SymptomDefinition[] = [
       'rapid heartbeat',
       'heart pounding',
       'irregular heartbeat',
+      'recovery',
     ],
   },
 ];
@@ -302,14 +402,14 @@ export const SYMPTOM_CATEGORIES: SymptomCategoryInfo[] = [
     name: 'energy',
     displayName: 'Energy',
     icon: '⚡',
-    count: 4,
+    count: 5,
     description: 'Energy levels, motivation, and activity symptoms',
   },
   {
     name: 'mind',
     displayName: 'Mind',
     icon: '🧠',
-    count: 7,
+    count: 8,
     description: 'Cognitive function, mood, and mental clarity symptoms',
   },
   {
@@ -338,7 +438,18 @@ export function getCategoryInfo(
   return SYMPTOM_CATEGORIES.find(cat => cat.name === category);
 }
 
-// Delta score descriptions
+// Simple symptom score descriptions
+export const SYMPTOM_SCORE_LABELS = {
+  '0': 'Baseline',
+  '1': 'Present',
+} as const;
+
+export const SYMPTOM_SCORE_DESCRIPTIONS = {
+  '0': 'Normal baseline - symptom not present',
+  '1': 'Symptom is present',
+} as const;
+
+// Legacy delta score descriptions (for migration reference)
 export const DELTA_SCORE_LABELS = {
   '-2': 'Much Worse',
   '-1': 'Worse',

@@ -16,13 +16,20 @@ export default function AddSymptomPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddSymptoms = async (
-    symptoms: Omit<Symptom, 'id' | 'timestamp'>[]
+    symptoms: Omit<Symptom, 'id' | 'timestamp'>[],
+    timestamps?: Date[]
   ) => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      await dbAddSymptoms(symptoms);
+      // Add timestamps to symptoms
+      const symptomsWithTimestamps = symptoms.map((symptom, index) => ({
+        ...symptom,
+        timestamp: timestamps?.[index]?.toISOString() || new Date().toISOString(),
+      }));
+      
+      await dbAddSymptoms(symptomsWithTimestamps);
 
       // Invalidate SWR cache to trigger immediate refresh
       await mutate('dashboard-data');

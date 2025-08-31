@@ -136,7 +136,7 @@ const sampleSymptoms: Omit<Symptom, 'id' | 'user_id' | 'timestamp'>[] = [
     symptom_id: 'fatigue',
     category: 'energy',
     name: 'Fatigue',
-    score: -1,
+    score: 1,
     notes: 'Feeling more tired than usual after lunch',
   },
   {
@@ -144,7 +144,7 @@ const sampleSymptoms: Omit<Symptom, 'id' | 'user_id' | 'timestamp'>[] = [
     category: 'digestion',
     name: 'Bloating',
     score: 1,
-    notes: 'Less bloated than yesterday',
+    notes: 'Experiencing bloating after breakfast',
   },
   {
     symptom_id: 'anxiety',

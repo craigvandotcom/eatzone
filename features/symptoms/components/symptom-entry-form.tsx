@@ -1,27 +1,26 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { Search, X, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { Search, X, ChevronDown, ChevronUp, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Symptom, DeltaScore, SymptomCategory } from '@/lib/types';
+import { Symptom, SymptomScore, SymptomCategory } from '@/lib/types';
 import {
   SYMPTOMS,
   SYMPTOM_CATEGORIES,
   SymptomDefinition,
   searchSymptoms,
-  DELTA_SCORE_LABELS,
-  DELTA_SCORE_DESCRIPTIONS,
 } from '@/lib/symptoms/symptom-index';
-import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import { TimestampEditor } from '@/components/shared/timestamp-editor';
 
 interface SymptomEntryFormProps {
   onAddSymptom: (
-    symptoms: Omit<Symptom, 'id' | 'timestamp'>[]
+    symptoms: Omit<Symptom, 'id' | 'timestamp'>[],
+    timestamps?: Date[]
   ) => Promise<void>;
   onClose?: () => void;
   onDelete?: () => Promise<void>;
@@ -34,7 +33,7 @@ export function SymptomEntryForm({
   onAddSymptom,
   onClose,
   onDelete,
-  editingSymptom: _editingSymptom,
+  editingSymptom,
   className = '',
   isSubmitting = false,
 }: SymptomEntryFormProps) {
@@ -45,15 +44,30 @@ export function SymptomEntryForm({
       symptom_id: string;
       category: SymptomCategory;
       name: string;
-      score?: DeltaScore;
+      startTime: Date;
     }>
   >([]);
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string>
-  >({});
+
+  // Initialize form with editing symptom data
+  useEffect(() => {
+    if (editingSymptom) {
+      setSelectedSymptoms([
+        {
+          symptom_id: editingSymptom.symptom_id,
+          category: editingSymptom.category,
+          name: editingSymptom.name,
+          startTime: new Date(editingSymptom.timestamp),
+        },
+      ]);
+      setNotes(editingSymptom.notes || '');
+      if (editingSymptom.notes) {
+        setShowNotes(true);
+      }
+    }
+  }, [editingSymptom]);
 
   // Search results
   const searchResults = useMemo(() => {
@@ -69,7 +83,7 @@ export function SymptomEntryForm({
     }));
   }, []);
 
-  // Add symptom to selection
+  // Add symptom to selection (automatically sets as present)
   const addSymptom = useCallback(
     (symptom: SymptomDefinition) => {
       // Check if already selected
@@ -82,7 +96,7 @@ export function SymptomEntryForm({
         symptom_id: symptom.id,
         category: symptom.category,
         name: symptom.name,
-        score: undefined as DeltaScore | undefined,
+        startTime: new Date(), // Default to now, user can adjust
       };
 
       setSelectedSymptoms(prev => [...prev, newSymptom]);
@@ -92,23 +106,14 @@ export function SymptomEntryForm({
     [selectedSymptoms]
   );
 
-  // Set score for a symptom
-  const setSymptomScore = useCallback(
-    (symptomId: string, score: DeltaScore) => {
+  // Update symptom start time
+  const updateSymptomStartTime = useCallback(
+    (symptomId: string, startTime: Date) => {
       setSelectedSymptoms(symptoms =>
-        symptoms.map(s => (s.symptom_id === symptomId ? { ...s, score } : s))
+        symptoms.map(s => (s.symptom_id === symptomId ? { ...s, startTime } : s))
       );
-
-      // Clear validation error for this symptom if it exists
-      if (validationErrors[symptomId]) {
-        setValidationErrors(prev => {
-          const updated = { ...prev };
-          delete updated[symptomId];
-          return updated;
-        });
-      }
     },
-    [validationErrors]
+    []
   );
 
   // Remove symptom from selection
@@ -118,75 +123,30 @@ export function SymptomEntryForm({
     );
   }, []);
 
-  // Get score button styling based on delta value
-  const getDeltaButtonStyle = useCallback(
-    (score: number, currentScore?: number) => {
-      const isSelected = currentScore === score;
-
-      let baseStyle =
-        'min-w-[3rem] h-8 rounded-lg text-xs font-semibold transition-all duration-200 hover:scale-105 border-2 ';
-
-      if (score < 0) {
-        // Negative scores (worse)
-        baseStyle += isSelected
-          ? `${getZoneBgClass('red', 'medium')} ${getZoneTextClass('red')} border-red-400`
-          : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')} border-red-200 hover:${getZoneBgClass('red', 'medium')}`;
-      } else if (score === 0) {
-        // Baseline
-        baseStyle += isSelected
-          ? 'bg-gray-200 text-gray-800 border-gray-400'
-          : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100';
-      } else {
-        // Positive scores (better)
-        baseStyle += isSelected
-          ? `${getZoneBgClass('green', 'medium')} ${getZoneTextClass('green')} border-green-400`
-          : `${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} border-green-200 hover:${getZoneBgClass('green', 'medium')}`;
-      }
-
-      return baseStyle;
-    },
-    []
-  );
-
   // Submit symptoms
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Clear previous errors
     setError(null);
-    setValidationErrors({});
 
-    // Validate selected symptoms
-    const newValidationErrors: Record<string, string> = {};
-    const validSymptoms = selectedSymptoms.filter(s => {
-      if (s.score === undefined) {
-        newValidationErrors[s.symptom_id] = 'Score is required';
-        return false;
-      }
-      return true;
-    });
-
-    if (Object.keys(newValidationErrors).length > 0) {
-      setValidationErrors(newValidationErrors);
-      setError('Please set a score for all selected symptoms.');
-      return;
-    }
-
-    if (validSymptoms.length === 0) {
-      setError('Please select at least one symptom and set its score.');
+    if (selectedSymptoms.length === 0) {
+      setError('Please select at least one symptom.');
       return;
     }
 
     try {
-      const symptomsToSubmit = validSymptoms.map(s => ({
+      const symptomsToSubmit = selectedSymptoms.map(s => ({
         symptom_id: s.symptom_id,
         category: s.category,
         name: s.name,
-        score: s.score!,
+        score: 1 as SymptomScore, // Always 1 (present) since selection = presence
         notes: notes.trim() || undefined,
       }));
+      
+      const timestamps = selectedSymptoms.map(s => s.startTime);
 
-      await onAddSymptom(symptomsToSubmit);
+      await onAddSymptom(symptomsToSubmit, timestamps);
 
       // Reset form
       setSelectedSymptoms([]);
@@ -194,7 +154,6 @@ export function SymptomEntryForm({
       setSearchQuery('');
       setShowNotes(false);
       setError(null);
-      setValidationErrors({});
 
       onClose?.();
     } catch (error) {
@@ -216,7 +175,7 @@ export function SymptomEntryForm({
             <div>
               <h3 className="text-lg font-semibold">Track Symptoms</h3>
               <p className="text-sm text-gray-600">
-                Rate how you feel compared to your normal baseline
+                Add symptoms you're currently experiencing
               </p>
             </div>
             {onClose && (
@@ -254,33 +213,50 @@ export function SymptomEntryForm({
             <div>
               <Label className="text-sm text-gray-600">Search Results:</Label>
               <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                {searchResults.map(symptom => (
-                  <div
-                    key={symptom.id}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{symptom.categoryIcon}</span>
-                      <span className="text-sm font-medium">
-                        {symptom.name}
-                      </span>
-                      <Badge variant="outline" className="text-xs">
-                        {symptom.category}
-                      </Badge>
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => addSymptom(symptom)}
-                      disabled={selectedSymptoms.some(
-                        s => s.symptom_id === symptom.id
-                      )}
+                {searchResults.map(symptom => {
+                  const isSelected = selectedSymptoms.some(
+                    s => s.symptom_id === symptom.id
+                  );
+                  return (
+                    <div
+                      key={symptom.id}
+                      className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
+                        isSelected 
+                          ? 'bg-green-50 border border-green-200' 
+                          : 'bg-gray-50 hover:bg-gray-100'
+                      }`}
                     >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{symptom.categoryIcon}</span>
+                        <span className="text-sm font-medium">
+                          {symptom.name}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {symptom.category}
+                        </Badge>
+                        {isSelected && (
+                          <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                            <Check className="h-3 w-3 mr-1" />
+                            Added
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={isSelected ? "secondary" : "outline"}
+                        onClick={() => addSymptom(symptom)}
+                        disabled={isSelected}
+                      >
+                        {isSelected ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Plus className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -325,11 +301,7 @@ export function SymptomEntryForm({
                 {selectedSymptoms.map(symptom => (
                   <div
                     key={symptom.symptom_id}
-                    className={`bg-blue-50 rounded-lg p-4 ${
-                      validationErrors[symptom.symptom_id]
-                        ? 'border-2 border-red-300'
-                        : 'border border-blue-200'
-                    }`}
+                    className="bg-green-50 rounded-lg p-4 border border-green-200"
                   >
                     {/* Symptom Header */}
                     <div className="flex items-center justify-between mb-3">
@@ -340,26 +312,9 @@ export function SymptomEntryForm({
                         <Badge variant="outline" className="text-xs">
                           {symptom.category}
                         </Badge>
-                        {symptom.score !== undefined && (
-                          <Badge
-                            className={`text-xs ${
-                              symptom.score < 0
-                                ? `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')}`
-                                : symptom.score === 0
-                                  ? 'bg-gray-100 text-gray-700'
-                                  : `${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')}`
-                            }`}
-                          >
-                            {symptom.score > 0 ? '+' : ''}
-                            {symptom.score} (
-                            {
-                              DELTA_SCORE_LABELS[
-                                symptom.score.toString() as keyof typeof DELTA_SCORE_LABELS
-                              ]
-                            }
-                            )
-                          </Badge>
-                        )}
+                        <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                          Present
+                        </Badge>
                       </div>
                       <Button
                         type="button"
@@ -372,46 +327,13 @@ export function SymptomEntryForm({
                       </Button>
                     </div>
 
-                    {/* Delta Scale Rating */}
-                    <div className="space-y-2">
-                      <div className="text-xs text-gray-600 font-medium">
-                        How does this feel compared to your normal baseline?
-                      </div>
-                      <div className="flex gap-1 justify-center">
-                        {[-2, -1, 0, 1, 2].map(score => (
-                          <button
-                            key={score}
-                            type="button"
-                            onClick={() =>
-                              setSymptomScore(
-                                symptom.symptom_id,
-                                score as DeltaScore
-                              )
-                            }
-                            className={getDeltaButtonStyle(
-                              score,
-                              symptom.score
-                            )}
-                            title={`${score > 0 ? '+' : ''}${score}: ${DELTA_SCORE_LABELS[score.toString() as keyof typeof DELTA_SCORE_LABELS]} - ${DELTA_SCORE_DESCRIPTIONS[score.toString() as keyof typeof DELTA_SCORE_DESCRIPTIONS]}`}
-                          >
-                            {score > 0 ? '+' : ''}
-                            {score}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500 px-1">
-                        <span>Much Worse</span>
-                        <span>Baseline</span>
-                        <span>Much Better</span>
-                      </div>
-                    </div>
-
-                    {/* Validation Error */}
-                    {validationErrors[symptom.symptom_id] && (
-                      <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
-                        {validationErrors[symptom.symptom_id]}
-                      </div>
-                    )}
+                    {/* Start Time Editor */}
+                    <TimestampEditor
+                      value={symptom.startTime}
+                      onChange={(date) => updateSymptomStartTime(symptom.symptom_id, date)}
+                      label="When did this symptom start?"
+                      description="Select when you first noticed this symptom"
+                    />
                   </div>
                 ))}
               </div>
@@ -461,7 +383,11 @@ export function SymptomEntryForm({
               disabled={selectedSymptoms.length === 0 || isSubmitting}
               className="flex-1"
             >
-              {isSubmitting ? 'Saving...' : 'Save Symptoms'}
+              {isSubmitting
+                ? 'Saving...'
+                : editingSymptom
+                  ? 'Update Symptom'
+                  : 'Save Symptoms'}
             </Button>
             {onClose && (
               <Button type="button" variant="outline" onClick={onClose}>

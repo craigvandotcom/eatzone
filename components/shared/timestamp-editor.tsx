@@ -25,11 +25,7 @@ export function TimestampEditor({
       {description && (
         <p className="text-xs text-gray-600 mb-2">{description}</p>
       )}
-      <DayTimePicker
-        value={value}
-        onChange={onChange}
-        className="w-full"
-      />
+      <DayTimePicker value={value} onChange={onChange} className="w-full" />
     </div>
   );
 }

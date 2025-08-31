@@ -26,9 +26,10 @@ export default function AddSymptomPage() {
       // Add timestamps to symptoms
       const symptomsWithTimestamps = symptoms.map((symptom, index) => ({
         ...symptom,
-        timestamp: timestamps?.[index]?.toISOString() || new Date().toISOString(),
+        timestamp:
+          timestamps?.[index]?.toISOString() || new Date().toISOString(),
       }));
-      
+
       await dbAddSymptoms(symptomsWithTimestamps);
 
       // Invalidate SWR cache to trigger immediate refresh

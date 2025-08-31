@@ -400,13 +400,12 @@ export const useDashboardData = () => {
     async () => {
       try {
         // Batch all data requests with Promise.all for coordinated fetching
-        const [allFoods, allSymptoms, todaysFoods, todaysSymptoms] =
-          await Promise.all([
-            getAllFoods(),
-            getAllSymptoms(),
-            getTodaysFoods(),
-            getTodaysSymptoms(),
-          ]);
+        const [allFoods, , todaysFoods, todaysSymptoms] = await Promise.all([
+          getAllFoods(),
+          getAllSymptoms(),
+          getTodaysFoods(),
+          getTodaysSymptoms(),
+        ]);
 
         // Process data client-side to avoid additional API calls
         const recentFoods = allFoods.slice(0, 5);

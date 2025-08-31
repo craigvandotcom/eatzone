@@ -77,9 +77,7 @@ export default function EditSymptomPage({
     loadSymptom();
   }, [symptomId, router]);
 
-  const handleUpdateSymptom = async (
-    updatedSymptom: Omit<Symptom, 'id'>
-  ) => {
+  const handleUpdateSymptom = async (updatedSymptom: Omit<Symptom, 'id'>) => {
     try {
       if (symptom) {
         await dbUpdateSymptom(symptom.id, updatedSymptom);

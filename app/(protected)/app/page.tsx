@@ -127,7 +127,10 @@ function Dashboard() {
     router.push('/app/symptoms/add');
   };
 
-  const handleRetryZoning = async (e: React.MouseEvent, foodId: string) => {
+  const handleRetryZoning = async (
+    e: React.MouseEvent | React.KeyboardEvent,
+    foodId: string
+  ) => {
     e.stopPropagation(); // Prevent triggering the edit food handler
 
     try {
@@ -369,7 +372,7 @@ function Dashboard() {
                                   onKeyDown={e => {
                                     if (e.key === 'Enter' || e.key === ' ') {
                                       e.preventDefault();
-                                      handleRetryZoning(e as any, food.id);
+                                      handleRetryZoning(e, food.id);
                                     }
                                   }}
                                 >

@@ -363,9 +363,68 @@ export const updateSymptom = async (
   id: string,
   updates: Partial<Omit<Symptom, 'id'>>
 ): Promise<void> => {
+  // Validate that we have valid updates
+  if (!updates || Object.keys(updates).length === 0) {
+    throw new Error('No valid updates provided');
+  }
+
+  // If updating core symptom fields, validate them
+  if (
+    updates.symptom_id ||
+    updates.category ||
+    updates.name ||
+    updates.score !== undefined
+  ) {
+    // Create a temporary symptom object for validation
+    // We need to get the existing symptom first to merge with updates
+    const { data: existingSymptom, error: fetchError } = await supabase
+      .from('symptoms')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+    if (!existingSymptom) throw new Error('Symptom not found');
+
+    // Merge existing data with updates for validation
+    const mergedSymptom = {
+      symptom_id: updates.symptom_id ?? existingSymptom.symptom_id,
+      category: updates.category ?? existingSymptom.category,
+      name: updates.name ?? existingSymptom.name,
+      score:
+        updates.score !== undefined ? updates.score : existingSymptom.score,
+    };
+
+    // Validate the merged symptom data
+    validateSymptomData(mergedSymptom);
+  }
+
+  // Sanitize updates to prevent invalid fields
+  const allowedFields = [
+    'symptom_id',
+    'category',
+    'name',
+    'score',
+    'timestamp',
+    'notes',
+  ] as const;
+  const sanitizedUpdates = Object.keys(updates).reduce(
+    (acc, key) => {
+      if (allowedFields.includes(key as (typeof allowedFields)[number])) {
+        acc[key] = updates[key as keyof typeof updates];
+      }
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
+
+  if (Object.keys(sanitizedUpdates).length === 0) {
+    throw new Error('No valid fields to update');
+  }
+
   const { error } = await supabase
     .from('symptoms')
-    .update(updates)
+    .update(sanitizedUpdates)
     .eq('id', id);
 
   if (error) throw error;
@@ -432,7 +491,7 @@ export const getSymptomById = async (
   return data;
 };
 
-// MSQ-SPECIFIC SYMPTOM OPERATIONS
+// CATEGORY-BASED SYMPTOM OPERATIONS
 
 export const getSymptomsByCategory = async (
   category: string

@@ -71,28 +71,8 @@ export interface Symptom {
 export type SymptomScore = 0 | 1; // 0: baseline, 1: symptom present
 export type SymptomCategory = 'digestion' | 'energy' | 'mind' | 'recovery';
 
-// Legacy types - kept for reference
-export type MSQScore = 0 | 1 | 2 | 3 | 4;
-export type DeltaScore = -2 | -1 | 0 | 1 | 2; // Legacy delta scoring
-
-// Future MSQ assessment types (for comprehensive MSQ implementation)
-export interface MSQAssessment {
-  id: string;
-  user_id: string;
-  period_start: string; // ISO date
-  period_end: string; // ISO date
-  total_score: number;
-  category_scores: Record<string, number>; // category name -> total score
-  completed_at: string; // ISO timestamp
-  notes?: string;
-}
-
-export interface MSQCategoryScore {
-  category: string;
-  score: number;
-  max_possible: number;
-  percentage: number;
-}
+// Legacy types - kept for backward compatibility only
+export type DeltaScore = -2 | -1 | 0 | 1 | 2; // Delta scoring system used in symptom tracking
 
 // Export types for backward compatibility with existing imports
 export type { Symptom as SymptomType };

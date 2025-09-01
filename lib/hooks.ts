@@ -340,7 +340,7 @@ export const useSymptomTrends = (days: number = 7) => {
           symptomsByDay[day].push(symptom);
         });
 
-        // Calculate average score per day (MSQ 0-4 scale)
+        // Calculate average score per day (delta scale -2 to +2)
         const trendData = Object.entries(symptomsByDay).map(
           ([day, symptoms]) => ({
             day,

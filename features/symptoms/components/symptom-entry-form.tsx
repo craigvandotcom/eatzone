@@ -39,6 +39,7 @@ export function SymptomEntryForm({
 }: SymptomEntryFormProps) {
   // State management
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedSymptoms, setSelectedSymptoms] = useState<
     Array<{
       symptom_id: string;
@@ -50,6 +51,15 @@ export function SymptomEntryForm({
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Debounce search query for better UX
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms debounce delay
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   // Initialize form with editing symptom data
   useEffect(() => {
@@ -69,11 +79,11 @@ export function SymptomEntryForm({
     }
   }, [editingSymptom]);
 
-  // Search results
+  // Search results (using debounced query for better performance)
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    return searchSymptoms(searchQuery);
-  }, [searchQuery]);
+    if (!debouncedSearchQuery.trim()) return [];
+    return searchSymptoms(debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
 
   // Category overview for quick access
   const categoryOverview = useMemo(() => {

@@ -340,7 +340,7 @@ export const useSymptomTrends = (days: number = 7) => {
           symptomsByDay[day].push(symptom);
         });
 
-        // Calculate average score per day (MSQ 0-4 scale)
+        // Calculate average score per day (delta scale -2 to +2)
         const trendData = Object.entries(symptomsByDay).map(
           ([day, symptoms]) => ({
             day,
@@ -400,17 +400,17 @@ export const useDashboardData = () => {
     async () => {
       try {
         // Batch all data requests with Promise.all for coordinated fetching
-        const [allFoods, allSymptoms, todaysFoods, todaysSymptoms] =
-          await Promise.all([
-            getAllFoods(),
-            getAllSymptoms(),
-            getTodaysFoods(),
-            getTodaysSymptoms(),
-          ]);
+        const [allFoods, , todaysFoods, todaysSymptoms] = await Promise.all([
+          getAllFoods(),
+          getAllSymptoms(),
+          getTodaysFoods(),
+          getTodaysSymptoms(),
+        ]);
 
         // Process data client-side to avoid additional API calls
         const recentFoods = allFoods.slice(0, 5);
-        const recentSymptoms = allSymptoms.slice(0, 5);
+        // Use today's symptoms instead of limiting to 5 recent ones
+        const recentSymptoms = todaysSymptoms;
 
         // Calculate food stats client-side (eliminates duplicate getAllFoods call)
         const foodsToAnalyze =

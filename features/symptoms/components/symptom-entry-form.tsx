@@ -1,330 +1,435 @@
 'use client';
 
-import type React from 'react';
-import type { Symptom } from '@/lib/types';
-
-import { useState, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { Search, X, ChevronDown, ChevronUp, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Edit2, Trash2, ChevronDown, ChevronUp, Target } from 'lucide-react';
-import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
-import type { ZoneType } from '@/lib/utils/zone-colors';
-
-interface LocalSymptom {
-  name: string;
-  score: number;
-}
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Symptom, SymptomScore, SymptomCategory } from '@/lib/types';
+import {
+  SYMPTOMS,
+  SYMPTOM_CATEGORIES,
+  SymptomDefinition,
+  searchSymptoms,
+} from '@/lib/symptoms/symptom-index';
+import { TimestampEditor } from '@/components/shared/timestamp-editor';
 
 interface SymptomEntryFormProps {
-  onAddSymptom: (symptom: Omit<Symptom, 'id' | 'timestamp'>) => void;
-  onClose: () => void;
-  editingSymptom?: Symptom | null;
+  onAddSymptom: (
+    symptoms: Omit<Symptom, 'id' | 'timestamp'>[],
+    timestamps?: Date[]
+  ) => Promise<void>;
+  onClose?: () => void;
+  onDelete?: () => Promise<void>;
+  editingSymptom?: Symptom;
   className?: string;
+  isSubmitting?: boolean;
 }
 
 export function SymptomEntryForm({
   onAddSymptom,
   onClose,
+  onDelete,
   editingSymptom,
-  className,
+  className = '',
+  isSubmitting = false,
 }: SymptomEntryFormProps) {
-  const [currentSymptom, setCurrentSymptom] = useState('');
-  const [symptoms, setSymptoms] = useState<LocalSymptom[]>([]);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editingValue, setEditingValue] = useState('');
-  const [scoreSelectionIndex, setScoreSelectionIndex] = useState<number | null>(
-    null
-  );
+  // State management
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [selectedSymptoms, setSelectedSymptoms] = useState<
+    Array<{
+      symptom_id: string;
+      category: SymptomCategory;
+      name: string;
+      startTime: Date;
+    }>
+  >([]);
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Pre-populate form when editing
+  // Debounce search query for better UX
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms debounce delay
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // Initialize form with editing symptom data
   useEffect(() => {
     if (editingSymptom) {
-      setSymptoms([
+      setSelectedSymptoms([
         {
+          symptom_id: editingSymptom.symptom_id,
+          category: editingSymptom.category,
           name: editingSymptom.name,
-          score: editingSymptom.score,
+          startTime: new Date(editingSymptom.timestamp),
         },
       ]);
       setNotes(editingSymptom.notes || '');
-      setShowNotes(!!editingSymptom.notes);
-    } else {
-      setSymptoms([]);
-      setNotes('');
-      setShowNotes(false);
+      if (editingSymptom.notes) {
+        setShowNotes(true);
+      }
     }
   }, [editingSymptom]);
 
-  const handleSymptomKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && currentSymptom.trim()) {
-      e.preventDefault();
-      setSymptoms([
-        ...symptoms,
-        {
-          name: currentSymptom.trim(),
-          score: 0, // Set to 0 to indicate it needs to be set
-        },
-      ]);
-      setCurrentSymptom('');
-      // Automatically open score selection for the new symptom
-      setScoreSelectionIndex(symptoms.length);
-    }
-  };
+  // Search results (using debounced query for better performance)
+  const searchResults = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) return [];
+    return searchSymptoms(debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
 
-  const handleDeleteSymptom = (index: number) => {
-    setSymptoms(symptoms.filter((_, i) => i !== index));
-    setScoreSelectionIndex(null);
-  };
+  // Category overview for quick access
+  const categoryOverview = useMemo(() => {
+    return SYMPTOM_CATEGORIES.map(category => ({
+      category,
+      symptoms: SYMPTOMS.filter(s => s.category === category.name),
+    }));
+  }, []);
 
-  const handleEditSymptom = (index: number) => {
-    setEditingIndex(index);
-    setEditingValue(symptoms[index].name);
-    setScoreSelectionIndex(null);
-  };
+  // Add symptom to selection (automatically sets as present)
+  const addSymptom = useCallback(
+    (symptom: SymptomDefinition) => {
+      // Check if already selected
+      if (selectedSymptoms.some(s => s.symptom_id === symptom.id)) {
+        setError(`${symptom.name} is already selected.`);
+        return;
+      }
 
-  const handleToggleScoreSelection = (index: number) => {
-    setScoreSelectionIndex(scoreSelectionIndex === index ? null : index);
-  };
-
-  const handleSelectScore = (index: number, score: number) => {
-    const updatedSymptoms = [...symptoms];
-    updatedSymptoms[index].score = score;
-    setSymptoms(updatedSymptoms);
-    setScoreSelectionIndex(null); // Close score selection
-  };
-
-  const handleSaveEdit = (index: number) => {
-    if (editingValue.trim()) {
-      const updatedSymptoms = [...symptoms];
-      updatedSymptoms[index].name = editingValue.trim();
-      setSymptoms(updatedSymptoms);
-    }
-    setEditingIndex(null);
-    setEditingValue('');
-  };
-
-  const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setEditingValue('');
-  };
-
-  const handleEditKeyPress = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSaveEdit(index);
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      handleCancelEdit();
-    }
-  };
-
-  const getScoreZone = (score: number): ZoneType => {
-    if (score === 0) return 'green';
-    if (score <= 2) return 'yellow';
-    return 'red';
-  };
-
-  const getScoreColor = (score: number) => {
-    const zone = getScoreZone(score);
-    return `${getZoneBgClass(zone, 'light')} ${getZoneTextClass(zone)}`;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const validSymptoms = symptoms.filter(symptom => symptom.score > 0);
-    if (validSymptoms.length === 0) return;
-
-    // Submit each valid symptom individually
-    validSymptoms.forEach(localSymptom => {
-      const symptom: Omit<Symptom, 'id' | 'timestamp'> = {
-        symptom_id: 'other_custom', // Legacy form - custom symptom
-        category: 'Other',
-        name: localSymptom.name,
-        score: localSymptom.score as 0 | 1 | 2 | 3 | 4,
-        notes: notes.trim() || undefined,
+      const newSymptom = {
+        symptom_id: symptom.id,
+        category: symptom.category,
+        name: symptom.name,
+        startTime: new Date(), // Default to now, user can adjust
       };
-      onAddSymptom(symptom);
-    });
 
-    // Reset form
-    setCurrentSymptom('');
-    setSymptoms([]);
-    setNotes('');
-    setShowNotes(false);
-    setEditingIndex(null);
-    setEditingValue('');
-    setScoreSelectionIndex(null);
-    onClose();
+      setSelectedSymptoms(prev => [...prev, newSymptom]);
+      setSearchQuery(''); // Clear search after adding
+      setError(null);
+    },
+    [selectedSymptoms]
+  );
+
+  // Update symptom start time
+  const updateSymptomStartTime = useCallback(
+    (symptomId: string, startTime: Date) => {
+      setSelectedSymptoms(symptoms =>
+        symptoms.map(s =>
+          s.symptom_id === symptomId ? { ...s, startTime } : s
+        )
+      );
+    },
+    []
+  );
+
+  // Remove symptom from selection
+  const removeSymptom = useCallback((symptomId: string) => {
+    setSelectedSymptoms(symptoms =>
+      symptoms.filter(s => s.symptom_id !== symptomId)
+    );
+  }, []);
+
+  // Submit symptoms
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Clear previous errors
+    setError(null);
+
+    if (selectedSymptoms.length === 0) {
+      setError('Please select at least one symptom.');
+      return;
+    }
+
+    try {
+      const symptomsToSubmit = selectedSymptoms.map(s => ({
+        symptom_id: s.symptom_id,
+        category: s.category,
+        name: s.name,
+        score: 1 as SymptomScore, // Always 1 (present) since selection = presence
+        notes: notes.trim() || undefined,
+      }));
+
+      const timestamps = selectedSymptoms.map(s => s.startTime);
+
+      await onAddSymptom(symptomsToSubmit, timestamps);
+
+      // Reset form
+      setSelectedSymptoms([]);
+      setNotes('');
+      setSearchQuery('');
+      setShowNotes(false);
+      setError(null);
+
+      onClose?.();
+    } catch (error) {
+      console.error('Error submitting symptoms:', error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to save symptoms. Please try again.'
+      );
+    }
   };
 
   return (
-    <div className={className}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="symptom-input">Symptoms</Label>
-          <Input
-            id="symptom-input"
-            value={currentSymptom}
-            onChange={e => setCurrentSymptom(e.target.value)}
-            onKeyPress={handleSymptomKeyPress}
-            placeholder="Type symptom and press Enter"
-            autoFocus
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Press Enter to add each symptom
-          </p>
-        </div>
+    <Card className={className}>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Track Symptoms</h3>
+              <p className="text-sm text-gray-600">
+                Add symptoms you're currently experiencing
+              </p>
+            </div>
+            {onClose && (
+              <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
 
-        {/* Symptoms List */}
-        {symptoms.length > 0 && (
-          <div>
-            <Label>Added Symptoms ({symptoms.length})</Label>
-            <ScrollArea className="max-h-40 mt-2">
-              <div className="space-y-2">
-                {symptoms.map((symptom, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden"
-                  >
-                    {/* Normal Symptom Row */}
-                    {scoreSelectionIndex !== index && symptom.score > 0 && (
-                      <>
-                        {editingIndex === index ? (
-                          <Input
-                            value={editingValue}
-                            onChange={e => setEditingValue(e.target.value)}
-                            onKeyPress={e => handleEditKeyPress(e, index)}
-                            onBlur={() => handleSaveEdit(index)}
-                            className="flex-1 h-8 mx-2"
-                            autoFocus
-                          />
-                        ) : (
-                          <div className="flex-1 px-2 flex items-center gap-2 flex-wrap">
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Search and Category Browsing - Only show when no symptoms are selected */}
+          {selectedSymptoms.length === 0 && (
+            <>
+              {/* Search */}
+              <div>
+                <Label htmlFor="symptom-search">Search Symptoms</Label>
+                <div className="relative mt-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="symptom-search"
+                    type="text"
+                    placeholder="Search for symptoms (e.g., nausea, fatigue, bloating...)"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Search Results */}
+              {searchResults.length > 0 && (
+                <div>
+                  <Label className="text-sm text-gray-600">
+                    Search Results:
+                  </Label>
+                  <div className="mt-2 space-y-1">
+                    {searchResults.map(symptom => {
+                      const isSelected = selectedSymptoms.some(
+                        s => s.symptom_id === symptom.id
+                      );
+                      return (
+                        <div
+                          key={symptom.id}
+                          className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
+                            isSelected
+                              ? 'bg-green-50 border border-green-200'
+                              : 'bg-gray-50 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">
+                              {symptom.categoryIcon}
+                            </span>
                             <span className="text-sm font-medium">
                               {symptom.name}
                             </span>
-                            <span
-                              className={`text-xs px-1.5 py-0.5 rounded-full ${getScoreColor(symptom.score)}`}
-                            >
-                              {symptom.score}/4
-                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {symptom.category}
+                            </Badge>
+                            {isSelected && (
+                              <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                                <Check className="h-3 w-3 mr-1" />
+                                Added
+                              </Badge>
+                            )}
                           </div>
-                        )}
-                        <div className="flex gap-1 px-2">
-                          <button
+                          <Button
                             type="button"
-                            onClick={() => handleToggleScoreSelection(index)}
-                            className={`p-1 transition-colors ${
-                              symptom.score >= 4
-                                ? getZoneTextClass('red')
-                                : symptom.score >= 3
-                                  ? getZoneTextClass('yellow')
-                                  : getZoneTextClass('green')
-                            } hover:opacity-80`}
-                            title="Adjust score"
+                            size="sm"
+                            variant={isSelected ? 'secondary' : 'outline'}
+                            onClick={() => addSymptom(symptom)}
+                            disabled={isSelected}
                           >
-                            <Target className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditSymptom(index)}
-                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                            title="Edit symptom"
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteSymptom(index)}
-                            className={`p-1 text-gray-500 hover:${getZoneTextClass('red')} transition-colors`}
-                            title="Delete symptom"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+                            {isSelected ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <Plus className="h-3 w-3" />
+                            )}
+                          </Button>
                         </div>
-                      </>
-                    )}
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
-                    {/* Severity Selection Row - Horizontal Multiple Choice */}
-                    {scoreSelectionIndex === index && (
-                      <div className="flex-1 min-w-0 px-3 flex items-center justify-center">
-                        <div className="flex gap-2">
-                          {[0, 1, 2, 3, 4].map(level => (
-                            <button
-                              key={level}
-                              type="button"
-                              onClick={() => handleSelectScore(index, level)}
-                              className={`w-10 h-8 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-110 ${
-                                level <= 2
-                                  ? `${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} hover:${getZoneBgClass('green', 'medium')} border-2 border-zone-green/30`
-                                  : level <= 4
-                                    ? `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')} hover:${getZoneBgClass('yellow', 'medium')} border-2 border-zone-yellow/30`
-                                    : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')} hover:${getZoneBgClass('red', 'medium')} border-2 border-zone-red/30`
-                              }`}
-                            >
-                              {level}
-                            </button>
-                          ))}
+              {/* Category Overview (when no search) */}
+              {!searchQuery.trim() && (
+                <div>
+                  <Label className="text-sm text-gray-600">
+                    Browse by Category:
+                  </Label>
+                  <div className="mt-2 space-y-2">
+                    {categoryOverview.map(({ category }) => (
+                      <div
+                        key={category.name}
+                        className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        onClick={() =>
+                          setSearchQuery(category.displayName.toLowerCase())
+                        }
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{category.icon}</span>
+                          <div className="flex-1">
+                            <div className="text-base font-semibold">
+                              {category.displayName}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
+                </div>
+              )}
+            </>
+          )}
 
-        {/* Collapsible Notes Section */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            {showNotes ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-            Add notes (optional)
-          </button>
-          {showNotes && (
-            <div className="mt-2">
-              <Textarea
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="Any additional details..."
-                rows={3}
-              />
+          {/* Selected Symptoms */}
+          {selectedSymptoms.length > 0 && (
+            <div>
+              <Label>Selected Symptoms ({selectedSymptoms.length})</Label>
+              <div className="mt-2 space-y-3">
+                {selectedSymptoms.map(symptom => {
+                  // Get the category info to access the emoji
+                  const categoryInfo = SYMPTOM_CATEGORIES.find(
+                    c => c.name === symptom.category
+                  );
+                  return (
+                    <div
+                      key={symptom.symptom_id}
+                      className="bg-green-50 rounded-lg p-4 border border-green-200"
+                    >
+                      {/* Prominent Symptom Header */}
+                      <div className="text-center mb-4">
+                        <div className="text-4xl mb-2">
+                          {categoryInfo?.icon || '⚡'}
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">
+                          {symptom.name}
+                        </h3>
+                        <div className="flex items-center justify-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {symptom.category}
+                          </Badge>
+                          <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                            Present
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Remove Button */}
+                      <div className="flex justify-end mb-3">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeSymptom(symptom.symptom_id)}
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+
+                      {/* Start Time Editor */}
+                      <TimestampEditor
+                        value={symptom.startTime}
+                        onChange={date =>
+                          updateSymptomStartTime(symptom.symptom_id, date)
+                        }
+                        label="When did this symptom start?"
+                        description="Select when you first noticed this symptom"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
-        </div>
 
-        <div className="flex gap-2 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 bg-transparent"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={symptoms.filter(s => s.score > 0).length === 0}
-            className="flex-1 relative"
-          >
-            {editingSymptom
-              ? 'Update Symptom'
-              : `Add Symptoms (${symptoms.filter(s => s.score > 0).length})`}
-          </Button>
-        </div>
-      </form>
-    </div>
+          {/* Notes Section */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowNotes(!showNotes)}
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              {showNotes ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+              Add notes (optional)
+            </button>
+            {showNotes && (
+              <div className="mt-2">
+                <Textarea
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  placeholder="Any additional context about these symptoms..."
+                  className="min-h-[80px]"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex gap-3 pt-4">
+            {onDelete && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onDelete}
+                className="bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+              >
+                Delete
+              </Button>
+            )}
+            <Button
+              type="submit"
+              disabled={selectedSymptoms.length === 0 || isSubmitting}
+              className="flex-1"
+            >
+              {isSubmitting
+                ? 'Saving...'
+                : editingSymptom
+                  ? 'Update Symptom'
+                  : 'Save Symptoms'}
+            </Button>
+            {onClose && (
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+            )}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

@@ -3,6 +3,7 @@
  * Delays function execution until after delay milliseconds have elapsed
  * since the last time it was invoked
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
@@ -36,6 +37,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * Creates a debounced version of an async function
  * Useful for API calls that should be delayed until user stops typing
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
   func: T,
   delay: number

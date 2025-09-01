@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
-import { Food, Symptom, User } from './types';
-import { getSymptomById as getMSQSymptomById } from './msq/search';
+import { Food, Symptom, User, SymptomCategory } from './types';
+import { getSymptomById as getSymptomDefinition } from './symptoms/symptom-index';
 import { sanitizeUserNote } from './security/sanitization';
 
 // Type for zoning API response
@@ -258,25 +258,43 @@ export const getFoodById = async (id: string): Promise<Food | undefined> => {
  * Validate symptom data before database insertion
  */
 function validateSymptomData(symptom: Omit<Symptom, 'id' | 'timestamp'>): void {
-  // Validate symptom_id exists in MSQ database
-  const msqSymptom = getMSQSymptomById(symptom.symptom_id);
-  if (!msqSymptom) {
+  // Validate symptom_id exists in new symptom database
+  const symptomDef = getSymptomDefinition(symptom.symptom_id);
+  if (!symptomDef) {
     throw new Error(`Invalid symptom_id: ${symptom.symptom_id}`);
   }
 
-  // Validate score is in valid MSQ range
-  const validScores = [0, 1, 2, 3, 4] as const;
+  // Validate score is in valid delta range (-2 to +2)
+  const validScores = [-2, -1, 0, 1, 2] as const;
   if (!validScores.includes(symptom.score)) {
-    throw new Error(`Invalid score: ${symptom.score}. Must be 0-4`);
+    throw new Error(`Invalid score: ${symptom.score}. Must be -2 to +2`);
   }
 
-  // Validate category and name match MSQ data
-  if (symptom.category !== msqSymptom.category) {
-    throw new Error(`Category mismatch for symptom_id: ${symptom.symptom_id}`);
+  // Validate category matches symptom definition
+  if (symptom.category !== symptomDef.category) {
+    throw new Error(
+      `Category mismatch for symptom_id: ${symptom.symptom_id}. Expected: ${symptomDef.category}, got: ${symptom.category}`
+    );
   }
 
-  if (symptom.name !== msqSymptom.name) {
-    throw new Error(`Name mismatch for symptom_id: ${symptom.symptom_id}`);
+  // Validate name matches symptom definition
+  if (symptom.name !== symptomDef.name) {
+    throw new Error(
+      `Name mismatch for symptom_id: ${symptom.symptom_id}. Expected: ${symptomDef.name}, got: ${symptom.name}`
+    );
+  }
+
+  // Validate category is one of the allowed values
+  const validCategories: SymptomCategory[] = [
+    'digestion',
+    'energy',
+    'mind',
+    'recovery',
+  ];
+  if (!validCategories.includes(symptom.category)) {
+    throw new Error(
+      `Invalid category: ${symptom.category}. Must be one of: ${validCategories.join(', ')}`
+    );
   }
 }
 
@@ -311,13 +329,102 @@ export const addSymptom = async (
   return data.id;
 };
 
+export const addSymptoms = async (
+  symptoms: Omit<Symptom, 'id'>[]
+): Promise<string[]> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  if (symptoms.length === 0) {
+    throw new Error('No symptoms provided');
+  }
+
+  // Validate all symptom data
+  symptoms.forEach(symptom => validateSymptomData(symptom));
+
+  // Prepare symptoms for insertion
+  const symptomsToInsert = symptoms.map(symptom => ({
+    ...symptom,
+    notes: symptom.notes ? sanitizeUserNote(symptom.notes) : undefined,
+    user_id: user.user.id,
+    timestamp: symptom.timestamp || generateTimestamp(),
+  }));
+
+  const { data, error } = await supabase
+    .from('symptoms')
+    .insert(symptomsToInsert)
+    .select('id');
+
+  if (error) throw error;
+  return data.map(item => item.id);
+};
+
 export const updateSymptom = async (
   id: string,
   updates: Partial<Omit<Symptom, 'id'>>
 ): Promise<void> => {
+  // Validate that we have valid updates
+  if (!updates || Object.keys(updates).length === 0) {
+    throw new Error('No valid updates provided');
+  }
+
+  // If updating core symptom fields, validate them
+  if (
+    updates.symptom_id ||
+    updates.category ||
+    updates.name ||
+    updates.score !== undefined
+  ) {
+    // Create a temporary symptom object for validation
+    // We need to get the existing symptom first to merge with updates
+    const { data: existingSymptom, error: fetchError } = await supabase
+      .from('symptoms')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+    if (!existingSymptom) throw new Error('Symptom not found');
+
+    // Merge existing data with updates for validation
+    const mergedSymptom = {
+      symptom_id: updates.symptom_id ?? existingSymptom.symptom_id,
+      category: updates.category ?? existingSymptom.category,
+      name: updates.name ?? existingSymptom.name,
+      score:
+        updates.score !== undefined ? updates.score : existingSymptom.score,
+    };
+
+    // Validate the merged symptom data
+    validateSymptomData(mergedSymptom);
+  }
+
+  // Sanitize updates to prevent invalid fields
+  const allowedFields = [
+    'symptom_id',
+    'category',
+    'name',
+    'score',
+    'timestamp',
+    'notes',
+  ] as const;
+  const sanitizedUpdates = Object.keys(updates).reduce(
+    (acc, key) => {
+      if (allowedFields.includes(key as (typeof allowedFields)[number])) {
+        acc[key] = updates[key as keyof typeof updates];
+      }
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
+
+  if (Object.keys(sanitizedUpdates).length === 0) {
+    throw new Error('No valid fields to update');
+  }
+
   const { error } = await supabase
     .from('symptoms')
-    .update(updates)
+    .update(sanitizedUpdates)
     .eq('id', id);
 
   if (error) throw error;
@@ -384,7 +491,7 @@ export const getSymptomById = async (
   return data;
 };
 
-// MSQ-SPECIFIC SYMPTOM OPERATIONS
+// CATEGORY-BASED SYMPTOM OPERATIONS
 
 export const getSymptomsByCategory = async (
   category: string

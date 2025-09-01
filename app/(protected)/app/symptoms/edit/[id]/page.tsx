@@ -1,10 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { MSQSymptomEntryForm } from '@/features/symptoms/components/msq-symptom-entry-form';
+import { SymptomEntryForm } from '@/features/symptoms/components/symptom-entry-form';
 import {
   getSymptomById,
   updateSymptom as dbUpdateSymptom,
@@ -23,57 +23,64 @@ export default function EditSymptomPage({
   const router = useRouter();
   const [symptom, setSymptom] = useState<Symptom | null>(null);
   const [loading, setLoading] = useState(true);
-  const isMountedRef = useRef(true);
+  const [error, setError] = useState<string | null>(null);
+  const [symptomId, setSymptomId] = useState<string | null>(null);
 
+  // First resolve params
   useEffect(() => {
-    const loadSymptom = async () => {
+    const resolveParams = async () => {
       try {
         const resolvedParams = await params;
+        setSymptomId(resolvedParams.id);
+      } catch (error) {
+        console.error('Error resolving params:', error);
+        setError('Failed to load page parameters');
+        setLoading(false);
+      }
+    };
 
-        // Check if component is still mounted before updating state
-        if (!isMountedRef.current) return;
+    resolveParams();
+  }, [params]);
 
-        const symptomData = await getSymptomById(resolvedParams.id);
+  // Then load symptom data
+  useEffect(() => {
+    if (!symptomId) return;
 
-        if (!isMountedRef.current) return;
+    const loadSymptom = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log('Loading symptom with ID:', symptomId);
+
+        const symptomData = await getSymptomById(symptomId);
+        console.log('Symptom data loaded:', symptomData);
 
         if (symptomData) {
           setSymptom(symptomData);
         } else {
-          // If symptom not found, go back
+          console.log('Symptom not found, navigating back');
           router.back();
+          return;
         }
       } catch (error) {
-        if (!isMountedRef.current) return;
-
+        console.error('Error loading symptom:', error);
         logger.error('Error loading symptom', error);
-        router.back();
+        setError(
+          error instanceof Error ? error.message : 'Failed to load symptom'
+        );
       } finally {
-        if (isMountedRef.current) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
     loadSymptom();
-  }, [params, router]);
+  }, [symptomId, router]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  const handleUpdateSymptom = async (
-    updatedSymptom: Omit<Symptom, 'id' | 'timestamp'>
-  ) => {
+  const handleUpdateSymptom = async (updatedSymptom: Omit<Symptom, 'id'>) => {
     try {
-      if (symptom && isMountedRef.current) {
+      if (symptom) {
         await dbUpdateSymptom(symptom.id, updatedSymptom);
-
-        // Check if component is still mounted before state updates
-        if (!isMountedRef.current) return;
 
         // Invalidate SWR cache to trigger immediate refresh
         await mutate('dashboard-data');
@@ -82,8 +89,6 @@ export default function EditSymptomPage({
         router.push('/app');
       }
     } catch (error) {
-      if (!isMountedRef.current) return;
-
       logger.error('Failed to update symptom', error);
       const errorMessage =
         error instanceof Error
@@ -94,12 +99,9 @@ export default function EditSymptomPage({
   };
 
   const handleDeleteSymptom = async () => {
-    if (symptom && isMountedRef.current) {
+    if (symptom) {
       try {
         await deleteSymptom(symptom.id);
-
-        // Check if component is still mounted before state updates
-        if (!isMountedRef.current) return;
 
         // Invalidate SWR cache to trigger immediate refresh
         await mutate('dashboard-data');
@@ -107,8 +109,6 @@ export default function EditSymptomPage({
         toast.success('Symptom deleted successfully');
         router.push('/app');
       } catch (error) {
-        if (!isMountedRef.current) return;
-
         logger.error('Failed to delete symptom', error);
         const errorMessage =
           error instanceof Error
@@ -126,13 +126,40 @@ export default function EditSymptomPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Loading symptom...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sm text-red-600 mb-4">{error}</p>
+          <Button onClick={() => router.back()} variant="outline">
+            Go Back
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (!symptom) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground mb-4">
+            Symptom not found
+          </p>
+          <Button onClick={() => router.back()} variant="outline">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -154,8 +181,17 @@ export default function EditSymptomPage({
 
       {/* Form Content */}
       <main className="flex-1 overflow-y-auto px-4 py-6">
-        <MSQSymptomEntryForm
-          onAddSymptom={handleUpdateSymptom}
+        <SymptomEntryForm
+          onAddSymptom={async (symptoms, timestamps) => {
+            // Handle single symptom update - use first symptom with its timestamp
+            if (symptoms.length > 0 && timestamps && timestamps.length > 0) {
+              const symptomWithTimestamp = {
+                ...symptoms[0],
+                timestamp: timestamps[0].toISOString(),
+              };
+              await handleUpdateSymptom(symptomWithTimestamp);
+            }
+          }}
           onClose={handleClose}
           onDelete={handleDeleteSymptom}
           editingSymptom={symptom}

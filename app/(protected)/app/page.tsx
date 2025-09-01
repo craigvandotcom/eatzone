@@ -52,8 +52,8 @@ import { Food, Symptom } from '@/lib/types';
 // Import custom hooks
 import { useDashboardData } from '@/lib/hooks';
 
-// Import MSQ utilities
-import { getCategoryByName } from '@/lib/msq/search';
+// Import symptom utilities
+import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
 
 type ViewType = 'food' | 'symptoms';
 
@@ -127,7 +127,10 @@ function Dashboard() {
     router.push('/app/symptoms/add');
   };
 
-  const handleRetryZoning = async (e: React.MouseEvent, foodId: string) => {
+  const handleRetryZoning = async (
+    e: React.MouseEvent | React.KeyboardEvent,
+    foodId: string
+  ) => {
     e.stopPropagation(); // Prevent triggering the edit food handler
 
     try {
@@ -369,7 +372,7 @@ function Dashboard() {
                                   onKeyDown={e => {
                                     if (e.key === 'Enter' || e.key === ' ') {
                                       e.preventDefault();
-                                      handleRetryZoning(e as any, food.id);
+                                      handleRetryZoning(e, food.id);
                                     }
                                   }}
                                 >
@@ -442,7 +445,7 @@ function Dashboard() {
                           <div className="flex items-center space-x-3">
                             <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
                               <span className="text-white text-lg">
-                                {getCategoryByName(symptom.category)?.icon ||
+                                {getCategoryInfo(symptom.category)?.icon ||
                                   '⚡'}
                               </span>
                             </div>
@@ -451,21 +454,24 @@ function Dashboard() {
                                 {symptom.name}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {symptom.category} • Score: {symptom.score}/4
+                                {new Date(symptom.timestamp).toLocaleString(
+                                  'en-US',
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                    hour12: true,
+                                  }
+                                )}
                               </p>
                             </div>
                           </div>
                           <Badge
                             variant="outline"
-                            className={`text-xs ${
-                              symptom.score === 0
-                                ? 'bg-gray-100 text-gray-700'
-                                : symptom.score <= 2
-                                  ? `${getZoneBgClass('yellow', 'light')} ${getZoneTextClass('yellow')}`
-                                  : `${getZoneBgClass('red', 'light')} ${getZoneTextClass('red')}`
-                            }`}
+                            className="text-xs capitalize"
                           >
-                            {symptom.score}/4
+                            {symptom.category}
                           </Badge>
                         </button>
                       ))}

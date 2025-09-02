@@ -45,6 +45,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
             backgroundColor: getZoneColor('unzoned', 'hex'),
             width: '100%',
             height: '100%',
+            willChange: 'transform, opacity',
           }}
           title={`${unzonedCount} unzoned ingredient${unzonedCount !== 1 ? 's' : ''} - analyzing zones...`}
         >
@@ -81,6 +82,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
           style={{
             width: `${greenPercent}%`,
             minWidth: greenPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width',
             ...getZoneBgStyle('green'), // Fallback inline style
           }}
         />
@@ -91,6 +93,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
           style={{
             width: `${yellowPercent}%`,
             minWidth: yellowPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width',
             ...getZoneBgStyle('yellow'), // Fallback inline style
           }}
         />
@@ -101,6 +104,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
           style={{
             width: `${redPercent}%`,
             minWidth: redPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width',
             ...getZoneBgStyle('red'), // Fallback inline style
           }}
         />
@@ -111,6 +115,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
           style={{
             width: `${unzonedPercent}%`,
             minWidth: unzonedPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width, opacity',
             ...getZoneBgStyle('unzoned'), // Fallback inline style
           }}
           title={`${unzonedCount} ingredient${unzonedCount !== 1 ? 's' : ''} analyzing...`}

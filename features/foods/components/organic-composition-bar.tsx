@@ -39,6 +39,7 @@ export function OrganicCompositionBar({
           style={{
             width: `${organicPercent}%`,
             minWidth: organicPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width',
             ...getZoneBgStyle('green'), // Fallback inline style
           }}
         />

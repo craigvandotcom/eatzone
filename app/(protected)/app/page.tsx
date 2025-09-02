@@ -22,6 +22,8 @@ import { OrganicCompositionBar } from '@/features/foods/components/organic-compo
 import { VerticalProgressBar } from '@/features/foods/components/vertical-progress-bar';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import { useIsMobile } from '@/components/ui/use-mobile';
+import { needsZoningRetry } from '@/lib/utils/food-zoning';
+import { AnimatedComponentErrorBoundary } from '@/components/animated-component-error-boundary';
 import {
   Sidebar,
   SidebarContent,
@@ -146,15 +148,6 @@ function Dashboard() {
     } catch (error) {
       logger.error('Manual retry failed', error);
     }
-  };
-
-  // Helper function to check if food needs zoning retry
-  const needsZoningRetry = (food: Food): boolean => {
-    return (
-      food.status === 'analyzing' ||
-      food.ingredients?.some(ing => ing.zone === 'unzoned') ||
-      false
-    );
   };
 
   // Desktop sidebar navigation
@@ -355,12 +348,16 @@ function Dashboard() {
                             </div>
                             <div className="flex-shrink-0 flex items-center space-x-2 ml-1 sm:ml-2">
                               <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
-                                <FoodCompositionBar
-                                  ingredients={food.ingredients || []}
-                                />
-                                <OrganicCompositionBar
-                                  ingredients={food.ingredients || []}
-                                />
+                                <AnimatedComponentErrorBoundary>
+                                  <FoodCompositionBar
+                                    ingredients={food.ingredients || []}
+                                  />
+                                </AnimatedComponentErrorBoundary>
+                                <AnimatedComponentErrorBoundary>
+                                  <OrganicCompositionBar
+                                    ingredients={food.ingredients || []}
+                                  />
+                                </AnimatedComponentErrorBoundary>
                               </div>
                               {needsZoningRetry(food) && (
                                 <div

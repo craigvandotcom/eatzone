@@ -36,18 +36,21 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   const zonedCount = greenCount + yellowCount + redCount;
 
   if (zonedCount === 0 && unzonedCount > 0) {
-    // Only unzoned ingredients, show all gray
+    // Only unzoned ingredients, show loading animation
     return (
       <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
         <div
-          className="transition-all duration-500"
+          className="transition-all duration-500 zone-bar-loading relative"
           style={{
             backgroundColor: getZoneColor('unzoned', 'hex'),
             width: '100%',
             height: '100%',
+            willChange: 'transform, opacity',
           }}
-          title={`${unzonedCount} unzoned ingredient${unzonedCount !== 1 ? 's' : ''} - zoning needed`}
-        ></div>
+          title={`${unzonedCount} unzoned ingredient${unzonedCount !== 1 ? 's' : ''} - analyzing zones...`}
+        >
+          <div className="absolute inset-0 zone-bar-shimmer" />
+        </div>
       </div>
     );
   }
@@ -79,6 +82,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
           style={{
             width: `${greenPercent}%`,
             minWidth: greenPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width',
             ...getZoneBgStyle('green'), // Fallback inline style
           }}
         />
@@ -89,6 +93,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
           style={{
             width: `${yellowPercent}%`,
             minWidth: yellowPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width',
             ...getZoneBgStyle('yellow'), // Fallback inline style
           }}
         />
@@ -99,19 +104,24 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
           style={{
             width: `${redPercent}%`,
             minWidth: redPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width',
             ...getZoneBgStyle('red'), // Fallback inline style
           }}
         />
       )}
       {unzonedPercent > 0 && (
         <div
-          className={`${getZoneBgClass('unzoned')} transition-all duration-500`}
+          className={`${getZoneBgClass('unzoned')} transition-all duration-500 zone-bar-loading relative`}
           style={{
             width: `${unzonedPercent}%`,
             minWidth: unzonedPercent > 0 ? '2px' : '0px',
+            willChange: 'transform, width, opacity',
             ...getZoneBgStyle('unzoned'), // Fallback inline style
           }}
-        />
+          title={`${unzonedCount} ingredient${unzonedCount !== 1 ? 's' : ''} analyzing...`}
+        >
+          <div className="absolute inset-0 zone-bar-shimmer" />
+        </div>
       )}
     </div>
   );

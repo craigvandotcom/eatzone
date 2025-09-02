@@ -10,6 +10,7 @@ import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
+import { processFoodSubmission } from '@/lib/services/food-submission';
 
 export default function EditFoodPage({
   params,
@@ -64,7 +65,45 @@ export default function EditFoodPage({
   const handleUpdateFood = async (updatedFood: Omit<Food, 'id'>) => {
     if (food && isMountedRef.current) {
       try {
-        await dbUpdateFood(food.id, updatedFood);
+        // Process the food through the submission service to re-zone ingredients
+        const submissionData = {
+          name: updatedFood.name,
+          ingredients: updatedFood.ingredients.map(ing => ({
+            ...ing,
+            // Mark ingredient as unzoned if it's been modified (organic status changed)
+            // or if it's missing zone/category/group information
+            zone:
+              !ing.zone || ing.zone === 'unzoned' || !ing.category || !ing.group
+                ? ('unzoned' as const)
+                : ing.zone,
+          })),
+          currentIngredient: '',
+          notes: updatedFood.notes || '',
+          selectedDateTime: new Date(updatedFood.timestamp),
+        };
+
+        // Check if any ingredients need re-zoning
+        const needsReZoning = submissionData.ingredients.some(
+          ing => ing.zone === 'unzoned' || !ing.category || !ing.group
+        );
+
+        if (needsReZoning) {
+          // Process through submission service to re-zone
+          const result = await processFoodSubmission(submissionData);
+
+          if (!result.success) {
+            throw new Error(
+              result.error?.message || 'Failed to process food update'
+            );
+          }
+
+          if (result.food) {
+            await dbUpdateFood(food.id, result.food);
+          }
+        } else {
+          // No re-zoning needed, update directly
+          await dbUpdateFood(food.id, updatedFood);
+        }
 
         // Check if component is still mounted before state updates
         if (!isMountedRef.current) return;

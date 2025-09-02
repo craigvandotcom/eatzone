@@ -303,13 +303,36 @@ export function FoodEntryForm({
   const handleToggleOrganic = (index: number) => {
     const updatedIngredients = [...ingredients];
     updatedIngredients[index].organic = !updatedIngredients[index].organic;
+    // Mark the ingredient as needing re-zoning when organic status changes
+    // This ensures it gets re-analyzed when updating
+    if (editingFood && updatedIngredients[index].zone !== 'unzoned') {
+      updatedIngredients[index].zone = 'unzoned';
+      // Clear category and group to trigger full re-analysis
+      updatedIngredients[index].category = undefined;
+      updatedIngredients[index].group = 'other'; // Reset to default
+    }
     setIngredients(updatedIngredients);
   };
 
   const handleSaveEdit = (index: number) => {
     if (editingValue.trim()) {
       const updatedIngredients = [...ingredients];
-      updatedIngredients[index].name = editingValue.trim();
+      const oldName = updatedIngredients[index].name;
+      const newName = editingValue.trim();
+      updatedIngredients[index].name = newName;
+
+      // Mark as needing re-zoning if the name changed during edit
+      if (
+        editingFood &&
+        oldName !== newName &&
+        updatedIngredients[index].zone !== 'unzoned'
+      ) {
+        updatedIngredients[index].zone = 'unzoned';
+        // Clear category and group to trigger full re-analysis
+        updatedIngredients[index].category = undefined;
+        updatedIngredients[index].group = 'other'; // Reset to default
+      }
+
       setIngredients(updatedIngredients);
     }
     setEditingIndex(null);
@@ -485,7 +508,10 @@ export function FoodEntryForm({
                     >
                       {/* Zone color indicator bar */}
                       <div
-                        className="absolute left-0 top-0 bottom-0 w-1"
+                        className={cn(
+                          'absolute left-0 top-0 bottom-0 w-1',
+                          ingredient.zone === 'unzoned' && 'zone-bar-loading'
+                        )}
                         style={{
                           backgroundColor:
                             ingredient.zone === 'green'
@@ -498,8 +524,16 @@ export function FoodEntryForm({
                                     ? getZoneColor('unzoned', 'hex')
                                     : getZoneColor('unzoned', 'hex'),
                         }}
-                        title={`Zone: ${ingredient.zone || 'unzoned'}`}
-                      />
+                        title={
+                          ingredient.zone === 'unzoned'
+                            ? 'Zone pending...'
+                            : `Zone: ${ingredient.zone}`
+                        }
+                      >
+                        {ingredient.zone === 'unzoned' && (
+                          <div className="absolute inset-0 zone-bar-shimmer" />
+                        )}
+                      </div>
 
                       {/* Ingredient Row */}
                       {editingIndex === index ? (

@@ -415,3 +415,41 @@ body:has([data-vaul-drawer][data-state='open']) {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
+/* ===== ZONE BAR LOADING ANIMATIONS ===== */
+
+/* Zone bar loading animation */
+@keyframes zone-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.zone-bar-loading {
+  animation: zone-pulse 1.5s ease-in-out infinite;
+}
+
+/* Zone checking shimmer effect */
+@keyframes zone-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.zone-bar-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: zone-shimmer 2s linear infinite;
+}

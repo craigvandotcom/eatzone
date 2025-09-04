@@ -10,7 +10,6 @@ import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
-import { retrieveTemporaryCapturedImage, clearTemporaryCapturedImage } from '@/lib/utils/image-capture-helpers';
 
 // Note: Image size validation is now handled in SecureImageStorage
 
@@ -19,8 +18,8 @@ export default function AddFoodPage() {
   const [imageData, setImageData] = useState<string | undefined>();
 
   useEffect(() => {
-    // Check if there's a pending image from camera capture using secure storage
-    const pendingImage = retrieveTemporaryCapturedImage();
+    // Check if there's a pending image from camera capture in sessionStorage
+    const pendingImage = sessionStorage.getItem('pendingFoodImage');
     logger.debug('Checking for pending image', {
       hasPendingImage: !!pendingImage,
       imageLength: pendingImage?.length,
@@ -33,7 +32,7 @@ export default function AddFoodPage() {
           logger.debug('Valid image data found, setting imageData state');
           setImageData(pendingImage);
         } else {
-          logger.error('Invalid image data retrieved from secure storage', {
+          logger.error('Invalid image data retrieved from sessionStorage', {
             imageStart: pendingImage.substring(0, 50),
           });
           toast.error('Failed to load captured image. Please try again.');
@@ -44,9 +43,9 @@ export default function AddFoodPage() {
       }
 
       // Clear it after retrieval to prevent reuse
-      clearTemporaryCapturedImage();
+      sessionStorage.removeItem('pendingFoodImage');
     } else {
-      logger.debug('No pending image found in secure storage');
+      logger.debug('No pending image found in sessionStorage');
     }
   }, []);
 

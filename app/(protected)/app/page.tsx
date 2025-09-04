@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -84,6 +84,10 @@ import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
 
 type ViewType = 'insights' | 'food' | 'signals' | 'settings';
 
+// Constants
+const TRANSITION_DURATION = 150; // Half of fade duration in milliseconds
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB limit for sessionStorage
+
 function Dashboard() {
   // Use consolidated dashboard data hook to prevent infinite loops
   const {
@@ -124,29 +128,75 @@ function Dashboard() {
   const [currentView, setCurrentView] = useState<ViewType>('insights');
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const handleViewChange = (newView: ViewType) => {
-    if (newView === currentView) return;
+  // Ref to store timeout ID for cleanup
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentView(newView);
-      setIsTransitioning(false);
-    }, 150); // Half of fade duration
-  };
+  const handleViewChange = useCallback(
+    (newView: ViewType) => {
+      if (newView === currentView) return;
 
-  const handleCameraCapture = async (imageData: string) => {
-    // Store the image data temporarily in sessionStorage for the add food page
-    sessionStorage.setItem('pendingFoodImage', imageData);
+      // Clear any existing timeout
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+
+      setIsTransitioning(true);
+      transitionTimeoutRef.current = setTimeout(() => {
+        setCurrentView(newView);
+        setIsTransitioning(false);
+        transitionTimeoutRef.current = null;
+      }, TRANSITION_DURATION);
+    },
+    [currentView]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleCameraCapture = useCallback(
+    async (imageData: string) => {
+      try {
+        // Validate image data size before storing (sessionStorage has ~5MB limit)
+        const imageSize = new Blob([imageData]).size;
+
+        if (imageSize > MAX_IMAGE_SIZE) {
+          toast({
+            title: 'Image too large',
+            description:
+              'Please try capturing a smaller image or use manual entry.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Store the image data temporarily in sessionStorage for the add food page
+        sessionStorage.setItem('pendingFoodImage', imageData);
+        router.push('/app/foods/add');
+      } catch (error) {
+        logger.error('Failed to store image data', error);
+        toast({
+          title: 'Failed to save image',
+          description: 'Please try again or use manual entry.',
+          variant: 'destructive',
+        });
+      }
+    },
+    [router, toast]
+  );
+
+  const handleManualEntry = useCallback(() => {
     router.push('/app/foods/add');
-  };
+  }, [router]);
 
-  const handleManualEntry = () => {
-    router.push('/app/foods/add');
-  };
-
-  const handleQuickCapture = () => {
+  const handleQuickCapture = useCallback(() => {
     setShowCameraCapture(true);
-  };
+  }, []);
 
   // Get the active tab styling based on current view
   const getActiveTabStyle = (view: ViewType) => {
@@ -167,17 +217,23 @@ function Dashboard() {
     }
   };
 
-  const handleEditFood = (food: Food) => {
-    router.push(`/app/foods/edit/${food.id}`);
-  };
+  const handleEditFood = useCallback(
+    (food: Food) => {
+      router.push(`/app/foods/edit/${food.id}`);
+    },
+    [router]
+  );
 
-  const handleEditSymptom = (symptom: Symptom) => {
-    router.push(`/app/symptoms/edit/${symptom.id}`);
-  };
+  const handleEditSymptom = useCallback(
+    (symptom: Symptom) => {
+      router.push(`/app/symptoms/edit/${symptom.id}`);
+    },
+    [router]
+  );
 
-  const handleAddSymptom = () => {
+  const handleAddSymptom = useCallback(() => {
     router.push('/app/symptoms/add');
-  };
+  }, [router]);
 
   // Settings handler functions
   const handleExportData = async () => {
@@ -743,17 +799,18 @@ function Dashboard() {
     </div>
   );
 
+  // Central Plus Button handler
+  const handlePlusClick = useCallback(() => {
+    if (currentView === 'food') {
+      handleQuickCapture();
+    } else if (currentView === 'signals') {
+      handleAddSymptom();
+    }
+  }, [currentView, handleQuickCapture, handleAddSymptom]);
+
   // Central Plus Button component
   const CentralPlusButton = () => {
     if (currentView !== 'food' && currentView !== 'signals') return null;
-
-    const handlePlusClick = () => {
-      if (currentView === 'food') {
-        handleQuickCapture();
-      } else if (currentView === 'signals') {
-        handleAddSymptom();
-      }
-    };
 
     const getBorderStyle = () => {
       if (currentView === 'food') {
@@ -803,7 +860,7 @@ function Dashboard() {
                   }`}
                 />
                 <span className="text-xs font-medium">{tab.label}</span>
-                {currentView === tab.id && (
+                {currentView === tab.id && !isTransitioning && (
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-current rounded-full" />
                 )}
               </button>

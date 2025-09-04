@@ -11,6 +11,9 @@ import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 
+// Constants
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB limit for sessionStorage
+
 export default function AddFoodPage() {
   const router = useRouter();
   const [imageData, setImageData] = useState<string | undefined>();
@@ -24,16 +27,37 @@ export default function AddFoodPage() {
     });
 
     if (pendingImage) {
-      // Validate it's a proper base64 image
-      if (pendingImage.startsWith('data:image/')) {
-        logger.debug('Valid image data found, setting imageData state');
-        setImageData(pendingImage);
-      } else {
-        logger.error('Invalid image data retrieved from session', {
-          imageStart: pendingImage.substring(0, 50),
-        });
+      try {
+        // Validate it's a proper base64 image
+        if (pendingImage.startsWith('data:image/')) {
+          // Additional size validation
+          const imageSize = new Blob([pendingImage]).size;
+
+          if (imageSize > MAX_IMAGE_SIZE) {
+            logger.error('Image too large', {
+              imageSize,
+              maxSize: MAX_IMAGE_SIZE,
+            });
+            toast.error(
+              'Image is too large. Please try capturing a smaller image.'
+            );
+            sessionStorage.removeItem('pendingFoodImage');
+            return;
+          }
+
+          logger.debug('Valid image data found, setting imageData state');
+          setImageData(pendingImage);
+        } else {
+          logger.error('Invalid image data retrieved from session', {
+            imageStart: pendingImage.substring(0, 50),
+          });
+          toast.error('Failed to load captured image. Please try again.');
+        }
+      } catch (error) {
+        logger.error('Error processing pending image', error);
         toast.error('Failed to load captured image. Please try again.');
       }
+
       // Clear it after retrieval to prevent reuse
       sessionStorage.removeItem('pendingFoodImage');
     } else {

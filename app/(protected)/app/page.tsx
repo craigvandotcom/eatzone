@@ -4,7 +4,15 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import {
-  ChevronLeft,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import {
   Utensils,
   Activity,
   Plus,
@@ -12,6 +20,17 @@ import {
   Settings,
   BarChart3,
   RefreshCw,
+  TrendingUp,
+  PieChart,
+  LineChart,
+  Calendar,
+  Clock,
+  User,
+  Download,
+  Upload,
+  Trash2,
+  TestTube,
+  LogOut,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CameraCapture } from '@/features/camera/components/camera-capture';
@@ -53,11 +72,17 @@ import { Food, Symptom } from '@/lib/types';
 
 // Import custom hooks
 import { useDashboardData } from '@/lib/hooks';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import { useTheme } from 'next-themes';
+import { useToast } from '@/components/ui/use-toast';
+
+// Import data management functions
+import { exportAllData, importAllData, clearAllData, addFood } from '@/lib/db';
 
 // Import symptom utilities
 import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
 
-type ViewType = 'food' | 'symptoms';
+type ViewType = 'insights' | 'food' | 'signals' | 'settings';
 
 function Dashboard() {
   // Use consolidated dashboard data hook to prevent infinite loops
@@ -66,6 +91,16 @@ function Dashboard() {
     error: dashboardError,
     mutate: retryDashboard,
   } = useDashboardData();
+
+  // Settings state management
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [isAddingTest, setIsAddingTest] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   // Extract data from consolidated hook
   const recentFoods = dashboardData?.recentFoods;
@@ -86,7 +121,18 @@ function Dashboard() {
 
   // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
-  const [currentView, setCurrentView] = useState<ViewType>('food');
+  const [currentView, setCurrentView] = useState<ViewType>('insights');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleViewChange = (newView: ViewType) => {
+    if (newView === currentView) return;
+
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentView(newView);
+      setIsTransitioning(false);
+    }, 150); // Half of fade duration
+  };
 
   const handleCameraCapture = async (imageData: string) => {
     // Store the image data temporarily in sessionStorage for the add food page
@@ -105,15 +151,19 @@ function Dashboard() {
   // Get the active tab styling based on current view
   const getActiveTabStyle = (view: ViewType) => {
     if (currentView !== view)
-      return 'text-muted-foreground hover:text-foreground hover:bg-background/30';
+      return 'text-muted-foreground hover:text-foreground';
 
     switch (view) {
+      case 'insights':
+        return 'text-blue-600';
       case 'food':
-        return 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-400/25';
-      case 'symptoms':
-        return 'bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg shadow-red-400/25';
+        return 'text-green-600';
+      case 'signals':
+        return 'text-red-600';
+      case 'settings':
+        return 'text-purple-600';
       default:
-        return 'bg-card text-foreground shadow-sm';
+        return 'text-foreground';
     }
   };
 
@@ -127,6 +177,171 @@ function Dashboard() {
 
   const handleAddSymptom = () => {
     router.push('/app/symptoms/add');
+  };
+
+  // Settings handler functions
+  const handleExportData = async () => {
+    setIsExporting(true);
+    try {
+      const data = await exportAllData();
+
+      // Create a downloadable JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `health-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Data exported successfully',
+        description: `Exported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
+      });
+    } catch (error) {
+      logger.error('Export failed', error);
+      toast({
+        title: 'Export failed',
+        description:
+          'There was an error exporting your data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportData = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Validate the data structure
+      if (!data.foods || !data.symptoms) {
+        throw new Error('Invalid backup file format');
+      }
+
+      await importAllData(data);
+
+      toast({
+        title: 'Data imported successfully',
+        description: `Imported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
+      });
+    } catch (error) {
+      logger.error('Import failed', error);
+      toast({
+        title: 'Import failed',
+        description:
+          'There was an error importing your data. Please check the file format and try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+      // Reset the file input
+      event.target.value = '';
+    }
+  };
+
+  const handleClearAllData = async () => {
+    setIsClearing(true);
+    try {
+      await clearAllData();
+      toast({
+        title: 'All data cleared',
+        description:
+          'All your health tracking data has been permanently deleted.',
+      });
+    } catch (error) {
+      logger.error('Clear failed', error);
+      toast({
+        title: 'Clear failed',
+        description: 'There was an error clearing your data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      toast({
+        title: 'Logged out',
+        description: 'You have been logged out successfully.',
+      });
+      router.push('/');
+    } catch (error) {
+      logger.error('Logout failed', error);
+      toast({
+        title: 'Logout failed',
+        description: 'There was an error logging out. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const handleAddTestData = async () => {
+    setIsAddingTest(true);
+    try {
+      // Add a test food with organic and non-organic ingredients
+      await addFood({
+        name: 'Test Organic Meal',
+        ingredients: [
+          {
+            name: 'organic spinach',
+            organic: true,
+            zone: 'green',
+            group: 'Leafy Greens',
+            category: 'Vegetables',
+          },
+          {
+            name: 'organic quinoa',
+            organic: true,
+            zone: 'green',
+            group: 'Pseudo-Grains',
+            category: 'Grains & Starches',
+          },
+          {
+            name: 'salmon',
+            organic: false,
+            zone: 'green',
+            group: 'Wild-Caught Seafood',
+            category: 'Proteins',
+          },
+        ],
+        status: 'processed',
+        notes: 'Test data to verify organic tracking',
+      });
+
+      toast({
+        title: 'Test data added',
+        description:
+          'Added a test meal with 2/3 organic ingredients to verify the organic tracking works.',
+      });
+    } catch (error) {
+      logger.error('Failed to add test data', error);
+      toast({
+        title: 'Test data failed',
+        description: 'There was an error adding test data.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAddingTest(false);
+    }
   };
 
   const handleRetryZoning = async (
@@ -163,30 +378,36 @@ function Dashboard() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={currentView === 'food'}
-                onClick={() => setCurrentView('food')}
+                isActive={currentView === 'insights'}
+                onClick={() => handleViewChange('insights')}
               >
-                <Utensils className="h-4 w-4" />
-                <span>Foods</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={currentView === 'symptoms'}
-                onClick={() => setCurrentView('symptoms')}
-              >
-                <Activity className="h-4 w-4" />
-                <span>Symptoms</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => router.push('/app/insights')}>
                 <BarChart3 className="h-4 w-4" />
                 <span>Insights</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => router.push('/settings')}>
+              <SidebarMenuButton
+                isActive={currentView === 'food'}
+                onClick={() => handleViewChange('food')}
+              >
+                <Utensils className="h-4 w-4" />
+                <span>Food</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === 'signals'}
+                onClick={() => handleViewChange('signals')}
+              >
+                <Activity className="h-4 w-4" />
+                <span>Signals</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === 'settings'}
+                onClick={() => handleViewChange('settings')}
+              >
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
               </SidebarMenuButton>
@@ -197,15 +418,400 @@ function Dashboard() {
     </Sidebar>
   );
 
-  const getTopGlowStyle = (view: ViewType) => {
-    switch (view) {
-      case 'food':
-        return 'shadow-[0_-4px_20px_rgba(34,197,94,0.15)]';
-      case 'symptoms':
-        return 'shadow-[0_-4px_20px_rgba(239,68,68,0.15)]';
-      default:
-        return '';
-    }
+  // InsightsView component
+  const InsightsView = () => (
+    <div className="space-y-6">
+      {/* Coming Soon Notice */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Analytics Coming Soon
+          </CardTitle>
+          <CardDescription>
+            Advanced insights and trend analysis for your health data.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="text-sm font-medium text-blue-900 mb-2">
+              What&apos;s Coming
+            </h4>
+            <p className="text-xs text-blue-700">
+              This section will provide deep insights into your health patterns,
+              correlations between different metrics, and trends over time.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Planned Features */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <LineChart className="h-4 w-4" />
+              Trend Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-gray-600">
+              Visualize how your health metrics change over time with
+              interactive charts.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <BarChart3 className="h-4 w-4" />
+              Correlation Matrix
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-gray-600">
+              Discover relationships between different health inputs and
+              outputs.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <PieChart className="h-4 w-4" />
+              Health Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-gray-600">
+              Get an overall health score based on your tracked metrics.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4" />
+              Pattern Recognition
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-gray-600">
+              Identify recurring patterns and cycles in your health data.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Current Data Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Current Data Summary
+          </CardTitle>
+          <CardDescription>
+            Basic overview of your tracked data (placeholder).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div
+              className={`p-4 ${getZoneBgClass('green', 'light')} rounded-lg`}
+            >
+              <div
+                className={`text-2xl font-bold ${getZoneTextClass('green')}`}
+              >
+                {recentFoods?.length || 0}
+              </div>
+              <div className="text-sm text-gray-600">Total Foods</div>
+            </div>
+            <div className={`p-4 ${getZoneBgClass('red', 'light')} rounded-lg`}>
+              <div className={`text-2xl font-bold ${getZoneTextClass('red')}`}>
+                {recentSymptoms?.length || 0}
+              </div>
+              <div className="text-sm text-gray-600">Total Symptoms</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // SettingsView component
+  const SettingsView = () => (
+    <div className="space-y-6">
+      {/* Account Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Account Information
+          </CardTitle>
+          <CardDescription>
+            Your account details and privacy information.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">Email</p>
+              <p className="text-sm text-muted-foreground">
+                {user?.email || 'Not available'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Account Created
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString()
+                  : 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Last Login</p>
+              <p className="text-sm text-muted-foreground">N/A</p>
+            </div>
+          </div>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="text-sm font-medium text-blue-900 mb-2">
+              Privacy Reminder
+            </h4>
+            <p className="text-xs text-blue-700">
+              Your account and all health data are stored securely with
+              Supabase. Regular data exports are recommended for backup
+              purposes.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="h-5 w-5" />
+            Data Management
+          </CardTitle>
+          <CardDescription>
+            Export, import, or delete your health tracking data.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <p className="text-sm font-medium text-foreground">Export Data</p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Download all your data as a JSON file. This is your primary backup
+              method.
+            </p>
+            <Button
+              onClick={handleExportData}
+              disabled={isExporting}
+              className="w-full sm:w-auto"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? 'Exporting...' : 'Export All Data'}
+            </Button>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Import Data</p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Upload a previously exported JSON file to restore your data.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportData}
+                className="hidden"
+                id="import-file"
+              />
+              <label htmlFor="import-file">
+                <Button variant="outline" className="cursor-pointer" asChild>
+                  <span>Choose File</span>
+                </Button>
+              </label>
+              <Button
+                onClick={() => document.getElementById('import-file')?.click()}
+                disabled={isImporting}
+                variant="outline"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {isImporting ? 'Importing...' : 'Import Data'}
+              </Button>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Danger Zone</p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Permanently delete all your health tracking data. This cannot be
+              undone.
+            </p>
+            <Button
+              onClick={handleClearAllData}
+              disabled={isClearing}
+              variant="destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {isClearing ? 'Deleting...' : 'Delete All Data'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Debug Tools */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TestTube className="h-5 w-5" />
+            Debug Tools
+          </CardTitle>
+          <CardDescription>
+            Tools for testing and debugging the organic tracking system.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={handleAddTestData}
+            disabled={isAddingTest}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            <TestTube className="h-4 w-4 mr-2" />
+            {isAddingTest ? 'Adding...' : 'Add Test Organic Food'}
+          </Button>
+          <p className="text-xs text-muted-foreground mt-2">
+            This will add a test meal with 2/3 organic ingredients to help you
+            verify the organic tracking bars are working.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Appearance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Appearance
+          </CardTitle>
+          <CardDescription>
+            Customize the look and feel of the app.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Dark Mode</p>
+              <p className="text-sm text-muted-foreground">
+                Switch between light and dark themes.
+              </p>
+            </div>
+            <Switch
+              checked={theme === 'dark'}
+              onCheckedChange={checked => setTheme(checked ? 'dark' : 'light')}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LogOut className="h-5 w-5" />
+            Account Actions
+          </CardTitle>
+          <CardDescription>Sign out of your account.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {isLoggingOut ? 'Logging out...' : 'Logout'}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Central Plus Button component
+  const CentralPlusButton = () => {
+    if (currentView !== 'food' && currentView !== 'signals') return null;
+
+    const handlePlusClick = () => {
+      if (currentView === 'food') {
+        handleQuickCapture();
+      } else if (currentView === 'signals') {
+        handleAddSymptom();
+      }
+    };
+
+    const getBorderStyle = () => {
+      if (currentView === 'food') {
+        return 'border-2 border-green-600 hover:border-green-700';
+      } else if (currentView === 'signals') {
+        return 'border-2 border-red-600 hover:border-red-700';
+      }
+      return 'border-2 border-foreground';
+    };
+
+    return (
+      <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+        <MetallicButton
+          onClick={handlePlusClick}
+          size="lg"
+          className={`min-h-[56px] min-w-[56px] w-14 h-14 rounded-full ${getBorderStyle()} hover:scale-105 transition-all duration-200 aspect-square`}
+        >
+          <Plus className="h-7 w-7" />
+        </MetallicButton>
+      </div>
+    );
+  };
+
+  // Bottom Navigation component
+  const BottomNavigation = () => {
+    const tabs = [
+      { id: 'insights' as ViewType, label: 'Insights', icon: BarChart3 },
+      { id: 'food' as ViewType, label: 'Food', icon: Utensils },
+      { id: 'signals' as ViewType, label: 'Signals', icon: Activity },
+      { id: 'settings' as ViewType, label: 'Settings', icon: Settings },
+    ];
+
+    return (
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 pb-safe">
+        <div className="relative">
+          <CentralPlusButton />
+          <div className="flex items-center h-16">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => handleViewChange(tab.id)}
+                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-2 transition-all duration-200 ${getActiveTabStyle(tab.id)}`}
+              >
+                <tab.icon
+                  className={`h-5 w-5 mb-1 transition-transform duration-200 ${
+                    currentView === tab.id ? 'scale-110' : ''
+                  }`}
+                />
+                <span className="text-xs font-medium">{tab.label}</span>
+                {currentView === tab.id && (
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-current rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -221,27 +827,15 @@ function Dashboard() {
 
       {/* Main Content Wrapper */}
       <div className="flex flex-1 flex-col min-h-0">
-        {/* Header - Mobile Only */}
-        {isMobile && (
-          <div className="bg-card px-4 py-4 flex items-center justify-between border-b border-border z-10 flex-shrink-0">
-            <ChevronLeft className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-xl font-semibold text-foreground">
-              Your Body Compass
-            </h1>
-            <button
-              onClick={() => router.push('/settings')}
-              className="p-1 rounded-full hover:bg-muted transition-colors"
-            >
-              <Settings className="h-6 w-6 text-muted-foreground" />
-            </button>
-          </div>
-        )}
-
-        {/* Scrollable Content Area */}
+        {/* Content Area with Fade Transition */}
         <div
-          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'main-content-mobile' : ''}`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'pb-20' : ''} transition-opacity duration-300 ${
+            isTransitioning ? 'opacity-0' : 'opacity-100'
+          }`}
         >
           <div className="px-4 py-6 space-y-6 max-w-full">
+            {currentView === 'insights' && <InsightsView />}
+            {currentView === 'settings' && <SettingsView />}
             {currentView === 'food' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 {/* Food Category Progress */}
@@ -386,7 +980,7 @@ function Dashboard() {
               </ErrorBoundary>
             )}
 
-            {currentView === 'symptoms' && (
+            {currentView === 'signals' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 <div className="flex flex-col items-center space-y-4 h-64">
                   <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
@@ -420,7 +1014,7 @@ function Dashboard() {
                         isEmpty={recentSymptoms?.length === 0}
                         loadingMessage="Loading recent symptoms..."
                         emptyTitle="No symptoms logged yet"
-                        emptyDescription="Tap the symptom icon below to get started"
+                        emptyDescription="Tap the signals icon below to get started"
                         emptyIcon="⚡"
                       />
                     )}
@@ -479,74 +1073,8 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Mobile Bottom Navigation */}
-        {isMobile && (
-          <>
-            {/* Unified Background Container */}
-            <div
-              className={`fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-50/95 via-white/95 to-white/80 backdrop-blur-md ${getTopGlowStyle(currentView)} safe-area-pb z-50`}
-            >
-              {/* Tab Navigation */}
-              <div className="px-4 py-4">
-                <div className="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 rounded-full p-1 flex justify-around space-x-1 shadow-[0_-2px_8px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] border border-slate-200/40">
-                  <button
-                    onClick={() => setCurrentView('food')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle('food')}`}
-                  >
-                    Foods
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('symptoms')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle('symptoms')}`}
-                  >
-                    Symptoms
-                  </button>
-                </div>
-              </div>
-
-              {/* Floating Action Buttons */}
-              <div className="px-4 pt-1 pb-6">
-                <div className="flex justify-around space-x-4">
-                  <div className="relative">
-                    <MetallicButton
-                      accent="food"
-                      size="lg"
-                      onClick={handleQuickCapture}
-                      className="group min-h-[44px] min-w-[44px]"
-                    >
-                      <Utensils
-                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass('green')} transition-colors`}
-                      />
-                    </MetallicButton>
-                    <div
-                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass('green')} rounded-full flex items-center justify-center shadow-lg`}
-                    >
-                      <Plus className="h-3 w-3 text-white" />
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <MetallicButton
-                      accent="symptom"
-                      size="lg"
-                      onClick={handleAddSymptom}
-                      className="group min-h-[44px] min-w-[44px]"
-                    >
-                      <Activity
-                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass('red')} transition-colors`}
-                      />
-                    </MetallicButton>
-                    <div
-                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass('red')} rounded-full flex items-center justify-center shadow-lg`}
-                    >
-                      <Plus className="h-3 w-3 text-white" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        {/* Bottom Navigation - Mobile Only */}
+        {isMobile && <BottomNavigation />}
       </div>
 
       {/* Camera Capture Modal */}

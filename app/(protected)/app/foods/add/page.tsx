@@ -11,12 +11,14 @@ import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 
+// Note: Image size validation is now handled in SecureImageStorage
+
 export default function AddFoodPage() {
   const router = useRouter();
   const [imageData, setImageData] = useState<string | undefined>();
 
   useEffect(() => {
-    // Check if there's a pending image from camera capture
+    // Check if there's a pending image from camera capture in sessionStorage
     const pendingImage = sessionStorage.getItem('pendingFoodImage');
     logger.debug('Checking for pending image', {
       hasPendingImage: !!pendingImage,
@@ -24,16 +26,22 @@ export default function AddFoodPage() {
     });
 
     if (pendingImage) {
-      // Validate it's a proper base64 image
-      if (pendingImage.startsWith('data:image/')) {
-        logger.debug('Valid image data found, setting imageData state');
-        setImageData(pendingImage);
-      } else {
-        logger.error('Invalid image data retrieved from session', {
-          imageStart: pendingImage.substring(0, 50),
-        });
+      try {
+        // Validate it's a proper base64 image
+        if (pendingImage.startsWith('data:image/')) {
+          logger.debug('Valid image data found, setting imageData state');
+          setImageData(pendingImage);
+        } else {
+          logger.error('Invalid image data retrieved from sessionStorage', {
+            imageStart: pendingImage.substring(0, 50),
+          });
+          toast.error('Failed to load captured image. Please try again.');
+        }
+      } catch (error) {
+        logger.error('Error processing pending image', error);
         toast.error('Failed to load captured image. Please try again.');
       }
+
       // Clear it after retrieval to prevent reuse
       sessionStorage.removeItem('pendingFoodImage');
     } else {

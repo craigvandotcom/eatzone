@@ -126,7 +126,11 @@ export function FoodEntryForm({
       setAnalysisError(null);
 
       try {
-        logger.debug('Sending request to analyze-image API');
+        logger.debug('Sending request to analyze-image API', {
+          imageDataLength: imageData.length,
+          imageDataStart: imageData.substring(0, 50),
+          imageDataType: imageData.split(',')[0], // Get the data URL prefix
+        });
         const response = await fetch('/api/analyze-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -141,12 +145,24 @@ export function FoodEntryForm({
         }
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
+          const errorText = await response
+            .text()
+            .catch(() => 'Failed to read error response');
+          let errorData = null;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { message: errorText };
+          }
           logger.error('Analysis API error', {
             status: response.status,
+            statusText: response.statusText,
             errorData,
+            errorText: errorText.substring(0, 500), // Log first 500 chars
           });
-          throw new Error(`Analysis failed with status ${response.status}`);
+          throw new Error(
+            `Analysis failed with status ${response.status}: ${errorData?.error?.message || errorData?.message || 'Unknown error'}`
+          );
         }
 
         const { mealSummary, ingredients: ingredientData } =
@@ -410,16 +426,24 @@ export function FoodEntryForm({
         message="Analyzing ingredients with AI..."
       />
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Image Display */}
-        {editingFood?.photo_url && (
+        {/* Image Display - Show for both editing and new entries with captured image */}
+        {(editingFood?.photo_url || imageData) && (
           <div className="mb-4">
             <Label>Food Image</Label>
             <div className="mt-2 relative w-full max-w-md mx-auto">
               <img
-                src={editingFood.photo_url}
+                src={editingFood?.photo_url || imageData}
                 alt="Food entry"
                 className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
               />
+              {imageData && isAnalyzing && (
+                <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                  <div className="bg-white rounded-lg px-3 py-2 flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                    <span className="text-sm text-blue-700">Analyzing...</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

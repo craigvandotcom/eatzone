@@ -1,17 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import {
-  ChevronLeft,
   Utensils,
   Activity,
   Plus,
   Leaf,
   Settings,
   BarChart3,
-  RefreshCw,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CameraCapture } from '@/features/camera/components/camera-capture';
@@ -22,7 +20,6 @@ import { OrganicCompositionBar } from '@/features/foods/components/organic-compo
 import { VerticalProgressBar } from '@/features/foods/components/vertical-progress-bar';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import { useIsMobile } from '@/components/ui/use-mobile';
-import { needsZoningRetry } from '@/lib/utils/food-zoning';
 import { AnimatedComponentErrorBoundary } from '@/components/animated-component-error-boundary';
 import {
   Sidebar,
@@ -34,7 +31,7 @@ import {
   SidebarProvider,
   SidebarHeader,
 } from '@/components/ui/sidebar';
-import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import { getZoneTextClass } from '@/lib/utils/zone-colors';
 import {
   FoodEntrySkeleton,
   SymptomEntrySkeleton,
@@ -47,17 +44,27 @@ import {
   SupabaseErrorFallback,
 } from '@/components/error-boundary';
 import { logger } from '@/lib/utils/logger';
+import { InsightsView } from '@/features/dashboard/components/insights-view';
+import { SettingsView } from '@/features/dashboard/components/settings-view';
 
 // Import types
 import { Food, Symptom } from '@/lib/types';
 
 // Import custom hooks
 import { useDashboardData } from '@/lib/hooks';
+import { useAuth } from '@/features/auth/components/auth-provider';
+import { useToast } from '@/components/ui/use-toast';
+
+// Import data management functions
 
 // Import symptom utilities
 import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
 
-type ViewType = 'food' | 'symptoms';
+type ViewType = 'insights' | 'food' | 'signals' | 'settings';
+
+// Constants
+const TRANSITION_DURATION = 150; // Half of fade duration in milliseconds
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB limit for sessionStorage
 
 function Dashboard() {
   // Use consolidated dashboard data hook to prevent infinite loops
@@ -66,6 +73,15 @@ function Dashboard() {
     error: dashboardError,
     mutate: retryDashboard,
   } = useDashboardData();
+
+  // Settings state management
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [isAddingTest, setIsAddingTest] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { toast } = useToast();
+  const { user, logout } = useAuth();
 
   // Extract data from consolidated hook
   const recentFoods = dashboardData?.recentFoods;
@@ -86,69 +102,137 @@ function Dashboard() {
 
   // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
-  const [currentView, setCurrentView] = useState<ViewType>('food');
+  const [currentView, setCurrentView] = useState<ViewType>('insights');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const handleCameraCapture = async (imageData: string) => {
-    // Store the image data temporarily in sessionStorage for the add food page
-    sessionStorage.setItem('pendingFoodImage', imageData);
+  // Ref to store timeout ID for cleanup
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleViewChange = useCallback(
+    (newView: ViewType) => {
+      if (newView === currentView) return;
+
+      // Clear any existing timeout
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+
+      setIsTransitioning(true);
+      transitionTimeoutRef.current = setTimeout(() => {
+        setCurrentView(newView);
+        setIsTransitioning(false);
+        transitionTimeoutRef.current = null;
+      }, TRANSITION_DURATION);
+    },
+    [currentView]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleCameraCapture = useCallback(
+    async (imageData: string) => {
+      try {
+        // Validate image data size before storing (sessionStorage has ~5MB limit)
+        const imageSize = new Blob([imageData]).size;
+
+        if (imageSize > MAX_IMAGE_SIZE) {
+          toast({
+            title: 'Image too large',
+            description:
+              'Please try capturing a smaller image or use manual entry.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Store the image data temporarily in sessionStorage for the add food page
+        sessionStorage.setItem('pendingFoodImage', imageData);
+        router.push('/app/foods/add');
+      } catch (error) {
+        logger.error('Failed to store image data', error);
+        toast({
+          title: 'Failed to save image',
+          description: 'Please try again or use manual entry.',
+          variant: 'destructive',
+        });
+      }
+    },
+    [router, toast]
+  );
+
+  const handleManualEntry = useCallback(() => {
     router.push('/app/foods/add');
-  };
+  }, [router]);
 
-  const handleManualEntry = () => {
-    router.push('/app/foods/add');
-  };
-
-  const handleQuickCapture = () => {
+  const handleQuickCapture = useCallback(() => {
     setShowCameraCapture(true);
-  };
+  }, []);
 
   // Get the active tab styling based on current view
   const getActiveTabStyle = (view: ViewType) => {
     if (currentView !== view)
-      return 'text-muted-foreground hover:text-foreground hover:bg-background/30';
+      return 'text-muted-foreground hover:text-foreground';
 
     switch (view) {
+      case 'insights':
+        return 'text-blue-600';
       case 'food':
-        return 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg shadow-green-400/25';
-      case 'symptoms':
-        return 'bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg shadow-red-400/25';
+        return 'text-green-600';
+      case 'signals':
+        return 'text-red-600';
+      case 'settings':
+        return 'text-purple-600';
       default:
-        return 'bg-card text-foreground shadow-sm';
+        return 'text-foreground';
     }
   };
 
-  const handleEditFood = (food: Food) => {
-    router.push(`/app/foods/edit/${food.id}`);
-  };
+  const handleEditFood = useCallback(
+    (food: Food) => {
+      router.push(`/app/foods/edit/${food.id}`);
+    },
+    [router]
+  );
 
-  const handleEditSymptom = (symptom: Symptom) => {
-    router.push(`/app/symptoms/edit/${symptom.id}`);
-  };
+  const handleEditSymptom = useCallback(
+    (symptom: Symptom) => {
+      router.push(`/app/symptoms/edit/${symptom.id}`);
+    },
+    [router]
+  );
 
-  const handleAddSymptom = () => {
+  const handleAddSymptom = useCallback(() => {
     router.push('/app/symptoms/add');
-  };
+  }, [router]);
 
-  const handleRetryZoning = async (
-    e: React.MouseEvent | React.KeyboardEvent,
-    foodId: string
-  ) => {
-    e.stopPropagation(); // Prevent triggering the edit food handler
-
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
-      const { retryFoodZoningManually } = await import(
-        '@/lib/background-zoning'
-      );
-      const success = await retryFoodZoningManually(foodId);
-
-      if (success) {
-        // Refresh dashboard data to show updated zones
-        retryDashboard();
-      }
+      await logout();
+      toast({
+        title: 'Logged out',
+        description: 'You have been logged out successfully.',
+      });
+      router.push('/');
     } catch (error) {
-      logger.error('Manual retry failed', error);
+      logger.error('Logout failed', error);
+      toast({
+        title: 'Logout failed',
+        description: 'There was an error logging out. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoggingOut(false);
     }
   };
+
 
   // Desktop sidebar navigation
   const DesktopSidebar = () => (
@@ -163,30 +247,36 @@ function Dashboard() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={currentView === 'food'}
-                onClick={() => setCurrentView('food')}
+                isActive={currentView === 'insights'}
+                onClick={() => handleViewChange('insights')}
               >
-                <Utensils className="h-4 w-4" />
-                <span>Foods</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={currentView === 'symptoms'}
-                onClick={() => setCurrentView('symptoms')}
-              >
-                <Activity className="h-4 w-4" />
-                <span>Symptoms</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => router.push('/app/insights')}>
                 <BarChart3 className="h-4 w-4" />
                 <span>Insights</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => router.push('/settings')}>
+              <SidebarMenuButton
+                isActive={currentView === 'food'}
+                onClick={() => handleViewChange('food')}
+              >
+                <Utensils className="h-4 w-4" />
+                <span>Food</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === 'signals'}
+                onClick={() => handleViewChange('signals')}
+              >
+                <Activity className="h-4 w-4" />
+                <span>Signals</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={currentView === 'settings'}
+                onClick={() => handleViewChange('settings')}
+              >
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
               </SidebarMenuButton>
@@ -197,15 +287,76 @@ function Dashboard() {
     </Sidebar>
   );
 
-  const getTopGlowStyle = (view: ViewType) => {
-    switch (view) {
-      case 'food':
-        return 'shadow-[0_-4px_20px_rgba(34,197,94,0.15)]';
-      case 'symptoms':
-        return 'shadow-[0_-4px_20px_rgba(239,68,68,0.15)]';
-      default:
-        return '';
+  // Central Plus Button handler
+  const handlePlusClick = useCallback(() => {
+    if (currentView === 'food') {
+      handleQuickCapture();
+    } else if (currentView === 'signals') {
+      handleAddSymptom();
     }
+  }, [currentView, handleQuickCapture, handleAddSymptom]);
+
+  // Central Plus Button component
+  const CentralPlusButton = () => {
+    if (currentView !== 'food' && currentView !== 'signals') return null;
+
+    const getBorderStyle = () => {
+      if (currentView === 'food') {
+        return 'border-2 border-green-600 hover:border-green-700';
+      } else if (currentView === 'signals') {
+        return 'border-2 border-red-600 hover:border-red-700';
+      }
+      return 'border-2 border-foreground';
+    };
+
+    return (
+      <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+        <MetallicButton
+          onClick={handlePlusClick}
+          size="lg"
+          className={`min-h-[56px] min-w-[56px] w-14 h-14 rounded-full ${getBorderStyle()} hover:scale-105 transition-all duration-200 aspect-square`}
+        >
+          <Plus className="h-7 w-7" />
+        </MetallicButton>
+      </div>
+    );
+  };
+
+  // Bottom Navigation component
+  const BottomNavigation = () => {
+    const tabs = [
+      { id: 'insights' as ViewType, label: 'Insights', icon: BarChart3 },
+      { id: 'food' as ViewType, label: 'Food', icon: Utensils },
+      { id: 'signals' as ViewType, label: 'Signals', icon: Activity },
+      { id: 'settings' as ViewType, label: 'Settings', icon: Settings },
+    ];
+
+    return (
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 pb-safe">
+        <div className="relative">
+          <CentralPlusButton />
+          <div className="flex items-center h-16">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => handleViewChange(tab.id)}
+                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-2 transition-all duration-200 ${getActiveTabStyle(tab.id)}`}
+              >
+                <tab.icon
+                  className={`h-5 w-5 mb-1 transition-transform duration-200 ${
+                    currentView === tab.id ? 'scale-110' : ''
+                  }`}
+                />
+                <span className="text-xs font-medium">{tab.label}</span>
+                {currentView === tab.id && !isTransitioning && (
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-current rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -221,27 +372,34 @@ function Dashboard() {
 
       {/* Main Content Wrapper */}
       <div className="flex flex-1 flex-col min-h-0">
-        {/* Header - Mobile Only */}
-        {isMobile && (
-          <div className="bg-card px-4 py-4 flex items-center justify-between border-b border-border z-10 flex-shrink-0">
-            <ChevronLeft className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-xl font-semibold text-foreground">
-              Your Body Compass
-            </h1>
-            <button
-              onClick={() => router.push('/settings')}
-              className="p-1 rounded-full hover:bg-muted transition-colors"
-            >
-              <Settings className="h-6 w-6 text-muted-foreground" />
-            </button>
-          </div>
-        )}
-
-        {/* Scrollable Content Area */}
+        {/* Content Area with Fade Transition */}
         <div
-          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'main-content-mobile' : ''}`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'pb-20' : ''} transition-opacity duration-300 ${
+            isTransitioning ? 'opacity-0' : 'opacity-100'
+          }`}
         >
           <div className="px-4 py-6 space-y-6 max-w-full">
+            {currentView === 'insights' && (
+              <InsightsView
+                recentFoods={recentFoods}
+                recentSymptoms={recentSymptoms}
+              />
+            )}
+            {currentView === 'settings' && (
+              <SettingsView
+                user={user}
+                isExporting={isExporting}
+                setIsExporting={setIsExporting}
+                isImporting={isImporting}
+                setIsImporting={setIsImporting}
+                isClearing={isClearing}
+                setIsClearing={setIsClearing}
+                isAddingTest={isAddingTest}
+                setIsAddingTest={setIsAddingTest}
+                isLoggingOut={isLoggingOut}
+                handleLogout={handleLogout}
+              />
+            )}
             {currentView === 'food' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 {/* Food Category Progress */}
@@ -359,23 +517,6 @@ function Dashboard() {
                                   />
                                 </AnimatedComponentErrorBoundary>
                               </div>
-                              {needsZoningRetry(food) && (
-                                <div
-                                  onClick={e => handleRetryZoning(e, food.id)}
-                                  className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0 cursor-pointer"
-                                  title="Retry ingredient zoning"
-                                  role="button"
-                                  tabIndex={0}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                      e.preventDefault();
-                                      handleRetryZoning(e, food.id);
-                                    }
-                                  }}
-                                >
-                                  <RefreshCw className="h-3 w-3 text-gray-600" />
-                                </div>
-                              )}
                             </div>
                           </button>
                         ))}
@@ -386,7 +527,7 @@ function Dashboard() {
               </ErrorBoundary>
             )}
 
-            {currentView === 'symptoms' && (
+            {currentView === 'signals' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 <div className="flex flex-col items-center space-y-4 h-64">
                   <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
@@ -420,7 +561,7 @@ function Dashboard() {
                         isEmpty={recentSymptoms?.length === 0}
                         loadingMessage="Loading recent symptoms..."
                         emptyTitle="No symptoms logged yet"
-                        emptyDescription="Tap the symptom icon below to get started"
+                        emptyDescription="Tap the signals icon below to get started"
                         emptyIcon="⚡"
                       />
                     )}
@@ -479,74 +620,8 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Mobile Bottom Navigation */}
-        {isMobile && (
-          <>
-            {/* Unified Background Container */}
-            <div
-              className={`fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-50/95 via-white/95 to-white/80 backdrop-blur-md ${getTopGlowStyle(currentView)} safe-area-pb z-50`}
-            >
-              {/* Tab Navigation */}
-              <div className="px-4 py-4">
-                <div className="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 rounded-full p-1 flex justify-around space-x-1 shadow-[0_-2px_8px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] border border-slate-200/40">
-                  <button
-                    onClick={() => setCurrentView('food')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle('food')}`}
-                  >
-                    Foods
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('symptoms')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-colors min-h-[44px] ${getActiveTabStyle('symptoms')}`}
-                  >
-                    Symptoms
-                  </button>
-                </div>
-              </div>
-
-              {/* Floating Action Buttons */}
-              <div className="px-4 pt-1 pb-6">
-                <div className="flex justify-around space-x-4">
-                  <div className="relative">
-                    <MetallicButton
-                      accent="food"
-                      size="lg"
-                      onClick={handleQuickCapture}
-                      className="group min-h-[44px] min-w-[44px]"
-                    >
-                      <Utensils
-                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass('green')} transition-colors`}
-                      />
-                    </MetallicButton>
-                    <div
-                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass('green')} rounded-full flex items-center justify-center shadow-lg`}
-                    >
-                      <Plus className="h-3 w-3 text-white" />
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <MetallicButton
-                      accent="symptom"
-                      size="lg"
-                      onClick={handleAddSymptom}
-                      className="group min-h-[44px] min-w-[44px]"
-                    >
-                      <Activity
-                        className={`h-6 w-6 text-gray-600 group-hover:${getZoneTextClass('red')} transition-colors`}
-                      />
-                    </MetallicButton>
-                    <div
-                      className={`absolute -top-1 -right-1 w-5 h-5 ${getZoneBgClass('red')} rounded-full flex items-center justify-center shadow-lg`}
-                    >
-                      <Plus className="h-3 w-3 text-white" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        {/* Bottom Navigation - Mobile Only */}
+        {isMobile && <BottomNavigation />}
       </div>
 
       {/* Camera Capture Modal */}

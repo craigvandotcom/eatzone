@@ -10,17 +10,17 @@ import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
+import { retrieveTemporaryCapturedImage, clearTemporaryCapturedImage } from '@/lib/utils/image-capture-helpers';
 
-// Constants
-const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB limit for sessionStorage
+// Note: Image size validation is now handled in SecureImageStorage
 
 export default function AddFoodPage() {
   const router = useRouter();
   const [imageData, setImageData] = useState<string | undefined>();
 
   useEffect(() => {
-    // Check if there's a pending image from camera capture
-    const pendingImage = sessionStorage.getItem('pendingFoodImage');
+    // Check if there's a pending image from camera capture using secure storage
+    const pendingImage = retrieveTemporaryCapturedImage();
     logger.debug('Checking for pending image', {
       hasPendingImage: !!pendingImage,
       imageLength: pendingImage?.length,
@@ -30,25 +30,10 @@ export default function AddFoodPage() {
       try {
         // Validate it's a proper base64 image
         if (pendingImage.startsWith('data:image/')) {
-          // Additional size validation
-          const imageSize = new Blob([pendingImage]).size;
-
-          if (imageSize > MAX_IMAGE_SIZE) {
-            logger.error('Image too large', {
-              imageSize,
-              maxSize: MAX_IMAGE_SIZE,
-            });
-            toast.error(
-              'Image is too large. Please try capturing a smaller image.'
-            );
-            sessionStorage.removeItem('pendingFoodImage');
-            return;
-          }
-
           logger.debug('Valid image data found, setting imageData state');
           setImageData(pendingImage);
         } else {
-          logger.error('Invalid image data retrieved from session', {
+          logger.error('Invalid image data retrieved from secure storage', {
             imageStart: pendingImage.substring(0, 50),
           });
           toast.error('Failed to load captured image. Please try again.');
@@ -59,9 +44,9 @@ export default function AddFoodPage() {
       }
 
       // Clear it after retrieval to prevent reuse
-      sessionStorage.removeItem('pendingFoodImage');
+      clearTemporaryCapturedImage();
     } else {
-      logger.debug('No pending image found in sessionStorage');
+      logger.debug('No pending image found in secure storage');
     }
   }, []);
 

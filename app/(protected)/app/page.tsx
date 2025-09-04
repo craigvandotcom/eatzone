@@ -10,7 +10,6 @@ import {
   Leaf,
   Settings,
   BarChart3,
-  RefreshCw,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CameraCapture } from '@/features/camera/components/camera-capture';
@@ -21,7 +20,6 @@ import { OrganicCompositionBar } from '@/features/foods/components/organic-compo
 import { VerticalProgressBar } from '@/features/foods/components/vertical-progress-bar';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import { useIsMobile } from '@/components/ui/use-mobile';
-import { needsZoningRetry } from '@/lib/utils/food-zoning';
 import { AnimatedComponentErrorBoundary } from '@/components/animated-component-error-boundary';
 import {
   Sidebar,
@@ -82,9 +80,6 @@ function Dashboard() {
   const [isClearing, setIsClearing] = useState(false);
   const [isAddingTest, setIsAddingTest] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [retryingFoodIds, setRetryingFoodIds] = useState<Set<string>>(
-    new Set()
-  );
   const { toast } = useToast();
   const { user, logout } = useAuth();
 
@@ -238,51 +233,6 @@ function Dashboard() {
     }
   };
 
-  const handleRetryZoning = async (
-    e: React.MouseEvent | React.KeyboardEvent,
-    foodId: string
-  ) => {
-    e.stopPropagation(); // Prevent triggering the edit food handler
-
-    // Add to retrying set for loading state
-    setRetryingFoodIds(prev => new Set([...prev, foodId]));
-
-    try {
-      const { retryFoodZoningManually } = await import(
-        '@/lib/background-zoning'
-      );
-      const success = await retryFoodZoningManually(foodId);
-
-      if (success) {
-        // Refresh dashboard data to show updated zones
-        retryDashboard();
-        toast({
-          title: 'Retry successful',
-          description: 'Ingredient zones have been updated.',
-        });
-      } else {
-        toast({
-          title: 'Retry failed',
-          description: 'Could not update ingredient zones. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      logger.error('Manual retry failed', error);
-      toast({
-        title: 'Retry failed',
-        description: 'An error occurred while retrying. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      // Remove from retrying set
-      setRetryingFoodIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(foodId);
-        return newSet;
-      });
-    }
-  };
 
   // Desktop sidebar navigation
   const DesktopSidebar = () => (
@@ -567,43 +517,6 @@ function Dashboard() {
                                   />
                                 </AnimatedComponentErrorBoundary>
                               </div>
-                              {needsZoningRetry(food) && (
-                                <div
-                                  onClick={e =>
-                                    !retryingFoodIds.has(food.id) &&
-                                    handleRetryZoning(e, food.id)
-                                  }
-                                  className={`p-1 rounded-full transition-colors flex-shrink-0 ${
-                                    retryingFoodIds.has(food.id)
-                                      ? 'bg-gray-200 cursor-not-allowed'
-                                      : 'bg-gray-100 hover:bg-gray-200 cursor-pointer'
-                                  }`}
-                                  title={
-                                    retryingFoodIds.has(food.id)
-                                      ? 'Retrying...'
-                                      : 'Retry ingredient zoning'
-                                  }
-                                  role="button"
-                                  tabIndex={0}
-                                  onKeyDown={e => {
-                                    if (
-                                      (e.key === 'Enter' || e.key === ' ') &&
-                                      !retryingFoodIds.has(food.id)
-                                    ) {
-                                      e.preventDefault();
-                                      handleRetryZoning(e, food.id);
-                                    }
-                                  }}
-                                >
-                                  <RefreshCw
-                                    className={`h-3 w-3 text-gray-600 ${
-                                      retryingFoodIds.has(food.id)
-                                        ? 'animate-spin'
-                                        : ''
-                                    }`}
-                                  />
-                                </div>
-                              )}
                             </div>
                           </button>
                         ))}

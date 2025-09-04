@@ -16,10 +16,11 @@ import {
   Clock,
 } from 'lucide-react';
 import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import { Food, Symptom } from '@/lib/types';
 
 interface InsightsViewProps {
-  recentFoods?: any[];
-  recentSymptoms?: any[];
+  recentFoods?: Food[];
+  recentSymptoms?: Symptom[];
 }
 
 export function InsightsView({

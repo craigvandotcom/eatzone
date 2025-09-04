@@ -346,7 +346,7 @@ export const useSymptomTrends = (days: number = 7) => {
             day,
             count: symptoms.length,
             averageScore:
-              symptoms.reduce((sum, s) => sum + s.score, 0) / symptoms.length,
+              symptoms.length, // Count of symptoms instead of average score
           })
         );
 

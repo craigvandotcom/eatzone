@@ -4,15 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import {
   Utensils,
   Activity,
   Plus,
@@ -20,17 +11,6 @@ import {
   Settings,
   BarChart3,
   RefreshCw,
-  TrendingUp,
-  PieChart,
-  LineChart,
-  Calendar,
-  Clock,
-  User,
-  Download,
-  Upload,
-  Trash2,
-  TestTube,
-  LogOut,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CameraCapture } from '@/features/camera/components/camera-capture';
@@ -53,7 +33,7 @@ import {
   SidebarProvider,
   SidebarHeader,
 } from '@/components/ui/sidebar';
-import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import { getZoneTextClass } from '@/lib/utils/zone-colors';
 import {
   FoodEntrySkeleton,
   SymptomEntrySkeleton,
@@ -66,6 +46,8 @@ import {
   SupabaseErrorFallback,
 } from '@/components/error-boundary';
 import { logger } from '@/lib/utils/logger';
+import { InsightsView } from '@/features/dashboard/components/insights-view';
+import { SettingsView } from '@/features/dashboard/components/settings-view';
 
 // Import types
 import { Food, Symptom } from '@/lib/types';
@@ -73,11 +55,9 @@ import { Food, Symptom } from '@/lib/types';
 // Import custom hooks
 import { useDashboardData } from '@/lib/hooks';
 import { useAuth } from '@/features/auth/components/auth-provider';
-import { useTheme } from 'next-themes';
 import { useToast } from '@/components/ui/use-toast';
 
 // Import data management functions
-import { exportAllData, importAllData, clearAllData, addFood } from '@/lib/db';
 
 // Import symptom utilities
 import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
@@ -102,8 +82,10 @@ function Dashboard() {
   const [isClearing, setIsClearing] = useState(false);
   const [isAddingTest, setIsAddingTest] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [retryingFoodIds, setRetryingFoodIds] = useState<Set<string>>(
+    new Set()
+  );
   const { toast } = useToast();
-  const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
 
   // Extract data from consolidated hook
@@ -235,100 +217,6 @@ function Dashboard() {
     router.push('/app/symptoms/add');
   }, [router]);
 
-  // Settings handler functions
-  const handleExportData = async () => {
-    setIsExporting(true);
-    try {
-      const data = await exportAllData();
-
-      // Create a downloadable JSON file
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `health-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: 'Data exported successfully',
-        description: `Exported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
-      });
-    } catch (error) {
-      logger.error('Export failed', error);
-      toast({
-        title: 'Export failed',
-        description:
-          'There was an error exporting your data. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleImportData = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsImporting(true);
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-
-      // Validate the data structure
-      if (!data.foods || !data.symptoms) {
-        throw new Error('Invalid backup file format');
-      }
-
-      await importAllData(data);
-
-      toast({
-        title: 'Data imported successfully',
-        description: `Imported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
-      });
-    } catch (error) {
-      logger.error('Import failed', error);
-      toast({
-        title: 'Import failed',
-        description:
-          'There was an error importing your data. Please check the file format and try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsImporting(false);
-      // Reset the file input
-      event.target.value = '';
-    }
-  };
-
-  const handleClearAllData = async () => {
-    setIsClearing(true);
-    try {
-      await clearAllData();
-      toast({
-        title: 'All data cleared',
-        description:
-          'All your health tracking data has been permanently deleted.',
-      });
-    } catch (error) {
-      logger.error('Clear failed', error);
-      toast({
-        title: 'Clear failed',
-        description: 'There was an error clearing your data. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsClearing(false);
-    }
-  };
-
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -350,61 +238,14 @@ function Dashboard() {
     }
   };
 
-  const handleAddTestData = async () => {
-    setIsAddingTest(true);
-    try {
-      // Add a test food with organic and non-organic ingredients
-      await addFood({
-        name: 'Test Organic Meal',
-        ingredients: [
-          {
-            name: 'organic spinach',
-            organic: true,
-            zone: 'green',
-            group: 'Leafy Greens',
-            category: 'Vegetables',
-          },
-          {
-            name: 'organic quinoa',
-            organic: true,
-            zone: 'green',
-            group: 'Pseudo-Grains',
-            category: 'Grains & Starches',
-          },
-          {
-            name: 'salmon',
-            organic: false,
-            zone: 'green',
-            group: 'Wild-Caught Seafood',
-            category: 'Proteins',
-          },
-        ],
-        status: 'processed',
-        notes: 'Test data to verify organic tracking',
-      });
-
-      toast({
-        title: 'Test data added',
-        description:
-          'Added a test meal with 2/3 organic ingredients to verify the organic tracking works.',
-      });
-    } catch (error) {
-      logger.error('Failed to add test data', error);
-      toast({
-        title: 'Test data failed',
-        description: 'There was an error adding test data.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsAddingTest(false);
-    }
-  };
-
   const handleRetryZoning = async (
     e: React.MouseEvent | React.KeyboardEvent,
     foodId: string
   ) => {
     e.stopPropagation(); // Prevent triggering the edit food handler
+
+    // Add to retrying set for loading state
+    setRetryingFoodIds(prev => new Set([...prev, foodId]));
 
     try {
       const { retryFoodZoningManually } = await import(
@@ -415,9 +256,31 @@ function Dashboard() {
       if (success) {
         // Refresh dashboard data to show updated zones
         retryDashboard();
+        toast({
+          title: 'Retry successful',
+          description: 'Ingredient zones have been updated.',
+        });
+      } else {
+        toast({
+          title: 'Retry failed',
+          description: 'Could not update ingredient zones. Please try again.',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       logger.error('Manual retry failed', error);
+      toast({
+        title: 'Retry failed',
+        description: 'An error occurred while retrying. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      // Remove from retrying set
+      setRetryingFoodIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(foodId);
+        return newSet;
+      });
     }
   };
 
@@ -472,331 +335,6 @@ function Dashboard() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  );
-
-  // InsightsView component
-  const InsightsView = () => (
-    <div className="space-y-6">
-      {/* Coming Soon Notice */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Analytics Coming Soon
-          </CardTitle>
-          <CardDescription>
-            Advanced insights and trend analysis for your health data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">
-              What&apos;s Coming
-            </h4>
-            <p className="text-xs text-blue-700">
-              This section will provide deep insights into your health patterns,
-              correlations between different metrics, and trends over time.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Planned Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <LineChart className="h-4 w-4" />
-              Trend Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-gray-600">
-              Visualize how your health metrics change over time with
-              interactive charts.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <BarChart3 className="h-4 w-4" />
-              Correlation Matrix
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-gray-600">
-              Discover relationships between different health inputs and
-              outputs.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <PieChart className="h-4 w-4" />
-              Health Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-gray-600">
-              Get an overall health score based on your tracked metrics.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4" />
-              Pattern Recognition
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-gray-600">
-              Identify recurring patterns and cycles in your health data.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Current Data Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Current Data Summary
-          </CardTitle>
-          <CardDescription>
-            Basic overview of your tracked data (placeholder).
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div
-              className={`p-4 ${getZoneBgClass('green', 'light')} rounded-lg`}
-            >
-              <div
-                className={`text-2xl font-bold ${getZoneTextClass('green')}`}
-              >
-                {recentFoods?.length || 0}
-              </div>
-              <div className="text-sm text-gray-600">Total Foods</div>
-            </div>
-            <div className={`p-4 ${getZoneBgClass('red', 'light')} rounded-lg`}>
-              <div className={`text-2xl font-bold ${getZoneTextClass('red')}`}>
-                {recentSymptoms?.length || 0}
-              </div>
-              <div className="text-sm text-gray-600">Total Symptoms</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  // SettingsView component
-  const SettingsView = () => (
-    <div className="space-y-6">
-      {/* Account Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Account Information
-          </CardTitle>
-          <CardDescription>
-            Your account details and privacy information.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <p className="text-sm font-medium text-foreground">Email</p>
-              <p className="text-sm text-muted-foreground">
-                {user?.email || 'Not available'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                Account Created
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {user?.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString()
-                  : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Last Login</p>
-              <p className="text-sm text-muted-foreground">N/A</p>
-            </div>
-          </div>
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">
-              Privacy Reminder
-            </h4>
-            <p className="text-xs text-blue-700">
-              Your account and all health data are stored securely with
-              Supabase. Regular data exports are recommended for backup
-              purposes.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Data Management
-          </CardTitle>
-          <CardDescription>
-            Export, import, or delete your health tracking data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <p className="text-sm font-medium text-foreground">Export Data</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              Download all your data as a JSON file. This is your primary backup
-              method.
-            </p>
-            <Button
-              onClick={handleExportData}
-              disabled={isExporting}
-              className="w-full sm:w-auto"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              {isExporting ? 'Exporting...' : 'Export All Data'}
-            </Button>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Import Data</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              Upload a previously exported JSON file to restore your data.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImportData}
-                className="hidden"
-                id="import-file"
-              />
-              <label htmlFor="import-file">
-                <Button variant="outline" className="cursor-pointer" asChild>
-                  <span>Choose File</span>
-                </Button>
-              </label>
-              <Button
-                onClick={() => document.getElementById('import-file')?.click()}
-                disabled={isImporting}
-                variant="outline"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                {isImporting ? 'Importing...' : 'Import Data'}
-              </Button>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Danger Zone</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              Permanently delete all your health tracking data. This cannot be
-              undone.
-            </p>
-            <Button
-              onClick={handleClearAllData}
-              disabled={isClearing}
-              variant="destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isClearing ? 'Deleting...' : 'Delete All Data'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Debug Tools */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TestTube className="h-5 w-5" />
-            Debug Tools
-          </CardTitle>
-          <CardDescription>
-            Tools for testing and debugging the organic tracking system.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            onClick={handleAddTestData}
-            disabled={isAddingTest}
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
-            <TestTube className="h-4 w-4 mr-2" />
-            {isAddingTest ? 'Adding...' : 'Add Test Organic Food'}
-          </Button>
-          <p className="text-xs text-muted-foreground mt-2">
-            This will add a test meal with 2/3 organic ingredients to help you
-            verify the organic tracking bars are working.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Appearance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Appearance
-          </CardTitle>
-          <CardDescription>
-            Customize the look and feel of the app.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">Dark Mode</p>
-              <p className="text-sm text-muted-foreground">
-                Switch between light and dark themes.
-              </p>
-            </div>
-            <Switch
-              checked={theme === 'dark'}
-              onCheckedChange={checked => setTheme(checked ? 'dark' : 'light')}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Account Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LogOut className="h-5 w-5" />
-            Account Actions
-          </CardTitle>
-          <CardDescription>Sign out of your account.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            {isLoggingOut ? 'Logging out...' : 'Logout'}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
   );
 
   // Central Plus Button handler
@@ -891,8 +429,27 @@ function Dashboard() {
           }`}
         >
           <div className="px-4 py-6 space-y-6 max-w-full">
-            {currentView === 'insights' && <InsightsView />}
-            {currentView === 'settings' && <SettingsView />}
+            {currentView === 'insights' && (
+              <InsightsView
+                recentFoods={recentFoods}
+                recentSymptoms={recentSymptoms}
+              />
+            )}
+            {currentView === 'settings' && (
+              <SettingsView
+                user={user}
+                isExporting={isExporting}
+                setIsExporting={setIsExporting}
+                isImporting={isImporting}
+                setIsImporting={setIsImporting}
+                isClearing={isClearing}
+                setIsClearing={setIsClearing}
+                isAddingTest={isAddingTest}
+                setIsAddingTest={setIsAddingTest}
+                isLoggingOut={isLoggingOut}
+                handleLogout={handleLogout}
+              />
+            )}
             {currentView === 'food' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 {/* Food Category Progress */}
@@ -1012,19 +569,39 @@ function Dashboard() {
                               </div>
                               {needsZoningRetry(food) && (
                                 <div
-                                  onClick={e => handleRetryZoning(e, food.id)}
-                                  className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0 cursor-pointer"
-                                  title="Retry ingredient zoning"
+                                  onClick={e =>
+                                    !retryingFoodIds.has(food.id) &&
+                                    handleRetryZoning(e, food.id)
+                                  }
+                                  className={`p-1 rounded-full transition-colors flex-shrink-0 ${
+                                    retryingFoodIds.has(food.id)
+                                      ? 'bg-gray-200 cursor-not-allowed'
+                                      : 'bg-gray-100 hover:bg-gray-200 cursor-pointer'
+                                  }`}
+                                  title={
+                                    retryingFoodIds.has(food.id)
+                                      ? 'Retrying...'
+                                      : 'Retry ingredient zoning'
+                                  }
                                   role="button"
                                   tabIndex={0}
                                   onKeyDown={e => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
+                                    if (
+                                      (e.key === 'Enter' || e.key === ' ') &&
+                                      !retryingFoodIds.has(food.id)
+                                    ) {
                                       e.preventDefault();
                                       handleRetryZoning(e, food.id);
                                     }
                                   }}
                                 >
-                                  <RefreshCw className="h-3 w-3 text-gray-600" />
+                                  <RefreshCw
+                                    className={`h-3 w-3 text-gray-600 ${
+                                      retryingFoodIds.has(food.id)
+                                        ? 'animate-spin'
+                                        : ''
+                                    }`}
+                                  />
                                 </div>
                               )}
                             </div>

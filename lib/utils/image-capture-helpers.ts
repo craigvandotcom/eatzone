@@ -47,8 +47,9 @@ export function storeTemporaryCapturedImage(
  */
 export function retrieveTemporaryCapturedImage(): string | null {
   try {
-    const imageData = SecureImageStorage.retrieveTemporaryImage('pendingFoodImage');
-    
+    const imageData =
+      SecureImageStorage.retrieveTemporaryImage('pendingFoodImage');
+
     if (imageData) {
       logger.debug('Retrieved temporary captured image', {
         imageSize: new Blob([imageData]).size,

@@ -57,7 +57,7 @@ class SecureImageStorage {
       // Validate image size
       const imageSize = new Blob([imageData]).size;
       const maxSize = maxSizeMB * 1024 * 1024;
-      
+
       if (imageSize > maxSize) {
         logger.warn('Image too large for temporary storage', {
           imageSize,
@@ -69,10 +69,10 @@ class SecureImageStorage {
 
       // Encrypt the image data
       const encryptedData = this.encrypt(imageData);
-      
+
       // Get existing storage
       const existingData = this.getStorageData();
-      
+
       // Add new image with timestamp
       existingData[imageId] = {
         data: encryptedData,
@@ -175,11 +175,14 @@ class SecureImageStorage {
   /**
    * Get current storage data
    */
-  private static getStorageData(): Record<string, {
-    data: string;
-    timestamp: number;
-    size: number;
-  }> {
+  private static getStorageData(): Record<
+    string,
+    {
+      data: string;
+      timestamp: number;
+      size: number;
+    }
+  > {
     try {
       const data = sessionStorage.getItem(this.STORAGE_KEY);
       return data ? JSON.parse(data) : {};
@@ -192,11 +195,16 @@ class SecureImageStorage {
   /**
    * Clean up expired entries
    */
-  private static cleanupOldEntries(storageData: Record<string, {
-    data: string;
-    timestamp: number;
-    size: number;
-  }>): void {
+  private static cleanupOldEntries(
+    storageData: Record<
+      string,
+      {
+        data: string;
+        timestamp: number;
+        size: number;
+      }
+    >
+  ): void {
     const now = Date.now();
     const maxAge = 60 * 60 * 1000; // 1 hour
     let cleanedCount = 0;
@@ -224,13 +232,14 @@ class SecureImageStorage {
     try {
       const storageData = this.getStorageData();
       const entries = Object.values(storageData);
-      
+
       return {
         totalImages: entries.length,
         totalSize: entries.reduce((sum, entry) => sum + (entry.size || 0), 0),
-        oldestImage: entries.length > 0 
-          ? Math.min(...entries.map(entry => entry.timestamp || Date.now()))
-          : null,
+        oldestImage:
+          entries.length > 0
+            ? Math.min(...entries.map(entry => entry.timestamp || Date.now()))
+            : null,
       };
     } catch (error) {
       logger.error('Failed to get storage stats', error);

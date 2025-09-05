@@ -3,21 +3,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import {
-  Utensils,
-  Activity,
-  Plus,
-  Leaf,
-  Settings,
-  BarChart3,
-} from 'lucide-react';
+import { Utensils, Activity, Plus, Settings, BarChart3 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CameraCapture } from '@/features/camera/components/camera-capture';
 import { MetallicButton } from '@/components/ui/metallic-button';
-import { FoodCategoryProgress } from '@/features/foods/components/food-category-progress';
 import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
 import { OrganicCompositionBar } from '@/features/foods/components/organic-composition-bar';
-import { VerticalProgressBar } from '@/features/foods/components/vertical-progress-bar';
+import { FoodZoneSummaryBar } from '@/features/foods/components/food-zone-summary-bar';
+import { SymptomTimeline } from '@/features/symptoms/components/symptom-timeline';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import { useIsMobile } from '@/components/ui/use-mobile';
 import { AnimatedComponentErrorBoundary } from '@/components/animated-component-error-boundary';
@@ -31,11 +24,9 @@ import {
   SidebarProvider,
   SidebarHeader,
 } from '@/components/ui/sidebar';
-import { getZoneTextClass } from '@/lib/utils/zone-colors';
 import {
   FoodEntrySkeleton,
   SymptomEntrySkeleton,
-  ProgressCircleSkeleton,
   EmptyOrLoadingState,
   NetworkRetryState,
 } from '@/components/ui/loading-states';
@@ -88,6 +79,21 @@ function Dashboard() {
   const recentSymptoms = dashboardData?.recentSymptoms;
   const todaysSymptoms = dashboardData?.todaysSymptoms;
   const foodStats = dashboardData?.foodStats;
+
+  // Helper function to get today's ingredients for the new components
+  const getTodaysIngredients = useCallback(() => {
+    if (!recentFoods || !foodStats) return [];
+
+    // Get foods that were used for stats calculation
+    const foodsToAnalyze = foodStats.isFromToday
+      ? recentFoods.filter(food => {
+          const today = new Date().toDateString();
+          return new Date(food.timestamp).toDateString() === today;
+        })
+      : recentFoods.slice(0, 5);
+
+    return foodsToAnalyze.flatMap(food => food.ingredients || []);
+  }, [recentFoods, foodStats]);
 
   // Use single error and retry for all data
   const foodsError = dashboardError;
@@ -232,7 +238,6 @@ function Dashboard() {
       setIsLoggingOut(false);
     }
   };
-
 
   // Desktop sidebar navigation
   const DesktopSidebar = () => (
@@ -402,36 +407,22 @@ function Dashboard() {
             )}
             {currentView === 'food' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
-                {/* Food Category Progress */}
-                <div className="relative flex flex-col items-center h-64">
+                {/* Food Zone Summary Bar */}
+                <div className="space-y-4">
                   {statsError ? (
                     <NetworkRetryState
                       onRetry={retryStats}
                       message="Failed to load stats. Tap to retry."
-                      className="h-64"
+                      className="h-32"
                     />
                   ) : foodStats === undefined ? (
-                    <ProgressCircleSkeleton />
-                  ) : (
-                    <>
-                      <FoodCategoryProgress
-                        greenCount={foodStats?.greenIngredients || 0}
-                        yellowCount={foodStats?.yellowIngredients || 0}
-                        redCount={foodStats?.redIngredients || 0}
-                        size={200}
-                        strokeWidth={12}
-                        isFromToday={foodStats?.isFromToday ?? true}
-                      />
-                      <div className="absolute right-0 top-0 flex flex-col items-center space-y-2">
-                        <VerticalProgressBar
-                          percentage={foodStats?.totalOrganicPercentage || 0}
-                          height={200}
-                        />
-                        <Leaf
-                          className={`h-5 w-5 ${getZoneTextClass('green')}`}
-                        />
+                    <div className="bg-green-50 rounded-lg p-4 h-32 flex items-center justify-center">
+                      <div className="animate-pulse text-gray-500">
+                        Loading food data...
                       </div>
-                    </>
+                    </div>
+                  ) : (
+                    <FoodZoneSummaryBar ingredients={getTodaysIngredients()} />
                   )}
                 </div>
 
@@ -529,15 +520,23 @@ function Dashboard() {
 
             {currentView === 'signals' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
-                <div className="flex flex-col items-center space-y-4 h-64">
-                  <div className="w-48 h-48 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-gray-900">
-                        {todaysSymptoms?.length || 0}
-                      </p>
-                      <p className="text-sm text-gray-600">Symptoms Today</p>
+                {/* Symptom Timeline */}
+                <div className="space-y-4">
+                  {recentSymptomsError ? (
+                    <NetworkRetryState
+                      onRetry={retryRecentSymptoms}
+                      message="Failed to load symptoms. Tap to retry."
+                      className="h-32"
+                    />
+                  ) : todaysSymptoms === undefined ? (
+                    <div className="bg-red-50 rounded-lg p-4 h-32 flex items-center justify-center">
+                      <div className="animate-pulse text-gray-500">
+                        Loading symptom data...
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <SymptomTimeline symptoms={todaysSymptoms} />
+                  )}
                 </div>
 
                 <div className="space-y-4">

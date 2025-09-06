@@ -66,10 +66,6 @@ function Dashboard() {
   } = useDashboardData();
 
   // Settings state management
-  const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [isClearing, setIsClearing] = useState(false);
-  const [isAddingTest, setIsAddingTest] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { toast } = useToast();
   const { user, logout } = useAuth();
@@ -463,14 +459,6 @@ function Dashboard() {
             {currentView === 'settings' && (
               <SettingsView
                 user={user}
-                isExporting={isExporting}
-                setIsExporting={setIsExporting}
-                isImporting={isImporting}
-                setIsImporting={setIsImporting}
-                isClearing={isClearing}
-                setIsClearing={setIsClearing}
-                isAddingTest={isAddingTest}
-                setIsAddingTest={setIsAddingTest}
                 isLoggingOut={isLoggingOut}
                 handleLogout={handleLogout}
               />

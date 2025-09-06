@@ -303,7 +303,7 @@ function Dashboard() {
     }
   }, [currentView, handleQuickCapture, handleAddSymptom]);
 
-  // Central Plus Button component with synchronized animations
+  // Central Plus Button component with organic bubble pop animation
   const CentralPlusButton = () => {
     const shouldShow = currentView === 'food' || currentView === 'signals';
 
@@ -319,21 +319,36 @@ function Dashboard() {
     return (
       <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
         <div
-          className={`transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-            shouldShow
-              ? 'scale-100 opacity-100 rotate-0'
-              : 'scale-0 opacity-0 rotate-180'
-          }`}
+          className="transition-all"
+          style={{
+            transform: shouldShow
+              ? 'scale(1) rotate(0deg)'
+              : 'scale(0.05) rotate(360deg)', // Even smaller start, full rotation
+            opacity: shouldShow ? 1 : 0,
+            transitionDuration: shouldShow ? '600ms' : '400ms', // Slower for visibility
+            transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', // More dramatic bounce
+            transformOrigin: 'center',
+          }}
         >
           <MetallicButton
             onClick={handlePlusClick}
             size="lg"
-            className={`min-h-[67px] min-w-[67px] w-[67px] h-[67px] rounded-full ${getBorderStyle()} hover:scale-105 transition-all duration-200 aspect-square`}
+            className={`min-h-[67px] min-w-[67px] w-[67px] h-[67px] rounded-full ${getBorderStyle()} aspect-square`}
+            style={{
+              transition: 'none', // Disable MetallicButton's built-in transitions
+              transform: 'none', // Prevent transform conflicts
+            }}
           >
             <Plus
-              className={`h-8 w-8 transition-all duration-800 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] ${
-                shouldShow ? 'scale-100 rotate-0' : 'scale-0 rotate-90'
-              }`}
+              className="h-8 w-8 transition-all"
+              style={{
+                transform: shouldShow
+                  ? 'scale(1) rotate(0deg)'
+                  : 'scale(0.05) rotate(180deg)', // Match outer animation
+                transitionDuration: shouldShow ? '600ms' : '400ms', // Match outer timing
+                transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', // Match bounce
+                transformOrigin: 'center',
+              }}
             />
           </MetallicButton>
         </div>
@@ -353,16 +368,39 @@ function Dashboard() {
     const isPlusButtonVisible =
       currentView === 'food' || currentView === 'signals';
 
-    // Get conditional spacing for Food and Signals icons when plus button is visible
-    const getIconSpacing = (tabId: ViewType) => {
-      if (!isPlusButtonVisible) return '';
+    // Get transform style for Food and Signals icons with staggered spring physics
+    const getIconTransform = (tabId: ViewType) => {
+      if (!isPlusButtonVisible) {
+        return {
+          transform: 'translateX(0) scale(1)',
+          transitionDuration: '600ms', // Slower return animation
+          transitionTimingFunction: 'cubic-bezier(0.175, 0.885, 0.32, 1.4)', // Bounce return
+          transitionDelay: '0ms',
+        };
+      }
 
       if (tabId === 'food') {
-        return 'transform -translate-x-6 scale-105'; // Move left + slight scale for emphasis
+        return {
+          transform: 'translateX(-40px) scale(1.15)', // More dramatic movement and scale
+          transitionDuration: '800ms', // Slower for visibility
+          transitionTimingFunction: 'cubic-bezier(0.175, 0.885, 0.32, 1.6)', // More bounce
+          transitionDelay: '0ms',
+        };
       } else if (tabId === 'signals') {
-        return 'transform translate-x-6 scale-105'; // Move right + slight scale for emphasis
+        return {
+          transform: 'translateX(40px) scale(1.15)', // More dramatic movement and scale
+          transitionDuration: '800ms', // Slower for visibility
+          transitionTimingFunction: 'cubic-bezier(0.175, 0.885, 0.32, 1.6)', // More bounce
+          transitionDelay: '100ms', // Longer stagger delay
+        };
       }
-      return '';
+
+      return {
+        transform: 'translateX(0) scale(1)',
+        transitionDuration: '400ms',
+        transitionTimingFunction: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+        transitionDelay: '0ms',
+      };
     };
 
     return (
@@ -374,7 +412,8 @@ function Dashboard() {
               <button
                 key={tab.id}
                 onClick={() => handleViewChange(tab.id)}
-                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-3 transition-all duration-1000 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${getActiveTabStyle(tab.id)} ${getIconSpacing(tab.id)}`}
+                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-3 transition-all ${getActiveTabStyle(tab.id)}`}
+                style={getIconTransform(tab.id)}
               >
                 <tab.icon
                   className={`h-6 w-6 mb-1 transition-transform duration-200 ${

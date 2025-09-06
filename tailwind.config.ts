@@ -39,6 +39,15 @@ const config: Config = {
     'border-zone-green/30',
     'border-zone-yellow/30',
     'border-zone-red/30',
+    // Animation classes for FAB and icon animations
+    'scale-[0.1]',
+    'duration-[350ms]',
+    'duration-[400ms]',
+    'duration-[450ms]',
+    'delay-[50ms]',
+    'ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]',
+    'ease-[cubic-bezier(0.175,0.885,0.32,1.275)]',
+    'ease-[cubic-bezier(0.4,0.0,0.2,1)]',
   ],
   theme: {
     extend: {

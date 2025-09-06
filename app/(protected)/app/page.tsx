@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Utensils, Activity, Plus, Settings, BarChart3 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CameraCapture } from '@/features/camera/components/camera-capture';
@@ -519,55 +520,63 @@ function Dashboard() {
                     {recentFoods && recentFoods.length > 0 && (
                       <div className="space-y-3 overflow-hidden">
                         {recentFoods.map(food => (
-                          <button
+                          <Card
                             key={food.id}
+                            className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
                             onClick={() => handleEditFood(food)}
-                            className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors overflow-hidden"
                           >
-                            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                              {food.photo_url ? (
-                                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                  <Image
-                                    src={food.photo_url || '/placeholder.svg'}
-                                    alt={food.name}
-                                    className="w-full h-full object-cover"
-                                    width={48}
-                                    height={48}
-                                  />
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                  {food.photo_url ? (
+                                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                                      <Image
+                                        src={
+                                          food.photo_url || '/placeholder.svg'
+                                        }
+                                        alt={food.name}
+                                        className="w-full h-full object-cover"
+                                        width={48}
+                                        height={48}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                      <span className="text-white text-lg">
+                                        🍽️
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="text-left flex-1 min-w-0">
+                                    <p className="font-medium text-foreground truncate">
+                                      {food.status === 'analyzing'
+                                        ? 'New Food'
+                                        : food.name}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground truncate">
+                                      {food.ingredients
+                                        ?.map(ing => ing.name)
+                                        .join(', ') || 'No ingredients'}
+                                    </p>
+                                  </div>
                                 </div>
-                              ) : (
-                                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                  <span className="text-white text-lg">🍽️</span>
+                                <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
+                                  <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
+                                    <AnimatedComponentErrorBoundary>
+                                      <FoodCompositionBar
+                                        ingredients={food.ingredients || []}
+                                      />
+                                    </AnimatedComponentErrorBoundary>
+                                    <AnimatedComponentErrorBoundary>
+                                      <OrganicCompositionBar
+                                        ingredients={food.ingredients || []}
+                                      />
+                                    </AnimatedComponentErrorBoundary>
+                                  </div>
                                 </div>
-                              )}
-                              <div className="text-left flex-1 min-w-0">
-                                <p className="font-medium text-gray-900 truncate">
-                                  {food.status === 'analyzing'
-                                    ? 'New Food'
-                                    : food.name}
-                                </p>
-                                <p className="text-sm text-gray-500 truncate">
-                                  {food.ingredients
-                                    ?.map(ing => ing.name)
-                                    .join(', ') || 'No ingredients'}
-                                </p>
                               </div>
-                            </div>
-                            <div className="flex-shrink-0 flex items-center space-x-2 ml-1 sm:ml-2">
-                              <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
-                                <AnimatedComponentErrorBoundary>
-                                  <FoodCompositionBar
-                                    ingredients={food.ingredients || []}
-                                  />
-                                </AnimatedComponentErrorBoundary>
-                                <AnimatedComponentErrorBoundary>
-                                  <OrganicCompositionBar
-                                    ingredients={food.ingredients || []}
-                                  />
-                                </AnimatedComponentErrorBoundary>
-                              </div>
-                            </div>
-                          </button>
+                            </CardContent>
+                          </Card>
                         ))}
                       </div>
                     )}
@@ -632,43 +641,47 @@ function Dashboard() {
                     {recentSymptoms &&
                       recentSymptoms.length > 0 &&
                       recentSymptoms.map(symptom => (
-                        <button
+                        <Card
                           key={symptom.id}
+                          className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
                           onClick={() => handleEditSymptom(symptom)}
-                          className="w-full flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg transition-colors"
                         >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-lg">
-                                {getCategoryInfo(symptom.category)?.icon ||
-                                  '⚡'}
-                              </span>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
+                                  <span className="text-white text-lg">
+                                    {getCategoryInfo(symptom.category)?.icon ||
+                                      '⚡'}
+                                  </span>
+                                </div>
+                                <div className="text-left">
+                                  <p className="font-medium text-foreground">
+                                    {symptom.name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {new Date(symptom.timestamp).toLocaleString(
+                                      'en-US',
+                                      {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true,
+                                      }
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="text-xs capitalize"
+                              >
+                                {symptom.category}
+                              </Badge>
                             </div>
-                            <div className="text-left">
-                              <p className="font-medium text-gray-900">
-                                {symptom.name}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {new Date(symptom.timestamp).toLocaleString(
-                                  'en-US',
-                                  {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: 'numeric',
-                                    minute: '2-digit',
-                                    hour12: true,
-                                  }
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          <Badge
-                            variant="outline"
-                            className="text-xs capitalize"
-                          >
-                            {symptom.category}
-                          </Badge>
-                        </button>
+                          </CardContent>
+                        </Card>
                       ))}
                   </div>
                 </div>

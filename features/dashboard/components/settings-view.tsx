@@ -8,12 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { User, LogOut, Moon, Sun, Shield, Smartphone } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { useToast } from '@/components/ui/use-toast';
-import { logger } from '@/lib/utils/logger';
+import { User, LogOut, Shield, Smartphone } from 'lucide-react';
 
 interface SettingsViewProps {
   user?: any;
@@ -26,11 +22,8 @@ export function SettingsView({
   isLoggingOut,
   handleLogout,
 }: SettingsViewProps) {
-  const { toast } = useToast();
-  const { theme, setTheme } = useTheme();
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 p-4">
       {/* Account Information */}
       <Card>
         <CardHeader>
@@ -60,37 +53,6 @@ export function SettingsView({
         </CardContent>
       </Card>
 
-      {/* Appearance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {theme === 'dark' ? (
-              <Moon className="h-5 w-5" />
-            ) : (
-              <Sun className="h-5 w-5" />
-            )}
-            Appearance
-          </CardTitle>
-          <CardDescription>
-            Customize the look and feel of the app.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Dark Mode</Label>
-              <p className="text-sm text-muted-foreground">
-                Switch between light and dark themes.
-              </p>
-            </div>
-            <Switch
-              checked={theme === 'dark'}
-              onCheckedChange={checked => setTheme(checked ? 'dark' : 'light')}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Privacy & Security */}
       <Card>
         <CardHeader>
@@ -103,21 +65,21 @@ export function SettingsView({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-            <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-2">
+          <div className="bg-green-950/20 p-4 rounded-lg border border-green-800">
+            <h4 className="text-sm font-medium text-green-100 mb-2">
               🔒 Privacy First
             </h4>
-            <p className="text-xs text-green-700 dark:text-green-300">
+            <p className="text-xs text-green-300">
               Your health data is securely stored in the cloud with Supabase.
               Only you have access to your data, and it's encrypted at rest and
               in transit.
             </p>
           </div>
-          <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+          <div className="bg-blue-950/20 p-4 rounded-lg border border-blue-800">
+            <h4 className="text-sm font-medium text-blue-100 mb-2">
               ☁️ Cloud Sync
             </h4>
-            <p className="text-xs text-blue-700 dark:text-blue-300">
+            <p className="text-xs text-blue-300">
               Your data syncs automatically across all your devices. No manual
               backups needed - your data is safe and always available.
             </p>

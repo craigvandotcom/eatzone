@@ -140,7 +140,7 @@ describe('Bottom Navigation', () => {
 
     // Should show settings view
     await waitFor(() => {
-      expect(screen.getByText(/account/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/account/i)[0]).toBeInTheDocument();
     });
   });
 
@@ -159,41 +159,52 @@ describe('Bottom Navigation', () => {
     const user = userEvent.setup();
     render(<Dashboard />);
 
-    // Initially on insights view - no plus button
-    expect(
-      screen.queryByRole('button', { name: /\+/ })
-    ).not.toBeInTheDocument();
+    // Initially on insights view - plus button should be hidden (opacity 0)
+    await waitFor(() => {
+      const plusButtons = screen.queryAllByRole('button');
+      const plusButton = plusButtons.find(
+        button =>
+          button.querySelector('svg') &&
+          button.className.includes('rounded-full')
+      );
+      // Plus button exists but should be hidden (opacity 0)
+      expect(plusButton).toBeInTheDocument();
+      const parentDiv = plusButton?.closest('[style*="opacity"]');
+      expect(parentDiv).toHaveStyle('opacity: 0');
+    });
 
     // Switch to food view
     const foodTab = screen.getByRole('button', { name: /food/i });
     await user.click(foodTab);
 
-    // Wait for transition and check for plus button
+    // Wait for transition and check for visible plus button
     await waitFor(() => {
-      // The plus button should be present but might not have accessible name
-      // Check for the MetallicButton with Plus icon
       const plusButtons = screen.queryAllByRole('button');
-      const hasPlusButton = plusButtons.some(
+      const plusButton = plusButtons.find(
         button =>
           button.querySelector('svg') &&
           button.className.includes('rounded-full')
       );
-      expect(hasPlusButton).toBe(true);
+      expect(plusButton).toBeInTheDocument();
+      const parentDiv = plusButton?.closest('[style*="opacity"]');
+      expect(parentDiv).toHaveStyle('opacity: 1');
     });
 
     // Switch to insights view
     const insightsTab = screen.getByRole('button', { name: /insights/i });
     await user.click(insightsTab);
 
-    // Plus button should be hidden
+    // Plus button should be hidden again
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
-      const hasPlusButton = plusButtons.some(
+      const plusButton = plusButtons.find(
         button =>
           button.querySelector('svg') &&
           button.className.includes('rounded-full')
       );
-      expect(hasPlusButton).toBe(false);
+      expect(plusButton).toBeInTheDocument();
+      const parentDiv = plusButton?.closest('[style*="opacity"]');
+      expect(parentDiv).toHaveStyle('opacity: 0');
     });
   });
 

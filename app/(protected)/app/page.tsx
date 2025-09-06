@@ -157,7 +157,7 @@ function Dashboard() {
 
         // Store the image data temporarily in sessionStorage for the add food page
         sessionStorage.setItem('pendingFoodImage', imageData);
-        router.push('/app/foods/add');
+        router.replace('/app/foods/add');
       } catch (error) {
         logger.error('Failed to store image data', error);
         toast({
@@ -171,7 +171,7 @@ function Dashboard() {
   );
 
   const handleManualEntry = useCallback(() => {
-    router.push('/app/foods/add');
+    router.replace('/app/foods/add');
   }, [router]);
 
   const handleQuickCapture = useCallback(() => {

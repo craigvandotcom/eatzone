@@ -78,6 +78,8 @@ function Dashboard() {
   const recentFoods = dashboardData?.recentFoods;
   const recentSymptoms = dashboardData?.recentSymptoms;
   const todaysSymptoms = dashboardData?.todaysSymptoms;
+  const allFoods = dashboardData?.allFoods;
+  const allSymptoms = dashboardData?.allSymptoms;
   const foodStats = dashboardData?.foodStats;
 
   // Helper function to get today's ingredients for the new components
@@ -301,9 +303,9 @@ function Dashboard() {
     }
   }, [currentView, handleQuickCapture, handleAddSymptom]);
 
-  // Central Plus Button component
+  // Central Plus Button component with synchronized animations
   const CentralPlusButton = () => {
-    if (currentView !== 'food' && currentView !== 'signals') return null;
+    const shouldShow = currentView === 'food' || currentView === 'signals';
 
     const getBorderStyle = () => {
       if (currentView === 'food') {
@@ -316,18 +318,30 @@ function Dashboard() {
 
     return (
       <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-        <MetallicButton
-          onClick={handlePlusClick}
-          size="lg"
-          className={`min-h-[56px] min-w-[56px] w-14 h-14 rounded-full ${getBorderStyle()} hover:scale-105 transition-all duration-200 aspect-square`}
+        <div
+          className={`transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            shouldShow
+              ? 'scale-100 opacity-100 rotate-0'
+              : 'scale-0 opacity-0 rotate-180'
+          }`}
         >
-          <Plus className="h-7 w-7" />
-        </MetallicButton>
+          <MetallicButton
+            onClick={handlePlusClick}
+            size="lg"
+            className={`min-h-[67px] min-w-[67px] w-[67px] h-[67px] rounded-full ${getBorderStyle()} hover:scale-105 transition-all duration-200 aspect-square`}
+          >
+            <Plus
+              className={`h-8 w-8 transition-all duration-800 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] ${
+                shouldShow ? 'scale-100 rotate-0' : 'scale-0 rotate-90'
+              }`}
+            />
+          </MetallicButton>
+        </div>
       </div>
     );
   };
 
-  // Bottom Navigation component
+  // Bottom Navigation component with synchronized icon spacing
   const BottomNavigation = () => {
     const tabs = [
       { id: 'insights' as ViewType, label: 'Insights', icon: BarChart3 },
@@ -335,6 +349,21 @@ function Dashboard() {
       { id: 'signals' as ViewType, label: 'Signals', icon: Activity },
       { id: 'settings' as ViewType, label: 'Settings', icon: Settings },
     ];
+
+    const isPlusButtonVisible =
+      currentView === 'food' || currentView === 'signals';
+
+    // Get conditional spacing for Food and Signals icons when plus button is visible
+    const getIconSpacing = (tabId: ViewType) => {
+      if (!isPlusButtonVisible) return '';
+
+      if (tabId === 'food') {
+        return 'transform -translate-x-6 scale-105'; // Move left + slight scale for emphasis
+      } else if (tabId === 'signals') {
+        return 'transform translate-x-6 scale-105'; // Move right + slight scale for emphasis
+      }
+      return '';
+    };
 
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 pb-safe">
@@ -345,14 +374,14 @@ function Dashboard() {
               <button
                 key={tab.id}
                 onClick={() => handleViewChange(tab.id)}
-                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-3 transition-all duration-200 ${getActiveTabStyle(tab.id)}`}
+                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-3 transition-all duration-1000 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${getActiveTabStyle(tab.id)} ${getIconSpacing(tab.id)}`}
               >
                 <tab.icon
-                  className={`h-5 w-5 mb-1 transition-transform duration-200 ${
+                  className={`h-6 w-6 mb-1 transition-transform duration-200 ${
                     currentView === tab.id ? 'scale-110' : ''
                   }`}
                 />
-                <span className="text-xs font-medium">{tab.label}</span>
+                <span className="text-sm font-medium">{tab.label}</span>
                 {currentView === tab.id && !isTransitioning && (
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-current rounded-full" />
                 )}
@@ -388,6 +417,8 @@ function Dashboard() {
               <InsightsView
                 recentFoods={recentFoods}
                 recentSymptoms={recentSymptoms}
+                allFoods={allFoods}
+                allSymptoms={allSymptoms}
               />
             )}
             {currentView === 'settings' && (

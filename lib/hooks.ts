@@ -399,12 +399,13 @@ export const useDashboardData = () => {
     async () => {
       try {
         // Batch all data requests with Promise.all for coordinated fetching
-        const [allFoods, , todaysFoods, todaysSymptoms] = await Promise.all([
-          getAllFoods(),
-          getAllSymptoms(),
-          getTodaysFoods(),
-          getTodaysSymptoms(),
-        ]);
+        const [allFoods, allSymptoms, todaysFoods, todaysSymptoms] =
+          await Promise.all([
+            getAllFoods(),
+            getAllSymptoms(),
+            getTodaysFoods(),
+            getTodaysSymptoms(),
+          ]);
 
         // Process data client-side to avoid additional API calls
         const recentFoods = allFoods.slice(0, 5);
@@ -453,6 +454,8 @@ export const useDashboardData = () => {
           recentSymptoms,
           todaysSymptoms,
           foodStats,
+          allFoods,
+          allSymptoms,
         };
       } catch (error) {
         logger.error('Error fetching dashboard data', error);
@@ -470,6 +473,8 @@ export const useDashboardData = () => {
             totalOrganicPercentage: 0,
             isFromToday: false,
           },
+          allFoods: [] as Food[],
+          allSymptoms: [] as Symptom[],
         };
       }
     },

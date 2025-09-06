@@ -436,14 +436,6 @@ export function FoodEntryForm({
                 alt="Food entry"
                 className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
               />
-              {imageData && isAnalyzing && (
-                <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                  <div className="bg-white rounded-lg px-3 py-2 flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                    <span className="text-sm text-blue-700">Analyzing...</span>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -470,13 +462,12 @@ export function FoodEntryForm({
           <Label htmlFor="ingredient-input">Ingredients</Label>
           {isAnalyzing ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                <span className="text-sm text-blue-700">
-                  Analyzing image...
+              <div className="flex items-center gap-2 p-3 bg-muted/10 border border-border/30 rounded-lg">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Analyzing ingredients...
                 </span>
               </div>
-              <Skeleton className="h-10 w-full" />
             </div>
           ) : (
             <>
@@ -518,9 +509,30 @@ export function FoodEntryForm({
             </Label>
             {isAnalyzing ? (
               <div className="space-y-2 mt-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+                {/* Skeleton ingredients with zone color bars to match final UI */}
+                {[1, 2, 3, 4].map((_, index) => (
+                  <div
+                    key={index}
+                    className="bg-muted/20 rounded-lg h-12 flex items-center overflow-hidden relative border border-border/30"
+                  >
+                    {/* Zone color indicator bar - shimmer effect */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 zone-bar-loading">
+                      <div className="h-full w-full bg-gradient-to-b from-green-500/40 via-yellow-500/40 to-red-500/40 zone-bar-shimmer" />
+                    </div>
+
+                    {/* Content skeleton */}
+                    <div className="flex items-center justify-between w-full px-4 ml-1">
+                      <div className="flex items-center space-x-3">
+                        <Skeleton className="w-6 h-6 rounded-full bg-muted/40" />
+                        <Skeleton className="h-4 w-24 bg-muted/40" />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Skeleton className="h-6 w-12 rounded bg-muted/40" />
+                        <Skeleton className="w-8 h-8 rounded bg-muted/40" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="mt-2">

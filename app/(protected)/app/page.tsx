@@ -337,7 +337,7 @@ function Dashboard() {
             }}
           >
             <Plus
-              className="h-8 w-8 transition-all"
+              className="h-8 w-8 transition-all text-gray-700 dark:text-gray-200"
               style={{
                 transform: shouldShow
                   ? 'scale(1) rotate(0deg)'
@@ -378,14 +378,14 @@ function Dashboard() {
 
       if (tabId === 'food') {
         return {
-          transform: 'translateX(-40px) scale(1.15)', // More dramatic movement and scale
+          transform: 'translateX(-40px) scale(1)', // Movement only, no scaling
           transitionDuration: '800ms', // Slower for visibility
           transitionTimingFunction: 'cubic-bezier(0.175, 0.885, 0.32, 1.6)', // More bounce
           transitionDelay: '0ms',
         };
       } else if (tabId === 'signals') {
         return {
-          transform: 'translateX(40px) scale(1.15)', // More dramatic movement and scale
+          transform: 'translateX(40px) scale(1)', // Movement only, no scaling
           transitionDuration: '800ms', // Slower for visibility
           transitionTimingFunction: 'cubic-bezier(0.175, 0.885, 0.32, 1.6)', // More bounce
           transitionDelay: '100ms', // Longer stagger delay

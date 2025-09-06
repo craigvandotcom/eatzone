@@ -340,12 +340,12 @@ function Dashboard() {
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 pb-safe">
         <div className="relative">
           <CentralPlusButton />
-          <div className="flex items-center h-16">
+          <div className="flex items-center h-20">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => handleViewChange(tab.id)}
-                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-2 transition-all duration-200 ${getActiveTabStyle(tab.id)}`}
+                className={`flex flex-col items-center justify-center flex-1 h-full px-2 py-3 transition-all duration-200 ${getActiveTabStyle(tab.id)}`}
               >
                 <tab.icon
                   className={`h-5 w-5 mb-1 transition-transform duration-200 ${

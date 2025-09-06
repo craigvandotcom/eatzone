@@ -44,6 +44,7 @@ export default function RootLayout({
       <head />
       <body
         className={`${inter.className} h-full overflow-x-hidden bg-background text-foreground`}
+        suppressHydrationWarning={true}
       >
         <AuthProvider>
           <div className="h-full min-h-0">

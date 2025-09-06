@@ -29,7 +29,6 @@ import {
   FoodEntrySkeleton,
   SymptomEntrySkeleton,
   EmptyOrLoadingState,
-  NetworkRetryState,
 } from '@/components/ui/loading-states';
 import {
   ErrorBoundary,
@@ -38,12 +37,18 @@ import {
 import { logger } from '@/lib/utils/logger';
 import { InsightsView } from '@/features/dashboard/components/insights-view';
 import { SettingsView } from '@/features/dashboard/components/settings-view';
+import { DayNavigationHeader } from '@/components/ui/day-navigation-header';
 
 // Import types
 import { Food, Symptom } from '@/lib/types';
 
 // Import custom hooks
-import { useDashboardData } from '@/lib/hooks';
+import {
+  useDashboardData,
+  useFoodsForDate,
+  useSymptomsForDate,
+  useFoodStatsForDate,
+} from '@/lib/hooks';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -62,8 +67,8 @@ function Dashboard() {
   // Use consolidated dashboard data hook to prevent infinite loops
   const {
     data: dashboardData,
-    error: dashboardError,
-    mutate: retryDashboard,
+    // error: dashboardError,
+    // mutate: retryDashboard,
   } = useDashboardData();
 
   // Settings state management
@@ -74,33 +79,8 @@ function Dashboard() {
   // Extract data from consolidated hook
   const recentFoods = dashboardData?.recentFoods;
   const recentSymptoms = dashboardData?.recentSymptoms;
-  const todaysSymptoms = dashboardData?.todaysSymptoms;
   const allFoods = dashboardData?.allFoods;
   const allSymptoms = dashboardData?.allSymptoms;
-  const foodStats = dashboardData?.foodStats;
-
-  // Helper function to get today's ingredients for the new components
-  const getTodaysIngredients = useCallback(() => {
-    if (!recentFoods || !foodStats) return [];
-
-    // Get foods that were used for stats calculation
-    const foodsToAnalyze = foodStats.isFromToday
-      ? recentFoods.filter(food => {
-          const today = new Date().toDateString();
-          return new Date(food.timestamp).toDateString() === today;
-        })
-      : recentFoods.slice(0, 5);
-
-    return foodsToAnalyze.flatMap(food => food.ingredients || []);
-  }, [recentFoods, foodStats]);
-
-  // Use single error and retry for all data
-  const foodsError = dashboardError;
-  const recentSymptomsError = dashboardError;
-  const statsError = dashboardError;
-  const retryFoods = retryDashboard;
-  const retryRecentSymptoms = retryDashboard;
-  const retryStats = retryDashboard;
 
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -109,6 +89,24 @@ function Dashboard() {
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>('insights');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+
+  // Date-specific data hooks - pass existing data to prevent duplicate API calls
+  const { data: foodsForSelectedDate } = useFoodsForDate(
+    selectedDate,
+    allFoods
+  );
+  const { data: symptomsForSelectedDate } = useSymptomsForDate(
+    selectedDate,
+    allSymptoms
+  );
+  const { data: foodStatsForSelectedDate } = useFoodStatsForDate(selectedDate);
+
+  // Helper function to get ingredients for selected date
+  const getIngredientsForSelectedDate = useCallback(() => {
+    if (!foodsForSelectedDate) return [];
+    return foodsForSelectedDate.flatMap(food => food.ingredients || []);
+  }, [foodsForSelectedDate]);
 
   // Ref to store timeout ID for cleanup
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -466,120 +464,118 @@ function Dashboard() {
             )}
             {currentView === 'food' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
-                {/* Food Zone Summary Bar */}
+                {/* Day Navigation Header */}
+                <DayNavigationHeader
+                  selectedDate={selectedDate}
+                  onDateChange={setSelectedDate}
+                  allFoods={allFoods}
+                  allSymptoms={allSymptoms}
+                />
+
+                {/* Food Zone Summary Bar for Selected Date */}
                 <div className="space-y-4">
-                  {statsError ? (
-                    <NetworkRetryState
-                      onRetry={retryStats}
-                      message="Failed to load stats. Tap to retry."
-                      className="h-32"
-                    />
-                  ) : foodStats === undefined ? (
+                  {foodStatsForSelectedDate === undefined ? (
                     <div className="bg-green-50 rounded-lg p-4 h-32 flex items-center justify-center">
                       <div className="animate-pulse text-gray-500">
                         Loading food data...
                       </div>
                     </div>
                   ) : (
-                    <FoodZoneSummaryBar ingredients={getTodaysIngredients()} />
+                    <FoodZoneSummaryBar
+                      ingredients={getIngredientsForSelectedDate()}
+                    />
                   )}
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-foreground">
-                      Recent Entries
+                      Food Entries
                     </h2>
-                    <button className="text-muted-foreground text-sm">
-                      View more
-                    </button>
+                    <span className="text-muted-foreground text-sm">
+                      {foodsForSelectedDate?.length || 0} entries
+                    </span>
                   </div>
                   <div className="space-y-3">
-                    {foodsError ? (
-                      <NetworkRetryState
-                        onRetry={retryFoods}
-                        message="Failed to load foods. Tap to retry."
-                      />
-                    ) : (
-                      <EmptyOrLoadingState
-                        isLoading={recentFoods === undefined}
-                        isEmpty={recentFoods?.length === 0}
-                        loadingMessage="Loading recent foods..."
-                        emptyTitle="No foods logged yet"
-                        emptyDescription="Tap the eat icon below to get started"
-                        emptyIcon="🍽️"
-                      />
-                    )}
-                    {recentFoods === undefined && (
+                    <EmptyOrLoadingState
+                      isLoading={foodsForSelectedDate === undefined}
+                      isEmpty={foodsForSelectedDate?.length === 0}
+                      loadingMessage="Loading foods for selected date..."
+                      emptyTitle="No foods logged for this date"
+                      emptyDescription="Tap the eat icon below to add a food entry"
+                      emptyIcon="🍽️"
+                    />
+                    {foodsForSelectedDate === undefined && (
                       <div className="space-y-3">
                         {Array.from({ length: 3 }).map((_, i) => (
                           <FoodEntrySkeleton key={i} />
                         ))}
                       </div>
                     )}
-                    {recentFoods && recentFoods.length > 0 && (
-                      <div className="space-y-3 overflow-hidden">
-                        {recentFoods.map(food => (
-                          <Card
-                            key={food.id}
-                            className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
-                            onClick={() => handleEditFood(food)}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                                  {food.photo_url ? (
-                                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                      <Image
-                                        src={
-                                          food.photo_url || '/placeholder.svg'
-                                        }
-                                        alt={food.name}
-                                        className="w-full h-full object-cover"
-                                        width={48}
-                                        height={48}
-                                      />
+                    {foodsForSelectedDate &&
+                      foodsForSelectedDate.length > 0 && (
+                        <div className="space-y-3 overflow-hidden">
+                          {foodsForSelectedDate.map(food => (
+                            <Card
+                              key={food.id}
+                              className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
+                              onClick={() => handleEditFood(food)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                    {food.photo_url ? (
+                                      <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                                        <Image
+                                          src={
+                                            food.photo_url || '/placeholder.svg'
+                                          }
+                                          alt={food.name}
+                                          className="w-full h-full object-cover"
+                                          width={48}
+                                          height={48}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-lg">
+                                          🍽️
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="text-left flex-1 min-w-0">
+                                      <p className="font-medium text-foreground truncate">
+                                        {food.status === 'analyzing'
+                                          ? 'New Food'
+                                          : food.name}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground truncate">
+                                        {food.ingredients
+                                          ?.map(ing => ing.name)
+                                          .join(', ') || 'No ingredients'}
+                                      </p>
                                     </div>
-                                  ) : (
-                                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                      <span className="text-white text-lg">
-                                        🍽️
-                                      </span>
+                                  </div>
+                                  <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
+                                    <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
+                                      <AnimatedComponentErrorBoundary>
+                                        <FoodCompositionBar
+                                          ingredients={food.ingredients || []}
+                                        />
+                                      </AnimatedComponentErrorBoundary>
+                                      <AnimatedComponentErrorBoundary>
+                                        <OrganicCompositionBar
+                                          ingredients={food.ingredients || []}
+                                        />
+                                      </AnimatedComponentErrorBoundary>
                                     </div>
-                                  )}
-                                  <div className="text-left flex-1 min-w-0">
-                                    <p className="font-medium text-foreground truncate">
-                                      {food.status === 'analyzing'
-                                        ? 'New Food'
-                                        : food.name}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground truncate">
-                                      {food.ingredients
-                                        ?.map(ing => ing.name)
-                                        .join(', ') || 'No ingredients'}
-                                    </p>
                                   </div>
                                 </div>
-                                <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
-                                  <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
-                                    <AnimatedComponentErrorBoundary>
-                                      <FoodCompositionBar
-                                        ingredients={food.ingredients || []}
-                                      />
-                                    </AnimatedComponentErrorBoundary>
-                                    <AnimatedComponentErrorBoundary>
-                                      <OrganicCompositionBar
-                                        ingredients={food.ingredients || []}
-                                      />
-                                    </AnimatedComponentErrorBoundary>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
                   </div>
                 </div>
               </ErrorBoundary>
@@ -587,60 +583,55 @@ function Dashboard() {
 
             {currentView === 'signals' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
-                {/* Symptom Timeline */}
+                {/* Day Navigation Header */}
+                <DayNavigationHeader
+                  selectedDate={selectedDate}
+                  onDateChange={setSelectedDate}
+                  allFoods={allFoods}
+                  allSymptoms={allSymptoms}
+                />
+
+                {/* Symptom Timeline for Selected Date */}
                 <div className="space-y-4">
-                  {recentSymptomsError ? (
-                    <NetworkRetryState
-                      onRetry={retryRecentSymptoms}
-                      message="Failed to load symptoms. Tap to retry."
-                      className="h-32"
-                    />
-                  ) : todaysSymptoms === undefined ? (
+                  {symptomsForSelectedDate === undefined ? (
                     <div className="bg-red-50 rounded-lg p-4 h-32 flex items-center justify-center">
                       <div className="animate-pulse text-gray-500">
                         Loading symptom data...
                       </div>
                     </div>
                   ) : (
-                    <SymptomTimeline symptoms={todaysSymptoms} />
+                    <SymptomTimeline symptoms={symptomsForSelectedDate} />
                   )}
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-foreground">
-                      Recent Entries
+                      Signal Entries
                     </h2>
-                    <button className="text-muted-foreground text-sm">
-                      View more
-                    </button>
+                    <span className="text-muted-foreground text-sm">
+                      {symptomsForSelectedDate?.length || 0} entries
+                    </span>
                   </div>
                   <div className="space-y-3">
-                    {recentSymptomsError ? (
-                      <NetworkRetryState
-                        onRetry={retryRecentSymptoms}
-                        message="Failed to load symptoms. Tap to retry."
-                      />
-                    ) : (
-                      <EmptyOrLoadingState
-                        isLoading={recentSymptoms === undefined}
-                        isEmpty={recentSymptoms?.length === 0}
-                        loadingMessage="Loading recent symptoms..."
-                        emptyTitle="No symptoms logged yet"
-                        emptyDescription="Tap the signals icon below to get started"
-                        emptyIcon="⚡"
-                      />
-                    )}
-                    {recentSymptoms === undefined && (
+                    <EmptyOrLoadingState
+                      isLoading={symptomsForSelectedDate === undefined}
+                      isEmpty={symptomsForSelectedDate?.length === 0}
+                      loadingMessage="Loading symptoms for selected date..."
+                      emptyTitle="No signals logged for this date"
+                      emptyDescription="Tap the signals icon below to add a symptom entry"
+                      emptyIcon="⚡"
+                    />
+                    {symptomsForSelectedDate === undefined && (
                       <div className="space-y-3">
                         {Array.from({ length: 3 }).map((_, i) => (
                           <SymptomEntrySkeleton key={i} />
                         ))}
                       </div>
                     )}
-                    {recentSymptoms &&
-                      recentSymptoms.length > 0 &&
-                      recentSymptoms.map(symptom => (
+                    {symptomsForSelectedDate &&
+                      symptomsForSelectedDate.length > 0 &&
+                      symptomsForSelectedDate.map(symptom => (
                         <Card
                           key={symptom.id}
                           className="cursor-pointer hover:shadow-xl transition-shadow duration-200"

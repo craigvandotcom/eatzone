@@ -6,7 +6,13 @@
 import { render, screen, waitFor } from '@/__tests__/setup/test-utils';
 import userEvent from '@testing-library/user-event';
 import Dashboard from '@/app/(protected)/app/page';
-import { useDashboardData } from '@/lib/hooks';
+import {
+  useDashboardData,
+  useFoodsForDate,
+  useSymptomsForDate,
+  useFoodStatsForDate,
+  useTrackingStreak,
+} from '@/lib/hooks';
 
 // Mock Next.js useRouter
 const mockPush = jest.fn();
@@ -24,6 +30,10 @@ jest.mock('next/navigation', () => ({
 // Mock the dashboard data hook
 jest.mock('@/lib/hooks', () => ({
   useDashboardData: jest.fn(),
+  useFoodsForDate: jest.fn(),
+  useSymptomsForDate: jest.fn(),
+  useFoodStatsForDate: jest.fn(),
+  useTrackingStreak: jest.fn(),
 }));
 
 // Mock the mobile hook to test mobile navigation
@@ -33,6 +43,18 @@ jest.mock('@/components/ui/use-mobile', () => ({
 
 const mockUseDashboardData = useDashboardData as jest.MockedFunction<
   typeof useDashboardData
+>;
+const mockUseFoodsForDate = useFoodsForDate as jest.MockedFunction<
+  typeof useFoodsForDate
+>;
+const mockUseSymptomsForDate = useSymptomsForDate as jest.MockedFunction<
+  typeof useSymptomsForDate
+>;
+const mockUseFoodStatsForDate = useFoodStatsForDate as jest.MockedFunction<
+  typeof useFoodStatsForDate
+>;
+const mockUseTrackingStreak = useTrackingStreak as jest.MockedFunction<
+  typeof useTrackingStreak
 >;
 
 describe('Bottom Navigation', () => {
@@ -60,6 +82,22 @@ describe('Bottom Navigation', () => {
       error: null,
       mutate: jest.fn(),
     });
+
+    // Mock date-specific data hooks
+    mockUseFoodsForDate.mockReturnValue({ data: [] });
+    mockUseSymptomsForDate.mockReturnValue({ data: [] });
+    mockUseFoodStatsForDate.mockReturnValue({
+      data: {
+        greenIngredients: 0,
+        yellowIngredients: 0,
+        redIngredients: 0,
+        totalIngredients: 0,
+        organicCount: 0,
+        totalOrganicPercentage: 0,
+        isFromSelectedDate: true,
+      },
+    });
+    mockUseTrackingStreak.mockReturnValue(0);
   });
 
   it('should render bottom navigation tabs on mobile', () => {
@@ -102,7 +140,7 @@ describe('Bottom Navigation', () => {
 
     // Should show settings view
     await waitFor(() => {
-      expect(screen.getByText(/account information/i)).toBeInTheDocument();
+      expect(screen.getByText(/account/i)).toBeInTheDocument();
     });
   });
 

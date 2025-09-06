@@ -1,7 +1,7 @@
 // Optimized Custom React hooks for reactive data binding with Supabase
 // Uses shared subscriptions and better error handling patterns
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { Symptom, Food } from './types';
@@ -485,4 +485,145 @@ export const useDashboardData = () => {
       errorRetryInterval: 2000, // 2 second delay between retries
     }
   );
+};
+
+// TRACKING STREAK HOOK - Calculate consecutive days with entries
+// Reuses dashboard data to prevent duplicate API calls
+export const useTrackingStreak = (
+  allFoods?: Food[],
+  allSymptoms?: Symptom[]
+) => {
+  const { data: dashboardData } = useDashboardData();
+  const foods = allFoods || dashboardData?.allFoods;
+  const symptoms = allSymptoms || dashboardData?.allSymptoms;
+
+  return useMemo(() => {
+    if (!foods || !symptoms) return 0;
+
+    try {
+      // Combine all entries and group by date
+      const allEntries = [
+        ...foods.map(f => ({
+          date: f.timestamp.split('T')[0],
+          type: 'food',
+        })),
+        ...symptoms.map(s => ({
+          date: s.timestamp.split('T')[0],
+          type: 'symptom',
+        })),
+      ];
+
+      // Get unique dates with entries
+      const datesWithEntries = new Set(allEntries.map(entry => entry.date));
+
+      // Calculate streak starting from today
+      let streak = 0;
+      const currentDate = new Date();
+
+      // Check each day backwards from today
+      while (true) {
+        const dateString = currentDate.toISOString().split('T')[0];
+
+        if (datesWithEntries.has(dateString)) {
+          streak++;
+          // Move to previous day
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break; // Streak broken
+        }
+      }
+
+      return streak;
+    } catch (error) {
+      logger.error('Error calculating tracking streak', error);
+      return 0;
+    }
+  }, [foods, symptoms]);
+};
+
+// DAY-SPECIFIC DATA HOOKS - Filter data by selected date
+// These hooks reuse data from useDashboardData to prevent duplicate API calls
+export const useFoodsForDate = (selectedDate: Date, allFoods?: Food[]) => {
+  const { data: dashboardData } = useDashboardData();
+  const foods = allFoods || dashboardData?.allFoods;
+
+  const foodsForDate = useMemo(() => {
+    if (!foods) return [];
+
+    const targetDateString = selectedDate.toDateString();
+    return foods.filter(food => {
+      const foodDate = new Date(food.timestamp).toDateString();
+      return foodDate === targetDateString;
+    });
+  }, [foods, selectedDate]);
+
+  return { data: foodsForDate };
+};
+
+export const useSymptomsForDate = (
+  selectedDate: Date,
+  allSymptoms?: Symptom[]
+) => {
+  const { data: dashboardData } = useDashboardData();
+  const symptoms = allSymptoms || dashboardData?.allSymptoms;
+
+  const symptomsForDate = useMemo(() => {
+    if (!symptoms) return [];
+
+    const targetDateString = selectedDate.toDateString();
+    return symptoms.filter(symptom => {
+      const symptomDate = new Date(symptom.timestamp).toDateString();
+      return symptomDate === targetDateString;
+    });
+  }, [symptoms, selectedDate]);
+
+  return { data: symptomsForDate };
+};
+
+// FOOD STATS FOR SPECIFIC DATE
+export const useFoodStatsForDate = (selectedDate: Date) => {
+  const { data: foodsForDate } = useFoodsForDate(selectedDate);
+
+  const statsForDate = useMemo(() => {
+    if (!foodsForDate || foodsForDate.length === 0) {
+      return {
+        greenIngredients: 0,
+        yellowIngredients: 0,
+        redIngredients: 0,
+        totalIngredients: 0,
+        organicCount: 0,
+        totalOrganicPercentage: 0,
+        isFromSelectedDate: false,
+      };
+    }
+
+    const ingredients = foodsForDate.flatMap(food => food.ingredients || []);
+
+    const greenIngredients = ingredients.filter(
+      ing => ing.zone === 'green'
+    ).length;
+    const yellowIngredients = ingredients.filter(
+      ing => ing.zone === 'yellow'
+    ).length;
+    const redIngredients = ingredients.filter(ing => ing.zone === 'red').length;
+    const organicIngredientsCount = ingredients.filter(
+      ing => ing.organic === true
+    ).length;
+    const totalOrganicPercentage =
+      ingredients.length > 0
+        ? (organicIngredientsCount / ingredients.length) * 100
+        : 0;
+
+    return {
+      greenIngredients,
+      yellowIngredients,
+      redIngredients,
+      totalIngredients: ingredients.length,
+      organicCount: organicIngredientsCount,
+      totalOrganicPercentage,
+      isFromSelectedDate: true,
+    };
+  }, [foodsForDate]);
+
+  return { data: statsForDate };
 };

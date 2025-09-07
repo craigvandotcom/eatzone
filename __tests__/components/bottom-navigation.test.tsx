@@ -6,7 +6,13 @@
 import { render, screen, waitFor } from '@/__tests__/setup/test-utils';
 import userEvent from '@testing-library/user-event';
 import Dashboard from '@/app/(protected)/app/page';
-import { useDashboardData } from '@/lib/hooks';
+import {
+  useDashboardData,
+  useFoodsForDate,
+  useSymptomsForDate,
+  useFoodStatsForDate,
+  useTrackingStreak,
+} from '@/lib/hooks';
 
 // Mock Next.js useRouter
 const mockPush = jest.fn();
@@ -24,6 +30,10 @@ jest.mock('next/navigation', () => ({
 // Mock the dashboard data hook
 jest.mock('@/lib/hooks', () => ({
   useDashboardData: jest.fn(),
+  useFoodsForDate: jest.fn(),
+  useSymptomsForDate: jest.fn(),
+  useFoodStatsForDate: jest.fn(),
+  useTrackingStreak: jest.fn(),
 }));
 
 // Mock the mobile hook to test mobile navigation
@@ -33,6 +43,18 @@ jest.mock('@/components/ui/use-mobile', () => ({
 
 const mockUseDashboardData = useDashboardData as jest.MockedFunction<
   typeof useDashboardData
+>;
+const mockUseFoodsForDate = useFoodsForDate as jest.MockedFunction<
+  typeof useFoodsForDate
+>;
+const mockUseSymptomsForDate = useSymptomsForDate as jest.MockedFunction<
+  typeof useSymptomsForDate
+>;
+const mockUseFoodStatsForDate = useFoodStatsForDate as jest.MockedFunction<
+  typeof useFoodStatsForDate
+>;
+const mockUseTrackingStreak = useTrackingStreak as jest.MockedFunction<
+  typeof useTrackingStreak
 >;
 
 describe('Bottom Navigation', () => {
@@ -60,6 +82,22 @@ describe('Bottom Navigation', () => {
       error: null,
       mutate: jest.fn(),
     });
+
+    // Mock date-specific data hooks
+    mockUseFoodsForDate.mockReturnValue({ data: [] });
+    mockUseSymptomsForDate.mockReturnValue({ data: [] });
+    mockUseFoodStatsForDate.mockReturnValue({
+      data: {
+        greenIngredients: 0,
+        yellowIngredients: 0,
+        redIngredients: 0,
+        totalIngredients: 0,
+        organicCount: 0,
+        totalOrganicPercentage: 0,
+        isFromSelectedDate: true,
+      },
+    });
+    mockUseTrackingStreak.mockReturnValue(0);
   });
 
   it('should render bottom navigation tabs on mobile', () => {
@@ -102,7 +140,7 @@ describe('Bottom Navigation', () => {
 
     // Should show settings view
     await waitFor(() => {
-      expect(screen.getByText(/account information/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/account/i)[0]).toBeInTheDocument();
     });
   });
 
@@ -121,41 +159,52 @@ describe('Bottom Navigation', () => {
     const user = userEvent.setup();
     render(<Dashboard />);
 
-    // Initially on insights view - no plus button
-    expect(
-      screen.queryByRole('button', { name: /\+/ })
-    ).not.toBeInTheDocument();
+    // Initially on insights view - plus button should be hidden (opacity 0)
+    await waitFor(() => {
+      const plusButtons = screen.queryAllByRole('button');
+      const plusButton = plusButtons.find(
+        button =>
+          button.querySelector('svg') &&
+          button.className.includes('rounded-full')
+      );
+      // Plus button exists but should be hidden (opacity 0)
+      expect(plusButton).toBeInTheDocument();
+      const parentDiv = plusButton?.closest('[style*="opacity"]');
+      expect(parentDiv).toHaveStyle('opacity: 0');
+    });
 
     // Switch to food view
     const foodTab = screen.getByRole('button', { name: /food/i });
     await user.click(foodTab);
 
-    // Wait for transition and check for plus button
+    // Wait for transition and check for visible plus button
     await waitFor(() => {
-      // The plus button should be present but might not have accessible name
-      // Check for the MetallicButton with Plus icon
       const plusButtons = screen.queryAllByRole('button');
-      const hasPlusButton = plusButtons.some(
+      const plusButton = plusButtons.find(
         button =>
           button.querySelector('svg') &&
           button.className.includes('rounded-full')
       );
-      expect(hasPlusButton).toBe(true);
+      expect(plusButton).toBeInTheDocument();
+      const parentDiv = plusButton?.closest('[style*="opacity"]');
+      expect(parentDiv).toHaveStyle('opacity: 1');
     });
 
     // Switch to insights view
     const insightsTab = screen.getByRole('button', { name: /insights/i });
     await user.click(insightsTab);
 
-    // Plus button should be hidden
+    // Plus button should be hidden again
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
-      const hasPlusButton = plusButtons.some(
+      const plusButton = plusButtons.find(
         button =>
           button.querySelector('svg') &&
           button.className.includes('rounded-full')
       );
-      expect(hasPlusButton).toBe(false);
+      expect(plusButton).toBeInTheDocument();
+      const parentDiv = plusButton?.closest('[style*="opacity"]');
+      expect(parentDiv).toHaveStyle('opacity: 0');
     });
   });
 

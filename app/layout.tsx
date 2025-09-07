@@ -2,7 +2,6 @@ import type React from 'react';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/features/auth/components/auth-provider';
 
@@ -43,20 +42,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${inter.className} h-full overflow-x-hidden`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <div className="h-full min-h-0">
-              {children}
-              <Toaster />
-            </div>
-          </AuthProvider>
-        </ThemeProvider>
+      <body
+        className={`${inter.className} h-full overflow-x-hidden bg-background text-foreground`}
+        suppressHydrationWarning={true}
+      >
+        <AuthProvider>
+          <div className="h-full min-h-0">
+            {children}
+            <Toaster />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

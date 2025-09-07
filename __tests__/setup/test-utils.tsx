@@ -1,6 +1,5 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/features/auth/components/auth-provider';
 
 // Mock user for testing
@@ -28,16 +27,7 @@ jest.mock('@/features/auth/components/auth-provider', () => ({
 
 // Add any providers that wrap your app
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <AuthProvider>{children}</AuthProvider>
-    </ThemeProvider>
-  );
+  return <AuthProvider>{children}</AuthProvider>;
 };
 
 const customRender = (

@@ -8,342 +8,127 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { User, Download, Upload, Trash2, LogOut, TestTube } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { useToast } from '@/components/ui/use-toast';
-import { exportAllData, importAllData, clearAllData, addFood } from '@/lib/db';
-import { logger } from '@/lib/utils/logger';
+import { User, LogOut, Shield, Smartphone } from 'lucide-react';
+import { getBuildInfo } from '@/lib/utils/app-version';
+import { LoadingSpinner } from '@/components/ui/loading-states';
 
 interface SettingsViewProps {
   user?: any;
-  isExporting: boolean;
-  setIsExporting: (value: boolean) => void;
-  isImporting: boolean;
-  setIsImporting: (value: boolean) => void;
-  isClearing: boolean;
-  setIsClearing: (value: boolean) => void;
-  isAddingTest: boolean;
-  setIsAddingTest: (value: boolean) => void;
   isLoggingOut: boolean;
   handleLogout: () => void;
 }
 
 export function SettingsView({
   user,
-  isExporting,
-  setIsExporting,
-  isImporting,
-  setIsImporting,
-  isClearing,
-  setIsClearing,
-  isAddingTest,
-  setIsAddingTest,
   isLoggingOut,
   handleLogout,
 }: SettingsViewProps) {
-  const { toast } = useToast();
-  const { theme, setTheme } = useTheme();
-
-  const handleExportData = async () => {
-    setIsExporting(true);
-    try {
-      const data = await exportAllData();
-
-      // Create a downloadable JSON file
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `health-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: 'Data exported successfully',
-        description: `Exported ${data.foods.length} foods and ${data.symptoms.length} symptoms.`,
-      });
-    } catch (error) {
-      logger.error('Export failed', error);
-      toast({
-        title: 'Export failed',
-        description:
-          'There was an error exporting your data. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleImportData = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsImporting(true);
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-
-      await importAllData(data);
-
-      toast({
-        title: 'Data imported successfully',
-        description: `Imported ${data.foods?.length || 0} foods and ${
-          data.symptoms?.length || 0
-        } symptoms.`,
-      });
-
-      // Clear the file input
-      event.target.value = '';
-    } catch (error) {
-      logger.error('Import failed', error);
-      toast({
-        title: 'Import failed',
-        description:
-          'There was an error importing your data. Please check the file format.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsImporting(false);
-    }
-  };
-
-  const handleClearAllData = async () => {
-    setIsClearing(true);
-    try {
-      await clearAllData();
-      toast({
-        title: 'All data cleared',
-        description: 'Your health tracking data has been permanently deleted.',
-      });
-    } catch (error) {
-      logger.error('Clear data failed', error);
-      toast({
-        title: 'Clear data failed',
-        description: 'There was an error clearing your data. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsClearing(false);
-    }
-  };
-
-  const handleAddTestData = async () => {
-    setIsAddingTest(true);
-    try {
-      // Add a test food with organic and non-organic ingredients
-      await addFood({
-        name: 'Test Organic Meal',
-        ingredients: [
-          {
-            name: 'organic spinach',
-            organic: true,
-            zone: 'green',
-            group: 'Leafy Greens',
-            category: 'Vegetables',
-          },
-          {
-            name: 'organic quinoa',
-            organic: true,
-            zone: 'green',
-            group: 'Pseudo-Grains',
-            category: 'Grains & Starches',
-          },
-          {
-            name: 'salmon',
-            organic: false,
-            zone: 'green',
-            group: 'Wild-Caught Seafood',
-            category: 'Proteins',
-          },
-        ],
-        status: 'processed',
-        notes: 'Test data to verify organic tracking',
-      });
-
-      toast({
-        title: 'Test data added',
-        description:
-          'Added a test meal with 2/3 organic ingredients to verify the organic tracking works.',
-      });
-    } catch (error) {
-      logger.error('Failed to add test data', error);
-      toast({
-        title: 'Test data failed',
-        description: 'There was an error adding test data.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsAddingTest(false);
-    }
-  };
-
+  const buildInfo = getBuildInfo();
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 p-4">
       {/* Account Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Account Information
+            Account
           </CardTitle>
           <CardDescription>
-            Your account details and privacy information.
+            Your account details and information.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <p className="text-sm font-medium text-foreground">Email</p>
-              <p className="text-sm text-muted-foreground">
-                {user?.email || 'Not available'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                Account Created
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {user?.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString()
-                  : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Last Login</p>
-              <p className="text-sm text-muted-foreground">N/A</p>
-            </div>
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <p className="text-sm text-foreground flex items-center gap-2">
+              {user?.email ? (
+                user.email
+              ) : (
+                <>
+                  <LoadingSpinner size="sm" />
+                  Loading...
+                </>
+              )}
+            </p>
           </div>
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">
-              Privacy Reminder
+          <div className="space-y-2">
+            <Label>Member Since</Label>
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              {user?.createdAt ? (
+                new Date(user.createdAt).toLocaleDateString()
+              ) : (
+                <>
+                  <LoadingSpinner size="sm" />
+                  Loading...
+                </>
+              )}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Privacy & Security */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Privacy & Security
+          </CardTitle>
+          <CardDescription>
+            Your data privacy and security information.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-green-950/20 p-4 rounded-lg border border-green-800">
+            <h4 className="text-sm font-medium text-green-100 mb-2">
+              🔒 Privacy First
             </h4>
-            <p className="text-xs text-blue-700">
-              Your account and all health data are stored securely with
-              Supabase. Regular data exports are recommended for backup
-              purposes.
+            <p className="text-xs text-green-300">
+              Your health data is securely stored in the cloud with Supabase.
+              Only you have access to your data, and it's encrypted at rest and
+              in transit.
+            </p>
+          </div>
+          <div className="bg-blue-950/20 p-4 rounded-lg border border-blue-800">
+            <h4 className="text-sm font-medium text-blue-100 mb-2">
+              ☁️ Cloud Sync
+            </h4>
+            <p className="text-xs text-blue-300">
+              Your data syncs automatically across all your devices. No manual
+              backups needed - your data is safe and always available.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Data Management */}
+      {/* App Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Data Management
+            <Smartphone className="h-5 w-5" />
+            App Information
           </CardTitle>
-          <CardDescription>
-            Export, import, or delete your health tracking data.
-          </CardDescription>
+          <CardDescription>Version and technical details.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <p className="text-sm font-medium text-foreground">Export Data</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              Download all your data as a JSON file. This is your primary backup
-              method.
-            </p>
-            <Button
-              onClick={handleExportData}
-              disabled={isExporting}
-              className="w-full sm:w-auto"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              {isExporting ? 'Exporting...' : 'Export All Data'}
-            </Button>
+        <CardContent className="space-y-3">
+          <div className="flex justify-between items-center">
+            <Label className="text-sm">Version</Label>
+            <span className="text-sm text-muted-foreground">
+              {buildInfo.version}
+            </span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Import Data</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              Upload a previously exported JSON file to restore your data.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImportData}
-                className="hidden"
-                id="import-file"
-              />
-              <label htmlFor="import-file">
-                <Button variant="outline" className="cursor-pointer" asChild>
-                  <span>Choose File</span>
-                </Button>
-              </label>
-              <Button
-                onClick={() => document.getElementById('import-file')?.click()}
-                disabled={isImporting}
-                variant="outline"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                {isImporting ? 'Importing...' : 'Import Data'}
-              </Button>
-            </div>
+          <div className="flex justify-between items-center">
+            <Label className="text-sm">Build</Label>
+            <span className="text-sm text-muted-foreground">
+              {buildInfo.build}
+            </span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Danger Zone</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              Permanently delete all your health tracking data. This cannot be
-              undone.
-            </p>
-            <Button
-              onClick={handleClearAllData}
-              disabled={isClearing}
-              variant="destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isClearing ? 'Deleting...' : 'Delete All Data'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Debug Tools */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TestTube className="h-5 w-5" />
-            Debug Tools
-          </CardTitle>
-          <CardDescription>
-            Development tools for testing functionality.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm font-medium text-foreground">Test Data</p>
-            <p className="text-sm text-muted-foreground mb-3">
-              Add sample data to test the organic ingredient tracking feature.
-            </p>
-            <Button
-              onClick={handleAddTestData}
-              disabled={isAddingTest}
-              variant="outline"
-            >
-              <TestTube className="h-4 w-4 mr-2" />
-              {isAddingTest ? 'Adding...' : 'Add Test Data'}
-            </Button>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="dark-mode"
-              checked={theme === 'dark'}
-              onCheckedChange={checked => setTheme(checked ? 'dark' : 'light')}
-            />
-            <Label htmlFor="dark-mode" className="text-sm">
-              Dark mode
-            </Label>
+          <div className="flex justify-between items-center">
+            <Label className="text-sm">Platform</Label>
+            <span className="text-sm text-muted-foreground">
+              {buildInfo.platform}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -364,8 +149,17 @@ export function SettingsView({
             variant="outline"
             className="w-full sm:w-auto"
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            {isLoggingOut ? 'Logging out...' : 'Logout'}
+            {isLoggingOut ? (
+              <>
+                <LoadingSpinner size="sm" className="mr-2" />
+                Logging out...
+              </>
+            ) : (
+              <>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </>
+            )}
           </Button>
         </CardContent>
       </Card>

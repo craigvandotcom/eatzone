@@ -2,6 +2,13 @@
 
 import type { Symptom } from '@/lib/types';
 import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 interface SymptomTimelineProps {
   symptoms: Symptom[];
@@ -53,26 +60,100 @@ export function SymptomTimeline({
   // Empty state
   if (totalSymptoms === 0) {
     return (
-      <div className={`bg-red-50 rounded-lg p-3 sm:p-4 ${className}`}>
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-          Today's Symptoms
-        </h3>
-        <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
-          (0 recorded)
-        </p>
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="text-lg">Today's Symptoms</CardTitle>
+          <CardDescription>(0 recorded)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Timeline container */}
+          <div className="relative">
+            {/* Timeline line */}
+            <div className="relative h-12 mb-4">
+              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border transform -translate-y-1/2" />
 
+              {/* Empty state message positioned on timeline */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <span className="text-sm text-muted-foreground bg-card px-3 py-1 rounded border">
+                  No symptoms recorded today
+                </span>
+              </div>
+
+              {/* Time labels */}
+              <div className="relative h-full">
+                {timeLabels.map((label, index) => (
+                  <div
+                    key={`${label.time}-${index}`}
+                    className="absolute top-full transform -translate-x-1/2"
+                    style={{ left: `${label.position}%` }}
+                  >
+                    {/* Tick mark */}
+                    <div className="w-0.5 h-2 bg-border mx-auto mb-1" />
+                    {/* Time label */}
+                    <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                      {label.time}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-lg">Today's Symptoms</CardTitle>
+        <CardDescription>({totalSymptoms} recorded)</CardDescription>
+      </CardHeader>
+      <CardContent>
         {/* Timeline container */}
         <div className="relative">
-          {/* Timeline line */}
+          {/* Timeline line with markers positioned on it */}
           <div className="relative h-12 mb-4">
-            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-300 transform -translate-y-1/2" />
+            {/* Timeline line */}
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border transform -translate-y-1/2" />
 
-            {/* Empty state message positioned on timeline */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <span className="text-sm text-gray-500 bg-red-50 px-3 py-1 rounded">
-                No symptoms recorded today
-              </span>
-            </div>
+            {/* Symptom markers - positioned ON the timeline */}
+            {Object.entries(groupedSymptoms).map(([_key, groupSymptoms]) => {
+              const avgPosition =
+                groupSymptoms.reduce((sum, s) => sum + s.position, 0) /
+                groupSymptoms.length;
+
+              return groupSymptoms.map((symptom, index) => {
+                const categoryInfo = getCategoryInfo(symptom.category);
+                const emoji = categoryInfo?.icon || '⚡';
+
+                return (
+                  <div
+                    key={symptom.id}
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out"
+                    style={{
+                      left: `${avgPosition}%`,
+                      top: `50%`, // Center on the timeline
+                      transform: `translate(-50%, calc(-50% + ${index * -8}px))`, // Stack overlapping symptoms above timeline
+                      zIndex: 10 + index,
+                    }}
+                    title={`${symptom.name} - ${new Date(
+                      symptom.timestamp
+                    ).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true,
+                    })}`}
+                  >
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200 cursor-pointer touch-manipulation">
+                      <span className="text-white text-xs sm:text-sm">
+                        {emoji}
+                      </span>
+                    </div>
+                  </div>
+                );
+              });
+            })}
 
             {/* Time labels */}
             <div className="relative h-full">
@@ -83,9 +164,9 @@ export function SymptomTimeline({
                   style={{ left: `${label.position}%` }}
                 >
                   {/* Tick mark */}
-                  <div className="w-0.5 h-2 bg-gray-300 mx-auto mb-1" />
+                  <div className="w-0.5 h-2 bg-border mx-auto mb-1" />
                   {/* Time label */}
-                  <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                  <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                     {label.time}
                   </span>
                 </div>
@@ -93,83 +174,7 @@ export function SymptomTimeline({
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`bg-red-50 rounded-lg p-3 sm:p-4 ${className}`}>
-      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-        Today's Symptoms
-      </h3>
-      <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
-        ({totalSymptoms} recorded)
-      </p>
-
-      {/* Timeline container */}
-      <div className="relative">
-        {/* Timeline line with markers positioned on it */}
-        <div className="relative h-12 mb-4">
-          {/* Timeline line */}
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-300 transform -translate-y-1/2" />
-
-          {/* Symptom markers - positioned ON the timeline */}
-          {Object.entries(groupedSymptoms).map(([_key, groupSymptoms]) => {
-            const avgPosition =
-              groupSymptoms.reduce((sum, s) => sum + s.position, 0) /
-              groupSymptoms.length;
-
-            return groupSymptoms.map((symptom, index) => {
-              const categoryInfo = getCategoryInfo(symptom.category);
-              const emoji = categoryInfo?.icon || '⚡';
-
-              return (
-                <div
-                  key={symptom.id}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out"
-                  style={{
-                    left: `${avgPosition}%`,
-                    top: `50%`, // Center on the timeline
-                    transform: `translate(-50%, calc(-50% + ${index * -8}px))`, // Stack overlapping symptoms above timeline
-                    zIndex: 10 + index,
-                  }}
-                  title={`${symptom.name} - ${new Date(
-                    symptom.timestamp
-                  ).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true,
-                  })}`}
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200 cursor-pointer touch-manipulation">
-                    <span className="text-white text-xs sm:text-sm">
-                      {emoji}
-                    </span>
-                  </div>
-                </div>
-              );
-            });
-          })}
-
-          {/* Time labels */}
-          <div className="relative h-full">
-            {timeLabels.map((label, index) => (
-              <div
-                key={`${label.time}-${index}`}
-                className="absolute top-full transform -translate-x-1/2"
-                style={{ left: `${label.position}%` }}
-              >
-                {/* Tick mark */}
-                <div className="w-0.5 h-2 bg-gray-300 mx-auto mb-1" />
-                {/* Time label */}
-                <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
-                  {label.time}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

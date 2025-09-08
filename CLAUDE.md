@@ -10,7 +10,7 @@ See @app/globals.css for CSS variables and theming system
 
 ## Project Overview
 
-This is "Puls", a privacy-first health tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis using Supabase for secure cloud storage and authentication.
+This is "eatZone", a privacy-first food and symptom tracking Progressive Web App (PWA) built with Next.js 15, React 19, and TypeScript. The app helps users track food intake and symptoms with AI-powered ingredient analysis using Supabase for secure cloud storage and authentication.
 
 **Development Context:**
 

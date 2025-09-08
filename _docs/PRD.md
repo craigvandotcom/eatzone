@@ -6,7 +6,7 @@
   - perplexity (use this to research and answer questions)
 - before committing any change, make sure to run pnp build and check for errors
 
-# **Project Reference: Health Tracker PWA**
+# **Project Reference: eatZone - Food & Symptom Tracker PWA**
 
 **Version:** 1.0.0
 **Date:** July 11, 2025
@@ -18,7 +18,7 @@
 
 #### 1.1. Core Concept
 
-The Health Tracker is a mobile-first Progressive Web App (PWA) designed to be a "Body Compass." It allows users to perform high-speed, low-friction logging of food and symptoms. The primary goal is to empower users to identify patterns and correlations between their dietary choices and their physical well-being.
+eatZone is a mobile-first Progressive Web App (PWA) designed to be your "Food Tracking Companion." It allows users to perform high-speed, low-friction logging of food and symptoms. The primary goal is to empower users to identify patterns and correlations between their dietary choices and their physical well-being.
 
 #### 1.2. Guiding Philosophy
 

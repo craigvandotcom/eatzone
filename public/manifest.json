@@ -1,7 +1,7 @@
 {
-  "name": "Puls - Your Body's Compass",
-  "short_name": "Puls",
-  "description": "Private health tracking with AI-powered insights. Your data stays on your device.",
+  "name": "eatZone - Your Food Tracking Companion",
+  "short_name": "eatZone",
+  "description": "Private food and symptom tracking with AI-powered ingredient analysis. Your data stays secure.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",

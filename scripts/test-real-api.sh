@@ -9,7 +9,7 @@ echo "🚀 Starting production server..."
 lsof -ti:3000 | xargs kill -9 2>/dev/null || true
 
 # Start server in background
-nohup pnpm start > /tmp/puls-test.log 2>&1 &
+nohup pnpm start > /tmp/eatZone-test.log 2>&1 &
 SERVER_PID=$!
 
 echo "⏳ Waiting for server to start..."
@@ -25,7 +25,7 @@ if curl -f http://localhost:3000 > /dev/null 2>&1; then
     echo "📋 Test complete!"
 else
     echo "❌ Server failed to start"
-    cat /tmp/puls-test.log
+    cat /tmp/eatZone-test.log
 fi
 
 # Cleanup

@@ -47,7 +47,7 @@ pnpm dev
 ```bash
 # Clone and setup
 git clone <repository>
-cd puls
+cd eatZone
 pnpm install
 
 # Setup environment variables
@@ -104,7 +104,7 @@ VS Code will automatically:
 ## File Structure
 
 ```
-puls/
+eatZone/
 ├── app/                    # Next.js app directory
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout

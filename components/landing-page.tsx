@@ -80,7 +80,7 @@ export default function LandingPage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg"></div>
-              <span className="text-xl font-bold text-gray-900">Puls</span>
+              <span className="text-xl font-bold text-gray-900">eatZone</span>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" asChild>
@@ -102,15 +102,15 @@ export default function LandingPage() {
               Private • Offline-First • AI-Powered
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Your Body&apos;s{' '}
+              Your Food{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500">
-                Compass
+                Tracking Companion
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Track your health inputs and outputs with high-speed logging and
-              AI-powered insights. All while keeping your data completely
-              private on your device.
+              Track your food intake and symptoms with high-speed logging and
+              AI-powered ingredient analysis. All while keeping your data
+              completely secure and private.
             </p>
 
             {/* Mobile CTA */}
@@ -183,7 +183,7 @@ export default function LandingPage() {
                   <div className="h-full bg-gradient-to-br from-blue-50 to-green-50 p-4">
                     <div className="text-center mb-8">
                       <h3 className="font-semibold text-gray-900 mb-2">
-                        Your Body Compass
+                        Your Food Tracking Companion
                       </h3>
                       <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
                         <BarChart3 className="h-16 w-16 text-muted-foreground" />
@@ -233,8 +233,9 @@ export default function LandingPage() {
               High-Speed Logging, Clear Insights
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Designed for busy lives. Capture your health data in seconds, then
-              get powerful insights without compromising your privacy.
+              Designed for busy lives. Capture your food and symptoms in
+              seconds, then get powerful insights without compromising your
+              privacy.
             </p>
           </div>
 
@@ -276,14 +277,15 @@ export default function LandingPage() {
                 Your Data Stays With You
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Unlike other health apps, we believe your personal health data
-                should remain personal. Everything is stored locally on your
-                device using advanced encryption.
+                Unlike other health apps, we believe your personal food and
+                health data should remain personal. Everything is stored
+                securely in the cloud with advanced encryption and privacy
+                controls.
               </p>
 
               <div className="space-y-4">
                 {[
-                  'No cloud storage of personal data',
+                  'Secure cloud storage with encryption',
                   'AI processing happens securely',
                   'Export your data anytime',
                   'No tracking or analytics',
@@ -347,11 +349,11 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded"></div>
-                <span className="text-lg font-bold text-white">Puls</span>
+                <span className="text-lg font-bold text-white">eatZone</span>
               </div>
               <p className="text-gray-400">
-                Your Body&apos;s Compass - Private health tracking with AI
-                insights.
+                Your Food Tracking Companion - Private food and symptom tracking
+                with AI ingredient analysis.
               </p>
             </div>
 
@@ -402,7 +404,7 @@ export default function LandingPage() {
 
           <div className="border-t border-gray-700 mt-8 pt-8 text-center">
             <p className="text-gray-400">
-              © 2024 Puls. Built with privacy in mind.
+              © 2024 eatZone. Built with privacy in mind.
             </p>
           </div>
         </div>

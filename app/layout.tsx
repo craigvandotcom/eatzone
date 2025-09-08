@@ -9,14 +9,14 @@ const inter = Inter({ subsets: ['latin'] });
 
 // Centralized metadata using Next.js App Router conventions
 export const metadata: Metadata = {
-  title: "Puls - Your Body's Compass",
+  title: 'eatZone - Your Food Tracking Companion',
   description:
-    'Private health tracking with AI-powered insights. Your data stays on your device.',
+    'Private food and symptom tracking with AI-powered ingredient analysis. Your data stays secure.',
   manifest: '/manifest.json',
-  applicationName: 'Puls',
+  applicationName: 'eatZone',
   appleWebApp: {
     capable: true,
-    title: 'Puls',
+    title: 'eatZone',
     statusBarStyle: 'default',
   },
   formatDetection: {

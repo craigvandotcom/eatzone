@@ -17,6 +17,7 @@ import { FoodView } from '@/features/dashboard/components/food-view';
 import { SignalsView } from '@/features/dashboard/components/signals-view';
 import { DesktopSidebar } from '@/features/dashboard/components/desktop-sidebar';
 import { BottomNavigation } from '@/features/dashboard/components/bottom-navigation';
+import { FloatingActionButton } from '@/features/dashboard/components/floating-action-button';
 
 // Import custom hooks
 import {
@@ -262,6 +263,13 @@ function Dashboard() {
           <BottomNavigation
             currentView={currentView}
             onViewChange={handleViewChange}
+          />
+        )}
+
+        {/* Floating Action Button - Mobile Only */}
+        {isMobile && (
+          <FloatingActionButton
+            currentView={currentView}
             onPlusClick={handlePlusClick}
           />
         )}

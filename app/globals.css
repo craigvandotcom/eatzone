@@ -169,57 +169,6 @@ select {
   background-color: hsl(var(--background) / 0.95);
 }
 
-/* ===== CROSS-BROWSER BUTTON CONSISTENCY ===== */
-
-/* Enhanced button normalization for cross-browser consistency */
-button,
-[role='button'],
-input[type='button'],
-input[type='submit'] {
-  -webkit-appearance: none;
-  appearance: none;
-  -webkit-border-radius: 0;
-  border-radius: var(--radius);
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  /* Prevent iOS from applying its own button styling */
-  background-clip: padding-box;
-  /* Ensure consistent rendering across browsers */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-}
-
-/* Specific fixes for iOS Safari PWA mode */
-@media (display-mode: standalone) {
-  button {
-    /* Prevent iOS from applying its own button styling */
-    -webkit-appearance: none !important;
-    /* Ensure consistent rendering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-  }
-}
-
-/* Additional iOS-specific button fixes */
-@supports (-webkit-touch-callout: none) {
-  .bottom-nav button {
-    /* iOS Safari specific button resets */
-    -webkit-appearance: none;
-    -webkit-border-radius: 0.5rem;
-    background-clip: padding-box;
-  }
-  
-  /* Fix for metallic button on iOS */
-  .metallic-button,
-  [class*='metallic'] {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    /* Prevent iOS rendering artifacts */
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-  }
-}
-
 /* Touch target optimization for mobile */
 @media (max-width: 768px) {
   button,
@@ -228,8 +177,6 @@ input[type='submit'] {
   input[type='submit'] {
     min-height: 44px;
     min-width: 44px;
-    /* Enhanced touch handling */
-    touch-action: manipulation;
   }
 
   /* Prevent content bleeding and improve scrolling */

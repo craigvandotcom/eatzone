@@ -28,6 +28,7 @@ import {
 } from '@/lib/hooks';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
+import { usePersistentTab } from '@/lib/hooks/use-persistent-tab';
 
 // Import data management functions
 
@@ -63,7 +64,7 @@ function Dashboard() {
 
   // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
-  const [currentView, setCurrentView] = useState<ViewType>('insights');
+  const [currentView, setCurrentView] = usePersistentTab('insights');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
@@ -103,7 +104,7 @@ function Dashboard() {
         transitionTimeoutRef.current = null;
       }, TRANSITION_DURATION);
     },
-    [currentView]
+    [currentView, setCurrentView]
   );
 
   // Cleanup timeout on unmount

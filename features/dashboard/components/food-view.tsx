@@ -63,7 +63,7 @@ export function FoodView({
       {/* Food Zone Summary Bar for Selected Date */}
       <div className="space-y-4">
         {foodStatsForSelectedDate === undefined ? (
-          <div className="bg-green-50 rounded-lg p-4 h-32">
+          <div className="bg-muted rounded-lg p-4 h-32">
             <DataLoadingState message="Loading food data..." />
           </div>
         ) : (

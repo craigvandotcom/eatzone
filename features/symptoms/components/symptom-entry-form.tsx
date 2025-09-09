@@ -185,7 +185,7 @@ export function SymptomEntryForm({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Track Symptoms</h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Add symptoms you're currently experiencing
               </p>
             </div>
@@ -198,7 +198,7 @@ export function SymptomEntryForm({
 
           {/* Error Display */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -225,7 +225,7 @@ export function SymptomEntryForm({
               {/* Search Results */}
               {searchResults.length > 0 && (
                 <div>
-                  <Label className="text-sm text-gray-600">
+                  <Label className="text-sm text-muted-foreground">
                     Search Results:
                   </Label>
                   <div className="mt-2 space-y-1">
@@ -238,8 +238,8 @@ export function SymptomEntryForm({
                           key={symptom.id}
                           className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
                             isSelected
-                              ? 'bg-green-50 border border-green-200'
-                              : 'bg-gray-50 hover:bg-gray-100'
+                              ? 'bg-green-500/10 border border-green-500/20'
+                              : 'bg-muted hover:bg-muted/50'
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -282,14 +282,14 @@ export function SymptomEntryForm({
               {/* Category Overview (when no search) */}
               {!searchQuery.trim() && (
                 <div>
-                  <Label className="text-sm text-gray-600">
+                  <Label className="text-sm text-muted-foreground">
                     Browse by Category:
                   </Label>
                   <div className="mt-2 space-y-2">
                     {categoryOverview.map(({ category }) => (
                       <div
                         key={category.name}
-                        className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        className="p-3 bg-muted rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                         onClick={() =>
                           setSearchQuery(category.displayName.toLowerCase())
                         }
@@ -323,7 +323,7 @@ export function SymptomEntryForm({
                   return (
                     <div
                       key={symptom.symptom_id}
-                      className="bg-green-50 rounded-lg p-4 border border-green-200"
+                      className="bg-green-500/10 rounded-lg p-4 border border-green-500/20"
                     >
                       {/* Prominent Symptom Header */}
                       <div className="text-center mb-4">
@@ -377,7 +377,7 @@ export function SymptomEntryForm({
             <button
               type="button"
               onClick={() => setShowNotes(!showNotes)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {showNotes ? (
                 <ChevronUp className="h-4 w-4" />

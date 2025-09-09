@@ -57,7 +57,7 @@ export function SignalsView({
       {/* Symptom Timeline for Selected Date */}
       <div className="space-y-4">
         {symptomsForSelectedDate === undefined ? (
-          <div className="bg-red-50 rounded-lg p-4 h-32">
+          <div className="bg-muted rounded-lg p-4 h-32">
             <DataLoadingState message="Loading symptom data..." />
           </div>
         ) : (

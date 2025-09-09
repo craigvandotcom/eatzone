@@ -408,7 +408,7 @@ export function FoodEntryForm({
       // Submit the processed food
       if (result.food) {
         onAddFood(result.food);
-        onClose();
+        // Don't call onClose() here - let onAddFood handle navigation to prevent double navigation
       }
     } catch (error) {
       logger.error('Submission failed', error);
@@ -540,7 +540,7 @@ export function FoodEntryForm({
                   {ingredients.map((ingredient, index) => (
                     <div
                       key={index}
-                      className="bg-gray-50 rounded-md h-12 flex items-center overflow-hidden relative"
+                      className="bg-card rounded-md h-12 flex items-center overflow-hidden relative"
                     >
                       {/* Zone color indicator bar */}
                       <div
@@ -583,7 +583,7 @@ export function FoodEntryForm({
                         />
                       ) : (
                         <div className="flex-1 pl-3 pr-2 flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium">
+                          <span className="text-sm font-medium text-foreground">
                             {ingredient.name}
                           </span>
                           {ingredient.organic && (

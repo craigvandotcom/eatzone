@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera, Edit3, Upload, X, Check, Plus } from 'lucide-react';
@@ -31,6 +31,7 @@ export function MultiCameraCapture({
   const [error, setError] = useState<string | null>(null);
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [showCamera, setShowCamera] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (open) {
@@ -111,9 +112,14 @@ export function MultiCameraCapture({
 
     // Auto-submit after reaching max images
     if (newImages.length >= maxImages) {
-      // Small delay to show the final image in collection
+      // Small delay to show the final image in collection, then navigate smoothly
       setTimeout(() => {
-        handleDone();
+        stopCamera();
+        // Use React 19 transition to coordinate navigation and modal closing
+        startTransition(() => {
+          onCapture(newImages);
+          onOpenChange(false);
+        });
       }, 500);
     }
   };
@@ -193,8 +199,11 @@ export function MultiCameraCapture({
   const handleDone = () => {
     if (capturedImages.length > 0) {
       stopCamera();
-      onOpenChange(false);
-      onCapture(capturedImages);
+      // Use React 19 transition to coordinate navigation and modal closing
+      startTransition(() => {
+        onCapture(capturedImages);
+        onOpenChange(false);
+      });
     }
   };
 
@@ -207,8 +216,14 @@ export function MultiCameraCapture({
         <h2 className="text-lg font-semibold text-white">{title}</h2>
         <div className="flex items-center gap-2">
           <span className="text-sm text-white/70">
-            {capturedImages.length}/{maxImages} photos
-            {capturedImages.length >= maxImages && " - Auto-submitting..."}
+            {isPending ? (
+              'Processing...'
+            ) : (
+              <>
+                {capturedImages.length}/{maxImages} photos
+                {capturedImages.length >= maxImages && ' - Auto-submitting...'}
+              </>
+            )}
           </span>
         </div>
       </div>
@@ -364,7 +379,7 @@ export function MultiCameraCapture({
             onClick={handleDone}
             className="w-20 h-12 bg-green-500 hover:bg-green-600 text-white"
             size="lg"
-            disabled={capturedImages.length === 0}
+            disabled={capturedImages.length === 0 || isPending}
           >
             <Check className="h-5 w-5" />
           </Button>

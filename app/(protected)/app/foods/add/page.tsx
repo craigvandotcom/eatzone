@@ -61,7 +61,7 @@ export default function AddFoodPage() {
   };
 
   const handleClose = () => {
-    router.back();
+    router.push('/app');
   };
 
   return (

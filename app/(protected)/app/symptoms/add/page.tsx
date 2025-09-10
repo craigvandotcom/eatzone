@@ -53,7 +53,7 @@ export default function AddSymptomPage() {
   };
 
   const handleClose = () => {
-    router.back();
+    router.push('/app');
   };
 
   return (

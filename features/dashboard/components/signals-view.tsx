@@ -23,9 +23,7 @@ interface SignalsViewProps {
   symptomsForSelectedDate?: Symptom[];
 }
 
-export function SignalsView({
-  symptomsForSelectedDate,
-}: SignalsViewProps) {
+export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
   const router = useRouter();
 
   const handleEditSymptom = useCallback(

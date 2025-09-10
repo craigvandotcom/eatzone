@@ -79,7 +79,7 @@ describe('MultiCameraCapture', () => {
       });
 
       // Should show counter with default maxImages value from APP_CONFIG
-      expect(screen.getByText(/0\/\d+ images/)).toBeInTheDocument();
+      expect(screen.getByText(/0\/\d+ photos/)).toBeInTheDocument();
     });
 
     it('should show image counter with custom maxImages', async () => {
@@ -91,7 +91,7 @@ describe('MultiCameraCapture', () => {
         render(<MultiCameraCapture {...defaultProps} maxImages={3} />);
       });
 
-      expect(screen.getByText('0/3 images')).toBeInTheDocument();
+      expect(screen.getByText('0/3 photos')).toBeInTheDocument();
     });
   });
 

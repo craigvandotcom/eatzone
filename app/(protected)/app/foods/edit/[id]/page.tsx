@@ -153,7 +153,7 @@ export default function EditFoodPage({
   };
 
   const handleClose = () => {
-    router.back();
+    router.push('/app');
   };
 
   if (loading) {

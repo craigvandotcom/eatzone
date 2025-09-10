@@ -47,3 +47,8 @@ This document outlines the brand identity for the Health Tracker app. It should 
 ---
 
 _This is a living document and should be updated as the brand evolves._
+
+new colours:
+Vivid turquoise #01a878
+Vivid red #f84f36
+Yellow #fad046

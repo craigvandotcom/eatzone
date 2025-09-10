@@ -14,27 +14,16 @@ import {
   ErrorBoundary,
   SupabaseErrorFallback,
 } from '@/components/error-boundary';
-import { DayNavigationHeader } from '@/components/ui/day-navigation-header';
 import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
 
 // Import types
-import { Food, Symptom } from '@/lib/types';
+import { Symptom } from '@/lib/types';
 
 interface SignalsViewProps {
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
-  allFoods?: Food[];
-  allSymptoms?: Symptom[];
   symptomsForSelectedDate?: Symptom[];
 }
 
-export function SignalsView({
-  selectedDate,
-  onDateChange,
-  allFoods,
-  allSymptoms,
-  symptomsForSelectedDate,
-}: SignalsViewProps) {
+export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
   const router = useRouter();
 
   const handleEditSymptom = useCallback(
@@ -46,14 +35,6 @@ export function SignalsView({
 
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
-      {/* Day Navigation Header */}
-      <DayNavigationHeader
-        selectedDate={selectedDate}
-        onDateChange={onDateChange}
-        allFoods={allFoods}
-        allSymptoms={allSymptoms}
-      />
-
       {/* Symptom Timeline for Selected Date */}
       <div className="space-y-4">
         {symptomsForSelectedDate === undefined ? (

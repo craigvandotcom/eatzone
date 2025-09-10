@@ -7,6 +7,8 @@ import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
 import { Camera, Edit3, Upload } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
+import { validateImageFile } from '@/lib/utils/file-validation';
+import { smartCompressImage } from '@/lib/utils/image-compression';
 
 interface CameraCaptureProps {
   open: boolean;
@@ -80,7 +82,7 @@ export function CameraCapture({
     }
   };
 
-  const captureImage = () => {
+  const captureImage = async () => {
     if (!videoRef.current || !canvasRef.current) {
       logger.error('Missing video or canvas ref for capture');
       return;
@@ -95,32 +97,55 @@ export function CameraCapture({
       return;
     }
 
-    // Set canvas size to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    try {
+      // Set canvas size to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
 
-    logger.debug('Capturing image', {
-      videoWidth: video.videoWidth,
-      videoHeight: video.videoHeight,
-    });
+      logger.debug('Capturing image', {
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+      });
 
-    // Draw video frame to canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // Draw video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Get image data as base64
-    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      // Get image data as base64 with higher initial quality
+      const rawImageData = canvas.toDataURL('image/jpeg', 0.95);
 
-    logger.debug('Image captured successfully', {
-      dataLength: imageData.length,
-      dataStart: imageData.substring(0, 50),
-    });
+      // Validate captured image before compression
+      const validationResult = validateImageFile(rawImageData);
+      if (!validationResult.valid) {
+        logger.error(
+          'Camera capture validation failed',
+          validationResult.error
+        );
+        setError(validationResult.error?.message || 'Invalid image captured');
+        toast.error(`Image capture failed: ${validationResult.error?.message}`);
+        return;
+      }
 
-    // Stop camera and close dialog
-    stopCamera();
-    onOpenChange(false);
+      // Compress image to optimize storage
+      const compressionResult = await smartCompressImage(rawImageData);
 
-    // Pass image data to parent
-    onCapture(imageData);
+      logger.debug('Image captured, validated, and compressed successfully', {
+        originalSize: compressionResult.originalSize,
+        compressedSize: compressionResult.compressedSize,
+        quality: compressionResult.quality,
+        compressionRatio: compressionResult.compressionRatio,
+      });
+
+      // Stop camera and close dialog
+      stopCamera();
+      onOpenChange(false);
+
+      // Pass compressed image data to parent
+      onCapture(compressionResult.compressedImage);
+    } catch (error) {
+      logger.error('Failed to capture and compress image', error);
+      setError('Failed to capture image. Please try again.');
+      toast.error('Failed to capture image. Please try again.');
+    }
   };
 
   const handleManualEntry = () => {

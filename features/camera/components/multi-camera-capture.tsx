@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera, Edit3, Upload, X, Check, Plus } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { APP_CONFIG } from '@/lib/config/constants';
+import { validateImageFile } from '@/lib/utils/file-validation';
+import { smartCompressImage } from '@/lib/utils/image-compression';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -31,6 +33,7 @@ export function MultiCameraCapture({
   const [error, setError] = useState<string | null>(null);
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [showCamera, setShowCamera] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (open) {
@@ -85,8 +88,9 @@ export function MultiCameraCapture({
     }
   };
 
-  const captureImage = () => {
+  const captureImage = async () => {
     if (!videoRef.current || !canvasRef.current) return;
+    if (capturedImages.length >= maxImages) return; // Prevent capture if at limit
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -94,32 +98,64 @@ export function MultiCameraCapture({
 
     if (!ctx) return;
 
-    // Set canvas size to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    try {
+      // Set canvas size to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
 
-    // Draw video frame to canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // Draw video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Get image data as base64
-    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      // Get image data as base64 with higher initial quality
+      const rawImageData = canvas.toDataURL('image/jpeg', 0.95);
 
-    // Add to captured images
-    const newImages = [...capturedImages, imageData];
-    setCapturedImages(newImages);
+      // Validate captured image before compression
+      const validationResult = validateImageFile(rawImageData);
+      if (!validationResult.valid) {
+        logger.error(
+          'Camera capture validation failed',
+          validationResult.error
+        );
+        setError(validationResult.error?.message || 'Invalid image captured');
+        return;
+      }
 
-    // Check if we've reached the limit
-    if (newImages.length >= maxImages) {
-      setShowCamera(false);
+      // Compress image to optimize storage
+      const compressionResult = await smartCompressImage(rawImageData);
+
+      logger.debug('Image captured and compressed', {
+        originalSize: compressionResult.originalSize,
+        compressedSize: compressionResult.compressedSize,
+        quality: compressionResult.quality,
+        compressionRatio: compressionResult.compressionRatio,
+      });
+
+      // Add compressed image to captured images
+      const newImages = [...capturedImages, compressionResult.compressedImage];
+      setCapturedImages(newImages);
+
+      // Auto-submit after reaching max images
+      if (newImages.length >= maxImages) {
+        // Small delay to show the final image in collection, then navigate smoothly
+        setTimeout(() => {
+          stopCamera();
+          // Use React 19 transition to coordinate navigation and modal closing
+          startTransition(() => {
+            onCapture(newImages);
+            onOpenChange(false);
+          });
+        }, 500);
+      }
+    } catch (error) {
+      logger.error('Failed to capture and compress image', error);
+      setError('Failed to capture image. Please try again.');
     }
   };
 
   const removeImage = (index: number) => {
     const newImages = capturedImages.filter((_, i) => i !== index);
     setCapturedImages(newImages);
-    if (newImages.length < maxImages) {
-      setShowCamera(true);
-    }
+    // Camera always stays visible - no need to manage showCamera state
   };
 
   const handleManualEntry = () => {
@@ -191,8 +227,11 @@ export function MultiCameraCapture({
   const handleDone = () => {
     if (capturedImages.length > 0) {
       stopCamera();
-      onOpenChange(false);
-      onCapture(capturedImages);
+      // Use React 19 transition to coordinate navigation and modal closing
+      startTransition(() => {
+        onCapture(capturedImages);
+        onOpenChange(false);
+      });
     }
   };
 
@@ -205,7 +244,14 @@ export function MultiCameraCapture({
         <h2 className="text-lg font-semibold text-white">{title}</h2>
         <div className="flex items-center gap-2">
           <span className="text-sm text-white/70">
-            {capturedImages.length}/{maxImages} images
+            {isPending ? (
+              'Processing...'
+            ) : (
+              <>
+                {capturedImages.length}/{maxImages} photos
+                {capturedImages.length >= maxImages && ' - Auto-submitting...'}
+              </>
+            )}
           </span>
         </div>
       </div>
@@ -243,7 +289,7 @@ export function MultiCameraCapture({
           </div>
         )}
 
-        {showCamera && !isLoading && !error && (
+        {!isLoading && !error && (
           <div className="relative h-full overflow-hidden">
             <video
               ref={videoRef}
@@ -265,14 +311,23 @@ export function MultiCameraCapture({
               </div>
             </div>
 
-            {/* Capture Button */}
-            <div className="absolute bottom-32 left-0 right-0 flex justify-center">
-              <button
-                onClick={captureImage}
-                className="w-20 h-20 rounded-full border-4 border-white bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white/30 active:bg-white/40"
-              >
-                <Camera className="h-8 w-8 text-white" />
-              </button>
+            {/* Full-screen Tap-to-Capture Overlay */}
+            <div
+              className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
+              onClick={captureImage}
+            >
+              {/* Centered camera icon with counter */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 rounded-full border-4 border-white/40 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                    <Camera className="h-8 w-8 text-white/70" />
+                  </div>
+                  {/* Simple counter display */}
+                  <p className="text-white/80 text-sm font-medium mt-2 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
+                    {capturedImages.length}/{maxImages}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -300,26 +355,7 @@ export function MultiCameraCapture({
           </div>
         )}
 
-        {/* Preview mode when camera is hidden */}
-        {!showCamera && capturedImages.length > 0 && (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-white mb-4">
-                {capturedImages.length} image
-                {capturedImages.length > 1 ? 's' : ''} captured
-              </p>
-              <Button
-                onClick={() => setShowCamera(true)}
-                variant="outline"
-                className="text-white border-white/50"
-                disabled={capturedImages.length >= maxImages}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Another
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* This preview mode is no longer needed - camera stays active */}
 
         {/* Hidden canvas for capture */}
         <canvas ref={canvasRef} className="hidden" />
@@ -371,7 +407,7 @@ export function MultiCameraCapture({
             onClick={handleDone}
             className="w-20 h-12 bg-green-500 hover:bg-green-600 text-white"
             size="lg"
-            disabled={capturedImages.length === 0}
+            disabled={capturedImages.length === 0 || isPending}
           >
             <Check className="h-5 w-5" />
           </Button>

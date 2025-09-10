@@ -23,6 +23,7 @@ import {
   QrCode,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LandingPage() {
   const [showQR, setShowQR] = useState(false);
@@ -79,7 +80,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg"></div>
+              <Image
+                src="/new logo.png"
+                alt="eatZone logo"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
               <span className="text-xl font-bold text-gray-900">eatZone</span>
             </div>
             <div className="flex items-center space-x-4">
@@ -186,7 +193,13 @@ export default function LandingPage() {
                         Your Food Tracking Companion
                       </h3>
                       <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
-                        <BarChart3 className="h-16 w-16 text-muted-foreground" />
+                        <Image
+                          src="/new logo.png"
+                          alt="eatZone logo"
+                          width={64}
+                          height={64}
+                          className="w-16 h-16"
+                        />
                       </div>
                     </div>
 
@@ -348,7 +361,13 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded"></div>
+                <Image
+                  src="/new logo.png"
+                  alt="eatZone logo"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
                 <span className="text-lg font-bold text-white">eatZone</span>
               </div>
               <p className="text-gray-400">

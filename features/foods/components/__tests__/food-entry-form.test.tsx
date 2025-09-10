@@ -34,7 +34,6 @@ describe('FoodEntryForm', () => {
     expect(
       screen.getByRole('button', { name: /add food/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
   });
 
   it('should handle ingredient input and addition', async () => {
@@ -126,14 +125,27 @@ describe('FoodEntryForm', () => {
     });
   });
 
-  it('should call onCancel when cancel button is clicked', async () => {
+  it('should handle form submission with ingredients', async () => {
     const user = userEvent.setup();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
 
     render(<FoodEntryForm onAddFood={mockOnSubmit} onClose={mockOnCancel} />);
 
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
-    await user.click(cancelButton);
+    // Add an ingredient first
+    const ingredientInput = screen.getByLabelText(/ingredients/i);
+    await user.type(ingredientInput, 'Organic Spinach');
+    await user.keyboard('{Enter}');
 
-    expect(mockOnCancel).toHaveBeenCalled();
+    // Then submit the form
+    const submitButton = screen.getByRole('button', { name: /add food/i });
+    await user.click(submitButton);
+
+    // Wait for form submission to complete
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalled();
+    });
   });
 });

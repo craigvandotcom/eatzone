@@ -72,6 +72,17 @@ export type SymptomCategory = 'digestion' | 'energy' | 'mind' | 'recovery';
 // Legacy types - kept for backward compatibility only
 export type DeltaScore = -2 | -1 | 0 | 1 | 2; // Delta scoring system used in symptom tracking
 
+// Food statistics interface for selected date analysis
+export interface FoodStats {
+  greenIngredients: number;
+  yellowIngredients: number;
+  redIngredients: number;
+  totalIngredients: number;
+  organicCount: number;
+  totalOrganicPercentage: number;
+  isFromSelectedDate: boolean;
+}
+
 // Export types for backward compatibility with existing imports
 export type { Symptom as SymptomType };
 export type { Ingredient as IngredientType };

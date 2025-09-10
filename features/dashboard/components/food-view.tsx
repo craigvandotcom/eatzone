@@ -17,26 +17,17 @@ import {
   ErrorBoundary,
   SupabaseErrorFallback,
 } from '@/components/error-boundary';
-import { DayNavigationHeader } from '@/components/ui/day-navigation-header';
 
 // Import types
-import { Food, Symptom } from '@/lib/types';
+import { Food, FoodStats } from '@/lib/types';
 
 interface FoodViewProps {
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
-  allFoods?: Food[];
-  allSymptoms?: Symptom[];
   foodsForSelectedDate?: Food[];
-  foodStatsForSelectedDate: any;
+  foodStatsForSelectedDate?: FoodStats;
   getIngredientsForSelectedDate: () => any[];
 }
 
 export function FoodView({
-  selectedDate,
-  onDateChange,
-  allFoods,
-  allSymptoms,
   foodsForSelectedDate,
   foodStatsForSelectedDate,
   getIngredientsForSelectedDate,
@@ -52,14 +43,6 @@ export function FoodView({
 
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
-      {/* Day Navigation Header */}
-      <DayNavigationHeader
-        selectedDate={selectedDate}
-        onDateChange={onDateChange}
-        allFoods={allFoods}
-        allSymptoms={allSymptoms}
-      />
-
       {/* Food Zone Summary Bar for Selected Date */}
       <div className="space-y-4">
         {foodStatsForSelectedDate === undefined ? (

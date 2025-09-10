@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logger } from '@/lib/utils/logger';
 import { APP_CONFIG } from '@/lib/config/constants';
+import { getRateLimiter } from '@/lib/rate-limit';
+import { getClientIP } from '@/lib/utils/client-ip';
 
 // Use centralized configuration
 const FILE_CONFIG = {
@@ -110,6 +112,45 @@ export async function POST(request: NextRequest) {
   logger.info('File validation request received');
 
   try {
+    // Rate limiting check - prevent abuse of upload validation endpoint
+    const rateLimiter = getRateLimiter();
+    const clientIP = getClientIP(request);
+
+    const rateLimitResult = await rateLimiter.limitGeneric(
+      clientIP,
+      30, // 30 requests per minute - reasonable for file uploads
+      60 * 1000 // 60 seconds window
+    );
+
+    if (!rateLimitResult.success) {
+      logger.warn('Upload validation rate limit exceeded', {
+        ip: clientIP,
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime,
+      });
+
+      return NextResponse.json(
+        {
+          error: {
+            message:
+              'Too many upload validation requests. Please try again later.',
+            code: 'RATE_LIMIT_EXCEEDED',
+            statusCode: 429,
+          },
+        } as ValidationErrorResponse,
+        {
+          status: 429,
+          headers: {
+            'Retry-After': rateLimitResult.resetTime
+              ? Math.ceil(
+                  (rateLimitResult.resetTime - Date.now()) / 1000
+                ).toString()
+              : '60',
+          },
+        }
+      );
+    }
+
     // Parse and validate request body
     const body = await request.json();
     const validatedData = validateFileSchema.parse(body);

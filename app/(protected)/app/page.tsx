@@ -37,7 +37,6 @@ import { usePersistentTab } from '@/lib/hooks/use-persistent-tab';
 type ViewType = 'insights' | 'food' | 'signals' | 'settings';
 
 // Constants
-const TRANSITION_DURATION = 150; // Half of fade duration in milliseconds
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB limit for sessionStorage
 
 function Dashboard() {
@@ -65,7 +64,6 @@ function Dashboard() {
   // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const [currentView, setCurrentView] = usePersistentTab('insights');
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
   // Date-specific data hooks - pass existing data to prevent duplicate API calls
@@ -85,36 +83,14 @@ function Dashboard() {
     return foodsForSelectedDate.flatMap(food => food.ingredients || []);
   }, [foodsForSelectedDate]);
 
-  // Ref to store timeout ID for cleanup
-  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const handleViewChange = useCallback(
     (newView: ViewType) => {
       if (newView === currentView) return;
-
-      // Clear any existing timeout
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
-      }
-
-      setIsTransitioning(true);
-      transitionTimeoutRef.current = setTimeout(() => {
-        setCurrentView(newView);
-        setIsTransitioning(false);
-        transitionTimeoutRef.current = null;
-      }, TRANSITION_DURATION);
+      setCurrentView(newView);
     },
     [currentView, setCurrentView]
   );
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleCameraCapture = useCallback(
     async (imageData: string) => {
@@ -205,11 +181,9 @@ function Dashboard() {
 
       {/* Main Content Wrapper */}
       <div className="flex flex-1 flex-col min-h-0">
-        {/* Content Area with Fade Transition */}
+        {/* Content Area */}
         <div
-          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'pb-20' : ''} transition-opacity duration-300 ${
-            isTransitioning ? 'opacity-0' : 'opacity-100'
-          }`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'pb-20' : ''}`}
         >
           <div className="px-4 py-6 space-y-6 max-w-full">
             {currentView === 'insights' && (

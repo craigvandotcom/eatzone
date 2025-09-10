@@ -65,7 +65,7 @@ interface FoodEntryFormProps {
 
 export function FoodEntryForm({
   onAddFood,
-  onClose,
+  onClose: _onClose,
   onDelete,
   editingFood,
   imageData,
@@ -700,13 +700,13 @@ export function FoodEntryForm({
         </div>
 
         <div className="flex gap-2 pt-4">
-          {editingFood && onDelete ? (
+          {editingFood && onDelete && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  className="bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
                   Delete
                 </Button>
@@ -730,15 +730,6 @@ export function FoodEntryForm({
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 bg-transparent"
-            >
-              Cancel
-            </Button>
           )}
           <Button
             type="submit"

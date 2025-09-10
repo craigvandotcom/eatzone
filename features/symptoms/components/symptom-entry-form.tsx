@@ -421,11 +421,6 @@ export function SymptomEntryForm({
                   ? 'Update Symptom'
                   : 'Save Symptoms'}
             </Button>
-            {onClose && (
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-            )}
           </div>
         </form>
       </CardContent>

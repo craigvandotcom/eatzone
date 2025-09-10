@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { CameraCapture } from '@/features/camera/components/camera-capture';
+import { MultiCameraCapture } from '@/features/camera/components/multi-camera-capture';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import { useIsMobile } from '@/components/ui/use-mobile';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -91,10 +91,18 @@ function Dashboard() {
     [currentView, setCurrentView]
   );
 
-
   const handleCameraCapture = useCallback(
-    async (imageData: string) => {
+    async (images: string[]) => {
       try {
+        if (images.length === 0) {
+          logger.warn('No images provided to handleCameraCapture');
+          return;
+        }
+
+        // For now, use the first image (maintaining backward compatibility)
+        // TODO: Update food entry form to handle multiple images
+        const imageData = images[0];
+
         // Validate image data size before storing (sessionStorage has ~5MB limit)
         const imageSize = new Blob([imageData]).size;
 
@@ -251,7 +259,7 @@ function Dashboard() {
       </div>
 
       {/* Camera Capture Modal */}
-      <CameraCapture
+      <MultiCameraCapture
         open={showCameraCapture}
         onOpenChange={setShowCameraCapture}
         onCapture={handleCameraCapture}

@@ -376,11 +376,15 @@ The MVP focuses on delivering a fully functional, offline-capable PWA with robus
   - [x] image analysis
   - [x] ingredient zoning
 
+<<<<BUSY HERE>>>>
+
 - [ ] Task 15.5: Review complete symptoms logging flow
-  - [ ] manual capture
-  - [ ] recent entries
-  - [ ] etc
-  - [ ] testing
+  - [x] manual capture
+  - [x] recent entries
+  - [x] etc
+  - [x] testing
+  - [ ] minor UI tweaks
+  - [ ] make sure that all the tests pass
 
 - [ ] **Task 16: Build MVP Insights Page (`build-mvp-insights-page`)**
   - **Action:** Create the initial "Insights & Analytics" page that performs all calculations on the client-side, focusing on a simple heuristic-based correlation approach.

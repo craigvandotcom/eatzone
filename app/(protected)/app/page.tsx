@@ -18,6 +18,7 @@ import { SignalsView } from '@/features/dashboard/components/signals-view';
 import { DesktopSidebar } from '@/features/dashboard/components/desktop-sidebar';
 import { BottomNavigation } from '@/features/dashboard/components/bottom-navigation';
 import { FloatingActionButton } from '@/features/dashboard/components/floating-action-button';
+import { FullWidthHeader } from '@/components/ui/full-width-header';
 
 // Import custom hooks
 import {
@@ -193,6 +194,16 @@ function Dashboard() {
         <div
           className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'pb-20' : ''}`}
         >
+          {/* Full Width Header - Only for Food and Signals views */}
+          {(currentView === 'food' || currentView === 'signals') && (
+            <FullWidthHeader
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              allFoods={allFoods}
+              allSymptoms={allSymptoms}
+            />
+          )}
+          
           <div className="px-4 py-6 space-y-6 max-w-full">
             {currentView === 'insights' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
@@ -216,10 +227,6 @@ function Dashboard() {
             {currentView === 'food' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 <FoodView
-                  selectedDate={selectedDate}
-                  onDateChange={setSelectedDate}
-                  allFoods={allFoods}
-                  allSymptoms={allSymptoms}
                   foodsForSelectedDate={foodsForSelectedDate}
                   foodStatsForSelectedDate={foodStatsForSelectedDate}
                   getIngredientsForSelectedDate={getIngredientsForSelectedDate}
@@ -230,10 +237,6 @@ function Dashboard() {
             {currentView === 'signals' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 <SignalsView
-                  selectedDate={selectedDate}
-                  onDateChange={setSelectedDate}
-                  allFoods={allFoods}
-                  allSymptoms={allSymptoms}
                   symptomsForSelectedDate={symptomsForSelectedDate}
                 />
               </ErrorBoundary>

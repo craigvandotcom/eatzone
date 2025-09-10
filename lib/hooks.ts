@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
-import { Symptom, Food } from './types';
+import { Symptom, Food, FoodStats } from './types';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -581,7 +581,9 @@ export const useSymptomsForDate = (
 };
 
 // FOOD STATS FOR SPECIFIC DATE
-export const useFoodStatsForDate = (selectedDate: Date) => {
+export const useFoodStatsForDate = (
+  selectedDate: Date
+): { data: FoodStats } => {
   const { data: foodsForDate } = useFoodsForDate(selectedDate);
 
   const statsForDate = useMemo(() => {

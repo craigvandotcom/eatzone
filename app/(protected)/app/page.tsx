@@ -30,6 +30,11 @@ import {
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import { usePersistentTab } from '@/lib/hooks/use-persistent-tab';
+import {
+  getBase64ImageSize,
+  isImageSizeValid,
+  formatFileSize,
+} from '@/lib/utils/image-utils';
 
 // Import data management functions
 
@@ -105,13 +110,13 @@ function Dashboard() {
         const imageData = images[0];
 
         // Validate image data size before storing (sessionStorage has ~5MB limit)
-        const imageSize = new Blob([imageData]).size;
+        // Use accurate base64 size calculation instead of Blob constructor
+        const imageSize = getBase64ImageSize(imageData);
 
-        if (imageSize > MAX_IMAGE_SIZE) {
+        if (!isImageSizeValid(imageData, MAX_IMAGE_SIZE)) {
           toast({
             title: 'Image too large',
-            description:
-              'Please try capturing a smaller image or use manual entry.',
+            description: `Image size (${formatFileSize(imageSize)}) exceeds the ${formatFileSize(MAX_IMAGE_SIZE)} limit. Please try capturing a smaller image or use manual entry.`,
             variant: 'destructive',
           });
           return;

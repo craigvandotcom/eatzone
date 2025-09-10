@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Camera, Edit3, Upload, X, Check, Plus } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { APP_CONFIG } from '@/lib/config/constants';
+import { validateImageFile } from '@/lib/utils/file-validation';
+import { smartCompressImage } from '@/lib/utils/image-compression';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -86,7 +88,7 @@ export function MultiCameraCapture({
     }
   };
 
-  const captureImage = () => {
+  const captureImage = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     if (capturedImages.length >= maxImages) return; // Prevent capture if at limit
 
@@ -96,31 +98,57 @@ export function MultiCameraCapture({
 
     if (!ctx) return;
 
-    // Set canvas size to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    try {
+      // Set canvas size to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
 
-    // Draw video frame to canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // Draw video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Get image data as base64
-    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      // Get image data as base64 with higher initial quality
+      const rawImageData = canvas.toDataURL('image/jpeg', 0.95);
 
-    // Add to captured images
-    const newImages = [...capturedImages, imageData];
-    setCapturedImages(newImages);
+      // Validate captured image before compression
+      const validationResult = validateImageFile(rawImageData);
+      if (!validationResult.valid) {
+        logger.error(
+          'Camera capture validation failed',
+          validationResult.error
+        );
+        setError(validationResult.error?.message || 'Invalid image captured');
+        return;
+      }
 
-    // Auto-submit after reaching max images
-    if (newImages.length >= maxImages) {
-      // Small delay to show the final image in collection, then navigate smoothly
-      setTimeout(() => {
-        stopCamera();
-        // Use React 19 transition to coordinate navigation and modal closing
-        startTransition(() => {
-          onCapture(newImages);
-          onOpenChange(false);
-        });
-      }, 500);
+      // Compress image to optimize storage
+      const compressionResult = await smartCompressImage(rawImageData);
+
+      logger.debug('Image captured and compressed', {
+        originalSize: compressionResult.originalSize,
+        compressedSize: compressionResult.compressedSize,
+        quality: compressionResult.quality,
+        compressionRatio: compressionResult.compressionRatio,
+      });
+
+      // Add compressed image to captured images
+      const newImages = [...capturedImages, compressionResult.compressedImage];
+      setCapturedImages(newImages);
+
+      // Auto-submit after reaching max images
+      if (newImages.length >= maxImages) {
+        // Small delay to show the final image in collection, then navigate smoothly
+        setTimeout(() => {
+          stopCamera();
+          // Use React 19 transition to coordinate navigation and modal closing
+          startTransition(() => {
+            onCapture(newImages);
+            onOpenChange(false);
+          });
+        }, 500);
+      }
+    } catch (error) {
+      logger.error('Failed to capture and compress image', error);
+      setError('Failed to capture image. Please try again.');
     }
   };
 

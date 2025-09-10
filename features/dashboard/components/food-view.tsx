@@ -19,11 +19,11 @@ import {
 } from '@/components/error-boundary';
 
 // Import types
-import { Food } from '@/lib/types';
+import { Food, FoodStats } from '@/lib/types';
 
 interface FoodViewProps {
   foodsForSelectedDate?: Food[];
-  foodStatsForSelectedDate: any;
+  foodStatsForSelectedDate?: FoodStats;
   getIngredientsForSelectedDate: () => any[];
 }
 

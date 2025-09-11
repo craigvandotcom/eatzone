@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -166,7 +166,6 @@ export function SymptomEntryForm({
     <Card className={className}>
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-
           {/* Error Display */}
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
@@ -257,7 +256,10 @@ export function SymptomEntryForm({
                             <h3 className="text-lg font-semibold text-foreground">
                               {symptom.name}
                             </h3>
-                            <Badge variant="outline" className="text-xs border-green-500 text-green-400">
+                            <Badge
+                              variant="outline"
+                              className="text-xs border-green-500 text-green-400"
+                            >
                               {symptom.category}
                             </Badge>
                           </div>

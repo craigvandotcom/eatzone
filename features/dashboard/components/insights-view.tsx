@@ -1,13 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { BarChart3, Flame, Utensils, Activity } from 'lucide-react';
 import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
 import { Food, Symptom } from '@/lib/types';
@@ -75,7 +69,7 @@ export function InsightsView({ allFoods, allSymptoms }: InsightsViewProps) {
     <div className="space-y-6">
       {/* Overview title */}
       <h2 className="text-xl font-semibold">Overview</h2>
-      
+
       {/* Day Streak Card */}
       <Card>
         <CardContent className="p-6">
@@ -104,9 +98,7 @@ export function InsightsView({ allFoods, allSymptoms }: InsightsViewProps) {
             <div
               className={`${getZoneBgClass('unzoned', 'light')} p-3 rounded-full`}
             >
-              <BarChart3
-                className={`h-5 w-5 ${getZoneTextClass('unzoned')}`}
-              />
+              <BarChart3 className={`h-5 w-5 ${getZoneTextClass('unzoned')}`} />
             </div>
             <div className="flex-1">
               <div
@@ -114,9 +106,7 @@ export function InsightsView({ allFoods, allSymptoms }: InsightsViewProps) {
               >
                 {metrics.totalDays}
               </div>
-              <div className="text-sm text-muted-foreground">
-                Days Tracked
-              </div>
+              <div className="text-sm text-muted-foreground">Days Tracked</div>
             </div>
           </div>
         </CardContent>
@@ -153,14 +143,10 @@ export function InsightsView({ allFoods, allSymptoms }: InsightsViewProps) {
               <Activity className={`h-5 w-5 ${getZoneTextClass('red')}`} />
             </div>
             <div className="flex-1">
-              <div
-                className={`text-2xl font-bold ${getZoneTextClass('red')}`}
-              >
+              <div className={`text-2xl font-bold ${getZoneTextClass('red')}`}>
                 {metrics.totalSymptoms}
               </div>
-              <div className="text-sm text-muted-foreground">
-                Total Signals
-              </div>
+              <div className="text-sm text-muted-foreground">Total Signals</div>
             </div>
           </div>
         </CardContent>

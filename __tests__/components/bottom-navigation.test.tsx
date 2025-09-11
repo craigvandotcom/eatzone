@@ -121,7 +121,7 @@ describe('Bottom Navigation', () => {
     render(<Dashboard />);
 
     // Initially should show insights view
-    expect(screen.getByText(/analytics coming soon/i)).toBeInTheDocument();
+    expect(screen.getByText(/overview/i)).toBeInTheDocument();
 
     // Click on Food tab
     const foodTab = screen.getByRole('button', { name: /food/i });

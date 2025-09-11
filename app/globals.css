@@ -15,15 +15,15 @@
 
     --popover: 0 0% 11%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --primary: 167 99% 33%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 16%;
     --muted-foreground: 0 0% 60%;
     --accent: 0 0% 16%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62% 30%;
+    --destructive: 8 93% 59%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 18%;
     --input: 0 0% 16%;
@@ -58,15 +58,25 @@
     --food-accent: 142 76% 36%;
     --symptom-accent: 0 84% 60%;
 
-    /* Zone colors - Dark mode */
-    --zone-green: 122 39% 19%; /* #2f7d31 */
-    --zone-yellow: 45 95% 55%; /* #f9a825 */
-    --zone-red: 0 65% 36%; /* #c62828 */
+    /* Zone colors - New Brand Colors */
+    --zone-green: 167 99% 33%; /* #01a878 - Vivid Turquoise */
+    --zone-yellow: 49 95% 63%; /* #fad046 - Yellow */
+    --zone-red: 8 93% 59%; /* #f84f36 - Vivid Red */
 
-    /* Zone colors RGB values for dark mode */
-    --zone-green-rgb: 47 125 49;
-    --zone-yellow-rgb: 249 168 37;
-    --zone-red-rgb: 198 40 40;
+    /* Zone colors RGB values - New Brand Colors */
+    --zone-green-rgb: 1 168 120;
+    --zone-yellow-rgb: 250 208 70;
+    --zone-red-rgb: 248 79 54;
+
+    /* Brand colors - Semantic naming */
+    --brand-primary: 167 99% 33%; /* #01a878 - Vivid Turquoise */
+    --brand-red: 8 93% 59%; /* #f84f36 - Vivid Red */
+    --brand-yellow: 49 95% 63%; /* #fad046 - Yellow */
+    
+    /* Brand colors RGB values */
+    --brand-primary-rgb: 1 168 120;
+    --brand-red-rgb: 248 79 54;
+    --brand-yellow-rgb: 250 208 70;
   }
 }
 

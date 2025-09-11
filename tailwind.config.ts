@@ -13,6 +13,35 @@ const config: Config = {
     '*.{js,ts,jsx,tsx,mdx}',
   ],
   safelist: [
+    // Brand color classes - ensure they're always generated
+    'bg-brand-primary',
+    'bg-brand-red',
+    'bg-brand-yellow',
+    'text-brand-primary',
+    'text-brand-red',
+    'text-brand-yellow',
+    'border-brand-primary',
+    'border-brand-red',
+    'border-brand-yellow',
+    // Brand colors with opacity variants
+    'bg-brand-primary/10',
+    'bg-brand-primary/20',
+    'bg-brand-primary/50',
+    'bg-brand-primary/80',
+    'bg-brand-red/10',
+    'bg-brand-red/20',
+    'bg-brand-red/50',
+    'bg-brand-red/80',
+    'bg-brand-yellow/10',
+    'bg-brand-yellow/20',
+    'bg-brand-yellow/50',
+    'bg-brand-yellow/80',
+    'text-brand-primary/70',
+    'text-brand-red/70',
+    'text-brand-yellow/70',
+    'border-brand-primary/30',
+    'border-brand-red/30',
+    'border-brand-yellow/30',
     // Zone color classes - ensure they're always generated
     'bg-zone-green',
     'bg-zone-yellow',
@@ -94,6 +123,21 @@ const config: Config = {
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
+        },
+        // Brand colors - New identity
+        brand: {
+          primary: {
+            DEFAULT: 'hsl(var(--brand-primary))',
+            rgb: 'rgb(var(--brand-primary-rgb))',
+          },
+          red: {
+            DEFAULT: 'hsl(var(--brand-red))',
+            rgb: 'rgb(var(--brand-red-rgb))',
+          },
+          yellow: {
+            DEFAULT: 'hsl(var(--brand-yellow))',
+            rgb: 'rgb(var(--brand-yellow-rgb))',
+          },
         },
         // Add default yellow shades for zone visualization
         yellow: {

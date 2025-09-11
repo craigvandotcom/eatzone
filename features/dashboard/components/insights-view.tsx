@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { TrendingUp, BarChart3, Flame } from 'lucide-react';
+import { BarChart3, Flame, Utensils, Activity } from 'lucide-react';
 import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
 import { Food, Symptom } from '@/lib/types';
 
@@ -85,75 +85,62 @@ export function InsightsView({ allFoods, allSymptoms }: InsightsViewProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-center">
+          <div className="space-y-4">
+            {/* Day Streak */}
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
+              <div className={`${getZoneBgClass('yellow', 'light')} p-3 rounded-full`}>
+                <Flame className={`h-5 w-5 ${getZoneTextClass('yellow')}`} />
+              </div>
+              <div className="flex-1">
+                <div className={`text-2xl font-bold ${getZoneTextClass('yellow')}`}>
+                  {metrics.currentStreak}
+                </div>
+                <div className="text-sm text-muted-foreground">Day Streak</div>
+              </div>
+            </div>
+
+            {/* Days Tracked */}
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
+              <div className={`${getZoneBgClass('unzoned', 'light')} p-3 rounded-full`}>
+                <BarChart3 className={`h-5 w-5 ${getZoneTextClass('unzoned')}`} />
+              </div>
+              <div className="flex-1">
+                <div className={`text-2xl font-bold ${getZoneTextClass('unzoned')}`}>
+                  {metrics.totalDays}
+                </div>
+                <div className="text-sm text-muted-foreground">Days Tracked</div>
+              </div>
+            </div>
+
             {/* Total Foods */}
-            <div
-              className={`p-4 ${getZoneBgClass('green', 'light')} rounded-lg`}
-            >
-              <div
-                className={`text-2xl font-bold ${getZoneTextClass('green')}`}
-              >
-                {metrics.totalFoods}
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
+              <div className={`${getZoneBgClass('green', 'light')} p-3 rounded-full`}>
+                <Utensils className={`h-5 w-5 ${getZoneTextClass('green')}`} />
               </div>
-              <div className="text-sm text-gray-600">Total Foods</div>
+              <div className="flex-1">
+                <div className={`text-2xl font-bold ${getZoneTextClass('green')}`}>
+                  {metrics.totalFoods}
+                </div>
+                <div className="text-sm text-muted-foreground">Total Foods</div>
+              </div>
             </div>
 
-            {/* Total Symptoms */}
-            <div className={`p-4 ${getZoneBgClass('red', 'light')} rounded-lg`}>
-              <div className={`text-2xl font-bold ${getZoneTextClass('red')}`}>
-                {metrics.totalSymptoms}
+            {/* Total Signals */}
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
+              <div className={`${getZoneBgClass('red', 'light')} p-3 rounded-full`}>
+                <Activity className={`h-5 w-5 ${getZoneTextClass('red')}`} />
               </div>
-              <div className="text-sm text-gray-600">Total Symptoms</div>
-            </div>
-
-            {/* Total Days with Entries */}
-            <div
-              className={`p-4 ${getZoneBgClass('unzoned', 'light')} rounded-lg`}
-            >
-              <div
-                className={`text-2xl font-bold ${getZoneTextClass('unzoned')}`}
-              >
-                {metrics.totalDays}
+              <div className="flex-1">
+                <div className={`text-2xl font-bold ${getZoneTextClass('red')}`}>
+                  {metrics.totalSymptoms}
+                </div>
+                <div className="text-sm text-muted-foreground">Total Signals</div>
               </div>
-              <div className="text-sm text-gray-600">Days Tracked</div>
-            </div>
-
-            {/* Current Streak */}
-            <div
-              className={`p-4 ${getZoneBgClass('yellow', 'light')} rounded-lg`}
-            >
-              <div
-                className={`text-2xl font-bold ${getZoneTextClass('yellow')} flex items-center justify-center gap-1`}
-              >
-                <Flame className="h-6 w-6" />
-                {metrics.currentStreak}
-              </div>
-              <div className="text-sm text-gray-600">Day Streak</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Simplified Coming Soon Notice */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Advanced Analytics Coming Soon
-          </CardTitle>
-          <CardDescription>
-            Deeper insights and correlations are in development.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-700">
-              Soon you'll see trend analysis, food-symptom correlations, and
-              personalized health insights based on your data.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

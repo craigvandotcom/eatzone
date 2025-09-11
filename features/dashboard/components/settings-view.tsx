@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { User, LogOut, Shield, Smartphone } from 'lucide-react';
+import { User, LogOut, Smartphone } from 'lucide-react';
 import { getBuildInfo } from '@/lib/utils/app-version';
 import { LoadingSpinner } from '@/components/ui/loading-states';
 
@@ -68,39 +68,6 @@ export function SettingsView({
         </CardContent>
       </Card>
 
-      {/* Privacy & Security */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Privacy & Security
-          </CardTitle>
-          <CardDescription>
-            Your data privacy and security information.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-green-950/20 p-4 rounded-lg border border-green-800">
-            <h4 className="text-sm font-medium text-green-100 mb-2">
-              🔒 Privacy First
-            </h4>
-            <p className="text-xs text-green-300">
-              Your health data is securely stored in the cloud with Supabase.
-              Only you have access to your data, and it's encrypted at rest and
-              in transit.
-            </p>
-          </div>
-          <div className="bg-blue-950/20 p-4 rounded-lg border border-blue-800">
-            <h4 className="text-sm font-medium text-blue-100 mb-2">
-              ☁️ Cloud Sync
-            </h4>
-            <p className="text-xs text-blue-300">
-              Your data syncs automatically across all your devices. No manual
-              backups needed - your data is safe and always available.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* App Information */}
       <Card>

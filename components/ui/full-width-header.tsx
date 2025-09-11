@@ -113,7 +113,7 @@ export function FullWidthHeader({
         // Rounded corners only on bottom
         'rounded-b-lg shadow-lg',
         // Padding - extra top padding to compensate for negative margin
-        'px-4 py-6 pt-8',
+        'px-4 py-2 pt-8',
         className
       )}
     >

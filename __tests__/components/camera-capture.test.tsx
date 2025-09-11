@@ -1,6 +1,6 @@
 /**
  * Simplified CameraCapture Component Tests
- * 
+ *
  * Note: Complex media API and canvas mocking has been removed to avoid
  * React 19 act() warnings and MediaStream mock complexity. This test
  * focuses on essential component behavior and UI elements.
@@ -61,7 +61,9 @@ describe('CameraCapture', () => {
       const user = userEvent.setup();
       render(<CameraCapture {...mockProps} open={true} />);
 
-      const manualButton = screen.getByRole('button', { name: /manual entry/i });
+      const manualButton = screen.getByRole('button', {
+        name: /manual entry/i,
+      });
       await user.click(manualButton);
 
       expect(mockProps.onManualEntry).toHaveBeenCalled();
@@ -72,7 +74,7 @@ describe('CameraCapture', () => {
   describe('File Upload', () => {
     it('should include file input', () => {
       render(<CameraCapture {...mockProps} open={true} />);
-      
+
       const fileInput = document.querySelector('input[type="file"]');
       expect(fileInput).toBeInTheDocument();
       expect((fileInput as HTMLInputElement).accept).toBe('image/*');

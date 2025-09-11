@@ -17,12 +17,8 @@ export function CentralPlusButton({
   const shouldShow = currentView === 'food' || currentView === 'signals';
 
   const getBorderStyle = () => {
-    if (currentView === 'food') {
-      return 'border-2 border-green-600 hover:border-green-700';
-    } else if (currentView === 'signals') {
-      return 'border-2 border-red-600 hover:border-red-700';
-    }
-    return 'border-2 border-foreground';
+    // No colored borders - consistent neutral appearance
+    return '';
   };
 
   return (

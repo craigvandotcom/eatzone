@@ -56,9 +56,7 @@ export function FoodView({
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">
-            Food Entries
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground">Entries</h2>
           <span className="text-muted-foreground text-sm">
             {foodsForSelectedDate?.length || 0} entries
           </span>

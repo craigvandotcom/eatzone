@@ -68,7 +68,6 @@ export function SettingsView({
         </CardContent>
       </Card>
 
-
       {/* App Information */}
       <Card>
         <CardHeader>

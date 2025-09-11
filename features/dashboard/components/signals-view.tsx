@@ -82,8 +82,8 @@ export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-lg">
+                      <div className="w-12 h-12 border-2 border-primary bg-transparent rounded-full flex items-center justify-center">
+                        <span className="text-foreground text-lg">
                           {getCategoryInfo(symptom.category)?.icon || '⚡'}
                         </span>
                       </div>

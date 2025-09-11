@@ -139,7 +139,7 @@ export function FullWidthHeader({
 
           <button
             onClick={handleToday}
-            className="px-3 py-1 text-sm font-medium text-foreground hover:text-primary transition-colors"
+            className="px-3 py-1 text-lg font-semibold text-foreground hover:text-primary transition-colors"
           >
             {formatDate(currentDate)}
           </button>

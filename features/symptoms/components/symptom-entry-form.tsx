@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Search, X, ChevronDown, ChevronUp, Plus, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +12,6 @@ import {
   SYMPTOMS,
   SYMPTOM_CATEGORIES,
   SymptomDefinition,
-  searchSymptoms,
 } from '@/lib/symptoms/symptom-index';
 import { TimestampEditor } from '@/components/shared/timestamp-editor';
 
@@ -26,7 +24,6 @@ interface SymptomEntryFormProps {
   onDelete?: () => Promise<void>;
   editingSymptom?: Symptom;
   className?: string;
-  isSubmitting?: boolean;
 }
 
 export function SymptomEntryForm({
@@ -35,11 +32,9 @@ export function SymptomEntryForm({
   onDelete,
   editingSymptom,
   className = '',
-  isSubmitting = false,
 }: SymptomEntryFormProps) {
   // State management
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [selectedSymptoms, setSelectedSymptoms] = useState<
     Array<{
       symptom_id: string;
@@ -51,15 +46,6 @@ export function SymptomEntryForm({
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Debounce search query for better UX
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300); // 300ms debounce delay
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
 
   // Initialize form with editing symptom data
   useEffect(() => {
@@ -79,12 +65,6 @@ export function SymptomEntryForm({
     }
   }, [editingSymptom]);
 
-  // Search results (using debounced query for better performance)
-  const searchResults = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return [];
-    return searchSymptoms(debouncedSearchQuery);
-  }, [debouncedSearchQuery]);
-
   // Category overview for quick access
   const categoryOverview = useMemo(() => {
     return SYMPTOM_CATEGORIES.map(category => ({
@@ -93,7 +73,12 @@ export function SymptomEntryForm({
     }));
   }, []);
 
-  // Add symptom to selection (automatically sets as present)
+  // Toggle category accordion
+  const toggleCategory = useCallback((categoryName: string) => {
+    setExpandedCategory(prev => (prev === categoryName ? null : categoryName));
+  }, []);
+
+  // Add symptom to selection staging area
   const addSymptom = useCallback(
     (symptom: SymptomDefinition) => {
       // Check if already selected
@@ -110,7 +95,7 @@ export function SymptomEntryForm({
       };
 
       setSelectedSymptoms(prev => [...prev, newSymptom]);
-      setSearchQuery(''); // Clear search after adding
+      setExpandedCategory(null); // Close accordion after selection
       setError(null);
     },
     [selectedSymptoms]
@@ -162,9 +147,9 @@ export function SymptomEntryForm({
       // Reset form
       setSelectedSymptoms([]);
       setNotes('');
-      setSearchQuery('');
       setShowNotes(false);
       setError(null);
+      setExpandedCategory(null);
 
       onClose?.();
     } catch (error) {
@@ -181,21 +166,6 @@ export function SymptomEntryForm({
     <Card className={className}>
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Track Symptoms</h3>
-              <p className="text-sm text-muted-foreground">
-                Add symptoms you're currently experiencing
-              </p>
-            </div>
-            {onClose && (
-              <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
           {/* Error Display */}
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
@@ -203,85 +173,21 @@ export function SymptomEntryForm({
             </div>
           )}
 
-          {/* Search and Category Browsing - Only show when no symptoms are selected */}
+          {/* Accordion Category Selection - Only show when no symptoms selected */}
           {selectedSymptoms.length === 0 && (
-            <>
-              {/* Search */}
-              <div>
-                <Label htmlFor="symptom-search">Search Symptoms</Label>
-                <div className="relative mt-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="symptom-search"
-                    type="text"
-                    placeholder="Search for symptoms (e.g., nausea, fatigue, bloating...)"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <div>
-                  <Label className="text-sm text-muted-foreground">
-                    Search Results:
-                  </Label>
-                  <div className="mt-2 space-y-1">
-                    {searchResults.map(symptom => {
-                      const isSelected = selectedSymptoms.some(
-                        s => s.symptom_id === symptom.id
-                      );
-                      return (
-                        <div
-                          key={symptom.id}
-                          className={`flex items-center justify-between p-2 rounded-lg transition-colors cursor-pointer ${
-                            isSelected
-                              ? 'bg-green-500/10 border border-green-500/20'
-                              : 'bg-muted hover:bg-muted/50'
-                          }`}
-                          onClick={() => !isSelected && addSymptom(symptom)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">
-                              {symptom.categoryIcon}
-                            </span>
-                            <span className="text-sm font-medium">
-                              {symptom.name}
-                            </span>
-                            {isSelected && (
-                              <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
-                                <Check className="h-3 w-3 mr-1" />
-                                Added
-                              </Badge>
-                            )}
-                          </div>
-                          <Badge variant="outline" className="text-xs">
-                            {symptom.category}
-                          </Badge>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Category Overview (when no search) */}
-              {!searchQuery.trim() && (
-                <div>
-                  <Label className="text-sm text-muted-foreground">
-                    Browse by Category:
-                  </Label>
-                  <div className="mt-2 space-y-2">
-                    {categoryOverview.map(({ category }) => (
-                      <div
-                        key={category.name}
-                        className="p-3 bg-muted rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                        onClick={() =>
-                          setSearchQuery(category.displayName.toLowerCase())
-                        }
-                      >
+            <div>
+              <Label className="text-sm text-muted-foreground">
+                Browse by Category:
+              </Label>
+              <div className="mt-2 space-y-2">
+                {categoryOverview.map(({ category, symptoms }) => (
+                  <div key={category.name} className="space-y-2">
+                    {/* Category Header */}
+                    <div
+                      className="p-3 bg-muted rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => toggleCategory(category.name)}
+                    >
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{category.icon}</span>
                           <div className="flex-1">
@@ -290,18 +196,45 @@ export function SymptomEntryForm({
                             </div>
                           </div>
                         </div>
+                        {expandedCategory === category.name ? (
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Expanded Symptoms */}
+                    {expandedCategory === category.name && (
+                      <div className="ml-6 space-y-1">
+                        {symptoms.map(symptom => (
+                          <div
+                            key={symptom.id}
+                            className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                            onClick={() => addSymptom(symptom)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">
+                                {symptom.categoryIcon}
+                              </span>
+                              <span className="text-sm font-medium">
+                                {symptom.name}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Selected Symptoms */}
           {selectedSymptoms.length > 0 && (
             <div>
-              <Label>Selected Symptoms ({selectedSymptoms.length})</Label>
+              <Label>Selected Symptoms</Label>
               <div className="mt-2 space-y-3">
                 {selectedSymptoms.map(symptom => {
                   // Get the category info to access the emoji
@@ -311,36 +244,34 @@ export function SymptomEntryForm({
                   return (
                     <div
                       key={symptom.symptom_id}
-                      className="bg-green-500/10 rounded-lg p-4 border border-green-500/20"
+                      className="bg-card rounded-lg p-4 border border-border/50"
                     >
-                      {/* Prominent Symptom Header */}
-                      <div className="text-center mb-4">
-                        <div className="text-4xl mb-2">
-                          {categoryInfo?.icon || '⚡'}
+                      {/* Inline Symptom Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">
+                            {categoryInfo?.icon || '⚡'}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-foreground">
+                              {symptom.name}
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className="text-xs border-green-500 text-green-400"
+                            >
+                              {symptom.category}
+                            </Badge>
+                          </div>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">
-                          {symptom.name}
-                        </h3>
-                        <div className="flex items-center justify-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {symptom.category}
-                          </Badge>
-                          <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
-                            Present
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Remove Button */}
-                      <div className="flex justify-end mb-3">
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => removeSymptom(symptom.symptom_id)}
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
+                          className="text-xs"
                         >
-                          <X className="h-3 w-3" />
+                          Change
                         </Button>
                       </div>
 
@@ -351,7 +282,6 @@ export function SymptomEntryForm({
                           updateSymptomStartTime(symptom.symptom_id, date)
                         }
                         label="When did this symptom start?"
-                        description="Select when you first noticed this symptom"
                       />
                     </div>
                   );
@@ -400,14 +330,10 @@ export function SymptomEntryForm({
             )}
             <Button
               type="submit"
-              disabled={selectedSymptoms.length === 0 || isSubmitting}
+              disabled={selectedSymptoms.length === 0}
               className="flex-1"
             >
-              {isSubmitting
-                ? 'Saving...'
-                : editingSymptom
-                  ? 'Update Symptom'
-                  : 'Save Symptoms'}
+              {editingSymptom ? 'Update Symptom' : 'Save Symptoms'}
             </Button>
           </div>
         </form>

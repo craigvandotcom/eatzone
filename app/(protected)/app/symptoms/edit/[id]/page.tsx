@@ -175,7 +175,7 @@ export default function EditSymptomPage({
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Edit Symptom</h1>
+          <h1 className="text-xl font-semibold">Edit Signal</h1>
         </div>
       </header>
 

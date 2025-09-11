@@ -73,90 +73,93 @@ export function InsightsView({ allFoods, allSymptoms }: InsightsViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Current Data Summary - Moved to top with enhanced metrics */}
+      {/* Overview title */}
+      <h2 className="text-xl font-semibold">Overview</h2>
+      
+      {/* Day Streak Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Your Health Data Overview
-          </CardTitle>
-          <CardDescription>
-            Complete summary of your tracking progress.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Day Streak */}
-            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div
+              className={`${getZoneBgClass('yellow', 'light')} p-3 rounded-full`}
+            >
+              <Flame className={`h-5 w-5 ${getZoneTextClass('yellow')}`} />
+            </div>
+            <div className="flex-1">
               <div
-                className={`${getZoneBgClass('yellow', 'light')} p-3 rounded-full`}
+                className={`text-2xl font-bold ${getZoneTextClass('yellow')}`}
               >
-                <Flame className={`h-5 w-5 ${getZoneTextClass('yellow')}`} />
+                {metrics.currentStreak}
               </div>
-              <div className="flex-1">
-                <div
-                  className={`text-2xl font-bold ${getZoneTextClass('yellow')}`}
-                >
-                  {metrics.currentStreak}
-                </div>
-                <div className="text-sm text-muted-foreground">Day Streak</div>
+              <div className="text-sm text-muted-foreground">Day Streak</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Days Tracked Card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div
+              className={`${getZoneBgClass('unzoned', 'light')} p-3 rounded-full`}
+            >
+              <BarChart3
+                className={`h-5 w-5 ${getZoneTextClass('unzoned')}`}
+              />
+            </div>
+            <div className="flex-1">
+              <div
+                className={`text-2xl font-bold ${getZoneTextClass('unzoned')}`}
+              >
+                {metrics.totalDays}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Days Tracked
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
 
-            {/* Days Tracked */}
-            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
-              <div
-                className={`${getZoneBgClass('unzoned', 'light')} p-3 rounded-full`}
-              >
-                <BarChart3
-                  className={`h-5 w-5 ${getZoneTextClass('unzoned')}`}
-                />
-              </div>
-              <div className="flex-1">
-                <div
-                  className={`text-2xl font-bold ${getZoneTextClass('unzoned')}`}
-                >
-                  {metrics.totalDays}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Days Tracked
-                </div>
-              </div>
+      {/* Total Foods Card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div
+              className={`${getZoneBgClass('green', 'light')} p-3 rounded-full`}
+            >
+              <Utensils className={`h-5 w-5 ${getZoneTextClass('green')}`} />
             </div>
-
-            {/* Total Foods */}
-            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
+            <div className="flex-1">
               <div
-                className={`${getZoneBgClass('green', 'light')} p-3 rounded-full`}
+                className={`text-2xl font-bold ${getZoneTextClass('green')}`}
               >
-                <Utensils className={`h-5 w-5 ${getZoneTextClass('green')}`} />
+                {metrics.totalFoods}
               </div>
-              <div className="flex-1">
-                <div
-                  className={`text-2xl font-bold ${getZoneTextClass('green')}`}
-                >
-                  {metrics.totalFoods}
-                </div>
-                <div className="text-sm text-muted-foreground">Total Foods</div>
-              </div>
+              <div className="text-sm text-muted-foreground">Total Foods</div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
 
-            {/* Total Signals */}
-            <div className="flex items-center gap-4 p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors">
+      {/* Total Signals Card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div
+              className={`${getZoneBgClass('red', 'light')} p-3 rounded-full`}
+            >
+              <Activity className={`h-5 w-5 ${getZoneTextClass('red')}`} />
+            </div>
+            <div className="flex-1">
               <div
-                className={`${getZoneBgClass('red', 'light')} p-3 rounded-full`}
+                className={`text-2xl font-bold ${getZoneTextClass('red')}`}
               >
-                <Activity className={`h-5 w-5 ${getZoneTextClass('red')}`} />
+                {metrics.totalSymptoms}
               </div>
-              <div className="flex-1">
-                <div
-                  className={`text-2xl font-bold ${getZoneTextClass('red')}`}
-                >
-                  {metrics.totalSymptoms}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Total Signals
-                </div>
+              <div className="text-sm text-muted-foreground">
+                Total Signals
               </div>
             </div>
           </div>

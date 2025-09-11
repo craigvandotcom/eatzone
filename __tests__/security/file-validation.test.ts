@@ -82,7 +82,9 @@ describe('File Validation Security Tests', () => {
       const result = validateImageFile(oversizedFile);
       expect(result.valid).toBe(false);
       // Current implementation checks file signature before size, so may return different error
-      expect(['FILE_TOO_LARGE', 'INVALID_FILE_SIGNATURE']).toContain(result.error?.code);
+      expect(['FILE_TOO_LARGE', 'INVALID_FILE_SIGNATURE']).toContain(
+        result.error?.code
+      );
     });
 
     test('should handle boundary file sizes correctly', () => {
@@ -118,7 +120,9 @@ describe('File Validation Security Tests', () => {
       const result = validateImageFile(suspiciousMimeFile);
       expect(result.valid).toBe(false);
       // Current implementation may return different error codes for MIME issues
-      expect(['INVALID_DATA_FORMAT', 'UNKNOWN_MIME_TYPE']).toContain(result.error?.code);
+      expect(['INVALID_DATA_FORMAT', 'UNKNOWN_MIME_TYPE']).toContain(
+        result.error?.code
+      );
     });
 
     test('should handle case sensitivity in MIME types', () => {
@@ -144,7 +148,9 @@ describe('File Validation Security Tests', () => {
         const result = validateImageFile(url);
         expect(result.valid).toBe(false);
         // Different malformed URLs may trigger different validation stages
-        expect(['INVALID_DATA_FORMAT', 'UNKNOWN_MIME_TYPE']).toContain(result.error?.code);
+        expect(['INVALID_DATA_FORMAT', 'UNKNOWN_MIME_TYPE']).toContain(
+          result.error?.code
+        );
       });
     });
 
@@ -158,7 +164,11 @@ describe('File Validation Security Tests', () => {
         const result = validateImageFile(url);
         expect(result.valid).toBe(false);
         // XSS attempts may be caught by different validation layers
-        expect(['INVALID_DATA_FORMAT', 'INVALID_FILE_SIGNATURE', 'UNKNOWN_MIME_TYPE']).toContain(result.error?.code);
+        expect([
+          'INVALID_DATA_FORMAT',
+          'INVALID_FILE_SIGNATURE',
+          'UNKNOWN_MIME_TYPE',
+        ]).toContain(result.error?.code);
       });
     });
 
@@ -232,7 +242,8 @@ describe('File Validation Security Tests', () => {
 
     test('should handle unicode and special characters', () => {
       // Use simple ASCII characters that won't cause btoa to fail
-      const unicodeData = 'data:image/jpeg;base64,' + btoa('invalid-unicode-chars');
+      const unicodeData =
+        'data:image/jpeg;base64,' + btoa('invalid-unicode-chars');
 
       const result = validateImageFile(unicodeData);
       expect(result.valid).toBe(false);

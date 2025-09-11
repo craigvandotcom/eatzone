@@ -78,7 +78,6 @@ export default function AddSymptomPage() {
         <SymptomEntryForm
           onAddSymptom={handleAddSymptoms}
           onClose={handleClose}
-          isSubmitting={isSubmitting}
         />
       </main>
     </div>

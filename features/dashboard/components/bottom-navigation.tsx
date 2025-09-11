@@ -15,11 +15,11 @@ export function BottomNavigation({
 }: BottomNavigationProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border safe-area-pb bottom-nav bottom-nav-blur">
-      <div className="flex items-center justify-around py-2 px-4 relative">
+      <div className="flex items-center justify-around pt-2 pb-1 px-4 relative">
         <button
-          className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center space-y-0.5 p-1.5 rounded-lg transition-colors ${
             currentView === 'insights'
-              ? 'text-foreground bg-muted'
+              ? 'text-brand-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
           onClick={() => onViewChange('insights')}
@@ -29,9 +29,9 @@ export function BottomNavigation({
         </button>
 
         <button
-          className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center space-y-0.5 p-1.5 rounded-lg transition-colors ${
             currentView === 'food'
-              ? 'text-foreground bg-muted'
+              ? 'text-brand-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
           onClick={() => onViewChange('food')}
@@ -41,9 +41,9 @@ export function BottomNavigation({
         </button>
 
         <button
-          className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center space-y-0.5 p-1.5 rounded-lg transition-colors ${
             currentView === 'signals'
-              ? 'text-foreground bg-muted'
+              ? 'text-brand-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
           onClick={() => onViewChange('signals')}
@@ -53,9 +53,9 @@ export function BottomNavigation({
         </button>
 
         <button
-          className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center space-y-0.5 p-1.5 rounded-lg transition-colors ${
             currentView === 'settings'
-              ? 'text-foreground bg-muted'
+              ? 'text-brand-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
           onClick={() => onViewChange('settings')}

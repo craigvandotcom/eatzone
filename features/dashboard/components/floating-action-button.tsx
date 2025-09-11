@@ -1,7 +1,6 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { MetallicButton } from '@/components/ui/metallic-button';
 
 type ViewType = 'insights' | 'food' | 'signals' | 'settings';
 
@@ -39,17 +38,12 @@ export function FloatingActionButton({
           transformOrigin: 'center',
         }}
       >
-        <MetallicButton
+        <button
           onClick={onPlusClick}
-          size="lg"
-          className={`min-h-[67px] min-w-[67px] w-[67px] h-[67px] rounded-full ${getBorderStyle()} aspect-square shadow-lg`}
-          style={{
-            transition: 'none', // Disable MetallicButton's built-in transitions
-            transform: 'none', // Prevent transform conflicts
-          }}
+          className={`min-h-[67px] min-w-[67px] w-[67px] h-[67px] rounded-full ${getBorderStyle()} aspect-square shadow-lg bg-white hover:bg-gray-50 active:scale-95 transition-all duration-200 flex items-center justify-center`}
         >
           <Plus
-            className="h-8 w-8 transition-all text-gray-700 dark:text-gray-200"
+            className="h-8 w-8 transition-all text-background"
             style={{
               transform: shouldShow
                 ? 'scale(1) rotate(0deg)'
@@ -59,7 +53,7 @@ export function FloatingActionButton({
               transformOrigin: 'center',
             }}
           />
-        </MetallicButton>
+        </button>
       </div>
     </div>
   );

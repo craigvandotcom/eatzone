@@ -26,7 +26,7 @@ export function SettingsView({
 }: SettingsViewProps) {
   const buildInfo = getBuildInfo();
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4">
       {/* Account Information */}
       <Card>
         <CardHeader>

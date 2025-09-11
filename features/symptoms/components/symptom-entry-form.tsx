@@ -236,11 +236,12 @@ export function SymptomEntryForm({
                       return (
                         <div
                           key={symptom.id}
-                          className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
+                          className={`flex items-center justify-between p-2 rounded-lg transition-colors cursor-pointer ${
                             isSelected
                               ? 'bg-green-500/10 border border-green-500/20'
                               : 'bg-muted hover:bg-muted/50'
                           }`}
+                          onClick={() => !isSelected && addSymptom(symptom)}
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-lg">
@@ -249,9 +250,6 @@ export function SymptomEntryForm({
                             <span className="text-sm font-medium">
                               {symptom.name}
                             </span>
-                            <Badge variant="outline" className="text-xs">
-                              {symptom.category}
-                            </Badge>
                             {isSelected && (
                               <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
                                 <Check className="h-3 w-3 mr-1" />
@@ -259,19 +257,9 @@ export function SymptomEntryForm({
                               </Badge>
                             )}
                           </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={isSelected ? 'secondary' : 'outline'}
-                            onClick={() => addSymptom(symptom)}
-                            disabled={isSelected}
-                          >
-                            {isSelected ? (
-                              <Check className="h-3 w-3" />
-                            ) : (
-                              <Plus className="h-3 w-3" />
-                            )}
-                          </Button>
+                          <Badge variant="outline" className="text-xs">
+                            {symptom.category}
+                          </Badge>
                         </div>
                       );
                     })}

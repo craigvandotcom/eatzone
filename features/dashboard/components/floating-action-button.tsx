@@ -20,10 +20,18 @@ export function FloatingActionButton({
   return (
     <button
       onClick={onPlusClick}
-      className="fixed bottom-24 right-6 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center z-50"
+      className="fixed bottom-32 right-8 w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center z-50 border-0 flex-shrink-0"
       data-testid="floating-action-button"
+      style={{ 
+        minWidth: '64px', 
+        minHeight: '64px',
+        maxWidth: '64px',
+        maxHeight: '64px',
+        width: '64px',
+        height: '64px'
+      }}
     >
-      <Plus className="w-6 h-6 text-black" />
+      <Plus className="w-7 h-7 text-gray-700" />
     </button>
   );
 }

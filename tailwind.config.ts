@@ -70,6 +70,37 @@ const config: Config = {
     'border-zone-red/30',
     // Animation classes for FAB and icon animations
     'scale-[0.1]',
+    'scale-[0.05]',
+    // Z-index classes for proper stacking
+    'z-10',
+    'z-50',
+    // Transform classes for animations
+    'scale-0',
+    'scale-1',
+    'rotate-0',
+    'rotate-180',
+    'rotate-[360deg]',
+    // Opacity classes
+    'opacity-0',
+    'opacity-1',
+    // Fixed positioning classes
+    'fixed',
+    'absolute',
+    // Bottom positioning classes
+    'bottom-0',
+    'bottom-32',
+    'right-8',
+    'left-1/2',
+    // Transform utilities
+    'transform',
+    '-translate-x-1/2',
+    '-translate-y-1/2',
+    'transition-all',
+    // Min height/width for button consistency
+    'min-h-[67px]',
+    'min-w-[67px]',
+    'w-[67px]',
+    'h-[67px]',
   ],
   theme: {
     extend: {

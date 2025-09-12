@@ -23,32 +23,18 @@ export function FloatingActionButton({
   return (
     <div className="fixed bottom-32 right-8 z-50">
       <div
-        className="transition-all"
+        className={`transition-all duration-300 ease-out transform ${
+          shouldShow ? 'scale-1 opacity-1' : 'scale-0 opacity-0'
+        }`}
         style={{
-          transform: shouldShow
-            ? 'scale(1) rotate(0deg)'
-            : 'scale(0.05) rotate(360deg)', // Even smaller start, full rotation
-          opacity: shouldShow ? 1 : 0,
-          transitionDuration: shouldShow ? '600ms' : '400ms', // Slower for visibility
-          transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', // More dramatic bounce
           transformOrigin: 'center',
         }}
       >
         <button
           onClick={onPlusClick}
-          className={`min-h-[67px] min-w-[67px] w-[67px] h-[67px] rounded-full ${getBorderStyle()} aspect-square shadow-lg bg-white hover:bg-gray-50 active:scale-95 transition-all duration-200 flex items-center justify-center`}
+          className={`min-h-[67px] min-w-[67px] w-[67px] h-[67px] rounded-full ${getBorderStyle()} aspect-square shadow-lg bg-white hover:bg-gray-50 active:scale-95 transition-all duration-200 flex items-center justify-center relative z-10`}
         >
-          <Plus
-            className="h-8 w-8 transition-all text-background"
-            style={{
-              transform: shouldShow
-                ? 'scale(1) rotate(0deg)'
-                : 'scale(0.05) rotate(180deg)', // Match outer animation
-              transitionDuration: shouldShow ? '600ms' : '400ms', // Match outer timing
-              transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', // Match bounce
-              transformOrigin: 'center',
-            }}
-          />
+          <Plus className="h-8 w-8 text-background" />
         </button>
       </div>
     </div>

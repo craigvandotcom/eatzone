@@ -24,14 +24,10 @@ export function CentralPlusButton({
   return (
     <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
       <div
-        className="transition-all"
+        className={`transition-all duration-300 ease-out transform ${
+          shouldShow ? 'scale-1 opacity-1' : 'scale-0 opacity-0'
+        }`}
         style={{
-          transform: shouldShow
-            ? 'scale(1) rotate(0deg)'
-            : 'scale(0.05) rotate(360deg)', // Even smaller start, full rotation
-          opacity: shouldShow ? 1 : 0,
-          transitionDuration: shouldShow ? '600ms' : '400ms', // Slower for visibility
-          transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', // More dramatic bounce
           transformOrigin: 'center',
         }}
       >
@@ -44,17 +40,7 @@ export function CentralPlusButton({
             transform: 'none', // Prevent transform conflicts
           }}
         >
-          <Plus
-            className="h-8 w-8 transition-all text-gray-700 dark:text-gray-200"
-            style={{
-              transform: shouldShow
-                ? 'scale(1) rotate(0deg)'
-                : 'scale(0.05) rotate(180deg)', // Match outer animation
-              transitionDuration: shouldShow ? '600ms' : '400ms', // Match outer timing
-              transitionTimingFunction: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)', // Match bounce
-              transformOrigin: 'center',
-            }}
-          />
+          <Plus className="h-8 w-8 text-gray-700 dark:text-gray-200" />
         </MetallicButton>
       </div>
     </div>

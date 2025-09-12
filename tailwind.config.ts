@@ -74,6 +74,8 @@ const config: Config = {
     // Z-index classes for proper stacking
     'z-10',
     'z-50',
+    'z-[60]',
+    'z-[70]',
     // Transform classes for animations
     'scale-0',
     'scale-1',

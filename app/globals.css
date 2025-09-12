@@ -176,7 +176,7 @@ select {
 /* Add subtle backdrop blur effect */
 .bottom-nav-blur {
   backdrop-filter: blur(10px);
-  background-color: hsl(var(--background) / 0.95);
+  background-color: hsl(var(--card) / 0.95);
 }
 
 /* Touch target optimization for mobile */

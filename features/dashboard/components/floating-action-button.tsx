@@ -15,44 +15,15 @@ export function FloatingActionButton({
 }: FloatingActionButtonProps) {
   const shouldShow = currentView === 'food' || currentView === 'signals';
 
-  // Add debugging info for mobile troubleshooting
-  const debugInfo = `FAB-${shouldShow ? 'visible' : 'hidden'}-${currentView}`;
+  if (!shouldShow) return null;
 
   return (
-    <div 
-      className="fixed bottom-32 right-4 z-[60] md:right-8"
+    <button
+      onClick={onPlusClick}
+      className="fixed bottom-24 right-6 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center z-50"
       data-testid="floating-action-button"
-      data-debug={debugInfo}
     >
-      <div
-        className={`transition-all duration-300 ease-out transform ${
-          shouldShow ? 'scale-1 opacity-1' : 'scale-0 opacity-0'
-        }`}
-        style={{
-          transformOrigin: 'center',
-        }}
-      >
-        <button
-          onClick={onPlusClick}
-          className="w-[67px] h-[67px] min-w-[67px] min-h-[67px] rounded-full shadow-lg bg-white hover:bg-gray-50 active:scale-95 flex items-center justify-center relative z-10 border-0"
-          style={{
-            aspectRatio: '1',
-            touchAction: 'manipulation',
-          }}
-        >
-          <Plus className="h-8 w-8 text-background" />
-        </button>
-      </div>
-      
-      {/* Fallback button for mobile debugging - simpler styling */}
-      {shouldShow && (
-        <div 
-          className="fixed bottom-20 right-2 z-[70] bg-red-500 text-white p-2 text-xs rounded md:hidden"
-          style={{ fontSize: '10px' }}
-        >
-          FAB: {currentView}
-        </div>
-      )}
-    </div>
+      <Plus className="w-6 h-6 text-black" />
+    </button>
   );
 }

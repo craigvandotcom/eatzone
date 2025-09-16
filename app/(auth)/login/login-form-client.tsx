@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getZoneBgClass, getZoneTextClass } from '@/lib/utils/zone-colors';
+import { getZoneBgClass, getZoneTextClass, getZoneBgStyle } from '@/lib/utils/zone-colors';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,10 @@ import {
   Shield,
   Loader2,
   Smartphone,
+  ArrowRight,
+  CheckCircle,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/features/auth/components/auth-provider';
 // Simple PWA detection utilities
 const isPWAContext = () => {
@@ -77,10 +80,10 @@ export function LoginFormClient() {
   // Show loading while checking auth state
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -107,84 +110,112 @@ export function LoginFormClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center space-x-2">
-            <Shield className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Puls</h1>
-          </div>
-          <p className="text-gray-600">Sign in to your account</p>
-
-          {/* PWA Status indicator */}
-          {isPWA && (
-            <div className="flex items-center justify-center space-x-1 text-xs text-blue-600">
-              <Smartphone className="h-3 w-3" />
-              <span>PWA Mode {isIOS ? '(iOS)' : ''}</span>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
+              <Link href="/">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Link>
+            </Button>
+            <div className="flex items-center space-x-2">
+              <Image
+                src="/eatZone Logo - Rnd Corners.png"
+                alt="eatZone logo"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+              <span className="text-lg font-bold text-foreground">eatZone</span>
             </div>
-          )}
+            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
+              <Link href="/signup">Get Started</Link>
+            </Button>
+          </div>
         </div>
+      </header>
 
-        {/* Success Message */}
-        {redirectMessage === 'signup_success' && (
-          <Alert
-            className={`border-zone-green/30 ${getZoneBgClass('green', 'light')}`}
-          >
-            <AlertDescription className={getZoneTextClass('green')}>
-              Account created successfully! Please sign in.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* PWA Information Card for iOS users */}
-        {isPWA && isIOS && (
-          <Card className="border-blue-200 bg-blue-50">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <Badge
-                  variant="outline"
-                  className="bg-blue-100 text-blue-800 border-blue-300"
-                >
-                  <div className="flex items-center space-x-1">
-                    <Smartphone className="h-3 w-3" />
-                    <span>iOS PWA</span>
-                  </div>
-                </Badge>
-                <button
-                  onClick={() => setShowPWAInfo(!showPWAInfo)}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  {showPWAInfo ? 'Hide' : 'Info'}
-                </button>
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md space-y-6">
+          {/* Privacy Badge */}
+          <div className="text-center">
+            <Badge variant="secondary" className="mb-4">
+              <Shield className="h-3 w-3 mr-1" />
+              Privacy-First • AI-Powered
+            </Badge>
+            {/* PWA Status indicator */}
+            {isPWA && (
+              <div className="flex items-center justify-center space-x-1 text-xs text-muted-foreground mt-2">
+                <Smartphone className="h-3 w-3" />
+                <span>PWA Mode {isIOS ? '(iOS)' : ''}</span>
               </div>
-            </CardHeader>
-            {showPWAInfo && (
-              <CardContent className="space-y-2">
-                <p className="text-sm text-blue-700">
-                  <strong>iOS PWA Detected:</strong> Enhanced storage is active
-                  for better app experience.
-                </p>
-                <ul className="text-xs text-blue-600 space-y-1 ml-4">
-                  <li>• Your login will persist across app launches</li>
-                  <li>• Data is stored securely in multiple locations</li>
-                  <li>
-                    • If login issues occur, try closing and reopening the app
-                  </li>
-                </ul>
-              </CardContent>
             )}
-          </Card>
-        )}
+          </div>
 
-        {/* Login Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
-              Enter your email and password to access your account
-            </CardDescription>
-          </CardHeader>
+          {/* Success Message */}
+          {redirectMessage === 'signup_success' && (
+            <Alert className="border-primary/30 bg-primary/10">
+              <CheckCircle className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-primary">
+                Account created successfully! Please sign in.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* PWA Information Card for iOS users */}
+          {isPWA && isIOS && (
+            <Card className="bg-card border border-border">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                    <div className="flex items-center space-x-1">
+                      <Smartphone className="h-3 w-3" />
+                      <span>iOS PWA</span>
+                    </div>
+                  </Badge>
+                  <button
+                    onClick={() => setShowPWAInfo(!showPWAInfo)}
+                    className="text-xs text-primary hover:text-primary/80"
+                  >
+                    {showPWAInfo ? 'Hide' : 'Info'}
+                  </button>
+                </div>
+              </CardHeader>
+              {showPWAInfo && (
+                <CardContent className="space-y-2">
+                  <p className="text-sm text-foreground">
+                    <strong>iOS PWA Detected:</strong> Enhanced storage is active
+                    for better app experience.
+                  </p>
+                  <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                    <li>• Your login will persist across app launches</li>
+                    <li>• Data is stored securely in multiple locations</li>
+                    <li>
+                      • If login issues occur, try closing and reopening the app
+                    </li>
+                  </ul>
+                </CardContent>
+              )}
+            </Card>
+          )}
+
+          {/* Login Form */}
+          <Card className="bg-card border border-border shadow-lg">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold text-foreground">
+                Welcome back to{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500">
+                  eatZone
+                </span>
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Continue discovering your food-feeling patterns
+              </CardDescription>
+            </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -227,10 +258,8 @@ export function LoginFormClient() {
               </div>
 
               {error && (
-                <Alert
-                  className={`border-zone-red/30 ${getZoneBgClass('red', 'light')}`}
-                >
-                  <AlertDescription className={getZoneTextClass('red')}>
+                <Alert variant="destructive">
+                  <AlertDescription>
                     {error}
                   </AlertDescription>
                 </Alert>
@@ -239,7 +268,7 @@ export function LoginFormClient() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {isLoading ? (
                   <>
@@ -247,37 +276,50 @@ export function LoginFormClient() {
                     Signing in...
                   </>
                 ) : (
-                  'Sign In'
+                  <>
+                    Continue Your Journey <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
                 )}
               </Button>
             </form>
           </CardContent>
-        </Card>
+          </Card>
 
-        {/* Sign Up Link */}
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
-            <Link
-              href="/signup"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
+          {/* Sign Up Link */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Don&apos;t have an account?{' '}
+              <Link
+                href="/signup"
+                className="font-medium text-primary hover:text-primary/80"
+              >
+                Start your journey
+              </Link>
+            </p>
+          </div>
 
-        {/* Back to Home */}
-        <div className="text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Home
-          </Link>
+          {/* Desktop-specific content */}
+          <div className="hidden md:block text-center">
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p>
+                For the best experience, use this app on your mobile device.
+              </p>
+              <p>You can install it as a PWA for app-like experience.</p>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="text-muted-foreground py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-sm">
+            <p>
+              © 2025 eatZone. Intelligent correlation discovery through science-based tracking.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

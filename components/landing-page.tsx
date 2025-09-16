@@ -30,23 +30,23 @@ export default function LandingPage() {
   const features = [
     {
       icon: Activity,
-      title: 'Simplified Symptom Tracking',
+      title: 'Pattern Recognition Intelligence',
       description:
-        'Finally understand what triggers your symptoms with our 4-category system: Digestion, Energy, Mind, Recovery',
+        'Our app identifies food-symptom correlations you might miss, revealing meaningful patterns across Digestion, Energy, Mind, and Recovery',
       color: 'from-purple-400 to-pink-500',
     },
     {
       icon: Camera,
-      title: 'Multi-Image AI Analysis',
+      title: 'Science-Based Zone Classification',
       description:
-        'Never guess about ingredients again. Take multiple photos and AI identifies everything, classifying each into health zones',
+        'AI analyzes ingredients using research-backed food categories. Each zone classification is grounded in elimination diet science',
       color: 'from-green-400 to-emerald-500',
     },
     {
       icon: BarChart3,
-      title: 'Zone-Based Intelligence',
+      title: 'Biological Individuality Support',
       description:
-        'See food impact at a glance - no complex numbers. Green, Yellow, Red zones cut through nutrition confusion',
+        'Recognizes that your food responses are unique. Systematic tracking reveals your personal food-feeling fingerprint',
       color: 'from-green-500 via-yellow-500 to-red-500',
     },
     {
@@ -67,7 +67,7 @@ export default function LandingPage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
               <Image
-                src="/new logo.png"
+                src="/eatZone Logo - Rnd Corners.png"
                 alt="eatZone logo"
                 width={32}
                 height={32}
@@ -101,8 +101,8 @@ export default function LandingPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Stop wondering which foods make you feel bad. Our AI identifies ingredients and shows you exactly
-              how different foods affect your symptoms - so you can eat with confidence.
+              Stop guessing about food-symptom connections. Our intelligent tracking reveals the correlations between
+              what you eat and how you feel, uncovering your unique food-feeling patterns through systematic discovery.
             </p>
 
             {/* Mobile CTA */}
@@ -154,7 +154,7 @@ export default function LandingPage() {
                   <CheckCircle
                     className={`h-4 w-4 ${getZoneTextClass('green')} mr-1`}
                   />
-                  Zone-based ingredient analysis
+                  Science-backed correlation discovery
                 </div>
                 <div className="flex items-center">
                   <CheckCircle
@@ -197,11 +197,11 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Stop Counting Calories. Start Understanding Food.
+              Stop Counting Calories. Start Understanding Correlations.
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Most apps obsess over numbers - calories, macros, weight. We focus on what actually matters:
-              how food makes you FEEL. Our zone system cuts through nutrition confusion with simple, visual insights.
+              the connections between what you eat and how you feel. Our intelligent system reveals patterns that transform guesswork into knowledge.
             </p>
           </div>
 
@@ -235,10 +235,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              How Zone Intelligence Works
+              How Correlation Intelligence Works
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Four simple steps to understand your food&apos;s impact on your body
+              Four systematic steps to discover your unique food-feeling patterns
             </p>
           </div>
 
@@ -257,10 +257,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                1. Track Your Symptoms
+                1. Track Using Research-Backed Categories
               </h3>
               <p className="text-muted-foreground">
-                Log symptoms across 4 key categories: Digestion, Energy, Mind, and Recovery with our simplified tracking system
+                Log symptoms across 4 key categories: Digestion, Energy, Mind, and Recovery using our science-based tracking system
               </p>
             </div>
 
@@ -278,10 +278,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                2. Analyze Your Foods
+                2. AI Identifies Correlations Over Time
               </h3>
               <p className="text-muted-foreground">
-                AI identifies ingredients from photos and classifies each one into Green, Yellow, or Red zones with visual color coding
+                Our intelligent system analyzes your data to identify food-symptom correlations, revealing patterns you might miss
               </p>
             </div>
 
@@ -299,10 +299,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                3. View Your Zone Insights
+                3. Discover Your Unique Food Fingerprint
               </h3>
               <p className="text-muted-foreground">
-                See your daily zone distribution and food history with clear visual summaries of your nutrition patterns
+                View personalized insights revealing your unique food-feeling patterns with clear visual summaries of correlations
               </p>
             </div>
 
@@ -320,10 +320,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                4. Discover Patterns
+                4. Make Informed Decisions
               </h3>
               <p className="text-muted-foreground">
-                Connect the dots between your food zones and symptoms with timeline views and pattern recognition
+                Use your correlation data to make confident food choices based on evidence, not guesswork
               </p>
             </div>
           </div>
@@ -333,10 +333,10 @@ export default function LandingPage() {
             <Card className="p-8 bg-card border border-border shadow-lg">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-foreground mb-2">
-                  Understanding Food Zones
+                  Science-Based Food Zones
                 </h3>
                 <p className="text-muted-foreground">
-                  Find your feel-good foods and ditch the rest with our proven zone-based methodology
+                  Discover your personal zone responses through systematic correlation tracking based on elimination diet research
                 </p>
               </div>
 
@@ -347,7 +347,7 @@ export default function LandingPage() {
                   </div>
                   <h4 className="font-semibold mb-2" style={getZoneStyle('green', 'color')}>Green Zone</h4>
                   <p className="text-sm text-muted-foreground">
-                    Whole, unprocessed foods that support optimal health
+                    Foods that consistently correlate with positive symptoms and energy in most people
                   </p>
                 </div>
 
@@ -357,7 +357,7 @@ export default function LandingPage() {
                   </div>
                   <h4 className="font-semibold mb-2" style={getZoneStyle('yellow', 'color')}>Yellow Zone</h4>
                   <p className="text-sm text-muted-foreground">
-                    Foods to test individually - some work for you, others don&apos;t
+                    Highly individual foods - your unique biology determines your personal response patterns
                   </p>
                 </div>
 
@@ -367,7 +367,7 @@ export default function LandingPage() {
                   </div>
                   <h4 className="font-semibold mb-2" style={getZoneStyle('red', 'color')}>Red Zone</h4>
                   <p className="text-sm text-muted-foreground">
-                    Foods that no one should eat - avoid to prevent symptoms
+                    Foods that commonly correlate with negative symptoms and inflammation across populations
                   </p>
                 </div>
               </div>
@@ -386,20 +386,20 @@ export default function LandingPage() {
                 Science-Backed
               </Badge>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                Built on Elimination Diet Science
+                Built on Proven Correlation Science
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Our zone classifications aren't arbitrary. They're based on decades of
-                elimination diet research and nutritional science. The same methodology
-                trusted by nutrition professionals worldwide.
+                Our approach combines elimination diet research, biological individuality
+                principles, and functional medicine methodology to reveal meaningful
+                food-symptom correlations through intelligent tracking.
               </p>
 
               <div className="space-y-4">
                 {[
-                  'Based on established elimination diet principles',
-                  'Zone classifications use peer-reviewed research',
-                  'Method trusted by nutrition professionals',
-                  'Scientifically grounded, not random AI decisions',
+                  'Elimination diet correlation methodology',
+                  'Biological individuality research principles',
+                  'Functional medicine symptoms-as-signals approach',
+                  'Evidence-based food categorization system',
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
                     <CheckCircle
@@ -425,11 +425,11 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="bg-card border-2 border-primary/30 shadow-lg p-8 text-center">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Find Your Feel-Good Foods Today
+              Discover Your Food-Feeling Patterns Today
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Stop being a passenger to your symptoms. Become the pilot of your recovery
-              with proven zone-based methodology.
+              Stop guessing about food connections. Uncover your unique correlations
+              with science-backed intelligent tracking.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -449,7 +449,7 @@ export default function LandingPage() {
             </div>
 
             <p className="text-sm text-muted-foreground mt-6">
-              No credit card required • Works offline • PWA installation • Cross-device sync
+              No credit card required • Intelligent correlation discovery • PWA installation • Cross-device sync
             </p>
           </Card>
         </div>
@@ -462,7 +462,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Image
-                  src="/new logo.png"
+                  src="/eatZone Logo - Rnd Corners.png"
                   alt="eatZone logo"
                   width={24}
                   height={24}
@@ -471,8 +471,8 @@ export default function LandingPage() {
                 <span className="text-lg font-bold text-foreground">eatZone</span>
               </div>
               <p className="text-muted-foreground">
-                Smart food tracking with zone-based ingredient intelligence.
-                Understand your food&apos;s impact with AI-powered analysis.
+                Intelligent correlation discovery through science-based tracking.
+                Uncover your unique food-feeling patterns with systematic analysis.
               </p>
             </div>
 
@@ -513,7 +513,7 @@ export default function LandingPage() {
                   <span className="text-muted-foreground">Complete data ownership</span>
                 </li>
                 <li>
-                  <span className="text-muted-foreground">Evidence-based zone methodology</span>
+                  <span className="text-muted-foreground">Evidence-based correlation methodology</span>
                 </li>
                 <li>
                   <span className="text-muted-foreground">
@@ -526,7 +526,7 @@ export default function LandingPage() {
 
           <div className="border-t border-border mt-8 pt-8 text-center">
             <p className="text-gray-400">
-              © 2025 eatZone. Smart food tracking with zone intelligence.
+              © 2025 eatZone. Intelligent correlation discovery through science-based tracking.
             </p>
           </div>
         </div>

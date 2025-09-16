@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     url: 'https://eat.zone',
     images: [
       {
-        url: '/new logo.png',
+        url: '/eatZone Logo - Rnd Corners.png',
         width: 512,
         height: 512,
         alt: 'eatZone - Smart Food Tracking',
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     title: 'eatZone - Smart Food Tracking with Zone Intelligence',
     description:
       'AI analyzes your food photos and classifies ingredients into Green, Yellow, and Red zones.',
-    images: ['/new logo.png'],
+    images: ['/eatZone Logo - Rnd Corners.png'],
   },
   robots: {
     index: true,

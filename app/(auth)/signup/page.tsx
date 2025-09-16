@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getZoneTextClass } from '@/lib/utils/zone-colors';
+import { getZoneTextClass, getZoneBgStyle } from '@/lib/utils/zone-colors';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,9 @@ import {
   Loader2,
   CheckCircle,
   AlertTriangle,
+  ArrowRight,
 } from 'lucide-react';
+import Image from 'next/image';
 // Remove direct database import - we'll use the API route instead
 import { useAuth } from '@/features/auth/components/auth-provider';
 
@@ -56,10 +58,10 @@ function SignupForm() {
   // Show loading while checking auth state
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -136,22 +138,28 @@ function SignupForm() {
     isValidEmail && isPasswordStrong && passwordsMatch && agreeToTerms;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100">
+      <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
               <Link href="/">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Home
               </Link>
             </Button>
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded"></div>
-              <span className="text-lg font-bold text-gray-900">Puls</span>
+              <Image
+                src="/eatZone Logo - Rnd Corners.png"
+                alt="eatZone logo"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+              <span className="text-lg font-bold text-foreground">eatZone</span>
             </div>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
               <Link href="/login">Sign In</Link>
             </Button>
           </div>
@@ -165,18 +173,21 @@ function SignupForm() {
           <div className="text-center">
             <Badge variant="secondary" className="mb-4">
               <Shield className="h-3 w-3 mr-1" />
-              100% Private & Local
+              Privacy-First • AI-Powered
             </Badge>
           </div>
 
           {/* Signup Card */}
-          <Card className="border-0 shadow-xl">
+          <Card className="bg-card border border-border shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">
-                Create Your Account
+              <CardTitle className="text-2xl font-bold text-foreground">
+                Connect Food to{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500">
+                  Feeling
+                </span>
               </CardTitle>
-              <CardDescription>
-                Start tracking your health privately on this device
+              <CardDescription className="text-muted-foreground">
+                Start discovering your unique food-feeling patterns with intelligent tracking
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -336,7 +347,7 @@ function SignupForm() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12"
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
                   disabled={!isFormValid || isLoading}
                 >
                   {isLoading ? (
@@ -345,17 +356,19 @@ function SignupForm() {
                       Creating Account...
                     </>
                   ) : (
-                    'Create Account'
+                    <>
+                      Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
                   )}
                 </Button>
               </form>
 
               <div className="text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Already have an account?{' '}
                   <Link
                     href="/login"
-                    className="text-blue-600 hover:text-blue-500 font-medium"
+                    className="text-primary hover:text-primary/80 font-medium"
                   >
                     Sign in here
                   </Link>
@@ -363,15 +376,15 @@ function SignupForm() {
               </div>
 
               {/* Privacy Notice */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-900 mb-2 flex items-center">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Why Your Privacy Matters
+              <div className="bg-card border border-border p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center">
+                  <Shield className="h-4 w-4 mr-2 text-primary" />
+                  Privacy-First Cloud Storage
                 </h4>
-                <ul className="text-xs text-blue-700 space-y-1">
-                  <li>• Your health data never leaves this device</li>
-                  <li>• No cloud storage or third-party access</li>
-                  <li>• You own and control all your information</li>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• Secure cloud storage with encryption</li>
+                  <li>• Complete data ownership and control</li>
+                  <li>• Sync across devices with privacy protection</li>
                   <li>• Export your data anytime</li>
                 </ul>
               </div>
@@ -380,23 +393,22 @@ function SignupForm() {
 
           {/* Desktop-specific content */}
           <div className="hidden md:block text-center">
-            <div className="text-sm text-gray-500 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               <p>
                 For the best experience, use this app on your mobile device.
               </p>
-              <p>You can install it as a PWA for offline access.</p>
+              <p>You can install it as a PWA for app-like experience.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6">
+      <footer className="text-muted-foreground py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm">
             <p>
-              © 2024 Puls. Your Body&apos;s Compass - Built with privacy in
-              mind.
+              © 2025 eatZone. Intelligent correlation discovery through science-based tracking.
             </p>
           </div>
         </div>

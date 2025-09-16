@@ -159,7 +159,10 @@ export default function EditFoodPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Loading food...</p>
+        </div>
       </div>
     );
   }

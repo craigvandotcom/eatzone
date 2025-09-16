@@ -2,6 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { DataLoadingState } from '@/components/ui/loading-states';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -431,7 +432,16 @@ function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background">
+          <DataLoadingState
+            message="Loading signup page..."
+            className="min-h-screen justify-center"
+          />
+        </div>
+      }
+    >
       <SignupForm />
     </Suspense>
   );

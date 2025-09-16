@@ -9,9 +9,21 @@ const inter = Inter({ subsets: ['latin'] });
 
 // Centralized metadata using Next.js App Router conventions
 export const metadata: Metadata = {
-  title: 'eatZone - Your Food Tracking Companion',
+  title: 'eatZone - Smart Food Tracking with Zone Intelligence',
   description:
-    'Private food and symptom tracking with AI-powered ingredient analysis. Your data stays secure.',
+    'AI analyzes your food photos and classifies ingredients into Green, Yellow, and Red zones. Track patterns between your food choices and symptoms with secure cloud sync.',
+  keywords: [
+    'food tracking',
+    'ingredient analysis',
+    'zone-based nutrition',
+    'symptom tracking',
+    'AI food analysis',
+    'health monitoring',
+    'nutrition app',
+    'food diary',
+    'symptom patterns',
+  ],
+  authors: [{ name: 'eatZone' }],
   manifest: '/manifest.json',
   applicationName: 'eatZone',
   appleWebApp: {
@@ -21,6 +33,33 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'eatZone',
+    title: 'eatZone - Smart Food Tracking with Zone Intelligence',
+    description:
+      'AI analyzes your food photos and classifies ingredients into Green, Yellow, and Red zones. Track patterns between your food choices and symptoms.',
+    url: 'https://eat.zone',
+    images: [
+      {
+        url: '/new logo.png',
+        width: 512,
+        height: 512,
+        alt: 'eatZone - Smart Food Tracking',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'eatZone - Smart Food Tracking with Zone Intelligence',
+    description:
+      'AI analyzes your food photos and classifies ingredients into Green, Yellow, and Red zones.',
+    images: ['/new logo.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
   // The 'apple-icon.png' in the 'app/' directory is automatically detected.
   // No need to add it to the 'icons' array here for the apple-touch-icon link.

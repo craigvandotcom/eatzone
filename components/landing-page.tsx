@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { getZoneTextClass } from '@/lib/utils/zone-colors';
+import { getZoneTextClass, getZoneStyle, getZoneBgStyle } from '@/lib/utils/zone-colors';
 import {
   Card,
   CardContent,
@@ -16,7 +16,6 @@ import {
   Shield,
   BarChart3,
   Camera,
-  Utensils,
   Activity,
   CheckCircle,
   ArrowRight,
@@ -30,53 +29,40 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: Camera,
-      title: 'AI-Powered Capture',
+      icon: Activity,
+      title: 'Simplified Symptom Tracking',
       description:
-        'Take a photo of your food or drink and let AI analyze it for you',
-      color: 'from-green-400 to-emerald-500',
-    },
-    {
-      icon: Shield,
-      title: 'Privacy by Design',
-      description:
-        'Your health data never leaves your device - complete privacy guaranteed',
-      color: 'from-blue-400 to-cyan-500',
-    },
-    {
-      icon: BarChart3,
-      title: 'Visual Insights',
-      description:
-        "Beautiful charts and progress tracking to understand your body's patterns",
+        'Finally understand what triggers your symptoms with our 4-category system: Digestion, Energy, Mind, Recovery',
       color: 'from-purple-400 to-pink-500',
     },
     {
-      icon: Smartphone,
-      title: 'Comprehensive Tracking',
-      description: 'Monitor foods, symptoms, and more in one unified app',
-      color: 'from-amber-400 to-orange-500',
+      icon: Camera,
+      title: 'Multi-Image AI Analysis',
+      description:
+        'Never guess about ingredients again. Take multiple photos and AI identifies everything, classifying each into health zones',
+      color: 'from-green-400 to-emerald-500',
+    },
+    {
+      icon: BarChart3,
+      title: 'Zone-Based Intelligence',
+      description:
+        'See food impact at a glance - no complex numbers. Green, Yellow, Red zones cut through nutrition confusion',
+      color: 'from-green-500 via-yellow-500 to-red-500',
+    },
+    {
+      icon: Shield,
+      title: 'Privacy-First Cloud',
+      description:
+        'Your health data stays private, always. Secure cloud storage with encryption and complete data ownership',
+      color: 'from-blue-400 to-cyan-500',
     },
   ];
 
-  const trackingCategories = [
-    {
-      icon: Utensils,
-      name: 'Foods',
-      color: getZoneTextClass('green'),
-      description: 'Ingredient analysis',
-    },
-    {
-      icon: Activity,
-      name: 'Symptoms',
-      color: getZoneTextClass('red'),
-      description: 'Health monitoring',
-    },
-  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
@@ -87,13 +73,13 @@ export default function LandingPage() {
                 height={32}
                 className="w-8 h-8"
               />
-              <span className="text-xl font-bold text-gray-900">eatZone</span>
+              <span className="text-xl font-bold text-foreground">eatZone</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link href="/login">Log In</Link>
+              <Button variant="outline" className="text-foreground border-border hover:bg-accent hover:text-accent-foreground" asChild>
+                <Link href="/login">Sign In</Link>
               </Button>
-              <Button asChild>
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
                 <Link href="/signup">Get Started</Link>
               </Button>
             </div>
@@ -102,47 +88,47 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-center lg:text-left">
             <Badge variant="secondary" className="mb-4">
-              Private • Offline-First • AI-Powered
+              Symptom-Focused • AI-Powered • Privacy-First
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Your Food{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500">
-                Tracking Companion
+            <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
+              Connect Food to{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500">
+                Feeling
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Track your food intake and symptoms with high-speed logging and
-              AI-powered ingredient analysis. All while keeping your data
-              completely secure and private.
+              Stop wondering which foods make you feel bad. Our AI identifies ingredients and shows you exactly
+              how different foods affect your symptoms - so you can eat with confidence.
             </p>
 
             {/* Mobile CTA */}
             <div className="lg:hidden space-y-4">
-              <Button size="lg" className="w-full" asChild>
+              <Button size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
                 <Link href="/signup">
-                  Start Tracking <ArrowRight className="ml-2 h-4 w-4" />
+                  Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <p className="text-sm text-muted-foreground">
-                Works best on mobile • Install as PWA for native experience
+                Works best on mobile • Install as PWA • Syncs across devices
               </p>
             </div>
 
             {/* Desktop CTA */}
             <div className="hidden lg:block space-y-6">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" asChild>
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
                   <Link href="/signup">
-                    Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+                    Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
+                  className="text-foreground border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => setShowQR(!showQR)}
                 >
                   <QrCode className="mr-2 h-4 w-4" />
@@ -151,7 +137,7 @@ export default function LandingPage() {
               </div>
 
               {showQR && (
-                <Card className="w-fit">
+                <Card className="w-fit bg-card border border-border">
                   <CardContent className="p-4">
                     <div className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center">
                       <QrCode className="h-16 w-16 text-gray-400" />
@@ -168,13 +154,13 @@ export default function LandingPage() {
                   <CheckCircle
                     className={`h-4 w-4 ${getZoneTextClass('green')} mr-1`}
                   />
-                  No account required to try
+                  Zone-based ingredient analysis
                 </div>
                 <div className="flex items-center">
                   <CheckCircle
                     className={`h-4 w-4 ${getZoneTextClass('green')} mr-1`}
                   />
-                  Data stays on your device
+                  Secure cloud sync
                 </div>
               </div>
             </div>
@@ -182,47 +168,15 @@ export default function LandingPage() {
 
           {/* Hero Visual */}
           <div className="relative">
-            <div className="relative mx-auto w-64 h-[500px] lg:w-80 lg:h-[600px]">
+            <div className="relative mx-auto w-64 h-[580px] lg:w-80 lg:h-[700px]">
               {/* Phone Frame */}
               <div className="absolute inset-0 bg-gray-900 rounded-[2.5rem] p-2">
                 <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden">
-                  {/* Mock App Interface */}
-                  <div className="h-full bg-gradient-to-br from-blue-50 to-green-50 p-4">
-                    <div className="text-center mb-8">
-                      <h3 className="font-semibold text-gray-900 mb-2">
-                        Your Food Tracking Companion
-                      </h3>
-                      <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
-                        <Image
-                          src="/new logo.png"
-                          alt="eatZone logo"
-                          width={64}
-                          height={64}
-                          className="w-16 h-16"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Mock tracking buttons */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {trackingCategories.map((category, index) => (
-                        <div
-                          key={index}
-                          className="bg-white rounded-lg p-3 shadow-sm"
-                        >
-                          <category.icon
-                            className={`h-6 w-6 ${category.color} mb-2`}
-                          />
-                          <p className="text-xs font-medium text-gray-900">
-                            {category.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {category.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <img
+                    src="/screenshots/step3-view-insights.png"
+                    alt="eatZone Dashboard"
+                    className="w-full h-full object-cover rounded-[2rem]"
+                  />
                 </div>
               </div>
             </div>
@@ -239,16 +193,15 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-muted/50 py-16 lg:py-24">
+      <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              High-Speed Logging, Clear Insights
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Stop Counting Calories. Start Understanding Food.
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Designed for busy lives. Capture your food and symptoms in
-              seconds, then get powerful insights without compromising your
-              privacy.
+              Most apps obsess over numbers - calories, macros, weight. We focus on what actually matters:
+              how food makes you FEEL. Our zone system cuts through nutrition confusion with simple, visual insights.
             </p>
           </div>
 
@@ -256,7 +209,7 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow"
+                className="text-center bg-card border border-border shadow-lg hover:shadow-xl transition-shadow"
               >
                 <CardHeader>
                   <div
@@ -277,45 +230,190 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Privacy Section */}
+      {/* How it Works Section */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              How Zone Intelligence Works
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Four simple steps to understand your food&apos;s impact on your body
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8 mb-16">
+            {/* Step 1: Track Symptoms */}
+            <div className="text-center">
+              <div className="relative mx-auto w-64 h-80 mb-6">
+                <div className="absolute inset-0 bg-gray-900 rounded-3xl p-1">
+                  <div className="w-full h-full bg-white rounded-3xl overflow-hidden">
+                    <img
+                      src="/screenshots/step1-track-symptoms.png"
+                      alt="Track symptoms interface"
+                      className="w-full h-full object-cover rounded-3xl"
+                    />
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                1. Track Your Symptoms
+              </h3>
+              <p className="text-muted-foreground">
+                Log symptoms across 4 key categories: Digestion, Energy, Mind, and Recovery with our simplified tracking system
+              </p>
+            </div>
+
+            {/* Step 2: Analyze Foods */}
+            <div className="text-center">
+              <div className="relative mx-auto w-64 h-80 mb-6">
+                <div className="absolute inset-0 bg-gray-900 rounded-3xl p-1">
+                  <div className="w-full h-full bg-white rounded-3xl overflow-hidden">
+                    <img
+                      src="/screenshots/step2-analyze-foods.png"
+                      alt="AI food analysis with zone colors"
+                      className="w-full h-full object-cover rounded-3xl"
+                    />
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                2. Analyze Your Foods
+              </h3>
+              <p className="text-muted-foreground">
+                AI identifies ingredients from photos and classifies each one into Green, Yellow, or Red zones with visual color coding
+              </p>
+            </div>
+
+            {/* Step 3: View Insights */}
+            <div className="text-center">
+              <div className="relative mx-auto w-64 h-80 mb-6">
+                <div className="absolute inset-0 bg-gray-900 rounded-3xl p-1">
+                  <div className="w-full h-full bg-white rounded-3xl overflow-hidden">
+                    <img
+                      src="/screenshots/step3-view-insights.png"
+                      alt="Dashboard with zone summary and food entries"
+                      className="w-full h-full object-cover rounded-3xl"
+                    />
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                3. View Your Zone Insights
+              </h3>
+              <p className="text-muted-foreground">
+                See your daily zone distribution and food history with clear visual summaries of your nutrition patterns
+              </p>
+            </div>
+
+            {/* Step 4: Discover Patterns */}
+            <div className="text-center">
+              <div className="relative mx-auto w-64 h-80 mb-6">
+                <div className="absolute inset-0 bg-gray-900 rounded-3xl p-1">
+                  <div className="w-full h-full bg-white rounded-3xl overflow-hidden">
+                    <img
+                      src="/screenshots/step4-discover-patterns.png"
+                      alt="Symptom timeline and pattern discovery"
+                      className="w-full h-full object-cover rounded-3xl"
+                    />
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                4. Discover Patterns
+              </h3>
+              <p className="text-muted-foreground">
+                Connect the dots between your food zones and symptoms with timeline views and pattern recognition
+              </p>
+            </div>
+          </div>
+
+          {/* Zone Legend */}
+          <div className="max-w-4xl mx-auto mt-24 lg:mt-32">
+            <Card className="p-8 bg-card border border-border shadow-lg">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-foreground mb-2">
+                  Understanding Food Zones
+                </h3>
+                <p className="text-muted-foreground">
+                  Find your feel-good foods and ditch the rest with our proven zone-based methodology
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center" style={getZoneBgStyle('green')}>
+                    <CheckCircle className="h-8 w-8 text-white" />
+                  </div>
+                  <h4 className="font-semibold mb-2" style={getZoneStyle('green', 'color')}>Green Zone</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Whole, unprocessed foods that support optimal health
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center" style={getZoneBgStyle('yellow')}>
+                    <span className="text-white font-bold text-xl">!</span>
+                  </div>
+                  <h4 className="font-semibold mb-2" style={getZoneStyle('yellow', 'color')}>Yellow Zone</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Foods to test individually - some work for you, others don&apos;t
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center" style={getZoneBgStyle('red')}>
+                    <span className="text-white font-bold text-xl">×</span>
+                  </div>
+                  <h4 className="font-semibold mb-2" style={getZoneStyle('red', 'color')}>Red Zone</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Foods that no one should eat - avoid to prevent symptoms
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Science-Backed Methodology Section */}
       <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <Badge variant="secondary" className="mb-4">
-                <Shield className="h-3 w-3 mr-1" />
-                Privacy First
+                <BarChart3 className="h-3 w-3 mr-1" />
+                Science-Backed
               </Badge>
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-                Your Data Stays With You
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
+                Built on Elimination Diet Science
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Unlike other health apps, we believe your personal food and
-                health data should remain personal. Everything is stored
-                securely in the cloud with advanced encryption and privacy
-                controls.
+                Our zone classifications aren't arbitrary. They're based on decades of
+                elimination diet research and nutritional science. The same methodology
+                trusted by nutrition professionals worldwide.
               </p>
 
               <div className="space-y-4">
                 {[
-                  'Secure cloud storage with encryption',
-                  'AI processing happens securely',
-                  'Export your data anytime',
-                  'No tracking or analytics',
+                  'Based on established elimination diet principles',
+                  'Zone classifications use peer-reviewed research',
+                  'Method trusted by nutrition professionals',
+                  'Scientifically grounded, not random AI decisions',
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
                     <CheckCircle
                       className={`h-5 w-5 ${getZoneTextClass('green')} mr-3`}
                     />
-                    <span className="text-gray-700">{item}</span>
+                    <span className="text-muted-foreground">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="relative">
-              <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-green-100 rounded-2xl flex items-center justify-center">
-                <Shield className="h-24 w-24 text-gray-600" />
+              <div className="w-full h-64 bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl flex items-center justify-center">
+                <BarChart3 className="h-24 w-24 text-gray-600" />
               </div>
             </div>
           </div>
@@ -323,40 +421,42 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-blue-500 to-green-500 py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            Start Understanding Your Body Today
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands who&apos;ve discovered patterns in their health with
-            completely private tracking.
-          </p>
+      <section className="py-16 lg:py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="bg-card border-2 border-primary/30 shadow-lg p-8 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Find Your Feel-Good Foods Today
+            </h2>
+            <p className="text-xl text-muted-foreground mb-8">
+              Stop being a passenger to your symptoms. Become the pilot of your recovery
+              with proven zone-based methodology.
+            </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" asChild>
-              <Link href="/signup">
-                Create Free Account <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-white border-white hover:bg-white hover:text-blue-600"
-              asChild
-            >
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold" asChild>
+                <Link href="/signup">
+                  Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                asChild
+              >
+                <Link href="/login">Sign In</Link>
+              </Button>
+            </div>
 
-          <p className="text-sm text-blue-100 mt-6">
-            No credit card required • Works offline • Install as app
-          </p>
+            <p className="text-sm text-muted-foreground mt-6">
+              No credit card required • Works offline • PWA installation • Cross-device sync
+            </p>
+          </Card>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
+      <footer className="text-muted-foreground py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -368,21 +468,21 @@ export default function LandingPage() {
                   height={24}
                   className="w-6 h-6"
                 />
-                <span className="text-lg font-bold text-white">eatZone</span>
+                <span className="text-lg font-bold text-foreground">eatZone</span>
               </div>
-              <p className="text-gray-400">
-                Your Food Tracking Companion - Private food and symptom tracking
-                with AI ingredient analysis.
+              <p className="text-muted-foreground">
+                Smart food tracking with zone-based ingredient intelligence.
+                Understand your food&apos;s impact with AI-powered analysis.
               </p>
             </div>
 
             <div>
-              <h3 className="text-white font-semibold mb-4">Product</h3>
+              <h3 className="text-foreground font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     href="/signup"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-foreground transition-colors"
                   >
                     Get Started
                   </Link>
@@ -390,13 +490,13 @@ export default function LandingPage() {
                 <li>
                   <Link
                     href="/login"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-foreground transition-colors"
                   >
                     Sign In
                   </Link>
                 </li>
                 <li>
-                  <span className="text-gray-500">
+                  <span className="text-muted-foreground/60">
                     Mobile App (Coming Soon)
                   </span>
                 </li>
@@ -404,26 +504,29 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h3 className="text-white font-semibold mb-4">Privacy</h3>
+              <h3 className="text-foreground font-semibold mb-4">Privacy & Science</h3>
               <ul className="space-y-2">
                 <li>
-                  <span className="text-gray-400">No data collection</span>
+                  <span className="text-muted-foreground">Encrypted cloud storage</span>
                 </li>
                 <li>
-                  <span className="text-gray-400">Local storage only</span>
+                  <span className="text-muted-foreground">Complete data ownership</span>
                 </li>
                 <li>
-                  <span className="text-gray-400">
-                    Open source (Coming Soon)
+                  <span className="text-muted-foreground">Evidence-based zone methodology</span>
+                </li>
+                <li>
+                  <span className="text-muted-foreground">
+                    Export your data anytime
                   </span>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+          <div className="border-t border-border mt-8 pt-8 text-center">
             <p className="text-gray-400">
-              © 2024 eatZone. Built with privacy in mind.
+              © 2025 eatZone. Smart food tracking with zone intelligence.
             </p>
           </div>
         </div>

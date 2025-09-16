@@ -8,9 +8,9 @@
 
 # **Project Reference: eatZone - Food & Symptom Tracker PWA**
 
-**Version:** 1.0.0
-**Date:** July 11, 2025
-**Author:** v0
+**Version:** 2.0.0
+**Date:** September 15, 2025
+**Author:** Updated to reflect actual implementation
 
 ## Table of Contents
 
@@ -28,34 +28,41 @@ eatZone is a mobile-first Progressive Web App (PWA) designed to be your "Food Tr
 
 ### 2. Core Features & Functionality
 
-The application is organized into two primary tracking categories, accessible via a main tab bar.
+The application is organized into four primary views, accessible via a tab bar navigation system.
 
-| Category     | Icon | Purpose                                                | Key Visualizations                                                                                                                                                                                                                                                                                                                                       |
-| ------------ | ---- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Foods**    | 🍽️   | Log foods and their constituent ingredients.           | - **Food Category Pie Chart:** Shows the daily ratio of "Good" (green), "Maybe" (yellow), and "Bad" (red) ingredients. `<br>` - **Vertical Organic "Battery":** Shows the percentage of daily ingredients that were organic. `<br>` - **Dual-Bar System (per food entry):** Visualizes the health and organic composition of each individual food entry. |
-| **Symptoms** | ⚡   | Log physical or emotional symptoms and their severity. | - **Daily Count:** A simple, large number showing total symptoms logged for the day.                                                                                                                                                                                                                                                                     |
+| View         | Icon           | Purpose                                               | Key Visualizations                                                                                                                                                                                                                                                                                                                                       |
+| ------------ | -------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Insights** | BarChart3 📊   | Overview dashboard with analytics and trends          | - **Recent Activity:** Combined view of recent foods and symptoms with interactive charts. `<br>` - **Trend Analysis:** Visual representations of patterns over time. `<br>` - **Health Score:** Aggregated wellness indicators based on food zones and symptom patterns.                                                                            |
+| **Food**     | Utensils 🍽️   | Log foods and their constituent ingredients           | - **Zone Distribution:** Shows the daily ratio of "Green" (good), "Yellow" (maybe), and "Red" (bad) ingredients. `<br>` - **Organic Percentage:** Shows the percentage of daily ingredients that were organic. `<br>` - **Individual Food Cards:** Visualizes the health and organic composition of each food entry with zone bars.              |
+| **Signals**  | Activity ⚡    | Log symptoms using simplified 4-category system      | - **Symptom Categories:** Digestion, Energy, Mind, Recovery tracking. `<br>` - **Daily Summary:** Visual representation of symptoms by category. `<br>` - **Trend Tracking:** Historical view of symptom patterns over time.                                                                                                                           |
+| **Settings** | Settings ⚙️    | User preferences and data management                  | - **Account Management:** User profile and logout. `<br>` - **Data Export/Import:** Backup and restore functionality. `<br>` - **Theme Settings:** Light/dark mode preferences. `<br>` - **Privacy Controls:** Data deletion and privacy settings.                                                                                                |
 
 #### 2.1. Data Entry Methods
 
-- **Quick Capture (Camera):** The primary interaction for Liquids, Foods, and Stools. Tapping the corresponding icon in the bottom navigation opens the camera. A photo is taken, and a placeholder entry is created with a status like "Analyzing...".
-  - Ideally, the camera would be able to capture the image and send it to the AI for analysis, and then display the results in the manual edit UI for the user to review and update.
-- **Manual Entry:** For each category, a detailed dialog allows for the manual creation or editing of entries. This includes:
+- **Quick Capture (Camera):** The primary interaction for Foods and Symptoms. Accessed via the floating action button (FAB) on mobile or dedicated buttons on desktop.
+  - **Multi-Image Support:** Camera capture supports multiple images for better food analysis
+  - **Smart Routing:** Images are temporarily stored in sessionStorage and users are redirected to the appropriate entry form
+  - **AI Analysis:** Images are sent to OpenRouter API for ingredient identification and health zone classification
+  - **Real-time Feedback:** Users see "Analyzing..." status with progress indicators during AI processing
 
-- **Foods:** A sophisticated ingredient list manager with options for marking items as organic and specifying the cooking method.
-- **Liquids:** Type selection and volume entry.
-- **Stools:** A Bristol Stool Scale slider (1-7) and selectors for color and consistency.
-- **Symptoms:** A multi-entry system for logging several symptoms at once, each with a severity rating (1-5).
-- **Editing:** All entries in the "Recent Entries" list can be tapped to open the corresponding manual entry dialog, pre-filled with the entry's data for editing.
+- **Manual Entry:** Dedicated forms for each category accessible through the navigation system:
+  - **Foods:** Comprehensive ingredient management with zone classification, organic options, and cooking methods
+  - **Symptoms:** Simplified 4-category system (Digestion, Energy, Mind, Recovery) with timestamped entries
+  - **Responsive Design:** Forms adapt between modal dialogs (desktop) and bottom sheet drawers (mobile)
+
+- **Background Processing:** AI analysis happens asynchronously with retry mechanisms for failed attempts
+- **Editing Capabilities:** All entries can be modified through their respective detail views or list interfaces
 
 ### 3. Technical Architecture
 
-- **Framework:** **Next.js 15** with the App Router.
-- **Language:** **TypeScript**.
-- **Styling:** **Tailwind CSS** for utility-first styling.
-- **UI Components:** **shadcn/ui** provides the foundational, unstyled components (Dialog, Button, Input, Slider, etc.), which are then styled with Tailwind CSS.
-- **State Management:** **Reactive Data Layer** - State is managed through **Dexie.js** with **`dexie-react-hooks`** for reactive data binding. The `useLiveQuery` hook automatically updates components when underlying IndexedDB data changes, eliminating manual state synchronization.
-- **Data Persistence:** **Local-First Architecture** - All user data is stored locally on the user's device using **IndexedDB** (via **Dexie.js** library) for robust, privacy-focused storage. This approach ensures maximum user privacy and offline functionality.
-- **Deployment:** Hosted on **Vercel** for seamless integration with Next.js and serverless functions.
+- **Framework:** **Next.js 15** with the App Router and React 19
+- **Language:** **TypeScript** with strict mode enabled
+- **Styling:** **Tailwind CSS** for utility-first styling with custom design system
+- **UI Components:** **shadcn/ui** provides the foundational, unstyled components (Dialog, Button, Input, Slider, etc.), which are then styled with Tailwind CSS
+- **State Management:** **Cloud-First with SWR** - State is managed through **SWR** hooks for efficient data fetching and caching. Real-time updates via Supabase subscriptions eliminate manual state synchronization
+- **Data Persistence:** **Cloud-Based with Supabase** - All user data is stored securely in Supabase PostgreSQL database with real-time synchronization. Local caching via SWR provides offline-like performance while maintaining cloud backup and multi-device sync
+- **Authentication:** **Supabase Auth** with email/password and session management
+- **Deployment:** Hosted on **Vercel** for seamless integration with Next.js and serverless functions
 - **PWA Implementation:**
 
 - `public/manifest.json`: Defines the app's name, icons, theme colors, and display mode.
@@ -249,48 +256,48 @@ puls/
 
 #### 3.1. Data Storage Strategy
 
-**Philosophy:** Privacy by Design - Local-First Storage
+**Philosophy:** Secure Cloud-First with Privacy Controls
 
-The application follows a **local-first** data storage approach, prioritizing user privacy and data ownership:
+The application follows a **cloud-first** data storage approach, providing secure backup and multi-device sync while maintaining strong privacy controls:
 
-- **Primary Storage:** **IndexedDB** via **Dexie.js** library
-  - Stores all user health data locally on the device
-  - Supports complex data structures and relationships
-  - Enables robust offline functionality
-  - Provides transactional, asynchronous operations
-  - **Reactive State Management:** `dexie-react-hooks` provides `useLiveQuery` for automatic UI updates
-  - **Clean Data Layer:** Centralized database operations in `lib/db.ts` separate from UI components
+- **Primary Storage:** **Supabase PostgreSQL** database
+  - Stores all user health data securely in the cloud with encryption at rest
+  - Supports complex relationships and efficient querying
+  - Enables real-time synchronization across devices
+  - Provides ACID transactions and data integrity
+  - **Real-time State Management:** SWR with Supabase real-time subscriptions for automatic UI updates
+  - **Clean Data Layer:** Centralized database operations in `lib/supabase/` separate from UI components
 
-- **Privacy Benefits:**
-  - Zero sensitive health data stored on servers
-  - User maintains complete control over their data
-  - Eliminates data breach risks for personal health information
-  - Reduces regulatory compliance burden
+- **Privacy & Security Benefits:**
+  - Row Level Security (RLS) ensures users can only access their own data
+  - End-to-end authentication with secure session management
+  - No data sharing between users without explicit consent
+  - GDPR-compliant data handling and deletion
 
-- **Data Export/Import:** Built-in functionality for users to:
+- **Data Management:** Built-in functionality for users to:
   - Export their complete data set as JSON
   - Import previously exported data
-  - Migrate between devices manually
-  - Create personal backups
+  - Delete all personal data permanently
+  - Maintain full control over their health information
 
 #### 3.2. AI Analysis Flow (Privacy-Preserving)
 
-The AI analysis follows an **ephemeral processing** model that maintains privacy while optimizing for rapid iteration:
+The AI analysis follows an **ephemeral processing** model that maintains privacy while providing intelligent food analysis:
 
-**Architecture Strategy: Hybrid Workflow Approach**
+**Architecture Strategy: Direct OpenRouter Integration**
 
-The system uses a **visual workflow orchestrator** (n8n) combined with an **AI API aggregator** (OpenRouter) to maximize iteration speed and flexibility:
+The system uses **OpenRouter API** for AI processing with privacy-first design principles:
 
-1. **Capture:** User takes photo on frontend
-2. **Webhook Trigger:** Frontend sends image to Next.js API route (`/api/analyze`)
-3. **Workflow Orchestration:** API route forwards request to n8n webhook URL
-4. **AI Processing:** n8n workflow handles the complex AI logic:
-   - Calls OpenRouter API with configurable model selection
-   - Processes AI response and formats to match data interfaces
-   - Handles error cases and validation
-   - Returns structured JSON to webhook response
-5. **No Persistence:** **Critical** - All processing remains ephemeral
-6. **Local Storage:** Frontend receives structured data and saves to IndexedDB
+1. **Capture:** User takes photo(s) using multi-camera capture interface
+2. **Validation:** Images are validated for size, format, and count before processing
+3. **API Processing:** Next.js API route (`/api/analyze-image`) handles AI integration:
+   - Sends images directly to OpenRouter with GPT-4o vision model
+   - Uses structured prompts for consistent ingredient identification
+   - Validates AI responses with Zod schemas for type safety
+   - Implements comprehensive error handling and retry logic
+4. **Rate Limiting:** Upstash Redis provides rate limiting to prevent abuse
+5. **No Persistence:** **Critical** - All processing remains ephemeral on server
+6. **Cloud Storage:** Frontend receives structured data and saves to Supabase database
 
 **Key Privacy Principles:**
 
@@ -346,16 +353,16 @@ This hybrid approach provides the consistency of a curated list for common foods
 
 #### 3.3. User Authentication & Access Control
 
-**Authentication Philosophy:** Privacy-First with Local Account Management
+**Authentication Philosophy:** Secure Cloud Authentication with Privacy Controls
 
-Given the privacy-first, local-storage architecture, user authentication serves primarily as a device-level access control mechanism rather than traditional server-side user management:
+The application uses **Supabase Auth** for robust, secure user authentication while maintaining strict privacy controls:
 
 **Authentication Strategy:**
 
-- **Local Account Creation:** User accounts are created and stored locally on the device
-- **Device-Based Sessions:** Authentication sessions are maintained locally using secure browser storage
-- **Optional Server Sync:** Authentication tokens can be used for optional multi-device sync (future feature)
-- **Privacy Protection:** No personal health data is transmitted during authentication
+- **Cloud Account Management:** User accounts are securely managed by Supabase Auth
+- **Email/Password Authentication:** Standard email and password login with secure session management
+- **Multi-Device Sync:** Automatic synchronization across devices with secure authentication tokens
+- **Privacy Protection:** User data is isolated through Row Level Security (RLS) policies
 
 **Application Structure:**
 
@@ -363,13 +370,16 @@ Public Routes (No Authentication Required):
 ├── / (Landing Page)
 ├── /login (Sign In)
 ├── /signup (Create Account)
-├── /about (App Information)
-└── /privacy (Privacy Policy)
+└── /offline (Offline Fallback)
 
 Protected Routes (Authentication Required):
-├── /app (Main Health Tracker Interface)
-├── /app/insights (Analytics & Trends)
-└── /app/settings (User Preferences & Data Management)
+├── /app (Main Dashboard with 4 views)
+│   ├── Insights (Analytics & Trends)
+│   ├── Food (Food Tracking & Visualization)
+│   ├── Signals (Symptom Tracking)
+│   └── Settings (User Preferences & Data Management)
+├── /app/foods/add (Food Entry Form)
+└── /app/symptoms/add (Symptom Entry Form)
 
 For the MVP, the `/app/settings` page will serve as the central hub for account and data controls, consolidating functionality that might otherwise be on separate pages. This page will include:
 
@@ -384,24 +394,24 @@ For the MVP, the `/app/settings` page will serve as the central hub for account 
 
 **Implementation Details:**
 
-- **Local Authentication:** User credentials hashed and stored in IndexedDB
-- **Session Management:** JWT tokens stored in secure browser storage
-- **Biometric Integration:** Future support for WebAuthn/Touch ID/Face ID
-- **Data Isolation:** Each user account has isolated IndexedDB database
+- **Supabase Auth Integration:** Full authentication managed by Supabase with secure password hashing
+- **Session Management:** Automatic session refresh and secure token handling
+- **Real-time State Management:** AuthProvider context with useAuth hook for authentication state
+- **Route Protection:** Middleware-based route protection with automatic redirects
 
 **Security Considerations:**
 
-- **Local Password Hashing:** bcrypt or similar for local password storage
-- **Session Timeout:** Configurable auto-logout for security
-- **Device Fingerprinting:** Optional device recognition for enhanced security
-- **Rate Limiting:** Protection against brute force attacks on login
+- **Secure Password Storage:** Supabase handles secure password hashing and storage
+- **Session Security:** Automatic session refresh and secure token rotation
+- **Rate Limiting:** Built-in protection against brute force attacks
+- **HTTPS Enforcement:** All authentication requests secured with HTTPS
 
 **Data Recovery & Backup:**
 
-- **Primary Backup Method:** Export/Import Data functionality is the main recovery mechanism
-- **Device-Bound Accounts:** User accounts are tied to the device; no cloud-based account recovery
-- **Data Loss Prevention:** Clear user education about the importance of regular data exports
-- **No Password Recovery:** If a user forgets their password, they must reset the app and lose all data unless they have a manual backup
+- **Cloud-Based Recovery:** Password reset functionality through Supabase Auth
+- **Cross-Device Access:** Users can access their data from any device after authentication
+- **Data Export/Import:** Users can export all their data as JSON for backup purposes
+- **Account Recovery:** Standard email-based password recovery flow
 
 #### 3.4. Desktop vs Mobile Experience Strategy
 
@@ -705,22 +715,29 @@ Colors are based on HSL values defined in `app/globals.css` and `tailwind.config
 
 ### 5. Data Structures (TypeScript Interfaces)
 
-The following interfaces define the shape of the data stored in the application.
+The following interfaces define the shape of the data stored in the application, based on the actual Supabase database schema and TypeScript types.
 
 ```typescript
 interface Food {
   id: string;
   name: string; // e.g., "Lunch" or a user-defined name
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  ingredients: Ingredient[]; // A food entry is defined by its ingredients.
-  image?: string;
+  ingredients: Ingredient[]; // A food entry is defined by its ingredients
+  photo_url?: string; // Primary image for backward compatibility
+  image_urls?: string[]; // Array of all image URLs (supports multiple images)
   notes?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'beverage'; // Optional meal categorization
   status: 'pending_review' | 'analyzing' | 'processed';
+  retry_count?: number; // Number of retry attempts for background zoning
+  last_retry_at?: string; // ISO 8601 timestamp of last retry attempt
+  user_id: string; // Foreign key to user
+  created_at: string;
+  updated_at: string;
 }
 
 interface Ingredient {
   name: string;
-  isOrganic: boolean;
+  organic: boolean; // Renamed from 'isOrganic' to match Supabase schema
   cookingMethod?:
     | 'raw'
     | 'fried'
@@ -729,43 +746,43 @@ interface Ingredient {
     | 'grilled'
     | 'roasted'
     | 'other';
-  foodGroup:
-    | 'vegetable'
-    | 'fruit'
-    | 'protein'
-    | 'grain'
-    | 'dairy'
-    | 'fat'
-    | 'other';
-  zone: 'green' | 'yellow' | 'red';
-}
-
-interface Liquid {
-  id: string;
-  name: string; // e.g. "Morning Coffee"
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  amount: number; // in ml
-  type: 'water' | 'coffee' | 'tea' | 'juice' | 'soda' | 'dairy' | 'other';
-  notes?: string;
-  image?: string;
+  category?: string; // Main classification (e.g., "Proteins", "Vegetables", "Fruits")
+  group: string; // Primary classification (e.g., "Low-Sugar Berries", "Quality Animal Proteins", "Leafy Greens")
+  zone: 'green' | 'yellow' | 'red' | 'unzoned';
 }
 
 interface Symptom {
   id: string;
-  name: string;
-  severity: number; // 1-5
+  symptom_id: string; // Simplified symptom identifier (e.g., 'nausea', 'fatigue')
+  category: SymptomCategory; // 4-category system: digestion, energy, mind, recovery
+  name: string; // Human-readable symptom name
   timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
   notes?: string;
+  user_id: string; // Foreign key to user
+  created_at: string;
+  updated_at: string;
 }
 
-interface Stool {
+// Simplified symptom system types
+type SymptomCategory = 'digestion' | 'energy' | 'mind' | 'recovery';
+
+interface User {
   id: string;
-  timestamp: string; // ISO 8601 string (e.g., "2025-07-04T22:15:00.000Z")
-  bristolScale: number; // 1-7
-  color: 'brown' | 'green' | 'yellow' | 'black' | 'white' | 'red' | 'other';
-  hasBlood: boolean;
-  notes?: string;
-  image?: string;
+  email: string;
+  username?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Food statistics interface for selected date analysis
+interface FoodStats {
+  greenIngredients: number;
+  yellowIngredients: number;
+  redIngredients: number;
+  totalIngredients: number;
+  organicCount: number;
+  totalOrganicPercentage: number;
+  isFromSelectedDate: boolean;
 }
 ```
 
@@ -773,18 +790,90 @@ interface Stool {
 
 #### 6.1. Data Layer Architecture
 
-- **`lib/db.ts`**: **Centralized Data Layer** - Contains all Dexie.js database operations (`addFood`, `getSymptoms`, `updateLiquid`, etc.). Components interact with data through these functions, not directly with Dexie.
-- **`lib/hooks/`**: **Custom React Hooks** - Data-specific hooks that encapsulate `useLiveQuery` calls and business logic (e.g., `useTodaysFoods`, `useSymptomTrends`).
+- **`lib/supabase/`**: **Centralized Data Layer** - Contains all Supabase client operations and database queries. Components interact with data through SWR hooks and service functions.
+- **`lib/hooks/`**: **Custom React Hooks** - Data-specific hooks that encapsulate SWR calls and business logic (e.g., `useDashboardData`, `useFoodsForDate`, `useFoodStatsForDate`).
 
 #### 6.2. UI Components
 
-- **`app/page.tsx`**: **Main Layout Component** - Orchestrates the overall UI layout and handles routing between different views. Data operations are delegated to the data layer.
-- **Dialogs (`components/add-*-dialog.tsx`)**: A suite of four highly specialized forms for manual data entry. They manage their own internal form state and call back to the data layer with complete data objects upon submission.
-- **`components/camera-capture.tsx`**: A reusable, self-contained camera module. It handles the complexities of accessing the device camera, displaying the video stream, and capturing a frame. It is agnostic about _what_ is being captured, simply returning a base64 image string to the parent.
+- **`app/(protected)/app/page.tsx`**: **Main Dashboard Component** - Orchestrates the four-view dashboard layout with responsive design for mobile and desktop. Handles view switching and floating action button interactions.
+- **Form Components**: Dedicated form components for data entry with responsive modal/drawer patterns:
+  - Food entry forms with ingredient management and AI analysis integration
+  - Symptom entry forms with 4-category classification system
+- **`features/camera/components/multi-camera-capture.tsx`**: Advanced camera module supporting multiple image capture for better AI analysis. Handles device camera access, image validation, and temporary storage.
+- **Dashboard Views**: Modular view components for each tab:
+  - `InsightsView`: Analytics dashboard with recent activity and trends
+  - `FoodView`: Food tracking with zone visualization and date filtering
+  - `SignalsView`: Symptom tracking with category-based organization
+  - `SettingsView`: User preferences and data management
 
 #### 6.3. Visualization Components
 
-- `split-circular-progress.tsx`: Renders the two-part circle for the Liquids view.
-- `food-category-progress.tsx`: Renders the three-part pie chart for the Foods view.
-- `vertical-progress-bar.tsx`: Renders the "battery" for the daily organic total.
-- `food-composition-bar.tsx` & `
+- **Zone Bars**: Visual representation of ingredient health zones (green/yellow/red) with loading states and animations
+- **Charts and Progress Indicators**: Interactive charts for trends, statistics, and daily summaries using Recharts library
+- **Responsive Visualizations**: Adaptive chart components that work across mobile and desktop with touch-friendly interactions
+
+### 7. User Journeys & Workflows
+
+Based on the actual implementation, the following user journeys are supported:
+
+#### 7.1. Authentication Flow
+1. **Landing Page** (`/`) - Public information and call-to-action
+2. **Sign Up** (`/signup`) - Create new account with email/password
+3. **Login** (`/login`) - Authenticate existing users
+4. **Automatic Redirect** - Authenticated users redirected to dashboard
+5. **Session Management** - Persistent sessions with automatic refresh
+
+#### 7.2. Food Tracking Journey
+1. **Dashboard Access** - Navigate to Food view via bottom navigation or sidebar
+2. **Date Selection** - Use date picker to view/track food for specific dates
+3. **Quick Capture Flow**:
+   - Tap Floating Action Button (mobile) or camera button (desktop)
+   - Multi-camera capture interface opens
+   - Take multiple photos for better AI analysis
+   - Images stored temporarily in sessionStorage
+   - Automatic redirect to food entry form
+4. **AI Analysis Process**:
+   - Background API call to `/api/analyze-image`
+   - OpenRouter GPT-4o processes images
+   - Structured ingredient data returned
+   - Form pre-populated with AI results
+5. **Manual Entry/Review**:
+   - Review AI-suggested ingredients
+   - Add/remove ingredients manually
+   - Set organic status and cooking methods
+   - Add meal notes and categorization
+6. **Save & Visualization**:
+   - Data saved to Supabase database
+   - Real-time zone bar updates
+   - Food entry appears in daily list
+   - Statistics automatically recalculated
+
+#### 7.3. Symptom Tracking Journey
+1. **Signals View Access** - Navigate via bottom navigation
+2. **Quick Add Flow**:
+   - Tap FAB or navigate to `/app/symptoms/add`
+   - Select from 4-category system (Digestion, Energy, Mind, Recovery)
+   - Add timestamped symptom entry
+   - Optional notes and severity
+3. **Visualization**:
+   - Daily symptom summary by category
+   - Historical trend tracking
+   - Real-time dashboard updates
+
+#### 7.4. Insights & Analytics Journey
+1. **Dashboard Overview** - Default view showing recent activity
+2. **Trend Analysis** - Visual charts of patterns over time
+3. **Correlation Discovery** - Identify relationships between foods and symptoms
+4. **Historical Navigation** - Date-based filtering across all views
+
+#### 7.5. Data Management Journey
+1. **Settings Access** - Navigate to Settings view
+2. **Export Data** - Download complete JSON backup
+3. **Import Data** - Restore from previous backup
+4. **Account Management** - Logout, profile settings
+5. **Privacy Controls** - Data deletion options
+
+#### 7.6. Cross-Device Synchronization
+1. **Multi-Device Access** - Login from any device
+2. **Real-time Sync** - Automatic data synchronization via Supabase
+3. **Consistent Experience** - Same data and interface across devices

@@ -2,7 +2,6 @@
 
 import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getZoneTextClass } from '@/lib/utils/zone-colors';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -227,7 +226,7 @@ function SignupForm() {
                       {isValidEmail ? (
                         <>
                           <CheckCircle
-                            className={`h-3 w-3 ${getZoneTextClass('green')} mr-1`}
+                            className="h-3 w-3 text-emerald-500 mr-1"
                           />{' '}
                           Valid email format
                         </>
@@ -274,7 +273,7 @@ function SignupForm() {
                       {isPasswordStrong ? (
                         <>
                           <CheckCircle
-                            className={`h-3 w-3 ${getZoneTextClass('green')} mr-1`}
+                            className="h-3 w-3 text-emerald-500 mr-1"
                           />{' '}
                           Strong password
                         </>
@@ -323,14 +322,14 @@ function SignupForm() {
                       {passwordsMatch ? (
                         <>
                           <CheckCircle
-                            className={`h-3 w-3 ${getZoneTextClass('green')} mr-1`}
+                            className="h-3 w-3 text-emerald-500 mr-1"
                           />{' '}
                           Passwords match
                         </>
                       ) : (
                         <>
                           <AlertTriangle
-                            className={`h-3 w-3 ${getZoneTextClass('red')} mr-1`}
+                            className="h-3 w-3 text-red-500 mr-1"
                           />{' '}
                           Passwords do not match
                         </>

@@ -41,7 +41,9 @@ describe('LoginFormClient', () => {
       // Fill in the form
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
-      const submitButton = screen.getByRole('button', { name: /continue your journey/i });
+      const submitButton = screen.getByRole('button', {
+        name: /continue your journey/i,
+      });
 
       await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'wrongpassword');
@@ -67,7 +69,9 @@ describe('LoginFormClient', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
-      const submitButton = screen.getByRole('button', { name: /continue your journey/i });
+      const submitButton = screen.getByRole('button', {
+        name: /continue your journey/i,
+      });
 
       await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'password123');
@@ -89,7 +93,9 @@ describe('LoginFormClient', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
-      const submitButton = screen.getByRole('button', { name: /continue your journey/i });
+      const submitButton = screen.getByRole('button', {
+        name: /continue your journey/i,
+      });
 
       await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'password123');
@@ -115,7 +121,9 @@ describe('LoginFormClient', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
-      const submitButton = screen.getByRole('button', { name: /continue your journey/i });
+      const submitButton = screen.getByRole('button', {
+        name: /continue your journey/i,
+      });
 
       await user.type(emailInput, TEST_CONSTANTS.MOCK_EMAIL);
       await user.type(passwordInput, 'correctpassword');

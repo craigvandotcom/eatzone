@@ -27,9 +27,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { SignupDisabled } from '@/components/signup-disabled';
 
 export default function LandingPage() {
   const [showQR, setShowQR] = useState(false);
+
+  // Check if signup is enabled via environment variable
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== 'false';
 
   const features = [
     {
@@ -489,15 +493,19 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-                asChild
-              >
-                <Link href="/signup">
-                  Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              {signupEnabled ? (
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                  asChild
+                >
+                  <Link href="/signup">
+                    Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <SignupDisabled variant="button" className="font-semibold" />
+              )}
               <Button
                 size="lg"
                 variant="outline"

@@ -48,6 +48,9 @@ export function LoginFormClient() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
+  // Check if signup is enabled via environment variable
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== 'false';
+
   // All hooks must be called before any conditional returns
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -135,14 +138,25 @@ export function LoginFormClient() {
               />
               <span className="text-lg font-bold text-foreground">eatZone</span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-foreground hover:bg-accent hover:text-accent-foreground"
-              asChild
-            >
-              <Link href="/signup">Get Started</Link>
-            </Button>
+            {signupEnabled ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-foreground hover:bg-accent hover:text-accent-foreground"
+                asChild
+              >
+                <Link href="/signup">Get Started</Link>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled
+                className="text-muted-foreground cursor-not-allowed"
+              >
+                Coming Soon
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -300,12 +314,18 @@ export function LoginFormClient() {
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
-              <Link
-                href="/signup"
-                className="font-medium text-primary hover:text-primary/80"
-              >
-                Start your journey
-              </Link>
+              {signupEnabled ? (
+                <Link
+                  href="/signup"
+                  className="font-medium text-primary hover:text-primary/80"
+                >
+                  Start your journey
+                </Link>
+              ) : (
+                <span className="font-medium text-muted-foreground">
+                  Signup coming soon
+                </span>
+              )}
             </p>
           </div>
 

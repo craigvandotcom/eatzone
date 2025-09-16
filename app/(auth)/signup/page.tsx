@@ -30,11 +30,15 @@ import {
 import Image from 'next/image';
 // Remove direct database import - we'll use the API route instead
 import { useAuth } from '@/features/auth/components/auth-provider';
+import { SignupDisabled } from '@/components/signup-disabled';
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Check if signup is enabled via environment variable
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== 'false';
 
   // All hooks must be called before any conditional returns
   // Check for redirect parameter
@@ -70,6 +74,11 @@ function SignupForm() {
   // Don't render signup form if user is authenticated
   if (isAuthenticated) {
     return null;
+  }
+
+  // Show disabled state if signup is not enabled
+  if (!signupEnabled) {
+    return <SignupDisabled />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -226,9 +235,7 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {isValidEmail ? (
                         <>
-                          <CheckCircle
-                            className="h-3 w-3 text-emerald-500 mr-1"
-                          />{' '}
+                          <CheckCircle className="h-3 w-3 text-emerald-500 mr-1" />{' '}
                           Valid email format
                         </>
                       ) : (
@@ -273,9 +280,7 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {isPasswordStrong ? (
                         <>
-                          <CheckCircle
-                            className="h-3 w-3 text-emerald-500 mr-1"
-                          />{' '}
+                          <CheckCircle className="h-3 w-3 text-emerald-500 mr-1" />{' '}
                           Strong password
                         </>
                       ) : (
@@ -322,16 +327,12 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {passwordsMatch ? (
                         <>
-                          <CheckCircle
-                            className="h-3 w-3 text-emerald-500 mr-1"
-                          />{' '}
+                          <CheckCircle className="h-3 w-3 text-emerald-500 mr-1" />{' '}
                           Passwords match
                         </>
                       ) : (
                         <>
-                          <AlertTriangle
-                            className="h-3 w-3 text-red-500 mr-1"
-                          />{' '}
+                          <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />{' '}
                           Passwords do not match
                         </>
                       )}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getZoneBgClass, getZoneTextClass, getZoneBgStyle } from '@/lib/utils/zone-colors';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -115,7 +114,12 @@ export function LoginFormClient() {
       <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-foreground hover:bg-accent hover:text-accent-foreground"
+              asChild
+            >
               <Link href="/">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Home
@@ -131,7 +135,12 @@ export function LoginFormClient() {
               />
               <span className="text-lg font-bold text-foreground">eatZone</span>
             </div>
-            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-foreground hover:bg-accent hover:text-accent-foreground"
+              asChild
+            >
               <Link href="/signup">Get Started</Link>
             </Button>
           </div>
@@ -171,7 +180,10 @@ export function LoginFormClient() {
             <Card className="bg-card border border-border">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                  <Badge
+                    variant="outline"
+                    className="bg-primary/10 text-primary border-primary/30"
+                  >
                     <div className="flex items-center space-x-1">
                       <Smartphone className="h-3 w-3" />
                       <span>iOS PWA</span>
@@ -188,8 +200,8 @@ export function LoginFormClient() {
               {showPWAInfo && (
                 <CardContent className="space-y-2">
                   <p className="text-sm text-foreground">
-                    <strong>iOS PWA Detected:</strong> Enhanced storage is active
-                    for better app experience.
+                    <strong>iOS PWA Detected:</strong> Enhanced storage is
+                    active for better app experience.
                   </p>
                   <ul className="text-xs text-muted-foreground space-y-1 ml-4">
                     <li>• Your login will persist across app launches</li>
@@ -216,73 +228,72 @@ export function LoginFormClient() {
                 Continue discovering your food-feeling patterns
               </CardDescription>
             </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
                     required
-                    className="w-full pr-10"
+                    className="w-full"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
                 </div>
-              </div>
 
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              )}
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                      className="w-full pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    Continue Your Journey <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
-              </Button>
-            </form>
-          </CardContent>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      Continue Your Journey{' '}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
           </Card>
 
           {/* Sign Up Link */}
@@ -315,7 +326,8 @@ export function LoginFormClient() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-sm">
             <p>
-              © 2025 eatZone. Intelligent correlation discovery through science-based tracking.
+              © 2025 eatZone. Intelligent correlation discovery through
+              science-based tracking.
             </p>
           </div>
         </div>

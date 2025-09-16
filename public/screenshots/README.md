@@ -11,26 +11,31 @@ This directory contains app screenshots for the landing page.
 ## Required Screenshots
 
 ### 1. `hero-dashboard.png`
+
 - **Purpose**: Main hero section background
 - **Content**: Dashboard view showing the 4-tab navigation (Insights, Food, Signals, Settings)
 - **Dimensions**: Portrait orientation, full app view
 
 ### 2. `camera-capture.png`
+
 - **Purpose**: Feature section - Multi-image capture capability
 - **Content**: Camera interface showing multiple image capture or food analysis in progress
 - **Focus**: Highlight the multi-image AI analysis feature
 
 ### 3. `zone-analysis.png`
+
 - **Purpose**: Feature section - Zone-based classification
 - **Content**: Food entry showing green/yellow/red zone bars or ingredient analysis
 - **Focus**: Show the zone-based ingredient classification system
 
 ### 4. `symptom-tracking.png`
+
 - **Purpose**: Feature section - Simplified symptom system
 - **Content**: Symptom tracking interface showing the 4-category system (Digestion, Energy, Mind, Recovery)
 - **Focus**: Demonstrate the simplified approach vs complex logging
 
 ### 5. `insights-overview.png` (Optional)
+
 - **Purpose**: Additional feature showcase
 - **Content**: Analytics/insights view with charts and trends
 - **Focus**: Visual-first insights and progress tracking
@@ -46,6 +51,7 @@ This directory contains app screenshots for the landing page.
 ## Usage
 
 These screenshots will be automatically integrated into the landing page:
+
 - Hero section will use `hero-dashboard.png`
 - Feature cards will use the respective screenshots
 - Responsive sizing will be handled automatically

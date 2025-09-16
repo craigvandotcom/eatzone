@@ -5,14 +5,16 @@
 ## Two Proven Paths
 
 ### 🚀 PATH 1: BIG RESET
-*For maximum results & clarity when you need a fast turnaround*
+
+_For maximum results & clarity when you need a fast turnaround_
 
 1. **STRICT 30 DAYS:** Eat only from the ✅ GREEN ZONE
 2. **CHECK BASELINE:** Note your new energy & clarity
 3. **REINTRODUCE:** Test ⚠️ YELLOW ZONE foods one by one
 
 ### 🔎 PATH 2: CONTINUOUS IMPROVEMENT
-*For sustainable progress & building lifelong awareness*
+
+_For sustainable progress & building lifelong awareness_
 
 1. **TRACK COLORS:** Tally your Red/Yellow/Green foods daily
 2. **CONNECT DOTS:** Link foods to your energy, clarity & resilience
@@ -23,7 +25,8 @@
 ## The Three Zones
 
 ### ❌ RED ZONE: AVOID
-*Foods that no one should eat*
+
+_Foods that no one should eat_
 
 - **Processed/Packaged Foods** - chips, cookies, crackers, breakfast cereals, soda
 - **Refined Sugars & Grains** - table sugar, HFCS, white bread, pasta, pastries
@@ -34,7 +37,8 @@
 - **Non-Organic Alcohol** - conventional wine, beer, spirits with additives
 
 ### ⚠️ YELLOW ZONE: TEST
-*Foods we each need to test individually*
+
+_Foods we each need to test individually_
 
 **Reintroduction Order (Path 1: bottom to top | Path 2: eliminate top to bottom)**
 
@@ -50,7 +54,8 @@
 10. **Clean Alcohol (strict moderation)** - organic wine, clean spirits
 
 ### ✅ GREEN ZONE: ENJOY
-*Foods that everyone can eat*
+
+_Foods that everyone can eat_
 
 - **Quality Proteins** - grass-fed beef, wild salmon, pasture-raised chicken, lamb, bone broth
 - **Healthy Fats & Oils** - avocado, extra virgin olive oil, coconut oil, ghee, tallow
@@ -64,18 +69,21 @@
 ## How to Eat for Healing
 
 ### Before
+
 - Set a grateful mood
 - Read every ingredient label
 - Cook with non-toxic materials
 - Check your symptoms baseline
 
 ### During
+
 - Eat in a relaxed state
 - Chew thoroughly (30+ times)
 - Eat slowly to allow fullness signals
 - Start with vegetables or bitter foods
 
 ### After
+
 - Store leftovers in glass containers
 - Drink filtered water between meals
 - Check symptoms 2-3 hours later
@@ -86,6 +94,7 @@
 ## Symptom Timeline: How You Feel
 
 ### 🔥 IMMEDIATE (0-6 Hours)
+
 **🧠 Cognitive & Mind:** Faintness, dizziness, confusion, poor concentration, headaches, vertigo
 **⚡ Energy & Vitality:** Fatigue, hyperactivity, irregular heartbeat, sugar crash, jitteriness
 **💪 Physical:** Flushing, hives, muscle twitches, itching
@@ -93,6 +102,7 @@
 **👁️ Sensory & Respiratory:** Watery eyes, stuffy nose, sneezing, asthma, difficulty breathing
 
 ### 💣 DELAYED (6-72 Hours)
+
 **🧠 Cognitive & Mind:** Headaches, insomnia, mood swings, anxiety, brain fog
 **⚡ Energy & Vitality:** Apathy, restless leg, food cravings, water retention, night sweats
 **💪 Physical:** Stiffness, muscle pain, acne, eczema, body aches
@@ -100,6 +110,7 @@
 **👁️ Sensory & Respiratory:** Swollen eyelids, ear infections, sinus problems, chest congestion
 
 ### 💀 CHRONIC (Weeks+)
+
 **🧠 Cognitive & Mind:** Chronic headaches, poor memory, depression, tinnitus
 **⚡ Energy & Vitality:** Excessive/under weight, frequent illness, chronic fatigue
 **💪 Physical:** Dark circles, hair loss, joint pain, arthritis, brittle nails
@@ -111,6 +122,7 @@
 ## Food Quality Hierarchy
 
 ### ✅ BEST
+
 - **Drinks:** Spring water (glass), filtered water, herbal teas
 - **Cooking:** Raw/no-cook, steaming, bone broth simmering, fermenting
 - **Oils:** Ghee (grass-fed), tallow/lard (pasture-raised), coconut oil, avocado oil
@@ -122,6 +134,7 @@
 - **Sweeteners:** Stevia, monk fruit (pure, no fillers)
 
 ### ✅ BETTER
+
 - **Drinks:** Green tea, black tea (organic)
 - **Cooking:** Pressure cooking, oven-roasting, sautéing
 - **Oils:** Olive oil (extra virgin, cold use)
@@ -132,6 +145,7 @@
 - **Nuts/Seeds:** Macadamia nuts, pili nuts
 
 ### ✅ GOOD
+
 - **Drinks:** Fresh vegetable juice
 - **Cooking:** Stir-frying (stable fats), boiling
 - **Proteins:** Pasture-raised chicken/turkey/pork, clean shellfish
@@ -142,6 +156,7 @@
 - **Sweeteners:** Yacon syrup, lucuma
 
 ### ⚠️ MAYBE (Test Individually)
+
 - **Drinks:** Clean coffee, kombucha, RO/distilled water
 - **Cooking:** Light grilling, slow cooking, microwaving
 - **Oils:** Grass-fed butter, high-oleic sunflower/safflower
@@ -156,6 +171,7 @@
 - **Alcohol:** Organic red wine, 100% agave tequila/mezcal, clean spirits
 
 ### ❌ BAD (Avoid)
+
 - **Drinks:** Sodas, energy drinks, fruit juices, sweetened beverages
 - **Cooking:** Deep-frying, unstable oils, charring/burning
 - **Oils:** Industrial seed oils, margarine, trans-fats
@@ -172,7 +188,9 @@
 ---
 
 ## Perfect Plate Formula
+
 🍽️ **The Perfect Plate:**
+
 - 1/2 plate: Non-starchy vegetables
 - 1/4 plate: Quality protein
 - 1/4 plate: Healthy fats
@@ -180,4 +198,4 @@
 
 ---
 
-*Stop being a **Passenger** to your symptoms. Become the **Pilot** of your recovery.*
+_Stop being a **Passenger** to your symptoms. Become the **Pilot** of your recovery._

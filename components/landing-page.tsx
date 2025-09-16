@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { getZoneTextClass, getZoneStyle, getZoneBgStyle } from '@/lib/utils/zone-colors';
+import {
+  getZoneTextClass,
+  getZoneStyle,
+  getZoneBgStyle,
+} from '@/lib/utils/zone-colors';
 import {
   Card,
   CardContent,
@@ -58,7 +62,6 @@ export default function LandingPage() {
     },
   ];
 
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -76,10 +79,17 @@ export default function LandingPage() {
               <span className="text-xl font-bold text-foreground">eatZone</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" className="text-foreground border-border hover:bg-accent hover:text-accent-foreground" asChild>
+              <Button
+                variant="outline"
+                className="text-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                asChild
+              >
                 <Link href="/login">Sign In</Link>
               </Button>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                asChild
+              >
                 <Link href="/signup">Get Started</Link>
               </Button>
             </div>
@@ -101,13 +111,19 @@ export default function LandingPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Stop guessing about food-symptom connections. Our intelligent tracking reveals the correlations between
-              what you eat and how you feel, uncovering your unique food-feeling patterns through systematic discovery.
+              Stop guessing about food-symptom connections. Our intelligent
+              tracking reveals the correlations between what you eat and how you
+              feel, uncovering your unique food-feeling patterns through
+              systematic discovery.
             </p>
 
             {/* Mobile CTA */}
             <div className="lg:hidden space-y-4">
-              <Button size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+              <Button
+                size="lg"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                asChild
+              >
                 <Link href="/signup">
                   Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -120,7 +136,11 @@ export default function LandingPage() {
             {/* Desktop CTA */}
             <div className="hidden lg:block space-y-6">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  asChild
+                >
                   <Link href="/signup">
                     Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -200,8 +220,10 @@ export default function LandingPage() {
               Stop Counting Calories. Start Understanding Correlations.
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Most apps obsess over numbers - calories, macros, weight. We focus on what actually matters:
-              the connections between what you eat and how you feel. Our intelligent system reveals patterns that transform guesswork into knowledge.
+              Most apps obsess over numbers - calories, macros, weight. We focus
+              on what actually matters: the connections between what you eat and
+              how you feel. Our intelligent system reveals patterns that
+              transform guesswork into knowledge.
             </p>
           </div>
 
@@ -238,7 +260,8 @@ export default function LandingPage() {
               How Correlation Intelligence Works
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Four systematic steps to discover your unique food-feeling patterns
+              Four systematic steps to discover your unique food-feeling
+              patterns
             </p>
           </div>
 
@@ -260,7 +283,8 @@ export default function LandingPage() {
                 1. Track Using Research-Backed Categories
               </h3>
               <p className="text-muted-foreground">
-                Log symptoms across 4 key categories: Digestion, Energy, Mind, and Recovery using our science-based tracking system
+                Log symptoms across 4 key categories: Digestion, Energy, Mind,
+                and Recovery using our science-based tracking system
               </p>
             </div>
 
@@ -281,7 +305,8 @@ export default function LandingPage() {
                 2. AI Identifies Correlations Over Time
               </h3>
               <p className="text-muted-foreground">
-                Our intelligent system analyzes your data to identify food-symptom correlations, revealing patterns you might miss
+                Our intelligent system analyzes your data to identify
+                food-symptom correlations, revealing patterns you might miss
               </p>
             </div>
 
@@ -302,7 +327,8 @@ export default function LandingPage() {
                 3. Discover Your Unique Food Fingerprint
               </h3>
               <p className="text-muted-foreground">
-                View personalized insights revealing your unique food-feeling patterns with clear visual summaries of correlations
+                View personalized insights revealing your unique food-feeling
+                patterns with clear visual summaries of correlations
               </p>
             </div>
 
@@ -323,7 +349,8 @@ export default function LandingPage() {
                 4. Make Informed Decisions
               </h3>
               <p className="text-muted-foreground">
-                Use your correlation data to make confident food choices based on evidence, not guesswork
+                Use your correlation data to make confident food choices based
+                on evidence, not guesswork
               </p>
             </div>
           </div>
@@ -336,38 +363,66 @@ export default function LandingPage() {
                   Science-Based Food Zones
                 </h3>
                 <p className="text-muted-foreground">
-                  Discover your personal zone responses through systematic correlation tracking based on elimination diet research
+                  Discover your personal zone responses through systematic
+                  correlation tracking based on elimination diet research
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center" style={getZoneBgStyle('green')}>
+                  <div
+                    className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center"
+                    style={getZoneBgStyle('green')}
+                  >
                     <CheckCircle className="h-8 w-8 text-white" />
                   </div>
-                  <h4 className="font-semibold mb-2" style={getZoneStyle('green', 'color')}>Green Zone</h4>
+                  <h4
+                    className="font-semibold mb-2"
+                    style={getZoneStyle('green', 'color')}
+                  >
+                    Green Zone
+                  </h4>
                   <p className="text-sm text-muted-foreground">
-                    Foods that consistently correlate with positive symptoms and energy in most people
+                    Foods that consistently correlate with positive symptoms and
+                    energy in most people
                   </p>
                 </div>
 
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center" style={getZoneBgStyle('yellow')}>
+                  <div
+                    className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center"
+                    style={getZoneBgStyle('yellow')}
+                  >
                     <span className="text-white font-bold text-xl">!</span>
                   </div>
-                  <h4 className="font-semibold mb-2" style={getZoneStyle('yellow', 'color')}>Yellow Zone</h4>
+                  <h4
+                    className="font-semibold mb-2"
+                    style={getZoneStyle('yellow', 'color')}
+                  >
+                    Yellow Zone
+                  </h4>
                   <p className="text-sm text-muted-foreground">
-                    Highly individual foods - your unique biology determines your personal response patterns
+                    Highly individual foods - your unique biology determines
+                    your personal response patterns
                   </p>
                 </div>
 
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center" style={getZoneBgStyle('red')}>
+                  <div
+                    className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center"
+                    style={getZoneBgStyle('red')}
+                  >
                     <span className="text-white font-bold text-xl">×</span>
                   </div>
-                  <h4 className="font-semibold mb-2" style={getZoneStyle('red', 'color')}>Red Zone</h4>
+                  <h4
+                    className="font-semibold mb-2"
+                    style={getZoneStyle('red', 'color')}
+                  >
+                    Red Zone
+                  </h4>
                   <p className="text-sm text-muted-foreground">
-                    Foods that commonly correlate with negative symptoms and inflammation across populations
+                    Foods that commonly correlate with negative symptoms and
+                    inflammation across populations
                   </p>
                 </div>
               </div>
@@ -389,9 +444,10 @@ export default function LandingPage() {
                 Built on Proven Correlation Science
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Our approach combines elimination diet research, biological individuality
-                principles, and functional medicine methodology to reveal meaningful
-                food-symptom correlations through intelligent tracking.
+                Our approach combines elimination diet research, biological
+                individuality principles, and functional medicine methodology to
+                reveal meaningful food-symptom correlations through intelligent
+                tracking.
               </p>
 
               <div className="space-y-4">
@@ -428,12 +484,16 @@ export default function LandingPage() {
               Discover Your Food-Feeling Patterns Today
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Stop guessing about food connections. Uncover your unique correlations
-              with science-backed intelligent tracking.
+              Stop guessing about food connections. Uncover your unique
+              correlations with science-backed intelligent tracking.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold" asChild>
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                asChild
+              >
                 <Link href="/signup">
                   Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -449,7 +509,8 @@ export default function LandingPage() {
             </div>
 
             <p className="text-sm text-muted-foreground mt-6">
-              No credit card required • Intelligent correlation discovery • PWA installation • Cross-device sync
+              No credit card required • Intelligent correlation discovery • PWA
+              installation • Cross-device sync
             </p>
           </Card>
         </div>
@@ -468,11 +529,14 @@ export default function LandingPage() {
                   height={24}
                   className="w-6 h-6"
                 />
-                <span className="text-lg font-bold text-foreground">eatZone</span>
+                <span className="text-lg font-bold text-foreground">
+                  eatZone
+                </span>
               </div>
               <p className="text-muted-foreground">
-                Intelligent correlation discovery through science-based tracking.
-                Uncover your unique food-feeling patterns with systematic analysis.
+                Intelligent correlation discovery through science-based
+                tracking. Uncover your unique food-feeling patterns with
+                systematic analysis.
               </p>
             </div>
 
@@ -504,16 +568,24 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h3 className="text-foreground font-semibold mb-4">Privacy & Science</h3>
+              <h3 className="text-foreground font-semibold mb-4">
+                Privacy & Science
+              </h3>
               <ul className="space-y-2">
                 <li>
-                  <span className="text-muted-foreground">Encrypted cloud storage</span>
+                  <span className="text-muted-foreground">
+                    Encrypted cloud storage
+                  </span>
                 </li>
                 <li>
-                  <span className="text-muted-foreground">Complete data ownership</span>
+                  <span className="text-muted-foreground">
+                    Complete data ownership
+                  </span>
                 </li>
                 <li>
-                  <span className="text-muted-foreground">Evidence-based correlation methodology</span>
+                  <span className="text-muted-foreground">
+                    Evidence-based correlation methodology
+                  </span>
                 </li>
                 <li>
                   <span className="text-muted-foreground">
@@ -526,7 +598,8 @@ export default function LandingPage() {
 
           <div className="border-t border-border mt-8 pt-8 text-center">
             <p className="text-gray-400">
-              © 2025 eatZone. Intelligent correlation discovery through science-based tracking.
+              © 2025 eatZone. Intelligent correlation discovery through
+              science-based tracking.
             </p>
           </div>
         </div>

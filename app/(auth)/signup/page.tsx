@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getZoneTextClass, getZoneBgStyle } from '@/lib/utils/zone-colors';
+import { getZoneTextClass } from '@/lib/utils/zone-colors';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -143,7 +143,12 @@ function SignupForm() {
       <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-foreground hover:bg-accent hover:text-accent-foreground"
+              asChild
+            >
               <Link href="/">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Home
@@ -159,7 +164,12 @@ function SignupForm() {
               />
               <span className="text-lg font-bold text-foreground">eatZone</span>
             </div>
-            <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent hover:text-accent-foreground" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-foreground hover:bg-accent hover:text-accent-foreground"
+              asChild
+            >
               <Link href="/login">Sign In</Link>
             </Button>
           </div>
@@ -187,7 +197,8 @@ function SignupForm() {
                 </span>
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Start discovering your unique food-feeling patterns with intelligent tracking
+                Start discovering your unique food-feeling patterns with
+                intelligent tracking
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -357,7 +368,8 @@ function SignupForm() {
                     </>
                   ) : (
                     <>
-                      Start Feeling Better <ArrowRight className="ml-2 h-4 w-4" />
+                      Start Feeling Better{' '}
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
@@ -408,7 +420,8 @@ function SignupForm() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-sm">
             <p>
-              © 2025 eatZone. Intelligent correlation discovery through science-based tracking.
+              © 2025 eatZone. Intelligent correlation discovery through
+              science-based tracking.
             </p>
           </div>
         </div>

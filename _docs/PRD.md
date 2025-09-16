@@ -30,12 +30,12 @@ eatZone is a mobile-first Progressive Web App (PWA) designed to be your "Food Tr
 
 The application is organized into four primary views, accessible via a tab bar navigation system.
 
-| View         | Icon           | Purpose                                               | Key Visualizations                                                                                                                                                                                                                                                                                                                                       |
-| ------------ | -------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Insights** | BarChart3 📊   | Overview dashboard with analytics and trends          | - **Recent Activity:** Combined view of recent foods and symptoms with interactive charts. `<br>` - **Trend Analysis:** Visual representations of patterns over time. `<br>` - **Health Score:** Aggregated wellness indicators based on food zones and symptom patterns.                                                                            |
-| **Food**     | Utensils 🍽️   | Log foods and their constituent ingredients           | - **Zone Distribution:** Shows the daily ratio of "Green" (good), "Yellow" (maybe), and "Red" (bad) ingredients. `<br>` - **Organic Percentage:** Shows the percentage of daily ingredients that were organic. `<br>` - **Individual Food Cards:** Visualizes the health and organic composition of each food entry with zone bars.              |
-| **Signals**  | Activity ⚡    | Log symptoms using simplified 4-category system      | - **Symptom Categories:** Digestion, Energy, Mind, Recovery tracking. `<br>` - **Daily Summary:** Visual representation of symptoms by category. `<br>` - **Trend Tracking:** Historical view of symptom patterns over time.                                                                                                                           |
-| **Settings** | Settings ⚙️    | User preferences and data management                  | - **Account Management:** User profile and logout. `<br>` - **Data Export/Import:** Backup and restore functionality. `<br>` - **Theme Settings:** Light/dark mode preferences. `<br>` - **Privacy Controls:** Data deletion and privacy settings.                                                                                                |
+| View         | Icon         | Purpose                                         | Key Visualizations                                                                                                                                                                                                                                                                                                                  |
+| ------------ | ------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Insights** | BarChart3 📊 | Overview dashboard with analytics and trends    | - **Recent Activity:** Combined view of recent foods and symptoms with interactive charts. `<br>` - **Trend Analysis:** Visual representations of patterns over time. `<br>` - **Health Score:** Aggregated wellness indicators based on food zones and symptom patterns.                                                           |
+| **Food**     | Utensils 🍽️  | Log foods and their constituent ingredients     | - **Zone Distribution:** Shows the daily ratio of "Green" (good), "Yellow" (maybe), and "Red" (bad) ingredients. `<br>` - **Organic Percentage:** Shows the percentage of daily ingredients that were organic. `<br>` - **Individual Food Cards:** Visualizes the health and organic composition of each food entry with zone bars. |
+| **Signals**  | Activity ⚡  | Log symptoms using simplified 4-category system | - **Symptom Categories:** Digestion, Energy, Mind, Recovery tracking. `<br>` - **Daily Summary:** Visual representation of symptoms by category. `<br>` - **Trend Tracking:** Historical view of symptom patterns over time.                                                                                                        |
+| **Settings** | Settings ⚙️  | User preferences and data management            | - **Account Management:** User profile and logout. `<br>` - **Data Export/Import:** Backup and restore functionality. `<br>` - **Theme Settings:** Light/dark mode preferences. `<br>` - **Privacy Controls:** Data deletion and privacy settings.                                                                                  |
 
 #### 2.1. Data Entry Methods
 
@@ -374,10 +374,10 @@ Public Routes (No Authentication Required):
 
 Protected Routes (Authentication Required):
 ├── /app (Main Dashboard with 4 views)
-│   ├── Insights (Analytics & Trends)
-│   ├── Food (Food Tracking & Visualization)
-│   ├── Signals (Symptom Tracking)
-│   └── Settings (User Preferences & Data Management)
+│ ├── Insights (Analytics & Trends)
+│ ├── Food (Food Tracking & Visualization)
+│ ├── Signals (Symptom Tracking)
+│ └── Settings (User Preferences & Data Management)
 ├── /app/foods/add (Food Entry Form)
 └── /app/symptoms/add (Symptom Entry Form)
 
@@ -817,6 +817,7 @@ interface FoodStats {
 Based on the actual implementation, the following user journeys are supported:
 
 #### 7.1. Authentication Flow
+
 1. **Landing Page** (`/`) - Public information and call-to-action
 2. **Sign Up** (`/signup`) - Create new account with email/password
 3. **Login** (`/login`) - Authenticate existing users
@@ -824,6 +825,7 @@ Based on the actual implementation, the following user journeys are supported:
 5. **Session Management** - Persistent sessions with automatic refresh
 
 #### 7.2. Food Tracking Journey
+
 1. **Dashboard Access** - Navigate to Food view via bottom navigation or sidebar
 2. **Date Selection** - Use date picker to view/track food for specific dates
 3. **Quick Capture Flow**:
@@ -849,6 +851,7 @@ Based on the actual implementation, the following user journeys are supported:
    - Statistics automatically recalculated
 
 #### 7.3. Symptom Tracking Journey
+
 1. **Signals View Access** - Navigate via bottom navigation
 2. **Quick Add Flow**:
    - Tap FAB or navigate to `/app/symptoms/add`
@@ -861,12 +864,14 @@ Based on the actual implementation, the following user journeys are supported:
    - Real-time dashboard updates
 
 #### 7.4. Insights & Analytics Journey
+
 1. **Dashboard Overview** - Default view showing recent activity
 2. **Trend Analysis** - Visual charts of patterns over time
 3. **Correlation Discovery** - Identify relationships between foods and symptoms
 4. **Historical Navigation** - Date-based filtering across all views
 
 #### 7.5. Data Management Journey
+
 1. **Settings Access** - Navigate to Settings view
 2. **Export Data** - Download complete JSON backup
 3. **Import Data** - Restore from previous backup
@@ -874,6 +879,7 @@ Based on the actual implementation, the following user journeys are supported:
 5. **Privacy Controls** - Data deletion options
 
 #### 7.6. Cross-Device Synchronization
+
 1. **Multi-Device Access** - Login from any device
 2. **Real-time Sync** - Automatic data synchronization via Supabase
 3. **Consistent Experience** - Same data and interface across devices

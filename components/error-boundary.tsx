@@ -16,7 +16,7 @@ interface ErrorBoundaryProps {
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
-interface ErrorFallbackProps {
+export interface ErrorFallbackProps {
   error: Error;
   resetError: () => void;
   errorInfo?: React.ErrorInfo;

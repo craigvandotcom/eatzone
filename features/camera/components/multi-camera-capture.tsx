@@ -9,6 +9,8 @@ import { APP_CONFIG } from '@/lib/config/constants';
 import { validateImageFile } from '@/lib/utils/file-validation';
 import { smartCompressImage } from '@/lib/utils/image-compression';
 import { ModeSelector, type CameraMode } from './mode-selector';
+import { ImageProcessingErrorBoundary } from './image-processing-error-boundary';
+import { useErrorHandler } from '@/components/error-boundary';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -36,6 +38,7 @@ export function MultiCameraCapture({
   const [showCamera, setShowCamera] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [selectedMode, setSelectedMode] = useState<CameraMode>('camera');
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     if (open) {
@@ -150,7 +153,11 @@ export function MultiCameraCapture({
       }
     } catch (error) {
       logger.error('Failed to capture and compress image', error);
-      setError('Failed to capture image. Please try again.');
+      if (error instanceof Error) {
+        handleError(error);
+      } else {
+        handleError(new Error('Failed to capture image. Please try again.'));
+      }
     }
   };
 
@@ -220,9 +227,11 @@ export function MultiCameraCapture({
       }
     } catch (error) {
       logger.error('File upload validation failed', error);
-      setError(
-        error instanceof Error ? error.message : 'File validation failed'
-      );
+      if (error instanceof Error) {
+        handleError(error);
+      } else {
+        handleError(new Error('File validation failed'));
+      }
     }
   };
 
@@ -264,137 +273,161 @@ export function MultiCameraCapture({
 
   if (!open) return null;
 
+  const handleErrorBoundaryRetry = () => {
+    // Reset error state and restart camera
+    setError(null);
+    setCapturedImages([]);
+    setSelectedMode('camera');
+    startCamera();
+  };
+
+  const handleErrorBoundaryCancel = () => {
+    onOpenChange(false);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-black">
-      {/* Camera View or Image Gallery */}
-      <div className="relative h-full bg-black">
-        {/* Image thumbnails */}
-        {capturedImages.length > 0 && (
-          <div className="absolute top-6 left-0 right-0 z-20 px-4">
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {capturedImages.map((img, index) => (
-                <div key={index} className="relative flex-shrink-0 group">
-                  <img
-                    src={img}
-                    alt={`Captured ${index + 1}`}
-                    className="h-20 w-20 object-cover rounded-xl border-2 border-white/40 shadow-lg"
-                  />
-                  <button
-                    onClick={() => removeImage(index)}
-                    className="absolute -top-1 -right-1 bg-red-500/90 text-white rounded-full p-1 hover:bg-red-600 hover:scale-110 transition-all duration-200 shadow-md backdrop-blur-sm"
-                  >
-                    <X className="h-3.5 w-3.5 stroke-2" />
-                  </button>
+    <ImageProcessingErrorBoundary
+      onRetry={handleErrorBoundaryRetry}
+      onCancel={handleErrorBoundaryCancel}
+      onError={(error, errorInfo) => {
+        logger.error('Camera component error boundary caught error:', {
+          error: error.message,
+          stack: error.stack,
+          componentStack: errorInfo.componentStack,
+        });
+      }}
+    >
+      <div className="fixed inset-0 z-50 bg-black">
+        {/* Camera View or Image Gallery */}
+        <div className="relative h-full bg-black">
+          {/* Image thumbnails */}
+          {capturedImages.length > 0 && (
+            <div className="absolute top-6 left-0 right-0 z-20 px-4">
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {capturedImages.map((img, index) => (
+                  <div key={index} className="relative flex-shrink-0 group">
+                    <img
+                      src={img}
+                      alt={`Captured ${index + 1}`}
+                      className="h-20 w-20 object-cover rounded-xl border-2 border-white/40 shadow-lg"
+                    />
+                    <button
+                      onClick={() => removeImage(index)}
+                      className="absolute -top-1 -right-1 bg-red-500/90 text-white rounded-full p-1 hover:bg-red-600 hover:scale-110 transition-all duration-200 shadow-md backdrop-blur-sm"
+                    >
+                      <X className="h-3.5 w-3.5 stroke-2" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <div className="relative h-full overflow-hidden">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                autoPlay
+                playsInline
+                muted
+              />
+
+              {/* Camera overlay grid */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="w-full h-full border-2 border-white/20">
+                  <div className="w-full h-1/3 border-b border-white/20"></div>
+                  <div className="w-full h-1/3 border-b border-white/20"></div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {!isLoading && !error && (
-          <div className="relative h-full overflow-hidden">
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              autoPlay
-              playsInline
-              muted
-            />
-
-            {/* Camera overlay grid */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="w-full h-full border-2 border-white/20">
-                <div className="w-full h-1/3 border-b border-white/20"></div>
-                <div className="w-full h-1/3 border-b border-white/20"></div>
+                <div className="absolute inset-0">
+                  <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
+                  <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
+                </div>
               </div>
-              <div className="absolute inset-0">
-                <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
-                <div className="w-1/3 h-full border-r border-white/20 float-left"></div>
-              </div>
-            </div>
 
-            {/* Capture Overlay - only active in camera mode */}
-            {selectedMode === 'camera' && (
-              <div
-                className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
-                onClick={captureImage}
-              >
-                {/* Centered camera icon with counter */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-20 h-20 rounded-full border-4 border-white/40 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <Camera className="h-8 w-8 text-white/70" />
+              {/* Capture Overlay - only active in camera mode */}
+              {selectedMode === 'camera' && (
+                <div
+                  className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
+                  onClick={captureImage}
+                >
+                  {/* Centered camera icon with counter */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-20 h-20 rounded-full border-4 border-white/40 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                        <Camera className="h-8 w-8 text-white/70" />
+                      </div>
+                      {/* Simple counter display */}
+                      <p className="text-white/80 text-sm font-medium mt-2 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
+                        {capturedImages.length}/{maxImages}
+                        {maxImages > 1 ? ' photos' : ''}
+                      </p>
                     </div>
-                    {/* Simple counter display */}
-                    <p className="text-white/80 text-sm font-medium mt-2 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
-                      {capturedImages.length}/{maxImages}
-                      {maxImages > 1 ? ' photos' : ''}
-                    </p>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Upload Overlay - only active in upload mode */}
-            {selectedMode === 'upload' && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleFileUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-32 h-32"
-                    disabled={capturedImages.length >= maxImages}
-                  />
-                  <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
-                    <Upload className="h-12 w-12 text-white" />
+              {/* Upload Overlay - only active in upload mode */}
+              {selectedMode === 'upload' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-32 h-32"
+                      disabled={capturedImages.length >= maxImages}
+                    />
+                    <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
+                      <Upload className="h-12 w-12 text-white" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {isLoading && (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-300">Starting camera...</p>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center p-4">
-              <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-300 text-sm">{error}</p>
-              <div className="flex flex-col gap-2 mt-4">
-                <Button variant="outline" size="sm" onClick={startCamera}>
-                  Try Again
-                </Button>
+          {isLoading && (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center">
+                <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-300">Starting camera...</p>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* This preview mode is no longer needed - camera stays active */}
+          {error && (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center p-4">
+                <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-300 text-sm">{error}</p>
+                <div className="flex flex-col gap-2 mt-4">
+                  <Button variant="outline" size="sm" onClick={startCamera}>
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
-        {/* Hidden canvas for capture */}
-        <canvas ref={canvasRef} className="hidden" />
+          {/* This preview mode is no longer needed - camera stays active */}
+
+          {/* Hidden canvas for capture */}
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
+
+        {/* Mode Selector Overlay - Always visible at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 z-60 p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent backdrop-blur-sm">
+          <ModeSelector
+            selectedMode={selectedMode}
+            onModeChange={handleModeChange}
+            hasImages={capturedImages.length > 0}
+            onSubmit={handleDone}
+            isSubmitting={isPending}
+          />
+        </div>
       </div>
-
-      {/* Mode Selector Overlay - Always visible at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 z-60 p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent backdrop-blur-sm">
-        <ModeSelector
-          selectedMode={selectedMode}
-          onModeChange={handleModeChange}
-          hasImages={capturedImages.length > 0}
-          onSubmit={handleDone}
-          isSubmitting={isPending}
-        />
-      </div>
-    </div>
+    </ImageProcessingErrorBoundary>
   );
 }

@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera, Edit3, Upload, X, Check, Plus } from 'lucide-react';
+import { Camera, Upload, X } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { APP_CONFIG } from '@/lib/config/constants';
 import { validateImageFile } from '@/lib/utils/file-validation';
 import { smartCompressImage } from '@/lib/utils/image-compression';
+import { ModeSelector, type CameraMode } from './mode-selector';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -23,7 +24,7 @@ export function MultiCameraCapture({
   onOpenChange,
   onCapture,
   onManualEntry,
-  title,
+  title: _title,
   maxImages = APP_CONFIG.IMAGE.MAX_CAMERA_IMAGES,
 }: MultiCameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -34,6 +35,7 @@ export function MultiCameraCapture({
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [showCamera, setShowCamera] = useState(true);
   const [isPending, startTransition] = useTransition();
+  const [selectedMode, setSelectedMode] = useState<CameraMode>('camera');
 
   useEffect(() => {
     if (open) {
@@ -235,56 +237,56 @@ export function MultiCameraCapture({
     }
   };
 
+  const handleModeChange = (mode: CameraMode) => {
+    setSelectedMode(mode);
+
+    switch (mode) {
+      case 'cancel':
+        handleClose();
+        break;
+      case 'manual':
+        handleManualEntry();
+        break;
+      case 'upload':
+        // Mode changed to upload - user can now click the upload area
+        break;
+      case 'camera':
+        // Multi-camera mode - user can tap to capture multiple photos
+        break;
+      case 'barcode':
+        // Placeholder - not implemented yet
+        break;
+      case 'label':
+        // Placeholder - not implemented yet
+        break;
+    }
+  };
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm">
-        <h2 className="text-lg font-semibold text-white">{title}</h2>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-white/70">
-            {isPending ? (
-              'Processing...'
-            ) : (
-              <>
-                {capturedImages.length}/{maxImages} photos
-                {capturedImages.length >= maxImages && ' - Auto-submitting...'}
-              </>
-            )}
-          </span>
-        </div>
-      </div>
-
       {/* Camera View or Image Gallery */}
       <div className="relative h-full bg-black">
         {/* Image thumbnails */}
         {capturedImages.length > 0 && (
-          <div className="absolute top-20 left-0 right-0 z-20 px-4">
-            <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="absolute top-6 left-0 right-0 z-20 px-4">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {capturedImages.map((img, index) => (
-                <div key={index} className="relative flex-shrink-0">
+                <div key={index} className="relative flex-shrink-0 group">
                   <img
                     src={img}
                     alt={`Captured ${index + 1}`}
-                    className="h-20 w-20 object-cover rounded-lg border-2 border-white/50"
+                    className="h-20 w-20 object-cover rounded-xl border-2 border-white/40 shadow-lg"
                   />
                   <button
                     onClick={() => removeImage(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    className="absolute -top-1 -right-1 bg-red-500/90 text-white rounded-full p-1 hover:bg-red-600 hover:scale-110 transition-all duration-200 shadow-md backdrop-blur-sm"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5 stroke-2" />
                   </button>
                 </div>
               ))}
-              {capturedImages.length < maxImages && (
-                <button
-                  onClick={() => setShowCamera(true)}
-                  className="h-20 w-20 flex items-center justify-center rounded-lg border-2 border-dashed border-white/30 hover:border-white/50"
-                >
-                  <Plus className="h-6 w-6 text-white/50" />
-                </button>
-              )}
             </div>
           </div>
         )}
@@ -311,24 +313,46 @@ export function MultiCameraCapture({
               </div>
             </div>
 
-            {/* Full-screen Tap-to-Capture Overlay */}
-            <div
-              className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
-              onClick={captureImage}
-            >
-              {/* Centered camera icon with counter */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-20 rounded-full border-4 border-white/40 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                    <Camera className="h-8 w-8 text-white/70" />
+            {/* Capture Overlay - only active in camera mode */}
+            {selectedMode === 'camera' && (
+              <div
+                className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
+                onClick={captureImage}
+              >
+                {/* Centered camera icon with counter */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-20 h-20 rounded-full border-4 border-white/40 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                      <Camera className="h-8 w-8 text-white/70" />
+                    </div>
+                    {/* Simple counter display */}
+                    <p className="text-white/80 text-sm font-medium mt-2 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
+                      {capturedImages.length}/{maxImages}
+                      {maxImages > 1 ? ' photos' : ''}
+                    </p>
                   </div>
-                  {/* Simple counter display */}
-                  <p className="text-white/80 text-sm font-medium mt-2 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
-                    {capturedImages.length}/{maxImages}
-                  </p>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Upload Overlay - only active in upload mode */}
+            {selectedMode === 'upload' && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-32 h-32"
+                    disabled={capturedImages.length >= maxImages}
+                  />
+                  <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
+                    <Upload className="h-12 w-12 text-white" />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -361,57 +385,15 @@ export function MultiCameraCapture({
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* Action Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-black/50 backdrop-blur-sm">
-        <div className="flex gap-3">
-          <Button
-            onClick={handleClose}
-            variant="outline"
-            className="w-16 h-12 border-red-500/30 text-red-400 hover:bg-red-500/20"
-            size="lg"
-          >
-            Cancel
-          </Button>
-
-          <div className="relative flex-1">
-            <Input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileUpload}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              disabled={capturedImages.length >= maxImages}
-            />
-            <Button
-              variant="outline"
-              className="w-full h-12 text-white border-white/50"
-              size="lg"
-              disabled={capturedImages.length >= maxImages}
-            >
-              <Upload className="h-5 w-5 mr-2" />
-              Upload
-            </Button>
-          </div>
-
-          <Button
-            onClick={handleManualEntry}
-            variant="outline"
-            className="flex-1 text-white border-white/50"
-            size="lg"
-          >
-            <Edit3 className="h-5 w-5 mr-2" />
-            Manual
-          </Button>
-
-          <Button
-            onClick={handleDone}
-            className="w-20 h-12 bg-green-500 hover:bg-green-600 text-white"
-            size="lg"
-            disabled={capturedImages.length === 0 || isPending}
-          >
-            <Check className="h-5 w-5" />
-          </Button>
-        </div>
+      {/* Mode Selector Overlay - Always visible at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-60 p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent backdrop-blur-sm">
+        <ModeSelector
+          selectedMode={selectedMode}
+          onModeChange={handleModeChange}
+          hasImages={capturedImages.length > 0}
+          onSubmit={handleDone}
+          isSubmitting={isPending}
+        />
       </div>
     </div>
   );

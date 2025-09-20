@@ -165,7 +165,8 @@ describe('MultiCameraCapture', () => {
         render(<MultiCameraCapture {...defaultProps} />);
       });
 
-      const manualButton = screen.getByText('Manual');
+      // Find manual button by its Edit icon
+      const manualButton = screen.getByRole('button', { name: /manual/i });
       await act(async () => {
         await user.click(manualButton);
       });
@@ -181,7 +182,8 @@ describe('MultiCameraCapture', () => {
         render(<MultiCameraCapture {...defaultProps} />);
       });
 
-      const cancelButton = screen.getByText('Cancel');
+      // Find cancel button by its red styling and X icon
+      const cancelButton = screen.getByRole('button', { name: /cancel/i });
       await act(async () => {
         await user.click(cancelButton);
       });
@@ -189,19 +191,19 @@ describe('MultiCameraCapture', () => {
       expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it('should disable done button when no images captured', async () => {
+    it('should not show done button when no images captured', async () => {
       await act(async () => {
         render(<MultiCameraCapture {...defaultProps} />);
       });
 
       await waitFor(() => {
-        // Find the green button with Check icon (the done button)
+        // The done button should not be present when no images are captured
         const buttons = screen.getAllByRole('button');
         const doneButton = buttons.find(
           btn =>
             btn.className.includes('bg-green-500') && btn.querySelector('svg')
         );
-        expect(doneButton).toBeDisabled();
+        expect(doneButton).toBeUndefined();
       });
     });
   });

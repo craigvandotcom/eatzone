@@ -58,22 +58,22 @@ describe('ModeSelector', () => {
       expect(screen.getByRole('button', { name: /done/i })).toBeInTheDocument();
     });
 
-    it('should not show submit button when hasImages is false', () => {
+    it('should show disabled submit button when hasImages is false', () => {
       render(<ModeSelector {...defaultProps} hasImages={false} />);
 
-      expect(
-        screen.queryByRole('button', { name: /done/i })
-      ).not.toBeInTheDocument();
+      const submitButton = screen.getByRole('button', { name: /done/i });
+      expect(submitButton).toBeInTheDocument();
+      expect(submitButton).toBeDisabled();
     });
 
-    it('should not show submit button when onSubmit is not provided', () => {
+    it('should show disabled submit button when onSubmit is not provided', () => {
       render(
         <ModeSelector {...defaultProps} hasImages={true} onSubmit={undefined} />
       );
 
-      expect(
-        screen.queryByRole('button', { name: /done/i })
-      ).not.toBeInTheDocument();
+      const submitButton = screen.getByRole('button', { name: /done/i });
+      expect(submitButton).toBeInTheDocument();
+      expect(submitButton).toBeDisabled();
     });
   });
 

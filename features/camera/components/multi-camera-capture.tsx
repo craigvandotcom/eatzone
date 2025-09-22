@@ -303,7 +303,7 @@ export function MultiCameraCapture({
           {/* Image thumbnails */}
           {capturedImages.length > 0 && (
             <div className="absolute top-6 left-0 right-0 z-20 px-4">
-              <div className="flex gap-3 overflow-x-auto pb-2">
+              <div className="flex gap-3 overflow-x-auto pb-6">
                 {capturedImages.map((img, index) => (
                   <div key={index} className="relative flex-shrink-0 group">
                     <img
@@ -313,9 +313,16 @@ export function MultiCameraCapture({
                     />
                     <button
                       onClick={() => removeImage(index)}
-                      className="absolute -top-1 -right-1 bg-red-500/90 text-white rounded-full p-1 hover:bg-red-600 hover:scale-110 transition-all duration-200 shadow-md backdrop-blur-sm"
+                      className="absolute -bottom-3 -right-3 bg-red-500 text-white w-6 h-6 flex-shrink-0 flex items-center justify-center hover:bg-red-600 hover:scale-110 transition-all duration-200 shadow-md isolate z-10"
+                      style={{
+                        borderRadius: '50%',
+                        minWidth: '24px',
+                        minHeight: '24px',
+                        maxWidth: '24px',
+                        maxHeight: '24px',
+                      }}
                     >
-                      <X className="h-3.5 w-3.5 stroke-2" />
+                      <X className="w-3.5 h-3.5 stroke-2 flex-shrink-0" />
                     </button>
                   </div>
                 ))}
@@ -418,7 +425,7 @@ export function MultiCameraCapture({
         </div>
 
         {/* Mode Selector Overlay - Always visible at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-60 p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent backdrop-blur-sm">
+        <div className="absolute bottom-0 left-0 right-0 z-60 p-4">
           <ModeSelector
             selectedMode={selectedMode}
             onModeChange={handleModeChange}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, Images, X, Scan, Type, Check, Edit } from 'lucide-react';
+import { Camera, Images, X, Scan, Type, Check, Edit, Loader2 } from 'lucide-react';
 
 export type CameraMode =
   | 'camera'
@@ -64,16 +64,22 @@ export function ModeSelector({
                   ? 'bg-primary text-primary-foreground shadow-md'
                   : mode === 'cancel'
                     ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
-                    : mode === 'submit' && hasImages
+                    : mode === 'submit' && hasImages && onSubmit && !isSubmitting
                       ? 'bg-brand-primary text-primary-foreground hover:bg-brand-primary/90'
-                      : mode === 'submit'
-                        ? 'bg-muted/40 text-muted-foreground/60'
+                      : mode === 'submit' && isSubmitting
+                        ? 'bg-brand-primary/80 text-primary-foreground'
+                        : mode === 'submit'
+                          ? 'bg-muted/40 text-muted-foreground/60'
                         : 'hover:bg-muted text-muted-foreground'
               }
               ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
             `}
           >
-            <Icon className="h-5 w-5" />
+            {mode === 'submit' && isSubmitting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Icon className="h-5 w-5" />
+            )}
           </button>
         ))}
       </div>

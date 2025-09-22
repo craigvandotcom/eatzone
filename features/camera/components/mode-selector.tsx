@@ -1,6 +1,15 @@
 'use client';
 
-import { Camera, Images, X, Scan, Type, Check, Edit, Loader2 } from 'lucide-react';
+import {
+  Camera,
+  Images,
+  X,
+  Scan,
+  Type,
+  Check,
+  Edit,
+  Loader2,
+} from 'lucide-react';
 
 export type CameraMode =
   | 'camera'
@@ -49,8 +58,18 @@ export function ModeSelector({
 
   return (
     <div className="flex justify-center">
-      {/* Single horizontal icon bar */}
-      <div className="flex items-center gap-4 px-6 py-3 bg-card/90 backdrop-blur-sm rounded-full shadow-lg">
+      {/* Single horizontal icon bar with responsive sizing */}
+      <div
+        className="mode-selector-container flex items-center bg-card/90 backdrop-blur-sm rounded-full shadow-lg"
+        style={{
+          gap: 'var(--mode-gap)',
+          paddingLeft: 'var(--mode-container-px)',
+          paddingRight: 'var(--mode-container-px)',
+          paddingTop: 'var(--mode-container-py)',
+          paddingBottom: 'var(--mode-container-py)',
+          transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
         {modes.map(({ mode, icon: Icon, disabled }) => (
           <button
             key={mode}
@@ -58,31 +77,120 @@ export function ModeSelector({
             disabled={disabled || isSubmitting}
             aria-label={mode === 'submit' ? 'Done' : mode}
             className={`
-              p-3 rounded-full transition-all duration-200
+              mode-selector-button rounded-full transition-all duration-300 ease-out flex items-center justify-center
               ${
                 selectedMode === mode && mode !== 'cancel'
                   ? 'bg-primary text-primary-foreground shadow-md'
                   : mode === 'cancel'
                     ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
-                    : mode === 'submit' && hasImages && onSubmit && !isSubmitting
+                    : mode === 'submit' &&
+                        hasImages &&
+                        onSubmit &&
+                        !isSubmitting
                       ? 'bg-brand-primary text-primary-foreground hover:bg-brand-primary/90'
                       : mode === 'submit' && isSubmitting
                         ? 'bg-brand-primary/80 text-primary-foreground'
                         : mode === 'submit'
                           ? 'bg-muted/40 text-muted-foreground/60'
-                        : 'hover:bg-muted text-muted-foreground'
+                          : 'hover:bg-muted text-muted-foreground'
               }
               ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
             `}
+            style={{
+              width: 'var(--mode-button-size)',
+              height: 'var(--mode-button-size)',
+            }}
           >
             {mode === 'submit' && isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2
+                style={{
+                  width: 'var(--mode-icon-size)',
+                  height: 'var(--mode-icon-size)',
+                }}
+                className="animate-spin"
+              />
             ) : (
-              <Icon className="h-5 w-5" />
+              <Icon
+                style={{
+                  width: 'var(--mode-icon-size)',
+                  height: 'var(--mode-icon-size)',
+                }}
+              />
             )}
           </button>
         ))}
       </div>
+
+      <style jsx>{`
+        .mode-selector-container {
+          /* Default sizing (xl breakpoint) */
+          --mode-icon-size: 20px;
+          --mode-button-size: 44px;
+          --mode-gap: 16px;
+          --mode-container-px: 24px;
+          --mode-container-py: 12px;
+        }
+
+        /* Large screens (lg) - starts shrinking at ~480px */
+        @media (max-width: 480px) {
+          .mode-selector-container {
+            --mode-icon-size: 18px;
+            --mode-button-size: 40px;
+            --mode-gap: 14px;
+            --mode-container-px: 20px;
+            --mode-container-py: 10px;
+          }
+        }
+
+        /* Medium-large screens */
+        @media (max-width: 440px) {
+          .mode-selector-container {
+            --mode-icon-size: 16px;
+            --mode-button-size: 36px;
+            --mode-gap: 12px;
+            --mode-container-px: 18px;
+            --mode-container-py: 9px;
+          }
+        }
+
+        /* Medium screens (md) */
+        @media (max-width: 400px) {
+          .mode-selector-container {
+            --mode-icon-size: 14px;
+            --mode-button-size: 32px;
+            --mode-gap: 10px;
+            --mode-container-px: 16px;
+            --mode-container-py: 8px;
+          }
+        }
+
+        /* Small screens (sm) */
+        @media (max-width: 360px) {
+          .mode-selector-container {
+            --mode-icon-size: 12px;
+            --mode-button-size: 28px;
+            --mode-gap: 8px;
+            --mode-container-px: 14px;
+            --mode-container-py: 7px;
+          }
+        }
+
+        /* Extra small screens (xs) */
+        @media (max-width: 320px) {
+          .mode-selector-container {
+            --mode-icon-size: 10px;
+            --mode-button-size: 24px;
+            --mode-gap: 6px;
+            --mode-container-px: 12px;
+            --mode-container-py: 6px;
+          }
+        }
+
+        /* Smooth transition for all dynamic properties */
+        .mode-selector-button {
+          transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+      `}</style>
     </div>
   );
 }

@@ -67,7 +67,7 @@ export function ModeSelector({
           paddingRight: 'var(--mode-container-px)',
           paddingTop: 'var(--mode-container-py)',
           paddingBottom: 'var(--mode-container-py)',
-          transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+          /* Container sizing transitions removed for instant feedback */
         }}
       >
         {modes.map(({ mode, icon: Icon, disabled }) => (
@@ -77,7 +77,7 @@ export function ModeSelector({
             disabled={disabled || isSubmitting}
             aria-label={mode === 'submit' ? 'Done' : mode}
             className={`
-              mode-selector-button rounded-full transition-all duration-300 ease-out flex items-center justify-center
+              mode-selector-button rounded-full flex items-center justify-center
               ${
                 selectedMode === mode && mode !== 'cancel'
                   ? 'bg-primary text-primary-foreground shadow-md'
@@ -186,9 +186,9 @@ export function ModeSelector({
           }
         }
 
-        /* Smooth transition for all dynamic properties */
+        /* Instant mode changes - no transitions */
         .mode-selector-button {
-          transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+          /* No transitions for instant feedback */
         }
       `}</style>
     </div>

@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { Activity } from 'lucide-react';
 import { SymptomTimeline } from '@/features/symptoms/components/symptom-timeline';
 import {
   SymptomEntrySkeleton,
@@ -48,9 +49,7 @@ export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">
-            Signal Entries
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground">Entries</h2>
           <span className="text-muted-foreground text-sm">
             {symptomsForSelectedDate?.length || 0} entries
           </span>
@@ -61,8 +60,8 @@ export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
             isEmpty={symptomsForSelectedDate?.length === 0}
             loadingMessage="Loading symptoms for selected date..."
             emptyTitle="No signals logged for this date"
-            emptyDescription="Tap the signals icon below to add a symptom entry"
-            emptyIcon="⚡"
+            emptyDescription="Tap the + button to add a symptom entry"
+            EmptyIconComponent={Activity}
           />
           {symptomsForSelectedDate === undefined && (
             <div className="space-y-3">

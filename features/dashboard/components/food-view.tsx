@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { Utensils } from 'lucide-react';
 import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
 import { OrganicCompositionBar } from '@/features/foods/components/organic-composition-bar';
 import { FoodZoneSummaryBar } from '@/features/foods/components/food-zone-summary-bar';
@@ -67,8 +68,8 @@ export function FoodView({
             isEmpty={foodsForSelectedDate?.length === 0}
             loadingMessage="Loading foods for selected date..."
             emptyTitle="No foods logged for this date"
-            emptyDescription="Tap the eat icon below to add a food entry"
-            emptyIcon="🍽️"
+            emptyDescription="Tap the + button to add a food entry"
+            EmptyIconComponent={Utensils}
           />
           {foodsForSelectedDate === undefined && (
             <div className="space-y-3">

@@ -154,6 +154,7 @@ export function EmptyOrLoadingState({
   emptyTitle = 'No entries yet',
   emptyDescription = 'Get started by adding your first entry',
   emptyIcon = '📝',
+  EmptyIconComponent,
   className,
   children,
 }: {
@@ -163,6 +164,7 @@ export function EmptyOrLoadingState({
   emptyTitle?: string;
   emptyDescription?: string;
   emptyIcon?: string;
+  EmptyIconComponent?: React.ComponentType<{ className?: string }>;
   className?: string;
   children?: React.ReactNode;
 }) {
@@ -174,7 +176,11 @@ export function EmptyOrLoadingState({
     return (
       <div className={cn('text-center py-12', className)}>
         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">{emptyIcon}</span>
+          {EmptyIconComponent ? (
+            <EmptyIconComponent className="h-8 w-8 text-muted-foreground" />
+          ) : (
+            <span className="text-2xl">{emptyIcon}</span>
+          )}
         </div>
         <p className="text-muted-foreground text-lg font-medium">
           {emptyTitle}

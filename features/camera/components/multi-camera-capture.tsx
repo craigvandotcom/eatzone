@@ -169,8 +169,11 @@ export function MultiCameraCapture({
 
   const handleManualEntry = () => {
     stopCamera();
-    onOpenChange(false);
-    onManualEntry();
+    // Use React 19 transition to coordinate navigation and modal closing
+    startTransition(() => {
+      onManualEntry();
+      onOpenChange(false);
+    });
   };
 
   const handleClose = () => {

@@ -131,46 +131,46 @@ export function ModeSelector({
           --mode-container-py: 12px;
         }
 
-        /* Large screens (lg) - starts shrinking at ~480px */
-        @media (max-width: 480px) {
+        /* Large screens (lg) - delay shrinking until ~420px */
+        @media (max-width: 420px) {
           .mode-selector-container {
             --mode-icon-size: 18px;
             --mode-button-size: 40px;
             --mode-gap: 14px;
-            --mode-container-px: 20px;
+            --mode-container-px: 22px;
             --mode-container-py: 10px;
           }
         }
 
-        /* Medium-large screens */
-        @media (max-width: 440px) {
+        /* Medium-large screens - more conservative shrinking */
+        @media (max-width: 390px) {
           .mode-selector-container {
             --mode-icon-size: 16px;
             --mode-button-size: 36px;
             --mode-gap: 12px;
-            --mode-container-px: 18px;
+            --mode-container-px: 20px;
             --mode-container-py: 9px;
           }
         }
 
-        /* Medium screens (md) */
-        @media (max-width: 400px) {
+        /* Medium screens (md) - preserve more space */
+        @media (max-width: 360px) {
           .mode-selector-container {
             --mode-icon-size: 14px;
             --mode-button-size: 32px;
             --mode-gap: 10px;
-            --mode-container-px: 16px;
+            --mode-container-px: 18px;
             --mode-container-py: 8px;
           }
         }
 
-        /* Small screens (sm) */
-        @media (max-width: 360px) {
+        /* Small screens (sm) - only for very tight spaces */
+        @media (max-width: 330px) {
           .mode-selector-container {
             --mode-icon-size: 12px;
             --mode-button-size: 28px;
             --mode-gap: 8px;
-            --mode-container-px: 14px;
+            --mode-container-px: 16px;
             --mode-container-py: 7px;
           }
         }

@@ -126,8 +126,8 @@ export function ModeSelector({
           /* Default sizing (xl breakpoint) */
           --mode-icon-size: 20px;
           --mode-button-size: 44px;
-          --mode-gap: 16px;
-          --mode-container-px: 24px;
+          --mode-gap: 12px;
+          --mode-container-px: 12px;
           --mode-container-py: 12px;
         }
 
@@ -136,8 +136,8 @@ export function ModeSelector({
           .mode-selector-container {
             --mode-icon-size: 18px;
             --mode-button-size: 40px;
-            --mode-gap: 14px;
-            --mode-container-px: 22px;
+            --mode-gap: 11px;
+            --mode-container-px: 10px;
             --mode-container-py: 10px;
           }
         }
@@ -147,8 +147,8 @@ export function ModeSelector({
           .mode-selector-container {
             --mode-icon-size: 16px;
             --mode-button-size: 36px;
-            --mode-gap: 12px;
-            --mode-container-px: 20px;
+            --mode-gap: 10px;
+            --mode-container-px: 9px;
             --mode-container-py: 9px;
           }
         }
@@ -158,8 +158,8 @@ export function ModeSelector({
           .mode-selector-container {
             --mode-icon-size: 14px;
             --mode-button-size: 32px;
-            --mode-gap: 10px;
-            --mode-container-px: 18px;
+            --mode-gap: 8px;
+            --mode-container-px: 8px;
             --mode-container-py: 8px;
           }
         }
@@ -169,8 +169,8 @@ export function ModeSelector({
           .mode-selector-container {
             --mode-icon-size: 12px;
             --mode-button-size: 28px;
-            --mode-gap: 8px;
-            --mode-container-px: 16px;
+            --mode-gap: 7px;
+            --mode-container-px: 7px;
             --mode-container-py: 7px;
           }
         }
@@ -180,8 +180,8 @@ export function ModeSelector({
           .mode-selector-container {
             --mode-icon-size: 10px;
             --mode-button-size: 24px;
-            --mode-gap: 6px;
-            --mode-container-px: 12px;
+            --mode-gap: 5px;
+            --mode-container-px: 6px;
             --mode-container-py: 6px;
           }
         }

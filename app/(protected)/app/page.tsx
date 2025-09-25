@@ -30,11 +30,7 @@ import {
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import { usePersistentTab } from '@/lib/hooks/use-persistent-tab';
-import {
-  getBase64ImageSize,
-  isImageSizeValid,
-  formatFileSize,
-} from '@/lib/utils/image-utils';
+import { getBase64ImageSize, formatFileSize } from '@/lib/utils/image-utils';
 
 // Import data management functions
 
@@ -105,25 +101,46 @@ function Dashboard() {
           return;
         }
 
-        // For now, use the first image (maintaining backward compatibility)
-        // TODO: Update food entry form to handle multiple images
-        const imageData = images[0];
+        // Validate total size with streaming approach to prevent memory spikes
+        let totalSize = 0;
+        for (let i = 0; i < images.length; i++) {
+          const imageSize = getBase64ImageSize(images[i]);
+          totalSize += imageSize;
 
-        // Validate image data size before storing (sessionStorage has ~5MB limit)
-        // Use accurate base64 size calculation instead of Blob constructor
-        const imageSize = getBase64ImageSize(imageData);
-
-        if (!isImageSizeValid(imageData, MAX_IMAGE_SIZE)) {
-          toast({
-            title: 'Image too large',
-            description: `Image size (${formatFileSize(imageSize)}) exceeds the ${formatFileSize(MAX_IMAGE_SIZE)} limit. Please try capturing a smaller image or use manual entry.`,
-            variant: 'destructive',
-          });
-          return;
+          // Early exit if we exceed the limit to save processing
+          if (totalSize > MAX_IMAGE_SIZE) {
+            toast({
+              title: 'Images too large',
+              description: `Total image size (${formatFileSize(totalSize)}) exceeds the ${formatFileSize(MAX_IMAGE_SIZE)} limit. Please try capturing fewer or smaller images.`,
+              variant: 'destructive',
+            });
+            return;
+          }
         }
 
-        // Store the image data temporarily in sessionStorage for the add food page
-        sessionStorage.setItem('pendingFoodImage', imageData);
+        // Check current storage usage and estimate required space
+        const imagesJson = JSON.stringify(images);
+        const requiredStorage = new Blob([imagesJson]).size;
+        const currentStorageUsed = new Blob([JSON.stringify(sessionStorage)]).size;
+        const estimatedTotal = currentStorageUsed + requiredStorage;
+
+        // Browser sessionStorage limit is typically 5-10MB, warn at 80% of 5MB
+        const STORAGE_WARNING_LIMIT = 4 * 1024 * 1024; // 4MB warning threshold
+
+        if (estimatedTotal > STORAGE_WARNING_LIMIT) {
+          logger.warn('SessionStorage usage approaching limit', {
+            currentUsage: formatFileSize(currentStorageUsed),
+            requiredSpace: formatFileSize(requiredStorage),
+            estimatedTotal: formatFileSize(estimatedTotal),
+          });
+
+          // Clear old pending images to make space
+          sessionStorage.removeItem('pendingFoodImages');
+          sessionStorage.removeItem('pendingFoodImage');
+        }
+
+        // Store all captured images as JSON array in sessionStorage
+        sessionStorage.setItem('pendingFoodImages', imagesJson);
         router.replace('/app/foods/add');
       } catch (error) {
         logger.error('Failed to store image data', error);

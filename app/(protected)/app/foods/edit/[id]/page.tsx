@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FoodEntryForm } from '@/features/foods/components/food-entry-form';
+import { ImageProcessingErrorBoundary } from '@/features/camera/components/image-processing-error-boundary';
 import { getFoodById, updateFood as dbUpdateFood, deleteFood } from '@/lib/db';
 import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
@@ -70,10 +71,15 @@ export default function EditFoodPage({
           name: updatedFood.name,
           ingredients: updatedFood.ingredients.map(ing => ({
             ...ing,
+            // Defensive null checks with safe defaults
+            name: ing.name || '',
+            organic: ing.organic ?? false,
+            category: ing.category || undefined,
+            group: ing.group || 'other',
             // Mark ingredient as unzoned if it's been modified (organic status changed)
             // or if it's missing zone/category/group information
             zone:
-              !ing.zone || ing.zone === 'unzoned' || !ing.category || !ing.group
+              !ing?.zone || ing.zone === 'unzoned' || !ing?.category || !ing?.group
                 ? ('unzoned' as const)
                 : ing.zone,
           })),
@@ -82,9 +88,9 @@ export default function EditFoodPage({
           selectedDateTime: new Date(updatedFood.timestamp),
         };
 
-        // Check if any ingredients need re-zoning
+        // Check if any ingredients need re-zoning with defensive null checks
         const needsReZoning = submissionData.ingredients.some(
-          ing => ing.zone === 'unzoned' || !ing.category || !ing.group
+          ing => ing?.zone === 'unzoned' || !ing?.category || !ing?.group
         );
 
         if (needsReZoning) {
@@ -190,12 +196,30 @@ export default function EditFoodPage({
 
       {/* Form Content */}
       <main className="px-4 py-6">
-        <FoodEntryForm
-          onAddFood={handleUpdateFood}
-          onClose={handleClose}
-          onDelete={handleDeleteFood}
-          editingFood={food}
-        />
+        <ImageProcessingErrorBoundary
+          onRetry={() => {
+            // Retry by reloading the food data
+            window.location.reload();
+          }}
+          onCancel={() => {
+            // Cancel by going back
+            router.back();
+          }}
+          onError={(error, errorInfo) => {
+            logger.error('Food edit form error boundary caught error:', {
+              error: error.message,
+              stack: error.stack,
+              componentStack: errorInfo.componentStack,
+            });
+          }}
+        >
+          <FoodEntryForm
+            onAddFood={handleUpdateFood}
+            onClose={handleClose}
+            onDelete={handleDeleteFood}
+            editingFood={food}
+          />
+        </ImageProcessingErrorBoundary>
       </main>
     </div>
   );

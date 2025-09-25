@@ -30,11 +30,7 @@ import {
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
 import { usePersistentTab } from '@/lib/hooks/use-persistent-tab';
-import {
-  getBase64ImageSize,
-  isImageSizeValid,
-  formatFileSize,
-} from '@/lib/utils/image-utils';
+import { getBase64ImageSize, formatFileSize } from '@/lib/utils/image-utils';
 
 // Import data management functions
 
@@ -105,25 +101,27 @@ function Dashboard() {
           return;
         }
 
-        // For now, use the first image (maintaining backward compatibility)
-        // TODO: Update food entry form to handle multiple images
-        const imageData = images[0];
+        // Validate total size of all images (sessionStorage has ~5MB limit)
+        const totalSize = images.reduce(
+          (sum, img) => sum + getBase64ImageSize(img),
+          0
+        );
 
-        // Validate image data size before storing (sessionStorage has ~5MB limit)
-        // Use accurate base64 size calculation instead of Blob constructor
-        const imageSize = getBase64ImageSize(imageData);
-
-        if (!isImageSizeValid(imageData, MAX_IMAGE_SIZE)) {
+        if (totalSize > MAX_IMAGE_SIZE) {
           toast({
-            title: 'Image too large',
-            description: `Image size (${formatFileSize(imageSize)}) exceeds the ${formatFileSize(MAX_IMAGE_SIZE)} limit. Please try capturing a smaller image or use manual entry.`,
+            title: 'Images too large',
+            description: `Total image size (${formatFileSize(totalSize)}) exceeds the ${formatFileSize(MAX_IMAGE_SIZE)} limit. Please try capturing fewer or smaller images.`,
             variant: 'destructive',
           });
           return;
         }
 
-        // Store the image data temporarily in sessionStorage for the add food page
-        sessionStorage.setItem('pendingFoodImage', imageData);
+        // Store all captured images as JSON array in sessionStorage
+        const imagesJson = JSON.stringify(images);
+        sessionStorage.setItem('pendingFoodImages', imagesJson);
+
+        // Also store first image for backward compatibility with existing code
+        sessionStorage.setItem('pendingFoodImage', images[0]);
         router.replace('/app/foods/add');
       } catch (error) {
         logger.error('Failed to store image data', error);

@@ -16,43 +16,100 @@ import { toast } from 'sonner';
 export default function AddFoodPage() {
   const router = useRouter();
   const [imageData, setImageData] = useState<string | undefined>();
+  const [capturedImages, setCapturedImages] = useState<string[] | undefined>();
 
   useEffect(() => {
-    // Check if there's a pending image from camera capture in sessionStorage
-    const pendingImage = sessionStorage.getItem('pendingFoodImage');
-    logger.debug('Checking for pending image', {
-      hasPendingImage: !!pendingImage,
-      imageLength: pendingImage?.length,
-    });
+    // Priority 1: Check for multiple images from camera capture
+    const pendingImagesJson = sessionStorage.getItem('pendingFoodImages');
 
-    if (pendingImage) {
+    if (pendingImagesJson) {
       try {
-        // Validate it's a proper base64 image
-        if (pendingImage.startsWith('data:image/')) {
-          logger.debug('Valid image data found, setting imageData state');
-          setImageData(pendingImage);
-        } else {
-          logger.error('Invalid image data retrieved from sessionStorage', {
-            imageStart: pendingImage.substring(0, 50),
-          });
-          toast.error('Failed to load captured image. Please try again.');
+        const images = JSON.parse(pendingImagesJson);
+        if (Array.isArray(images) && images.length > 0) {
+          // Validate all images are proper base64
+          const validImages = images.filter(
+            img => typeof img === 'string' && img.startsWith('data:image/')
+          );
+
+          if (validImages.length > 0) {
+            logger.debug('Valid multiple images found', {
+              totalImages: images.length,
+              validImages: validImages.length,
+            });
+            setCapturedImages(validImages);
+            // Clear after retrieval
+            sessionStorage.removeItem('pendingFoodImages');
+            return; // Don't check for single image if we have multiple
+          }
         }
       } catch (error) {
-        logger.error('Error processing pending image', error);
-        toast.error('Failed to load captured image. Please try again.');
+        logger.error(
+          'Error parsing multiple images from sessionStorage',
+          error
+        );
       }
 
-      // Clear it after retrieval to prevent reuse
-      sessionStorage.removeItem('pendingFoodImage');
+      // Clear invalid data
+      sessionStorage.removeItem('pendingFoodImages');
+    }
+
+    // Priority 2: Fallback to single image (backward compatibility)
+    // Only check for single image if we didn't find multiple images above
+    if (!capturedImages) {
+      const pendingImage = sessionStorage.getItem('pendingFoodImage');
+      logger.debug('Checking for single pending image', {
+        hasPendingImage: !!pendingImage,
+        imageLength: pendingImage?.length,
+      });
+
+      if (pendingImage) {
+        try {
+          // Validate it's a proper base64 image
+          if (pendingImage.startsWith('data:image/')) {
+            logger.debug(
+              'Valid single image data found, setting imageData state'
+            );
+            setImageData(pendingImage);
+          } else {
+            logger.error(
+              'Invalid single image data retrieved from sessionStorage',
+              {
+                imageStart: pendingImage.substring(0, 50),
+              }
+            );
+            toast.error('Failed to load captured image. Please try again.');
+          }
+        } catch (error) {
+          logger.error('Error processing single pending image', error);
+          toast.error('Failed to load captured image. Please try again.');
+        }
+
+        // Clear it after retrieval to prevent reuse
+        sessionStorage.removeItem('pendingFoodImage');
+      } else {
+        logger.debug('No pending single image found in sessionStorage');
+      }
     } else {
-      logger.debug('No pending image found in sessionStorage');
+      // If we have captured images, clear the single image storage to avoid conflicts
+      sessionStorage.removeItem('pendingFoodImage');
+      logger.debug(
+        'Cleared single image storage since multiple images were found'
+      );
     }
   }, []);
 
   const handleAddFood = async (food: Omit<Food, 'id' | 'timestamp'>) => {
-    // Include image data if available
-    const foodWithImage = imageData ? { ...food, image: imageData } : food;
-    await dbAddFood(foodWithImage);
+    // Include image data if available (prioritize captured images, fallback to single image)
+    if (capturedImages?.length) {
+      // Multiple images from camera
+      await dbAddFood({ ...food, images: capturedImages });
+    } else if (imageData) {
+      // Single image (backward compatibility)
+      await dbAddFood({ ...food, image: imageData });
+    } else {
+      // No images
+      await dbAddFood(food);
+    }
 
     // Invalidate SWR cache to trigger immediate refresh
     await mutate('dashboard-data');
@@ -87,6 +144,7 @@ export default function AddFoodPage() {
           onAddFood={handleAddFood}
           onClose={handleClose}
           imageData={imageData}
+          capturedImages={capturedImages}
         />
       </main>
     </div>

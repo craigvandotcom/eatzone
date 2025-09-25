@@ -59,7 +59,8 @@ interface FoodEntryFormProps {
   onClose: () => void;
   onDelete?: () => void;
   editingFood?: Food | null;
-  imageData?: string; // Base64 image data for AI analysis
+  imageData?: string; // Base64 image data for AI analysis (backward compatibility)
+  capturedImages?: string[]; // Multiple images from camera capture
   className?: string;
 }
 
@@ -69,6 +70,7 @@ export function FoodEntryForm({
   onDelete,
   editingFood,
   imageData,
+  capturedImages,
   className,
 }: FoodEntryFormProps) {
   const [name, setName] = useState('');
@@ -80,6 +82,9 @@ export function FoodEntryForm({
   const [showNotes, setShowNotes] = useState(false);
   const [selectedDateTime, setSelectedDateTime] = useState<Date>(new Date());
 
+  // Image gallery state
+  const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
+
   // AI Analysis state
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -90,12 +95,34 @@ export function FoodEntryForm({
   const isMountedRef = useRef(true);
   const analysisInitiatedRef = useRef(false);
 
-  // AI Analysis function with race condition protection
-  const analyzeImage = useCallback(
-    async (imageData: string, currentName?: string) => {
-      logger.debug('analyzeImage called', {
-        hasImageData: !!imageData,
-        imageDataLength: imageData?.length,
+  // Helper function to get image array from various sources
+  const getImageArray = (): string[] => {
+    // Priority 1: Multiple images from camera capture
+    if (capturedImages?.length) return capturedImages;
+
+    // Priority 2: Single image from camera capture (backward compatibility)
+    if (imageData && !editingFood) return [imageData];
+
+    // Priority 3: Editing existing food with multiple images
+    if (editingFood?.image_urls?.length) return editingFood.image_urls;
+
+    // Priority 4: Editing existing food with single image (backward compatibility)
+    if (editingFood?.photo_url) return [editingFood.photo_url];
+
+    return [];
+  };
+
+  // Handle image click for primary selection
+  const handleImageClick = (clickedIndex: number) => {
+    setPrimaryImageIndex(clickedIndex);
+  };
+
+  // Unified AI Analysis function that handles both single and multiple images
+  const analyzeImages = useCallback(
+    async (images: string[], currentName?: string) => {
+      const imageCount = images.length;
+      logger.debug('analyzeImages called', {
+        imageCount,
         currentName,
         isAnalyzing,
         hasAnalyzed,
@@ -112,10 +139,14 @@ export function FoodEntryForm({
 
       if (!isMountedRef.current) return;
 
-      // Validate image data format
-      if (!imageData || !imageData.startsWith('data:image/')) {
+      // Validate all images
+      const invalidImages = images.filter(
+        img => !img || !img.startsWith('data:image/')
+      );
+      if (invalidImages.length > 0) {
         logger.error('Invalid image data format', {
-          imageData: imageData?.substring(0, 50),
+          totalImages: images.length,
+          invalidCount: invalidImages.length,
         });
         setAnalysisError('Invalid image data. Please try capturing again.');
         toast.error('Invalid image data. Please try capturing again.');
@@ -126,15 +157,19 @@ export function FoodEntryForm({
       setAnalysisError(null);
 
       try {
-        logger.debug('Sending request to analyze-image API', {
-          imageDataLength: imageData.length,
-          imageDataStart: imageData.substring(0, 50),
-          imageDataType: imageData.split(',')[0], // Get the data URL prefix
+        logger.debug('Sending images to analyze-image API', {
+          imageCount: images.length,
+          imageSizes: images.map(img => img.length),
         });
+
+        // Send single image or multiple images based on count
+        const requestBody =
+          imageCount === 1 ? { image: images[0] } : { images: images };
+
         const response = await fetch('/api/analyze-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: imageData }),
+          body: JSON.stringify(requestBody),
           signal: abortController.signal,
         });
 
@@ -154,7 +189,7 @@ export function FoodEntryForm({
           } catch {
             errorData = { message: errorText };
           }
-          logger.error('Analysis API error', {
+          logger.error('Image analysis API error', {
             status: response.status,
             statusText: response.statusText,
             errorData,
@@ -193,7 +228,23 @@ export function FoodEntryForm({
           setName(mealSummary);
         }
         setHasAnalyzed(true);
-        toast.success(`Found ${ingredientData.length} ingredients for review.`);
+
+        // Provide better messaging based on number of ingredients found
+        if (ingredientData.length === 0) {
+          // No ingredients detected - not an error, just guidance
+          const noIngredientsMessage =
+            imageCount === 1
+              ? 'No ingredients detected. Try retaking the photo or add ingredients manually.'
+              : `No ingredients detected in ${imageCount} images. Try retaking photos or add ingredients manually.`;
+          toast.info(noIngredientsMessage);
+        } else {
+          // Ingredients found - success message
+          const successMessage =
+            imageCount === 1
+              ? `Found ${ingredientData.length} ingredients for review.`
+              : `Found ${ingredientData.length} ingredients from ${imageCount} images for review.`;
+          toast.success(successMessage);
+        }
       } catch (error) {
         // Don't show error if request was aborted
         if (error instanceof Error && error.name === 'AbortError') {
@@ -203,11 +254,19 @@ export function FoodEntryForm({
 
         if (!isMountedRef.current) return;
 
-        logger.error('Image analysis failed', error);
-        setAnalysisError(
-          'AI analysis failed. Please add ingredients manually.'
-        );
-        toast.error('AI analysis failed. Please add ingredients manually.');
+        logger.error('Image analysis failed', {
+          error: error instanceof Error ? error.message : String(error),
+          imageCount,
+        });
+
+        // More user-friendly error message for technical failures
+        const errorMessage =
+          imageCount === 1
+            ? 'Unable to analyze image. Please try again or add ingredients manually.'
+            : `Unable to analyze ${imageCount} images. Please try again or add ingredients manually.`;
+
+        setAnalysisError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         if (isMountedRef.current) {
           setIsAnalyzing(false);
@@ -231,6 +290,7 @@ export function FoodEntryForm({
       setShowNotes(!!editingFood.notes);
       setSelectedDateTime(new Date(editingFood.timestamp));
       setHasAnalyzed(false);
+      setPrimaryImageIndex(0); // Reset to first image
       analysisInitiatedRef.current = false;
     } else {
       logger.debug('Resetting form for new entry');
@@ -241,6 +301,7 @@ export function FoodEntryForm({
       setSelectedDateTime(new Date());
       setHasAnalyzed(false);
       setAnalysisError(null);
+      setPrimaryImageIndex(0); // Reset to first image
       analysisInitiatedRef.current = false;
     }
   }, [editingFood]);
@@ -250,23 +311,43 @@ export function FoodEntryForm({
     logger.debug('Image analysis effect triggered', {
       hasImageData: !!imageData,
       imageDataLength: imageData?.length,
+      hasCapturedImages: !!capturedImages?.length,
+      capturedImagesCount: capturedImages?.length,
       isEditingFood: !!editingFood,
       hasAnalyzed,
       analysisInitiated: analysisInitiatedRef.current,
     });
 
-    // Only analyze if we have image data, not editing, haven't analyzed, and haven't initiated
+    // Determine which images to analyze (priority: capturedImages, fallback: imageData)
+    const imagesToAnalyze = capturedImages?.length
+      ? capturedImages
+      : imageData
+        ? [imageData]
+        : null;
+
     if (
-      imageData &&
+      imagesToAnalyze &&
       !editingFood &&
       !hasAnalyzed &&
       !analysisInitiatedRef.current
     ) {
-      logger.debug('Starting image analysis');
+      logger.debug('Starting image analysis', {
+        imageCount: imagesToAnalyze.length,
+        analysisType: imagesToAnalyze.length === 1 ? 'single' : 'multiple',
+      });
       analysisInitiatedRef.current = true;
-      analyzeImage(imageData, name);
+
+      // Use the unified analysis function
+      analyzeImages(imagesToAnalyze, name);
     }
-  }, [imageData, editingFood, hasAnalyzed, analyzeImage, name]);
+  }, [
+    imageData,
+    capturedImages,
+    editingFood,
+    hasAnalyzed,
+    analyzeImages,
+    name,
+  ]);
 
   // Set mounted flag on mount and cleanup on unmount
   useEffect(() => {
@@ -426,19 +507,65 @@ export function FoodEntryForm({
         message="Analyzing ingredients with AI..."
       />
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Image Display - Show for both editing and new entries with captured image */}
-        {(editingFood?.photo_url || imageData) && (
-          <div className="mb-4">
-            <Label>Food Image</Label>
-            <div className="mt-2 relative w-full max-w-md mx-auto">
-              <img
-                src={editingFood?.photo_url || imageData}
-                alt="Food entry"
-                className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
-              />
+        {/* Adaptive Image Gallery - Show for both editing and new entries with images */}
+        {(() => {
+          const images = getImageArray();
+          if (images.length === 0) return null;
+
+          return (
+            <div className="mb-4">
+              <Label>Food Image{images.length > 1 ? 's' : ''}</Label>
+              <div className="mt-2 relative w-full">
+                {images.length === 1 ? (
+                  // Single image layout - full width
+                  <img
+                    src={images[0]}
+                    alt="Food entry"
+                    className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm cursor-pointer"
+                    onClick={() => handleImageClick(0)}
+                  />
+                ) : (
+                  // Multi-image layout - grid with primary and secondary images
+                  <div className="grid grid-cols-[2.3fr_1fr] gap-2 h-48">
+                    {/* Primary image - left side */}
+                    <img
+                      src={images[primaryImageIndex]}
+                      alt={`Food entry - primary`}
+                      className="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm cursor-pointer"
+                      onClick={() => handleImageClick(primaryImageIndex)}
+                    />
+
+                    {/* Secondary images - right side */}
+                    <div
+                      className={
+                        images.length === 3 ? 'grid grid-rows-2 gap-2' : 'flex'
+                      }
+                    >
+                      {images.map((image, index) => {
+                        if (index === primaryImageIndex) return null; // Skip primary image
+
+                        return (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`Food entry ${index + 1}`}
+                            className={cn(
+                              'object-cover rounded-lg border border-gray-200 shadow-sm cursor-pointer',
+                              images.length === 2
+                                ? 'w-full h-48'
+                                : 'w-full h-24'
+                            )}
+                            onClick={() => handleImageClick(index)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
         <div>
           <Label htmlFor="meal-summary">Meal Summary (optional)</Label>
           <Input

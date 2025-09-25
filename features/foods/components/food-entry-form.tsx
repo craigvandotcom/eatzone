@@ -3,7 +3,7 @@
 import type React from 'react';
 import type { Food, Ingredient } from '@/lib/types';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -95,22 +95,53 @@ export function FoodEntryForm({
   const isMountedRef = useRef(true);
   const analysisInitiatedRef = useRef(false);
 
-  // Helper function to get image array from various sources
-  const getImageArray = (): string[] => {
+  // Helper function to validate image data before rendering
+  const validateImageData = (imageData: string): boolean => {
+    if (!imageData || typeof imageData !== 'string') {
+      return false;
+    }
+
+    // Check if it's a valid data URL format
+    if (!imageData.startsWith('data:image/')) {
+      logger.warn('Invalid image format detected', {
+        dataStart: imageData.substring(0, 50),
+      });
+      return false;
+    }
+
+    // Check for basic data URL structure
+    if (!imageData.includes(',')) {
+      logger.warn('Malformed data URL detected');
+      return false;
+    }
+
+    return true;
+  };
+
+  // Memoized function to get image array from various sources (performance optimization)
+  const getImageArray = useMemo((): string[] => {
     // Priority 1: Multiple images from camera capture
-    if (capturedImages?.length) return capturedImages;
+    if (capturedImages?.length) {
+      return capturedImages.filter(validateImageData);
+    }
 
     // Priority 2: Single image from camera capture (backward compatibility)
-    if (imageData && !editingFood) return [imageData];
+    if (imageData && !editingFood && validateImageData(imageData)) {
+      return [imageData];
+    }
 
     // Priority 3: Editing existing food with multiple images
-    if (editingFood?.image_urls?.length) return editingFood.image_urls;
+    if (editingFood?.image_urls?.length) {
+      return editingFood.image_urls.filter(validateImageData);
+    }
 
     // Priority 4: Editing existing food with single image (backward compatibility)
-    if (editingFood?.photo_url) return [editingFood.photo_url];
+    if (editingFood?.photo_url && validateImageData(editingFood.photo_url)) {
+      return [editingFood.photo_url];
+    }
 
     return [];
-  };
+  }, [capturedImages, imageData, editingFood?.image_urls, editingFood?.photo_url]);
 
   // Handle image click for primary selection
   const handleImageClick = (clickedIndex: number) => {
@@ -121,11 +152,8 @@ export function FoodEntryForm({
   const analyzeImages = useCallback(
     async (images: string[]) => {
       const imageCount = images.length;
-      // Get current name value to avoid stale closure
-      const currentName = name;
       logger.debug('analyzeImages called', {
         imageCount,
-        currentName,
         isAnalyzing,
         hasAnalyzed,
       });
@@ -141,17 +169,74 @@ export function FoodEntryForm({
 
       if (!isMountedRef.current) return;
 
-      // Validate all images
-      const invalidImages = images.filter(
-        img => !img || !img.startsWith('data:image/')
-      );
+      // Comprehensive image validation
+      const maxImageSize = 10 * 1024 * 1024; // 10MB per image
+      const maxTotalImages = 5; // Maximum number of images
+      const validationErrors = [];
+
+      // Check image count limit
+      if (images.length > maxTotalImages) {
+        validationErrors.push(`Too many images. Maximum ${maxTotalImages} allowed.`);
+      }
+
+      // Validate each image
+      const invalidImages = [];
+      const oversizedImages = [];
+
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+
+        // Check format
+        if (!img || typeof img !== 'string' || !img.startsWith('data:image/')) {
+          invalidImages.push(i + 1);
+          continue;
+        }
+
+        // Check basic structure
+        if (!img.includes(',') || !img.includes(';base64,')) {
+          invalidImages.push(i + 1);
+          continue;
+        }
+
+        // Check file size (approximate from base64)
+        try {
+          const base64Data = img.split(',')[1];
+          const imageSize = (base64Data.length * 3) / 4; // Approximate size from base64
+          if (imageSize > maxImageSize) {
+            oversizedImages.push({
+              index: i + 1,
+              size: Math.round(imageSize / (1024 * 1024)),
+            });
+          }
+        } catch (error) {
+          logger.warn('Could not validate image size', { imageIndex: i, error });
+          invalidImages.push(i + 1);
+        }
+      }
+
+      // Report validation errors
       if (invalidImages.length > 0) {
-        logger.error('Invalid image data format', {
+        validationErrors.push(`Invalid image format in image(s): ${invalidImages.join(', ')}`);
+      }
+
+      if (oversizedImages.length > 0) {
+        const oversizedList = oversizedImages
+          .map(img => `#${img.index} (${img.size}MB)`)
+          .join(', ');
+        validationErrors.push(`Images too large (max 10MB): ${oversizedList}`);
+      }
+
+      // If there are validation errors, report them and return
+      if (validationErrors.length > 0) {
+        const errorMessage = validationErrors.join(' ');
+        logger.error('Image validation failed', {
           totalImages: images.length,
           invalidCount: invalidImages.length,
+          oversizedCount: oversizedImages.length,
+          errors: validationErrors,
         });
-        setAnalysisError('Invalid image data. Please try capturing again.');
-        toast.error('Invalid image data. Please try capturing again.');
+        setAnalysisError(errorMessage);
+        toast.error(errorMessage);
         return;
       }
 
@@ -225,9 +310,13 @@ export function FoodEntryForm({
 
         setIngredients(aiIngredients);
         // Set the meal summary as the default name if not already set
-        if (!currentName && mealSummary) {
-          setName(mealSummary);
-        }
+        // Read current name value directly to avoid stale closure
+        setName(currentName => {
+          if (!currentName && mealSummary) {
+            return mealSummary;
+          }
+          return currentName;
+        });
         setHasAnalyzed(true);
 
         // Provide better messaging based on number of ingredients found
@@ -279,7 +368,7 @@ export function FoodEntryForm({
         }
       }
     },
-    [] // Empty dependency array for stable reference
+    [isAnalyzing, hasAnalyzed] // Include necessary state dependencies
   );
 
   // Pre-populate form when editing food
@@ -402,15 +491,22 @@ export function FoodEntryForm({
 
   const handleToggleOrganic = (index: number) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index].organic = !updatedIngredients[index].organic;
-    // Mark the ingredient as needing re-zoning when organic status changes
-    // This ensures it gets re-analyzed when updating
-    if (editingFood && updatedIngredients[index].zone !== 'unzoned') {
-      updatedIngredients[index].zone = 'unzoned';
-      // Clear category and group to trigger full re-analysis
-      updatedIngredients[index].category = undefined;
-      updatedIngredients[index].group = 'other'; // Reset to default
+    const oldOrganic = updatedIngredients[index].organic;
+    const newOrganic = !oldOrganic;
+
+    updatedIngredients[index].organic = newOrganic;
+
+    // Only trigger re-zoning during edit if organic status actually changed
+    // and we're not currently analyzing to prevent race conditions
+    if (editingFood && oldOrganic !== newOrganic && !isAnalyzing) {
+      if (updatedIngredients[index].zone !== 'unzoned') {
+        updatedIngredients[index].zone = 'unzoned';
+        // Clear category and group to trigger full re-analysis
+        updatedIngredients[index].category = undefined;
+        updatedIngredients[index].group = 'other'; // Reset to default
+      }
     }
+
     setIngredients(updatedIngredients);
   };
 
@@ -421,10 +517,12 @@ export function FoodEntryForm({
       const newName = editingValue.trim();
       updatedIngredients[index].name = newName;
 
-      // Mark as needing re-zoning if the name changed during edit
+      // Only trigger re-zoning if the name actually changed during edit
+      // and we're not currently analyzing to prevent race conditions
       if (
         editingFood &&
         oldName !== newName &&
+        !isAnalyzing &&
         updatedIngredients[index].zone !== 'unzoned'
       ) {
         updatedIngredients[index].zone = 'unzoned';
@@ -530,7 +628,7 @@ export function FoodEntryForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Adaptive Image Gallery - Show for both editing and new entries with images */}
         {(() => {
-          const images = getImageArray();
+          const images = getImageArray;
           if (images.length === 0) return null;
 
           return (

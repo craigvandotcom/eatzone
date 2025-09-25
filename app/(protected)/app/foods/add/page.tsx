@@ -11,8 +11,9 @@ import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
+import SecureImageStorage from '@/lib/utils/secure-image-storage';
 
-// Note: Image size validation is now handled in SecureImageStorage
+// Note: Image size validation and secure storage is now handled via SecureImageStorage
 
 export default function AddFoodPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function AddFoodPage() {
       let validImages: string[] = [];
       let singleImage: string | undefined;
 
-      // Atomically retrieve and clear multiple images data
+      // Atomically retrieve and clear multiple images data using SecureImageStorage
       const pendingImagesJson = sessionStorage.getItem('pendingFoodImages');
       if (pendingImagesJson) {
         sessionStorage.removeItem('pendingFoodImages');
@@ -55,26 +56,28 @@ export default function AddFoodPage() {
         }
       }
 
-      // Atomically retrieve and clear single image data (backward compatibility)
-      const pendingImage = sessionStorage.getItem('pendingFoodImage');
+      // Atomically retrieve and clear single image data using SecureImageStorage (backward compatibility)
+      const pendingImage = SecureImageStorage.retrieveTemporaryImage('pendingFoodImage');
+
       if (pendingImage) {
-        sessionStorage.removeItem('pendingFoodImage');
+        // Clear the image from secure storage after retrieval
+        SecureImageStorage.removeTemporaryImage('pendingFoodImage');
 
         if (!foundMultipleImages) {
-          logger.debug('Checking for single pending image', {
+          logger.debug('Checking for single pending image from SecureImageStorage', {
             hasPendingImage: !!pendingImage,
             imageLength: pendingImage?.length,
           });
 
-          // Validate it's a proper base64 image
+          // Validate it's a proper base64 image (SecureImageStorage already validates, but double-check)
           if (pendingImage.startsWith('data:image/')) {
             logger.debug(
-              'Valid single image data found, setting imageData state'
+              'Valid single image data found from SecureImageStorage, setting imageData state'
             );
             singleImage = pendingImage;
           } else {
             logger.error(
-              'Invalid single image data retrieved from sessionStorage',
+              'Invalid single image data retrieved from SecureImageStorage',
               {
                 imageStart: pendingImage.substring(0, 50),
               }
@@ -90,7 +93,7 @@ export default function AddFoodPage() {
           );
         }
       } else if (!foundMultipleImages) {
-        logger.debug('No pending single image found in sessionStorage');
+        logger.debug('No pending single image found in SecureImageStorage');
       }
 
       // Set state atomically after all validation

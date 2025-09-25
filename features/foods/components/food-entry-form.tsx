@@ -182,24 +182,23 @@ export function FoodEntryForm({
         }
 
         if (!response.ok) {
-          const errorText = await response
-            .text()
-            .catch(() => 'Failed to read error response');
-          let errorData = null;
+          // Simplified error parsing - just get the message and status
+          let errorMessage = 'Unknown error';
           try {
-            errorData = JSON.parse(errorText);
+            const errorData = await response.json();
+            errorMessage = errorData?.error?.message || errorData?.message || errorMessage;
           } catch {
-            errorData = { message: errorText };
+            // Fallback to status text if JSON parsing fails
+            errorMessage = response.statusText || errorMessage;
           }
+
           logger.error('Image analysis API error', {
             status: response.status,
             statusText: response.statusText,
-            errorData,
-            errorText: errorText.substring(0, 500), // Log first 500 chars
+            errorMessage,
           });
-          throw new Error(
-            `Analysis failed with status ${response.status}: ${errorData?.error?.message || errorData?.message || 'Unknown error'}`
-          );
+
+          throw new Error(`Analysis failed: ${errorMessage}`);
         }
 
         const { mealSummary, ingredients: ingredientData } =
@@ -309,7 +308,7 @@ export function FoodEntryForm({
     }
   }, [editingFood]);
 
-  // Separate effect for image analysis
+  // Separate effect for image analysis - optimized dependencies
   useEffect(() => {
     logger.debug('Image analysis effect triggered', {
       hasImageData: !!imageData,
@@ -343,14 +342,7 @@ export function FoodEntryForm({
       // Use the unified analysis function
       analyzeImages(imagesToAnalyze);
     }
-  }, [
-    imageData,
-    capturedImages,
-    editingFood,
-    hasAnalyzed,
-    analyzeImages,
-    name,
-  ]);
+  }, [imageData, capturedImages, editingFood, hasAnalyzed, analyzeImages]); // Removed 'name' - not needed for triggering analysis
 
   // Set mounted flag on mount and cleanup on unmount
   useEffect(() => {

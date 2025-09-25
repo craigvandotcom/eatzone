@@ -20,56 +20,58 @@ export default function AddFoodPage() {
   const [capturedImages, setCapturedImages] = useState<string[] | undefined>();
 
   useEffect(() => {
-    let foundMultipleImages = false;
+    // Atomic sessionStorage operations to prevent race conditions
+    const processSessionStorageImages = () => {
+      let foundMultipleImages = false;
+      let validImages: string[] = [];
+      let singleImage: string | undefined;
 
-    // Priority 1: Check for multiple images from camera capture
-    const pendingImagesJson = sessionStorage.getItem('pendingFoodImages');
+      // Atomically retrieve and clear multiple images data
+      const pendingImagesJson = sessionStorage.getItem('pendingFoodImages');
+      if (pendingImagesJson) {
+        sessionStorage.removeItem('pendingFoodImages');
 
-    if (pendingImagesJson) {
-      try {
-        const images = JSON.parse(pendingImagesJson);
-        if (Array.isArray(images) && images.length > 0) {
-          // Validate all images are proper base64
-          const validImages = images.filter(
-            img => typeof img === 'string' && img.startsWith('data:image/')
-          );
+        try {
+          const images = JSON.parse(pendingImagesJson);
+          if (Array.isArray(images) && images.length > 0) {
+            // Validate all images are proper base64
+            validImages = images.filter(
+              img => typeof img === 'string' && img.startsWith('data:image/')
+            );
 
-          if (validImages.length > 0) {
-            logger.debug('Valid multiple images found', {
-              totalImages: images.length,
-              validImages: validImages.length,
-            });
-            setCapturedImages(validImages);
-            foundMultipleImages = true;
+            if (validImages.length > 0) {
+              logger.debug('Valid multiple images found', {
+                totalImages: images.length,
+                validImages: validImages.length,
+              });
+              foundMultipleImages = true;
+            }
           }
+        } catch (error) {
+          logger.error(
+            'Error parsing multiple images from sessionStorage',
+            error
+          );
         }
-      } catch (error) {
-        logger.error(
-          'Error parsing multiple images from sessionStorage',
-          error
-        );
       }
 
-      // Always clear multiple images data after processing
-      sessionStorage.removeItem('pendingFoodImages');
-    }
-
-    // Priority 2: Single image (backward compatibility) - only if no multiple images found
-    if (!foundMultipleImages) {
+      // Atomically retrieve and clear single image data (backward compatibility)
       const pendingImage = sessionStorage.getItem('pendingFoodImage');
-      logger.debug('Checking for single pending image', {
-        hasPendingImage: !!pendingImage,
-        imageLength: pendingImage?.length,
-      });
-
       if (pendingImage) {
-        try {
+        sessionStorage.removeItem('pendingFoodImage');
+
+        if (!foundMultipleImages) {
+          logger.debug('Checking for single pending image', {
+            hasPendingImage: !!pendingImage,
+            imageLength: pendingImage?.length,
+          });
+
           // Validate it's a proper base64 image
           if (pendingImage.startsWith('data:image/')) {
             logger.debug(
               'Valid single image data found, setting imageData state'
             );
-            setImageData(pendingImage);
+            singleImage = pendingImage;
           } else {
             logger.error(
               'Invalid single image data retrieved from sessionStorage',
@@ -77,24 +79,37 @@ export default function AddFoodPage() {
                 imageStart: pendingImage.substring(0, 50),
               }
             );
+            // Return early to prevent form submission with invalid data
             toast.error('Failed to load captured image. Please try again.');
+            router.push('/app'); // Prevent form submission by redirecting back
+            return;
           }
-        } catch (error) {
-          logger.error('Error processing single pending image', error);
-          toast.error('Failed to load captured image. Please try again.');
+        } else {
+          logger.debug(
+            'Skipping single image processing since multiple images were found'
+          );
         }
-      } else {
+      } else if (!foundMultipleImages) {
         logger.debug('No pending single image found in sessionStorage');
       }
-    } else {
-      logger.debug(
-        'Skipping single image check since multiple images were found'
-      );
-    }
 
-    // Always clear single image data to prevent conflicts and reuse
-    sessionStorage.removeItem('pendingFoodImage');
-  }, []);
+      // Set state atomically after all validation
+      if (foundMultipleImages && validImages.length > 0) {
+        setCapturedImages(validImages);
+      } else if (singleImage) {
+        setImageData(singleImage);
+      }
+    };
+
+    // Execute the atomic processing
+    try {
+      processSessionStorageImages();
+    } catch (error) {
+      logger.error('Error processing session storage images', error);
+      toast.error('Failed to load captured image. Please try again.');
+      router.push('/app'); // Prevent form submission by redirecting back on error
+    }
+  }, [router]);
 
   const handleAddFood = async (food: Omit<Food, 'id' | 'timestamp'>) => {
     // Include image data if available (prioritize captured images, fallback to single image)

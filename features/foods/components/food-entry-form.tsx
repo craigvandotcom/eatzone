@@ -366,7 +366,9 @@ export function FoodEntryForm({
           analysisAbortControllerRef.current.abort();
         } catch (error) {
           // Ignore errors during abort - controller might already be aborted
-          logger.debug('Error aborting analysis controller during cleanup', { error });
+          logger.debug('Error aborting analysis controller during cleanup', {
+            error,
+          });
         } finally {
           analysisAbortControllerRef.current = null;
         }
@@ -467,14 +469,16 @@ export function FoodEntryForm({
     // Client-side validation
     const hasIngredients = ingredients.length > 0;
     const hasCurrentIngredient = currentIngredient.trim().length > 0;
-    
+
     if (!hasIngredients && !hasCurrentIngredient) {
       toast.error('Please add at least one ingredient before submitting.');
       return;
     }
 
     // Validate ingredient names are not empty
-    const hasValidIngredients = ingredients.some(ing => ing.name.trim().length > 0);
+    const hasValidIngredients = ingredients.some(
+      ing => ing.name.trim().length > 0
+    );
     if (!hasValidIngredients && !hasCurrentIngredient) {
       toast.error('Please ensure all ingredients have valid names.');
       return;

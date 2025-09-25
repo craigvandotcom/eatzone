@@ -273,7 +273,8 @@ export function FoodEntryForm({
         if (isMountedRef.current) {
           setIsAnalyzing(false);
         }
-        // Clear the abort controller reference
+        // Clear the abort controller reference only if it's still the current one
+        // This prevents clearing a newer controller that might have been created
         if (analysisAbortControllerRef.current === abortController) {
           analysisAbortControllerRef.current = null;
         }
@@ -359,10 +360,16 @@ export function FoodEntryForm({
     return () => {
       isMountedRef.current = false;
       logger.debug('Component unmounting, isMountedRef set to false');
-      // Cancel any ongoing analysis
+      // Cancel any ongoing analysis and clear the reference
       if (analysisAbortControllerRef.current) {
-        analysisAbortControllerRef.current.abort();
-        analysisAbortControllerRef.current = null;
+        try {
+          analysisAbortControllerRef.current.abort();
+        } catch (error) {
+          // Ignore errors during abort - controller might already be aborted
+          logger.debug('Error aborting analysis controller during cleanup', { error });
+        } finally {
+          analysisAbortControllerRef.current = null;
+        }
       }
     };
   }, []);
@@ -456,6 +463,22 @@ export function FoodEntryForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    // Client-side validation
+    const hasIngredients = ingredients.length > 0;
+    const hasCurrentIngredient = currentIngredient.trim().length > 0;
+    
+    if (!hasIngredients && !hasCurrentIngredient) {
+      toast.error('Please add at least one ingredient before submitting.');
+      return;
+    }
+
+    // Validate ingredient names are not empty
+    const hasValidIngredients = ingredients.some(ing => ing.name.trim().length > 0);
+    if (!hasValidIngredients && !hasCurrentIngredient) {
+      toast.error('Please ensure all ingredients have valid names.');
+      return;
+    }
 
     setIsSubmitting(true);
     setIsZoning(true);

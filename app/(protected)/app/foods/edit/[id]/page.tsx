@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FoodEntryForm } from '@/features/foods/components/food-entry-form';
+import { ImageProcessingErrorBoundary } from '@/features/camera/components/image-processing-error-boundary';
 import { getFoodById, updateFood as dbUpdateFood, deleteFood } from '@/lib/db';
 import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
@@ -190,12 +191,30 @@ export default function EditFoodPage({
 
       {/* Form Content */}
       <main className="px-4 py-6">
-        <FoodEntryForm
-          onAddFood={handleUpdateFood}
-          onClose={handleClose}
-          onDelete={handleDeleteFood}
-          editingFood={food}
-        />
+        <ImageProcessingErrorBoundary
+          onRetry={() => {
+            // Retry by reloading the food data
+            window.location.reload();
+          }}
+          onCancel={() => {
+            // Cancel by going back
+            router.back();
+          }}
+          onError={(error, errorInfo) => {
+            logger.error('Food edit form error boundary caught error:', {
+              error: error.message,
+              stack: error.stack,
+              componentStack: errorInfo.componentStack,
+            });
+          }}
+        >
+          <FoodEntryForm
+            onAddFood={handleUpdateFood}
+            onClose={handleClose}
+            onDelete={handleDeleteFood}
+            editingFood={food}
+          />
+        </ImageProcessingErrorBoundary>
       </main>
     </div>
   );

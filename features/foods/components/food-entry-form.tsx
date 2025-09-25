@@ -37,6 +37,7 @@ import {
   processFoodSubmission,
   type FoodSubmissionData,
 } from '@/lib/services/food-submission';
+import { getBase64ImageSize } from '@/lib/utils/image-utils';
 import {
   Popover,
   PopoverContent,
@@ -198,10 +199,9 @@ export function FoodEntryForm({
           continue;
         }
 
-        // Check file size (approximate from base64)
+        // Check file size (accurate calculation)
         try {
-          const base64Data = img.split(',')[1];
-          const imageSize = (base64Data.length * 3) / 4; // Approximate size from base64
+          const imageSize = getBase64ImageSize(img);
           if (imageSize > maxImageSize) {
             oversizedImages.push({
               index: i + 1,

@@ -118,12 +118,29 @@ function Dashboard() {
           }
         }
 
-        // Store all captured images as JSON array in sessionStorage
+        // Check current storage usage and estimate required space
         const imagesJson = JSON.stringify(images);
-        sessionStorage.setItem('pendingFoodImages', imagesJson);
+        const requiredStorage = new Blob([imagesJson]).size;
+        const currentStorageUsed = new Blob([JSON.stringify(sessionStorage)]).size;
+        const estimatedTotal = currentStorageUsed + requiredStorage;
 
-        // Also store first image for backward compatibility with existing code
-        sessionStorage.setItem('pendingFoodImage', images[0]);
+        // Browser sessionStorage limit is typically 5-10MB, warn at 80% of 5MB
+        const STORAGE_WARNING_LIMIT = 4 * 1024 * 1024; // 4MB warning threshold
+
+        if (estimatedTotal > STORAGE_WARNING_LIMIT) {
+          logger.warn('SessionStorage usage approaching limit', {
+            currentUsage: formatFileSize(currentStorageUsed),
+            requiredSpace: formatFileSize(requiredStorage),
+            estimatedTotal: formatFileSize(estimatedTotal),
+          });
+
+          // Clear old pending images to make space
+          sessionStorage.removeItem('pendingFoodImages');
+          sessionStorage.removeItem('pendingFoodImage');
+        }
+
+        // Store all captured images as JSON array in sessionStorage
+        sessionStorage.setItem('pendingFoodImages', imagesJson);
         router.replace('/app/foods/add');
       } catch (error) {
         logger.error('Failed to store image data', error);

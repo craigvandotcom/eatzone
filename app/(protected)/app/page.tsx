@@ -101,19 +101,21 @@ function Dashboard() {
           return;
         }
 
-        // Validate total size of all images (sessionStorage has ~5MB limit)
-        const totalSize = images.reduce(
-          (sum, img) => sum + getBase64ImageSize(img),
-          0
-        );
+        // Validate total size with streaming approach to prevent memory spikes
+        let totalSize = 0;
+        for (let i = 0; i < images.length; i++) {
+          const imageSize = getBase64ImageSize(images[i]);
+          totalSize += imageSize;
 
-        if (totalSize > MAX_IMAGE_SIZE) {
-          toast({
-            title: 'Images too large',
-            description: `Total image size (${formatFileSize(totalSize)}) exceeds the ${formatFileSize(MAX_IMAGE_SIZE)} limit. Please try capturing fewer or smaller images.`,
-            variant: 'destructive',
-          });
-          return;
+          // Early exit if we exceed the limit to save processing
+          if (totalSize > MAX_IMAGE_SIZE) {
+            toast({
+              title: 'Images too large',
+              description: `Total image size (${formatFileSize(totalSize)}) exceeds the ${formatFileSize(MAX_IMAGE_SIZE)} limit. Please try capturing fewer or smaller images.`,
+              variant: 'destructive',
+            });
+            return;
+          }
         }
 
         // Store all captured images as JSON array in sessionStorage

@@ -119,8 +119,10 @@ export function FoodEntryForm({
 
   // Unified AI Analysis function that handles both single and multiple images
   const analyzeImages = useCallback(
-    async (images: string[], currentName?: string) => {
+    async (images: string[]) => {
       const imageCount = images.length;
+      // Get current name value to avoid stale closure
+      const currentName = name;
       logger.debug('analyzeImages called', {
         imageCount,
         currentName,
@@ -338,7 +340,7 @@ export function FoodEntryForm({
       analysisInitiatedRef.current = true;
 
       // Use the unified analysis function
-      analyzeImages(imagesToAnalyze, name);
+      analyzeImages(imagesToAnalyze);
     }
   }, [
     imageData,

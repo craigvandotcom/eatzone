@@ -19,6 +19,8 @@ export default function AddFoodPage() {
   const [capturedImages, setCapturedImages] = useState<string[] | undefined>();
 
   useEffect(() => {
+    let foundMultipleImages = false;
+
     // Priority 1: Check for multiple images from camera capture
     const pendingImagesJson = sessionStorage.getItem('pendingFoodImages');
 
@@ -37,9 +39,7 @@ export default function AddFoodPage() {
               validImages: validImages.length,
             });
             setCapturedImages(validImages);
-            // Clear after retrieval
-            sessionStorage.removeItem('pendingFoodImages');
-            return; // Don't check for single image if we have multiple
+            foundMultipleImages = true;
           }
         }
       } catch (error) {
@@ -49,13 +49,12 @@ export default function AddFoodPage() {
         );
       }
 
-      // Clear invalid data
+      // Always clear multiple images data after processing
       sessionStorage.removeItem('pendingFoodImages');
     }
 
-    // Priority 2: Fallback to single image (backward compatibility)
-    // Only check for single image if we didn't find multiple images above
-    if (!capturedImages) {
+    // Priority 2: Single image (backward compatibility) - only if no multiple images found
+    if (!foundMultipleImages) {
       const pendingImage = sessionStorage.getItem('pendingFoodImage');
       logger.debug('Checking for single pending image', {
         hasPendingImage: !!pendingImage,
@@ -83,19 +82,17 @@ export default function AddFoodPage() {
           logger.error('Error processing single pending image', error);
           toast.error('Failed to load captured image. Please try again.');
         }
-
-        // Clear it after retrieval to prevent reuse
-        sessionStorage.removeItem('pendingFoodImage');
       } else {
         logger.debug('No pending single image found in sessionStorage');
       }
     } else {
-      // If we have captured images, clear the single image storage to avoid conflicts
-      sessionStorage.removeItem('pendingFoodImage');
       logger.debug(
-        'Cleared single image storage since multiple images were found'
+        'Skipping single image check since multiple images were found'
       );
     }
+
+    // Always clear single image data to prevent conflicts and reuse
+    sessionStorage.removeItem('pendingFoodImage');
   }, []);
 
   const handleAddFood = async (food: Omit<Food, 'id' | 'timestamp'>) => {

@@ -93,6 +93,7 @@ export function FoodEntryForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isZoning, setIsZoning] = useState(false);
   const analysisAbortControllerRef = useRef<AbortController | null>(null);
+  const currentRequestIdRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const analysisInitiatedRef = useRef(false);
 
@@ -164,9 +165,11 @@ export function FoodEntryForm({
         analysisAbortControllerRef.current.abort();
       }
 
-      // Create new abort controller for this request
+      // Generate unique request ID and create new abort controller
+      const requestId = crypto.randomUUID();
       const abortController = new AbortController();
       analysisAbortControllerRef.current = abortController;
+      currentRequestIdRef.current = requestId;
 
       if (!isMountedRef.current) return;
 
@@ -361,10 +364,11 @@ export function FoodEntryForm({
         if (isMountedRef.current) {
           setIsAnalyzing(false);
         }
-        // Clear the abort controller reference only if it's still the current one
-        // This prevents clearing a newer controller that might have been created
-        if (analysisAbortControllerRef.current === abortController) {
+        // Clear the abort controller reference only if this request is still current
+        // This prevents clearing a newer controller in rapid request scenarios
+        if (currentRequestIdRef.current === requestId) {
           analysisAbortControllerRef.current = null;
+          currentRequestIdRef.current = null;
         }
       }
     },
@@ -452,6 +456,7 @@ export function FoodEntryForm({
           });
         } finally {
           analysisAbortControllerRef.current = null;
+          currentRequestIdRef.current = null;
         }
       }
     };
@@ -481,12 +486,16 @@ export function FoodEntryForm({
   };
 
   const handleDeleteIngredient = (index: number) => {
-    setIngredients(ingredients.filter((_, i) => i !== index));
+    if (isMountedRef.current) {
+      setIngredients(ingredients.filter((_, i) => i !== index));
+    }
   };
 
   const handleEditIngredient = (index: number) => {
-    setEditingIndex(index);
-    setEditingValue(ingredients[index].name);
+    if (isMountedRef.current) {
+      setEditingIndex(index);
+      setEditingValue(ingredients[index].name);
+    }
   };
 
   const handleToggleOrganic = (index: number) => {
@@ -507,7 +516,10 @@ export function FoodEntryForm({
       }
     }
 
-    setIngredients(updatedIngredients);
+    // Only update state if component is still mounted
+    if (isMountedRef.current) {
+      setIngredients(updatedIngredients);
+    }
   };
 
   const handleSaveEdit = (index: number) => {
@@ -531,15 +543,22 @@ export function FoodEntryForm({
         updatedIngredients[index].group = 'other'; // Reset to default
       }
 
-      setIngredients(updatedIngredients);
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setIngredients(updatedIngredients);
+      }
     }
-    setEditingIndex(null);
-    setEditingValue('');
+    if (isMountedRef.current) {
+      setEditingIndex(null);
+      setEditingValue('');
+    }
   };
 
   const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setEditingValue('');
+    if (isMountedRef.current) {
+      setEditingIndex(null);
+      setEditingValue('');
+    }
   };
 
   const handleEditKeyPress = (e: React.KeyboardEvent, index: number) => {

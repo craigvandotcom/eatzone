@@ -25,9 +25,11 @@ Object.defineProperty(global.HTMLVideoElement.prototype, 'play', {
 
 // Mock media devices
 const mockGetUserMedia = jest.fn();
+const mockEnumerateDevices = jest.fn();
 Object.defineProperty(global.navigator, 'mediaDevices', {
   value: {
     getUserMedia: mockGetUserMedia,
+    enumerateDevices: mockEnumerateDevices,
   },
   writable: true,
 });
@@ -47,7 +49,17 @@ describe('MultiCameraCapture', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetUserMedia.mockClear();
+    mockEnumerateDevices.mockClear();
     (global.fetch as jest.Mock).mockClear();
+
+    // Default: mock single camera device
+    mockEnumerateDevices.mockResolvedValue([
+      {
+        deviceId: 'camera1',
+        kind: 'videoinput',
+        label: 'Back Camera',
+      },
+    ]);
   });
 
   describe('Component Rendering', () => {
@@ -204,6 +216,203 @@ describe('MultiCameraCapture', () => {
             btn.className.includes('bg-green-500') && btn.querySelector('svg')
         );
         expect(doneButton).toBeUndefined();
+      });
+    });
+  });
+
+  describe('Camera Cycling', () => {
+    beforeEach(() => {
+      // Mock localStorage
+      Storage.prototype.getItem = jest.fn();
+      Storage.prototype.setItem = jest.fn();
+    });
+
+    it('should not show camera cycle button with single camera', async () => {
+      mockGetUserMedia.mockResolvedValue({
+        getTracks: () => [{ stop: jest.fn() }],
+      });
+
+      await act(async () => {
+        render(<MultiCameraCapture {...defaultProps} />);
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole('button', { name: /switch camera/i })
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should show camera cycle button with multiple cameras', async () => {
+      // Mock multiple cameras
+      mockEnumerateDevices.mockResolvedValue([
+        {
+          deviceId: 'camera1',
+          kind: 'videoinput',
+          label: 'Back Camera 1',
+        },
+        {
+          deviceId: 'camera2',
+          kind: 'videoinput',
+          label: 'Back Camera 2',
+        },
+        {
+          deviceId: 'camera3',
+          kind: 'videoinput',
+          label: 'Back Camera 3',
+        },
+      ]);
+
+      mockGetUserMedia.mockResolvedValue({
+        getTracks: () => [{ stop: jest.fn() }],
+      });
+
+      await act(async () => {
+        render(<MultiCameraCapture {...defaultProps} />);
+      });
+
+      await waitFor(() => {
+        const cycleButton = screen.getByRole('button', {
+          name: /switch camera/i,
+        });
+        expect(cycleButton).toBeInTheDocument();
+        expect(screen.getByText('1/3')).toBeInTheDocument();
+      });
+    });
+
+    it('should cycle through cameras when button clicked', async () => {
+      const user = userEvent.setup();
+
+      // Mock multiple cameras
+      mockEnumerateDevices.mockResolvedValue([
+        {
+          deviceId: 'camera1',
+          kind: 'videoinput',
+          label: 'Back Camera 1',
+        },
+        {
+          deviceId: 'camera2',
+          kind: 'videoinput',
+          label: 'Back Camera 2',
+        },
+      ]);
+
+      const mockTrack = { stop: jest.fn() };
+      mockGetUserMedia.mockResolvedValue({
+        getTracks: () => [mockTrack],
+      });
+
+      await act(async () => {
+        render(<MultiCameraCapture {...defaultProps} />);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('1/2')).toBeInTheDocument();
+      });
+
+      // Click cycle button
+      const cycleButton = screen.getByRole('button', {
+        name: /switch camera/i,
+      });
+
+      await act(async () => {
+        await user.click(cycleButton);
+      });
+
+      // Wait for camera switch
+      await waitFor(() => {
+        expect(screen.getByText('2/2')).toBeInTheDocument();
+        // Verify camera was stopped and restarted
+        expect(mockTrack.stop).toHaveBeenCalled();
+      });
+    });
+
+    it('should save camera preference to localStorage', async () => {
+      const user = userEvent.setup();
+
+      // Mock multiple cameras
+      mockEnumerateDevices.mockResolvedValue([
+        {
+          deviceId: 'camera1',
+          kind: 'videoinput',
+          label: 'Back Camera 1',
+        },
+        {
+          deviceId: 'camera2',
+          kind: 'videoinput',
+          label: 'Back Camera 2',
+        },
+      ]);
+
+      mockGetUserMedia.mockResolvedValue({
+        getTracks: () => [{ stop: jest.fn() }],
+      });
+
+      await act(async () => {
+        render(<MultiCameraCapture {...defaultProps} />);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /switch camera/i }));
+      });
+
+      const cycleButton = screen.getByRole('button', {
+        name: /switch camera/i,
+      });
+
+      await act(async () => {
+        await user.click(cycleButton);
+      });
+
+      // Verify localStorage was called with the correct deviceId
+      await waitFor(() => {
+        expect(localStorage.setItem).toHaveBeenCalledWith(
+          'preferredCameraDeviceId',
+          'camera2'
+        );
+      });
+    });
+
+    it('should load preferred camera from localStorage on mount', async () => {
+      // Mock preferred camera in localStorage
+      (localStorage.getItem as jest.Mock).mockReturnValue('camera2');
+
+      // Mock multiple cameras
+      mockEnumerateDevices.mockResolvedValue([
+        {
+          deviceId: 'camera1',
+          kind: 'videoinput',
+          label: 'Back Camera 1',
+        },
+        {
+          deviceId: 'camera2',
+          kind: 'videoinput',
+          label: 'Back Camera 2',
+        },
+      ]);
+
+      mockGetUserMedia.mockResolvedValue({
+        getTracks: () => [{ stop: jest.fn() }],
+      });
+
+      await act(async () => {
+        render(<MultiCameraCapture {...defaultProps} />);
+      });
+
+      // Should start with camera 2 (index 1)
+      await waitFor(() => {
+        expect(screen.getByText('2/2')).toBeInTheDocument();
+      });
+
+      // Verify getUserMedia was called with the preferred camera
+      await waitFor(() => {
+        expect(mockGetUserMedia).toHaveBeenCalledWith(
+          expect.objectContaining({
+            video: expect.objectContaining({
+              deviceId: { exact: 'camera2' },
+            }),
+          })
+        );
       });
     });
   });

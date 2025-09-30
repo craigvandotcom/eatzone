@@ -95,6 +95,15 @@ export const VALIDATION_CONFIG = {
   MAX_INGREDIENTS_COUNT: 50,
 } as const;
 
+// Camera configuration
+export const CAMERA_CONFIG = {
+  // LocalStorage key for preferred camera device ID
+  PREFERRED_CAMERA_KEY: 'preferredCameraDeviceId',
+
+  // Default facing mode for camera
+  DEFAULT_FACING_MODE: 'environment' as const, // Rear-facing camera on mobile
+} as const;
+
 // Export all configs as a single object for convenience
 export const APP_CONFIG = {
   IMAGE: IMAGE_CONFIG,
@@ -102,4 +111,5 @@ export const APP_CONFIG = {
   BACKGROUND: BACKGROUND_CONFIG,
   DATABASE: DATABASE_CONFIG,
   VALIDATION: VALIDATION_CONFIG,
+  CAMERA: CAMERA_CONFIG,
 } as const;

@@ -121,7 +121,8 @@ function Dashboard() {
         // Check current storage usage and estimate required space
         const imagesJson = JSON.stringify(images);
         const requiredStorage = new Blob([imagesJson]).size;
-        const currentStorageUsed = new Blob([JSON.stringify(sessionStorage)]).size;
+        const currentStorageUsed = new Blob([JSON.stringify(sessionStorage)])
+          .size;
         const estimatedTotal = currentStorageUsed + requiredStorage;
 
         // Browser sessionStorage limit is typically 5-10MB, warn at 80% of 5MB

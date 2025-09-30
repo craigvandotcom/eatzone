@@ -47,13 +47,6 @@ export function MultiCameraCapture({
   );
   const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
 
-  // Enumerate available cameras on mount
-  useEffect(() => {
-    if (open) {
-      enumerateCameras();
-    }
-  }, [open]);
-
   useEffect(() => {
     if (open) {
       startCamera();
@@ -176,6 +169,10 @@ export function MultiCameraCapture({
 
       setStream(mediaStream);
       setIsLoading(false);
+
+      // Enumerate cameras after permission is granted and stream is active
+      // This ensures device labels are available (browser security requirement)
+      await enumerateCameras();
     } catch (err) {
       logger.error('Error accessing camera', err);
       setError('Unable to access camera. Please check permissions.');

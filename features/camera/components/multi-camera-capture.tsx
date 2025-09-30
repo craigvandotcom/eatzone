@@ -11,6 +11,7 @@ import { smartCompressImage } from '@/lib/utils/image-compression';
 import { ModeSelector, type CameraMode } from './mode-selector';
 import { ImageProcessingErrorBoundary } from './image-processing-error-boundary';
 import { useErrorHandler } from '@/components/error-boundary';
+import { CameraCycleButton } from './camera-cycle-button';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -40,6 +41,19 @@ export function MultiCameraCapture({
   const [selectedMode, setSelectedMode] = useState<CameraMode>('camera');
   const { handleError } = useErrorHandler();
 
+  // Camera cycling state
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>(
+    []
+  );
+  const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
+
+  // Enumerate available cameras on mount
+  useEffect(() => {
+    if (open) {
+      enumerateCameras();
+    }
+  }, [open]);
+
   useEffect(() => {
     if (open) {
       startCamera();
@@ -52,7 +66,7 @@ export function MultiCameraCapture({
     return () => {
       stopCamera();
     };
-  }, [open]);
+  }, [open, currentCameraIndex]);
 
   // Attach video stream to video element when stream is available
   useEffect(() => {
@@ -64,18 +78,101 @@ export function MultiCameraCapture({
     }
   }, [stream, showCamera]);
 
+  /**
+   * Enumerate all available video input devices (cameras)
+   * Filters for rear-facing cameras and loads preferred camera from localStorage
+   */
+  const enumerateCameras = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(
+        device => device.kind === 'videoinput'
+      );
+
+      logger.debug('Available video devices', {
+        count: videoDevices.length,
+        devices: videoDevices.map(d => ({
+          id: d.deviceId,
+          label: d.label,
+        })),
+      });
+
+      setAvailableCameras(videoDevices);
+
+      // Load preferred camera from localStorage
+      const preferredDeviceId = localStorage.getItem(
+        APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY
+      );
+
+      if (preferredDeviceId) {
+        const preferredIndex = videoDevices.findIndex(
+          d => d.deviceId === preferredDeviceId
+        );
+        if (preferredIndex !== -1) {
+          setCurrentCameraIndex(preferredIndex);
+          logger.debug('Loaded preferred camera', { index: preferredIndex });
+        }
+      }
+    } catch (err) {
+      logger.error('Error enumerating cameras', err);
+      // Continue with default camera if enumeration fails
+    }
+  };
+
+  /**
+   * Cycle to the next available camera
+   */
+  const cycleCamera = () => {
+    if (availableCameras.length <= 1) return;
+
+    const nextIndex = (currentCameraIndex + 1) % availableCameras.length;
+    setCurrentCameraIndex(nextIndex);
+
+    // Save preference to localStorage
+    const selectedDevice = availableCameras[nextIndex];
+    if (selectedDevice) {
+      localStorage.setItem(
+        APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY,
+        selectedDevice.deviceId
+      );
+      logger.debug('Saved camera preference', {
+        index: nextIndex,
+        deviceId: selectedDevice.deviceId,
+      });
+    }
+
+    // Restart camera with new device
+    stopCamera();
+  };
+
   const startCamera = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment', // Use back camera on mobile
-          width: { ideal: 1280 },
-          height: { ideal: 1280 },
-        },
+      // Determine which camera to use
+      const selectedCamera = availableCameras[currentCameraIndex];
+      const constraints: MediaStreamConstraints = {
+        video: selectedCamera?.deviceId
+          ? {
+              deviceId: { exact: selectedCamera.deviceId },
+              width: { ideal: 1280 },
+              height: { ideal: 1280 },
+            }
+          : {
+              facingMode: APP_CONFIG.CAMERA.DEFAULT_FACING_MODE,
+              width: { ideal: 1280 },
+              height: { ideal: 1280 },
+            },
+      };
+
+      logger.debug('Starting camera with constraints', {
+        deviceId: selectedCamera?.deviceId,
+        hasDevice: !!selectedCamera,
       });
+
+      const mediaStream =
+        await navigator.mediaDevices.getUserMedia(constraints);
 
       setStream(mediaStream);
       setIsLoading(false);
@@ -303,6 +400,16 @@ export function MultiCameraCapture({
       <div className="fixed inset-0 z-50 bg-black">
         {/* Camera View or Image Gallery */}
         <div className="relative h-full bg-black">
+          {/* Camera Cycle Button */}
+          {!isLoading && !error && (
+            <CameraCycleButton
+              onCycle={cycleCamera}
+              currentIndex={currentCameraIndex}
+              totalCameras={availableCameras.length}
+              disabled={isPending}
+            />
+          )}
+
           {/* Image thumbnails */}
           {capturedImages.length > 0 && (
             <div className="absolute top-6 left-0 right-0 z-20 px-4">

@@ -143,7 +143,12 @@ export function FoodEntryForm({
     }
 
     return [];
-  }, [capturedImages, imageData, editingFood?.image_urls, editingFood?.photo_url]);
+  }, [
+    capturedImages,
+    imageData,
+    editingFood?.image_urls,
+    editingFood?.photo_url,
+  ]);
 
   // Handle image click for primary selection
   const handleImageClick = (clickedIndex: number) => {
@@ -180,7 +185,9 @@ export function FoodEntryForm({
 
       // Check image count limit
       if (images.length > maxTotalImages) {
-        validationErrors.push(`Too many images. Maximum ${maxTotalImages} allowed.`);
+        validationErrors.push(
+          `Too many images. Maximum ${maxTotalImages} allowed.`
+        );
       }
 
       // Validate each image
@@ -212,14 +219,19 @@ export function FoodEntryForm({
             });
           }
         } catch (error) {
-          logger.warn('Could not validate image size', { imageIndex: i, error });
+          logger.warn('Could not validate image size', {
+            imageIndex: i,
+            error,
+          });
           invalidImages.push(i + 1);
         }
       }
 
       // Report validation errors
       if (invalidImages.length > 0) {
-        validationErrors.push(`Invalid image format in image(s): ${invalidImages.join(', ')}`);
+        validationErrors.push(
+          `Invalid image format in image(s): ${invalidImages.join(', ')}`
+        );
       }
 
       if (oversizedImages.length > 0) {
@@ -274,7 +286,8 @@ export function FoodEntryForm({
           let errorMessage = 'Unknown error';
           try {
             const errorData = await response.json();
-            errorMessage = errorData?.error?.message || errorData?.message || errorMessage;
+            errorMessage =
+              errorData?.error?.message || errorData?.message || errorMessage;
           } catch {
             // Fallback to status text if JSON parsing fails
             errorMessage = response.statusText || errorMessage;

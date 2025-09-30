@@ -85,7 +85,10 @@ export default function EditFoodPage({
             // Mark ingredient as unzoned if it's been modified (organic status changed)
             // or if it's missing zone/category/group information
             zone:
-              !ing?.zone || ing.zone === 'unzoned' || !ing?.category || !ing?.group
+              !ing?.zone ||
+              ing.zone === 'unzoned' ||
+              !ing?.category ||
+              !ing?.group
                 ? ('unzoned' as const)
                 : ing.zone,
           })),

@@ -11,12 +11,18 @@ import { mutate } from 'swr';
 import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/components/ui/use-mobile';
+import { useKeyboardAwareScroll } from '@/components/ui/use-keyboard-aware-scroll';
 
 // Note: Image processing simplified to use only multiple images flow
 
 export default function AddFoodPage() {
   const router = useRouter();
   const [capturedImages, setCapturedImages] = useState<string[] | undefined>();
+  const isMobile = useIsMobile();
+
+  // Enable keyboard-aware scrolling on mobile to prevent keyboard from hiding inputs
+  useKeyboardAwareScroll({ enabled: isMobile });
 
   useEffect(() => {
     // Process captured images from sessionStorage

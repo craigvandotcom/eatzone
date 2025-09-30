@@ -10,10 +10,16 @@ import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { toast } from 'sonner';
 import { logger } from '@/lib/utils/logger';
+import { useIsMobile } from '@/components/ui/use-mobile';
+import { useKeyboardAwareScroll } from '@/components/ui/use-keyboard-aware-scroll';
 
 export default function AddSymptomPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Enable keyboard-aware scrolling on mobile to prevent keyboard from hiding inputs
+  useKeyboardAwareScroll({ enabled: isMobile });
 
   const handleAddSymptoms = async (
     symptoms: Omit<Symptom, 'id' | 'timestamp'>[],

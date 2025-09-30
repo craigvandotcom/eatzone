@@ -14,6 +14,8 @@ import { mutate } from 'swr';
 import type { Symptom } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/components/ui/use-mobile';
+import { useKeyboardAwareScroll } from '@/components/ui/use-keyboard-aware-scroll';
 
 export default function EditSymptomPage({
   params,
@@ -25,6 +27,10 @@ export default function EditSymptomPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [symptomId, setSymptomId] = useState<string | null>(null);
+  const isMobile = useIsMobile();
+
+  // Enable keyboard-aware scrolling on mobile to prevent keyboard from hiding inputs
+  useKeyboardAwareScroll({ enabled: isMobile });
 
   // First resolve params
   useEffect(() => {

@@ -16,6 +16,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { useIsMobile } from '@/components/ui/use-mobile';
+import { useKeyboardAwareScroll } from '@/components/ui/use-keyboard-aware-scroll';
 import { FoodEntryForm } from './food-entry-form';
 
 interface AddFoodDialogProps {
@@ -48,6 +49,9 @@ export function AddFoodDialog({
   };
 
   const title = editingFood ? 'Edit Food' : 'Add Food';
+
+  // Enable keyboard-aware scrolling for mobile drawer
+  useKeyboardAwareScroll({ enabled: isMobile && open });
 
   // Handle viewport changes and keyboard detection
   useEffect(() => {
@@ -86,24 +90,6 @@ export function AddFoodDialog({
       }
       window.removeEventListener('resize', handleResize);
     };
-  }, [isMobile, open]);
-
-  // Ensure active input stays visible when keyboard appears
-  useEffect(() => {
-    if (!isMobile || !open) return;
-
-    const handleFocusIn = (e: FocusEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        // Small delay to ensure keyboard is fully shown
-        setTimeout(() => {
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
-      }
-    };
-
-    document.addEventListener('focusin', handleFocusIn);
-    return () => document.removeEventListener('focusin', handleFocusIn);
   }, [isMobile, open]);
 
   if (isMobile) {

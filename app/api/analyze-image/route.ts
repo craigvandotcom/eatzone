@@ -204,6 +204,13 @@ export async function POST(request: NextRequest) {
       })),
     ];
 
+    // Dynamic token allocation based on image count
+    const getMaxTokens = (imageCount: number) => {
+      if (imageCount === 1) return 400;
+      if (imageCount === 2) return 500;
+      return 600; // 3 or more images
+    };
+
     // Call OpenRouter with vision model - single request with all images
     const response = await openrouter.chat.completions.create({
       model: 'openai/gpt-4o',
@@ -213,7 +220,7 @@ export async function POST(request: NextRequest) {
           content: contentArray,
         },
       ],
-      max_tokens: 400, // Slightly increased for multi-image analysis
+      max_tokens: getMaxTokens(images.length),
       temperature: 0.1, // Low temperature for more consistent results
     });
 

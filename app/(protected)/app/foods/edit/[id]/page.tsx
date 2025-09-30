@@ -12,6 +12,8 @@ import type { Food } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 import { processFoodSubmission } from '@/lib/services/food-submission';
+import { useIsMobile } from '@/components/ui/use-mobile';
+import { useKeyboardAwareScroll } from '@/components/ui/use-keyboard-aware-scroll';
 
 export default function EditFoodPage({
   params,
@@ -22,6 +24,10 @@ export default function EditFoodPage({
   const [food, setFood] = useState<Food | null>(null);
   const [loading, setLoading] = useState(true);
   const isMountedRef = useRef(true);
+  const isMobile = useIsMobile();
+
+  // Enable keyboard-aware scrolling on mobile to prevent keyboard from hiding inputs
+  useKeyboardAwareScroll({ enabled: isMobile });
 
   useEffect(() => {
     const loadFood = async () => {

@@ -46,14 +46,28 @@ export function MultiCameraCapture({
     []
   );
   const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
+  const isInitialCameraLoadRef = useRef<boolean>(true);
 
   useEffect(() => {
     if (open) {
-      startCamera();
-      setCapturedImages([]);
-      setShowCamera(true);
+      // Only restart camera if currentCameraIndex changed after initial load
+      // On initial load, startCamera will be called once, and if preferred camera
+      // is found during enumeration, we skip the restart to avoid double initialization
+      if (isInitialCameraLoadRef.current) {
+        // First time opening - just start camera once
+        startCamera();
+        setCapturedImages([]);
+        setShowCamera(true);
+      } else {
+        // Camera index changed after initial load (user manually cycled cameras)
+        // Safe to restart camera with new device
+        startCamera();
+      }
     } else {
       stopCamera();
+      // Reset the initial camera load flag when modal closes
+      // so the next time it opens, we can load preferred camera again
+      isInitialCameraLoadRef.current = true;
     }
 
     return () => {
@@ -92,18 +106,37 @@ export function MultiCameraCapture({
 
       setAvailableCameras(videoDevices);
 
-      // Load preferred camera from localStorage
-      const preferredDeviceId = localStorage.getItem(
-        APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY
-      );
-
-      if (preferredDeviceId) {
-        const preferredIndex = videoDevices.findIndex(
-          d => d.deviceId === preferredDeviceId
+      // Only load preferred camera on the first enumeration to avoid camera restart
+      // After that, camera changes only happen through manual cycling
+      if (isInitialCameraLoadRef.current) {
+        // Load preferred camera from localStorage
+        const preferredDeviceId = localStorage.getItem(
+          APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY
         );
-        if (preferredIndex !== -1) {
-          setCurrentCameraIndex(preferredIndex);
-          logger.debug('Loaded preferred camera', { index: preferredIndex });
+
+        if (preferredDeviceId) {
+          const preferredIndex = videoDevices.findIndex(
+            d => d.deviceId === preferredDeviceId
+          );
+          // Only switch to preferred camera if it's different from current
+          // and the camera is actually available
+          if (preferredIndex !== -1 && preferredIndex !== currentCameraIndex) {
+            // Mark initial load as complete BEFORE changing camera index
+            // This prevents the useEffect from restarting the camera
+            isInitialCameraLoadRef.current = false;
+            
+            setCurrentCameraIndex(preferredIndex);
+            logger.debug('Loaded preferred camera', { 
+              index: preferredIndex,
+              deviceId: preferredDeviceId 
+            });
+          } else {
+            // No camera change needed, just mark initial load as complete
+            isInitialCameraLoadRef.current = false;
+          }
+        } else {
+          // No preferred camera, just mark initial load as complete
+          isInitialCameraLoadRef.current = false;
         }
       }
     } catch (err) {
@@ -196,6 +229,18 @@ export function MultiCameraCapture({
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
+
+    // Check if video is ready - videoWidth and videoHeight must be non-zero
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      logger.warn('Video not ready for capture', {
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+        readyState: video.readyState,
+      });
+      throw new Error(
+        'Camera is still initializing. Please wait a moment and try again.'
+      );
+    }
 
     try {
       // Set canvas size to match video

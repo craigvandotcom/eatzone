@@ -48,6 +48,7 @@ export function MultiCameraCapture({
   );
   const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
   const isInitialCameraLoadRef = useRef<boolean>(true);
+  const hasCameraIndexChangedRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (open) {
@@ -69,12 +70,24 @@ export function MultiCameraCapture({
       // Reset the initial camera load flag when modal closes
       // so the next time it opens, we can load preferred camera again
       isInitialCameraLoadRef.current = true;
+      hasCameraIndexChangedRef.current = false;
     }
 
     return () => {
       stopCamera();
     };
   }, [open, currentCameraIndex]);
+
+  // Effect to handle initial camera load flag updates after state changes
+  // This prevents race conditions by ensuring the flag is only cleared after
+  // the currentCameraIndex state update has been committed
+  useEffect(() => {
+    if (hasCameraIndexChangedRef.current && isInitialCameraLoadRef.current) {
+      isInitialCameraLoadRef.current = false;
+      hasCameraIndexChangedRef.current = false;
+      logger.debug('Initial camera load flag cleared after state update');
+    }
+  }, [currentCameraIndex]);
 
   // Attach video stream to video element when stream is available
   useEffect(() => {
@@ -142,9 +155,9 @@ export function MultiCameraCapture({
           // Only switch to preferred camera if it's different from current
           // and the camera is actually available
           if (preferredIndex !== -1 && preferredIndex !== currentCameraIndex) {
-            // Mark initial load as complete BEFORE changing camera index
-            // This prevents the useEffect from restarting the camera
-            isInitialCameraLoadRef.current = false;
+            // Set flag to indicate camera index will change
+            // The flag clearing will be handled in useEffect after state update
+            hasCameraIndexChangedRef.current = true;
             
             setCurrentCameraIndex(preferredIndex);
             logger.debug('Loaded preferred camera', { 

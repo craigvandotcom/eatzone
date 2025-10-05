@@ -40,6 +40,7 @@ export function MultiCameraCapture({
   const [isPending, startTransition] = useTransition();
   const [selectedMode, setSelectedMode] = useState<CameraMode>('camera');
   const { handleError } = useErrorHandler();
+  const [videoReady, setVideoReady] = useState(false);
 
   // Camera cycling state
   const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>(
@@ -78,10 +79,30 @@ export function MultiCameraCapture({
   // Attach video stream to video element when stream is available
   useEffect(() => {
     if (stream && videoRef.current && showCamera) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(err => {
+      const videoElement = videoRef.current;
+      
+      // Reset videoReady state when stream changes
+      setVideoReady(false);
+      
+      // Listen for video metadata loaded event
+      const handleLoadedMetadata = () => {
+        logger.debug('Video metadata loaded', {
+          videoWidth: videoElement.videoWidth,
+          videoHeight: videoElement.videoHeight,
+          readyState: videoElement.readyState,
+        });
+        setVideoReady(true);
+      };
+      
+      videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
+      videoElement.srcObject = stream;
+      videoElement.play().catch(err => {
         logger.error('Error playing video', err);
       });
+      
+      return () => {
+        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      };
     }
   }, [stream, showCamera]);
 
@@ -223,6 +244,12 @@ export function MultiCameraCapture({
   const captureImage = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     if (capturedImages.length >= maxImages) return; // Prevent capture if at limit
+    
+    // Prevent capture if video is not ready yet
+    if (!videoReady) {
+      logger.warn('Attempted to capture before video ready');
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -230,16 +257,14 @@ export function MultiCameraCapture({
 
     if (!ctx) return;
 
-    // Check if video is ready - videoWidth and videoHeight must be non-zero
+    // Double-check video dimensions as a safety measure
     if (video.videoWidth === 0 || video.videoHeight === 0) {
       logger.warn('Video not ready for capture', {
         videoWidth: video.videoWidth,
         videoHeight: video.videoHeight,
         readyState: video.readyState,
       });
-      throw new Error(
-        'Camera is still initializing. Please wait a moment and try again.'
-      );
+      return; // Silently return instead of throwing error
     }
 
     try {
@@ -420,6 +445,7 @@ export function MultiCameraCapture({
     setError(null);
     setCapturedImages([]);
     setSelectedMode('camera');
+    setVideoReady(false);
     startCamera();
   };
 
@@ -507,19 +533,39 @@ export function MultiCameraCapture({
               {/* Capture Overlay - only active in camera mode */}
               {selectedMode === 'camera' && (
                 <div
-                  className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
-                  onClick={captureImage}
+                  className={`absolute inset-0 transition-colors ${
+                    videoReady
+                      ? 'cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20'
+                      : 'cursor-wait bg-black/10'
+                  }`}
+                  onClick={videoReady ? captureImage : undefined}
                 >
                   {/* Centered camera icon with counter */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="w-20 h-20 rounded-full border-4 border-white/40 bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                        <Camera className="h-8 w-8 text-white/70" />
+                      <div
+                        className={`w-20 h-20 rounded-full border-4 backdrop-blur-sm flex items-center justify-center shadow-lg transition-all duration-300 ${
+                          videoReady
+                            ? 'border-white/40 bg-white/10'
+                            : 'border-white/20 bg-white/5 animate-pulse'
+                        }`}
+                      >
+                        <Camera
+                          className={`h-8 w-8 transition-colors ${
+                            videoReady ? 'text-white/70' : 'text-white/30'
+                          }`}
+                        />
                       </div>
-                      {/* Simple counter display */}
+                      {/* Simple counter display or initializing message */}
                       <p className="text-white/80 text-sm font-medium mt-2 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
-                        {capturedImages.length}/{maxImages}
-                        {maxImages > 1 ? ' photos' : ''}
+                        {videoReady ? (
+                          <>
+                            {capturedImages.length}/{maxImages}
+                            {maxImages > 1 ? ' photos' : ''}
+                          </>
+                        ) : (
+                          'Initializing...'
+                        )}
                       </p>
                     </div>
                   </div>

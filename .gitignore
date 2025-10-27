@@ -137,9 +137,13 @@ dist
 # IDEs
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 *~
+
+# AI Assistant files
+CLAUDE.md
 
 # OS
 .DS_Store

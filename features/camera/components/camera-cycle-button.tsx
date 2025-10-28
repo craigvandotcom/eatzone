@@ -28,16 +28,6 @@ export function CameraCycleButton({
 }: CameraCycleButtonProps) {
   const [showBadge, setShowBadge] = useState(false);
 
-  // Don't render if only one camera available
-  if (totalCameras <= 1) {
-    return null;
-  }
-
-  const handleCycle = () => {
-    onCycle();
-    setShowBadge(true);
-  };
-
   // Hide badge after 2 seconds
   useEffect(() => {
     if (showBadge) {
@@ -48,6 +38,17 @@ export function CameraCycleButton({
       return () => clearTimeout(timer);
     }
   }, [showBadge]);
+
+  // Don't render if only one camera available
+  // IMPORTANT: This early return must come AFTER all hooks to comply with Rules of Hooks
+  if (totalCameras <= 1) {
+    return null;
+  }
+
+  const handleCycle = () => {
+    onCycle();
+    setShowBadge(true);
+  };
 
   return (
     <div className="absolute top-6 right-4 z-30">

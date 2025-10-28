@@ -150,10 +150,11 @@ describe('CameraCycleButton', () => {
     });
 
     it('should hide badge after 2 seconds', async () => {
+      const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
       
-      await userEvent.click(button);
+      await user.click(button);
       
       // Badge should be visible
       let badge = screen.getByText('1/2');
@@ -170,17 +171,18 @@ describe('CameraCycleButton', () => {
     });
 
     it('should reset timer if button is clicked again before timeout', async () => {
+      const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
       
       // First click
-      await userEvent.click(button);
+      await user.click(button);
       
       // Wait 1 second
       jest.advanceTimersByTime(1000);
       
       // Click again before timeout
-      await userEvent.click(button);
+      await user.click(button);
       
       // Wait another 1.5 seconds (total 2.5s from first click, but only 1.5s from second)
       jest.advanceTimersByTime(1500);
@@ -198,11 +200,12 @@ describe('CameraCycleButton', () => {
       });
     });
 
-    it('should clean up timer on unmount', () => {
+    it('should clean up timer on unmount', async () => {
+      const user = userEvent.setup({ delay: null });
       const { unmount } = render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
       
-      userEvent.click(button);
+      await user.click(button);
       
       // Unmount before timeout
       unmount();
@@ -216,32 +219,35 @@ describe('CameraCycleButton', () => {
 
   describe('User Interactions', () => {
     it('should call onCycle when button is clicked', async () => {
+      const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
       render(<CameraCycleButton {...defaultProps} onCycle={onCycle} />);
       
       const button = screen.getByRole('button', { name: /switch camera/i });
-      await userEvent.click(button);
+      await user.click(button);
       
       expect(onCycle).toHaveBeenCalledTimes(1);
     });
 
     it('should not call onCycle when button is disabled', async () => {
+      const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
       render(<CameraCycleButton {...defaultProps} onCycle={onCycle} disabled={true} />);
       
       const button = screen.getByRole('button', { name: /switch camera/i });
-      await userEvent.click(button);
+      await user.click(button);
       
       expect(onCycle).not.toHaveBeenCalled();
     });
 
     it('should update badge display after each click', async () => {
+      const user = userEvent.setup({ delay: null });
       const { rerender } = render(
         <CameraCycleButton {...defaultProps} totalCameras={3} currentIndex={0} />
       );
       
       const button = screen.getByRole('button', { name: /switch camera/i });
-      await userEvent.click(button);
+      await user.click(button);
       
       expect(screen.getByText('1/3')).toBeInTheDocument();
       
@@ -250,7 +256,7 @@ describe('CameraCycleButton', () => {
         <CameraCycleButton {...defaultProps} totalCameras={3} currentIndex={1} />
       );
       
-      await userEvent.click(button);
+      await user.click(button);
       expect(screen.getByText('2/3')).toBeInTheDocument();
     });
   });
@@ -262,6 +268,7 @@ describe('CameraCycleButton', () => {
     });
 
     it('should be keyboard accessible', async () => {
+      const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
       render(<CameraCycleButton {...defaultProps} onCycle={onCycle} />);
       
@@ -269,7 +276,7 @@ describe('CameraCycleButton', () => {
       button.focus();
       
       // Press Enter
-      await userEvent.keyboard('{Enter}');
+      await user.keyboard('{Enter}');
       expect(onCycle).toHaveBeenCalled();
     });
 
@@ -283,17 +290,18 @@ describe('CameraCycleButton', () => {
 
   describe('Edge Cases', () => {
     it('should handle rapid clicks without breaking', async () => {
+      const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
       render(<CameraCycleButton {...defaultProps} onCycle={onCycle} />);
       
       const button = screen.getByRole('button', { name: /switch camera/i });
       
       // Click rapidly 5 times
-      await userEvent.click(button);
-      await userEvent.click(button);
-      await userEvent.click(button);
-      await userEvent.click(button);
-      await userEvent.click(button);
+      await user.click(button);
+      await user.click(button);
+      await user.click(button);
+      await user.click(button);
+      await user.click(button);
       
       expect(onCycle).toHaveBeenCalledTimes(5);
     });
@@ -312,10 +320,11 @@ describe('CameraCycleButton', () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it('should handle large camera counts', () => {
+    it('should handle large camera counts', async () => {
+      const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} totalCameras={10} currentIndex={9} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      userEvent.click(button);
+      await user.click(button);
       
       expect(screen.getByText('10/10')).toBeInTheDocument();
     });
@@ -331,10 +340,11 @@ describe('CameraCycleButton', () => {
     });
 
     it('should show scale animation on badge', async () => {
+      const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
       
-      await userEvent.click(button);
+      await user.click(button);
       
       const badge = screen.getByText('1/2');
       expect(badge).toHaveClass('scale-100');

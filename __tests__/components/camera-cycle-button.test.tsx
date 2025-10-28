@@ -64,13 +64,25 @@ describe('CameraCycleButton', () => {
       // Multiple re-renders should not cause hook order violations
       expect(() => {
         rerender(
-          <CameraCycleButton {...defaultProps} totalCameras={2} currentIndex={1} />
+          <CameraCycleButton
+            {...defaultProps}
+            totalCameras={2}
+            currentIndex={1}
+          />
         );
         rerender(
-          <CameraCycleButton {...defaultProps} totalCameras={3} currentIndex={2} />
+          <CameraCycleButton
+            {...defaultProps}
+            totalCameras={3}
+            currentIndex={2}
+          />
         );
         rerender(
-          <CameraCycleButton {...defaultProps} totalCameras={2} currentIndex={0} />
+          <CameraCycleButton
+            {...defaultProps}
+            totalCameras={2}
+            currentIndex={0}
+          />
         );
       }).not.toThrow();
     });
@@ -109,21 +121,31 @@ describe('CameraCycleButton', () => {
 
     it('should render when totalCameras is 2', () => {
       render(<CameraCycleButton {...defaultProps} totalCameras={2} />);
-      expect(screen.getByRole('button', { name: /switch camera/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /switch camera/i })
+      ).toBeInTheDocument();
     });
 
     it('should render when totalCameras is greater than 2', () => {
       render(<CameraCycleButton {...defaultProps} totalCameras={3} />);
-      expect(screen.getByRole('button', { name: /switch camera/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /switch camera/i })
+      ).toBeInTheDocument();
     });
 
     it('should display correct camera count in badge', async () => {
       const user = userEvent.setup({ delay: null });
-      render(<CameraCycleButton {...defaultProps} totalCameras={3} currentIndex={1} />);
+      render(
+        <CameraCycleButton
+          {...defaultProps}
+          totalCameras={3}
+          currentIndex={1}
+        />
+      );
       // Badge starts hidden, need to click to show it
       const button = screen.getByRole('button', { name: /switch camera/i });
       await user.click(button);
-      
+
       // Badge should show current camera position
       expect(screen.getByText('2/3')).toBeInTheDocument();
     });
@@ -133,7 +155,7 @@ describe('CameraCycleButton', () => {
     it('should initially hide the badge', () => {
       render(<CameraCycleButton {...defaultProps} />);
       const badge = screen.getByText('1/2');
-      
+
       // Badge should have opacity-0 class (hidden)
       expect(badge).toHaveClass('opacity-0');
     });
@@ -142,9 +164,9 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       await user.click(button);
-      
+
       const badge = screen.getByText('1/2');
       expect(badge).toHaveClass('opacity-100');
     });
@@ -153,16 +175,16 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       await user.click(button);
-      
+
       // Badge should be visible
       let badge = screen.getByText('1/2');
       expect(badge).toHaveClass('opacity-100');
-      
+
       // Fast-forward time by 2 seconds
       jest.advanceTimersByTime(2000);
-      
+
       // Badge should be hidden
       await waitFor(() => {
         badge = screen.getByText('1/2');
@@ -174,26 +196,26 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       // First click
       await user.click(button);
-      
+
       // Wait 1 second
       jest.advanceTimersByTime(1000);
-      
+
       // Click again before timeout
       await user.click(button);
-      
+
       // Wait another 1.5 seconds (total 2.5s from first click, but only 1.5s from second)
       jest.advanceTimersByTime(1500);
-      
+
       // Badge should still be visible because timer was reset
       const badge = screen.getByText('1/2');
       expect(badge).toHaveClass('opacity-100');
-      
+
       // Wait remaining 0.5 seconds (total 2s from second click)
       jest.advanceTimersByTime(500);
-      
+
       // Now badge should be hidden
       await waitFor(() => {
         expect(badge).toHaveClass('opacity-0');
@@ -204,12 +226,12 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       const { unmount } = render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       await user.click(button);
-      
+
       // Unmount before timeout
       unmount();
-      
+
       // Should not throw or cause memory leaks
       expect(() => {
         jest.advanceTimersByTime(2000);
@@ -222,40 +244,54 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
       render(<CameraCycleButton {...defaultProps} onCycle={onCycle} />);
-      
+
       const button = screen.getByRole('button', { name: /switch camera/i });
       await user.click(button);
-      
+
       expect(onCycle).toHaveBeenCalledTimes(1);
     });
 
     it('should not call onCycle when button is disabled', async () => {
       const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
-      render(<CameraCycleButton {...defaultProps} onCycle={onCycle} disabled={true} />);
-      
+      render(
+        <CameraCycleButton
+          {...defaultProps}
+          onCycle={onCycle}
+          disabled={true}
+        />
+      );
+
       const button = screen.getByRole('button', { name: /switch camera/i });
       await user.click(button);
-      
+
       expect(onCycle).not.toHaveBeenCalled();
     });
 
     it('should update badge display after each click', async () => {
       const user = userEvent.setup({ delay: null });
       const { rerender } = render(
-        <CameraCycleButton {...defaultProps} totalCameras={3} currentIndex={0} />
+        <CameraCycleButton
+          {...defaultProps}
+          totalCameras={3}
+          currentIndex={0}
+        />
       );
-      
+
       const button = screen.getByRole('button', { name: /switch camera/i });
       await user.click(button);
-      
+
       expect(screen.getByText('1/3')).toBeInTheDocument();
-      
+
       // Simulate camera index change
       rerender(
-        <CameraCycleButton {...defaultProps} totalCameras={3} currentIndex={1} />
+        <CameraCycleButton
+          {...defaultProps}
+          totalCameras={3}
+          currentIndex={1}
+        />
       );
-      
+
       await user.click(button);
       expect(screen.getByText('2/3')).toBeInTheDocument();
     });
@@ -271,10 +307,10 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
       render(<CameraCycleButton {...defaultProps} onCycle={onCycle} />);
-      
+
       const button = screen.getByRole('button', { name: /switch camera/i });
       button.focus();
-      
+
       // Press Enter
       await user.keyboard('{Enter}');
       expect(onCycle).toHaveBeenCalled();
@@ -283,7 +319,7 @@ describe('CameraCycleButton', () => {
     it('should indicate disabled state', () => {
       render(<CameraCycleButton {...defaultProps} disabled={true} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       expect(button).toBeDisabled();
     });
   });
@@ -293,16 +329,16 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       const onCycle = jest.fn();
       render(<CameraCycleButton {...defaultProps} onCycle={onCycle} />);
-      
+
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       // Click rapidly 5 times
       await user.click(button);
       await user.click(button);
       await user.click(button);
       await user.click(button);
       await user.click(button);
-      
+
       expect(onCycle).toHaveBeenCalledTimes(5);
     });
 
@@ -322,10 +358,16 @@ describe('CameraCycleButton', () => {
 
     it('should handle large camera counts', async () => {
       const user = userEvent.setup({ delay: null });
-      render(<CameraCycleButton {...defaultProps} totalCameras={10} currentIndex={9} />);
+      render(
+        <CameraCycleButton
+          {...defaultProps}
+          totalCameras={10}
+          currentIndex={9}
+        />
+      );
       const button = screen.getByRole('button', { name: /switch camera/i });
       await user.click(button);
-      
+
       expect(screen.getByText('10/10')).toBeInTheDocument();
     });
   });
@@ -334,7 +376,7 @@ describe('CameraCycleButton', () => {
     it('should apply correct styling classes', () => {
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       expect(button).toHaveClass('rounded-full');
       expect(button).toHaveClass('shadow-lg');
     });
@@ -343,9 +385,9 @@ describe('CameraCycleButton', () => {
       const user = userEvent.setup({ delay: null });
       render(<CameraCycleButton {...defaultProps} />);
       const button = screen.getByRole('button', { name: /switch camera/i });
-      
+
       await user.click(button);
-      
+
       const badge = screen.getByText('1/2');
       expect(badge).toHaveClass('scale-100');
     });
@@ -353,9 +395,8 @@ describe('CameraCycleButton', () => {
     it('should hide badge with scale-75 when not shown', () => {
       render(<CameraCycleButton {...defaultProps} />);
       const badge = screen.getByText('1/2');
-      
+
       expect(badge).toHaveClass('scale-75');
     });
   });
 });
-

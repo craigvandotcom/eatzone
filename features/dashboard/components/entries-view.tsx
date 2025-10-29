@@ -54,25 +54,22 @@ export function EntriesView({
 
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
-      {/* Food Zone Summary Bar for Selected Date */}
-      <div className="space-y-4">
-        {foodStatsForSelectedDate === undefined ? (
-          <div className="bg-muted rounded-lg p-4 h-32">
-            <DataLoadingState message="Loading data..." />
-          </div>
-        ) : (
-          <FoodZoneSummaryBar ingredients={getIngredientsForSelectedDate()} />
-        )}
-      </div>
-
-      {/* Unified Timeline */}
+      {/* Unified Timeline with Zone Bars */}
       <div className="space-y-4">
         {entriesForSelectedDate === undefined ? (
           <div className="bg-muted rounded-lg p-4 h-32">
             <DataLoadingState message="Loading timeline..." />
           </div>
         ) : (
-          <UnifiedTimeline entries={entriesForSelectedDate} />
+          <div className="space-y-4">
+            <UnifiedTimeline entries={entriesForSelectedDate} />
+            {/* Zone and Organic Bars directly under timeline */}
+            {foodStatsForSelectedDate && (
+              <FoodZoneSummaryBar
+                ingredients={getIngredientsForSelectedDate()}
+              />
+            )}
+          </div>
         )}
       </div>
 
@@ -80,7 +77,8 @@ export function EntriesView({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-foreground">Entries</h2>
           <span className="text-muted-foreground text-sm">
-            {entriesForSelectedDate?.length || 0} entries
+            {entriesForSelectedDate?.length || 0}{' '}
+            {entriesForSelectedDate?.length === 1 ? 'entry' : 'entries'}
           </span>
         </div>
         <div className="space-y-3">
@@ -115,7 +113,7 @@ export function EntriesView({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           {food.photo_url ? (
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-emerald-500">
                               <Image
                                 src={food.photo_url || '/placeholder.svg'}
                                 alt={food.name}
@@ -125,8 +123,10 @@ export function EntriesView({
                               />
                             </div>
                           ) : (
-                            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-white text-lg">🍽️</span>
+                            <div className="w-12 h-12 border-2 border-emerald-500 bg-transparent rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-foreground text-lg">
+                                🍽️
+                              </span>
                             </div>
                           )}
                           <div className="text-left flex-1 min-w-0">
@@ -174,7 +174,7 @@ export function EntriesView({
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 border-2 border-primary bg-transparent rounded-full flex items-center justify-center">
+                          <div className="w-12 h-12 border-2 border-red-500 bg-transparent rounded-full flex items-center justify-center">
                             <span className="text-foreground text-lg">
                               {getCategoryInfo(symptom.category)?.icon || '⚡'}
                             </span>

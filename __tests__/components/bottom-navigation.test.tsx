@@ -107,7 +107,9 @@ describe('Bottom Navigation', () => {
     expect(
       screen.getByRole('button', { name: /insights/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /entries/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /entries/i })
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /settings/i })
     ).toBeInTheDocument();
@@ -160,7 +162,8 @@ describe('Bottom Navigation', () => {
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
       const plusButton = plusButtons.find(
-        button => button.getAttribute('data-testid') === 'floating-action-button'
+        button =>
+          button.getAttribute('data-testid') === 'floating-action-button'
       );
       // Plus button should not exist on insights view (FAB returns null)
       expect(plusButton).toBeUndefined();
@@ -174,7 +177,8 @@ describe('Bottom Navigation', () => {
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
       const plusButton = plusButtons.find(
-        button => button.getAttribute('data-testid') === 'floating-action-button'
+        button =>
+          button.getAttribute('data-testid') === 'floating-action-button'
       );
       expect(plusButton).toBeInTheDocument();
     });
@@ -187,7 +191,8 @@ describe('Bottom Navigation', () => {
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
       const plusButton = plusButtons.find(
-        button => button.getAttribute('data-testid') === 'floating-action-button'
+        button =>
+          button.getAttribute('data-testid') === 'floating-action-button'
       );
       expect(plusButton).toBeUndefined();
     });

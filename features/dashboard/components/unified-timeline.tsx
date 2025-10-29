@@ -57,7 +57,6 @@ export function UnifiedTimeline({
       <div className={className}>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold text-foreground">Summary</h3>
-          <span className="text-muted-foreground text-sm">0 entries</span>
         </div>
         <Card>
           <CardHeader></CardHeader>
@@ -97,9 +96,6 @@ export function UnifiedTimeline({
     <div className={className}>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-semibold text-foreground">Summary</h3>
-        <span className="text-muted-foreground text-sm">
-          {totalEntries} {totalEntries !== 1 ? 'entries' : 'entry'}
-        </span>
       </div>
       <Card>
         <CardHeader></CardHeader>

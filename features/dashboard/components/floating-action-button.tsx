@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Camera, Activity } from 'lucide-react';
+import { Plus, Utensils, Activity } from 'lucide-react';
 
 type ViewType = 'insights' | 'entries' | 'settings';
 
@@ -54,13 +54,17 @@ export function FloatingActionButton({
         {/* Signal FAB */}
         <button
           onClick={handleSignalClick}
-          className={`w-12 h-12 bg-red-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+          className={`w-12 h-12 bg-red-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
             isExpanded
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
           style={{
             transitionDelay: isExpanded ? '0ms' : '0ms',
+            minWidth: '48px',
+            minHeight: '48px',
+            maxWidth: '48px',
+            maxHeight: '48px',
           }}
         >
           <Activity className="w-5 h-5" />
@@ -69,16 +73,20 @@ export function FloatingActionButton({
         {/* Food FAB */}
         <button
           onClick={handleFoodClick}
-          className={`w-12 h-12 bg-green-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+          className={`w-12 h-12 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
             isExpanded
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
           style={{
             transitionDelay: isExpanded ? '50ms' : '0ms',
+            minWidth: '48px',
+            minHeight: '48px',
+            maxWidth: '48px',
+            maxHeight: '48px',
           }}
         >
-          <Camera className="w-5 h-5" />
+          <Utensils className="w-5 h-5" />
         </button>
 
         {/* Main FAB */}

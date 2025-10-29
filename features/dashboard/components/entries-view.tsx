@@ -65,12 +65,10 @@ export function EntriesView({
             <UnifiedTimeline entries={entriesForSelectedDate} />
             {/* Zone and Organic Bars directly under timeline */}
             {foodStatsForSelectedDate && (
-              <div className="flex items-center">
-                <FoodZoneSummaryBar
-                  ingredients={getIngredientsForSelectedDate()}
-                  showTitle={false}
-                />
-              </div>
+              <FoodZoneSummaryBar
+                ingredients={getIngredientsForSelectedDate()}
+                showTitle={false}
+              />
             )}
           </div>
         )}

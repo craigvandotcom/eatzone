@@ -54,45 +54,49 @@ export function FloatingActionButton({
         {/* Signal FAB */}
         <button
           onClick={handleSignalClick}
-          className={`w-12 h-12 bg-red-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+          className={`w-16 h-16 bg-red-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
             isExpanded
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
           style={{
             transitionDelay: isExpanded ? '0ms' : '0ms',
-            minWidth: '48px',
-            minHeight: '48px',
-            maxWidth: '48px',
-            maxHeight: '48px',
+            minWidth: '64px',
+            minHeight: '64px',
+            maxWidth: '64px',
+            maxHeight: '64px',
           }}
         >
-          <Activity className="w-5 h-5" />
+          <Activity className="w-6 h-6" />
         </button>
 
         {/* Food FAB */}
         <button
           onClick={handleFoodClick}
-          className={`w-12 h-12 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+          className={`w-16 h-16 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
             isExpanded
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
           style={{
             transitionDelay: isExpanded ? '50ms' : '0ms',
-            minWidth: '48px',
-            minHeight: '48px',
-            maxWidth: '48px',
-            maxHeight: '48px',
+            minWidth: '64px',
+            minHeight: '64px',
+            maxWidth: '64px',
+            maxHeight: '64px',
           }}
         >
-          <Utensils className="w-5 h-5" />
+          <Utensils className="w-6 h-6" />
         </button>
 
         {/* Main FAB */}
         <button
           onClick={handleMainClick}
-          className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-0 flex-shrink-0 transition-transform duration-300"
+          className={`w-16 h-16 rounded-full shadow-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+            isExpanded
+              ? 'bg-black text-white border-2 border-white'
+              : 'bg-white text-gray-700 border-0'
+          }`}
           data-testid="floating-action-button"
           style={{
             minWidth: '64px',
@@ -104,7 +108,7 @@ export function FloatingActionButton({
             transform: isExpanded ? 'rotate(45deg)' : 'rotate(0deg)',
           }}
         >
-          <Plus className="w-7 h-7 text-gray-700" />
+          <Plus className="w-7 h-7" />
         </button>
       </div>
     </>

@@ -83,6 +83,13 @@ export interface FoodStats {
   isFromSelectedDate: boolean;
 }
 
+// Unified timeline entry types
+export type EntryType = 'food' | 'signal';
+
+export type TimelineEntry =
+  | { id: string; type: 'food'; timestamp: string; data: Food }
+  | { id: string; type: 'signal'; timestamp: string; data: Symptom };
+
 // Export types for backward compatibility with existing imports
 export type { Symptom as SymptomType };
 export type { Ingredient as IngredientType };

@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, Utensils, Activity, Settings } from 'lucide-react';
+import { BarChart3, BookText, Settings } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +11,7 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar';
 
-type ViewType = 'insights' | 'food' | 'signals' | 'settings';
+type ViewType = 'insights' | 'entries' | 'settings';
 
 interface DesktopSidebarProps {
   currentView: ViewType;
@@ -43,20 +43,11 @@ export function DesktopSidebar({
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={currentView === 'food'}
-                onClick={() => onViewChange('food')}
+                isActive={currentView === 'entries'}
+                onClick={() => onViewChange('entries')}
               >
-                <Utensils className="h-4 w-4" />
-                <span>Food</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={currentView === 'signals'}
-                onClick={() => onViewChange('signals')}
-              >
-                <Activity className="h-4 w-4" />
-                <span>Signals</span>
+                <BookText className="h-4 w-4" />
+                <span>Entries</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

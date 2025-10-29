@@ -13,8 +13,7 @@ import {
 } from '@/components/error-boundary';
 import { InsightsView } from '@/features/dashboard/components/insights-view';
 import { SettingsView } from '@/features/dashboard/components/settings-view';
-import { FoodView } from '@/features/dashboard/components/food-view';
-import { SignalsView } from '@/features/dashboard/components/signals-view';
+import { EntriesView } from '@/features/dashboard/components/entries-view';
 import { DesktopSidebar } from '@/features/dashboard/components/desktop-sidebar';
 import { BottomNavigation } from '@/features/dashboard/components/bottom-navigation';
 import { FloatingActionButton } from '@/features/dashboard/components/floating-action-button';
@@ -24,8 +23,8 @@ import { FullWidthHeader } from '@/components/ui/full-width-header';
 import {
   useDashboardData,
   useFoodsForDate,
-  useSymptomsForDate,
   useFoodStatsForDate,
+  useEntriesForDate,
 } from '@/lib/hooks';
 import { useAuth } from '@/features/auth/components/auth-provider';
 import { useToast } from '@/components/ui/use-toast';
@@ -36,7 +35,7 @@ import { getBase64ImageSize, formatFileSize } from '@/lib/utils/image-utils';
 
 // Import symptom utilities
 
-type ViewType = 'insights' | 'food' | 'signals' | 'settings';
+type ViewType = 'insights' | 'entries' | 'settings';
 
 // Constants
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB limit for sessionStorage
@@ -73,11 +72,8 @@ function Dashboard() {
     selectedDate,
     allFoods
   );
-  const { data: symptomsForSelectedDate } = useSymptomsForDate(
-    selectedDate,
-    allSymptoms
-  );
   const { data: foodStatsForSelectedDate } = useFoodStatsForDate(selectedDate);
+  const { data: entriesForSelectedDate } = useEntriesForDate(selectedDate);
 
   // Helper function to get ingredients for selected date
   const getIngredientsForSelectedDate = useCallback(() => {
@@ -188,14 +184,7 @@ function Dashboard() {
     }
   };
 
-  // Central Plus Button handler
-  const handlePlusClick = useCallback(() => {
-    if (currentView === 'food') {
-      handleQuickCapture();
-    } else if (currentView === 'signals') {
-      handleAddSymptom();
-    }
-  }, [currentView, handleQuickCapture, handleAddSymptom]);
+  // No longer need central plus button handler - FAB handles it internally
 
   return (
     <div
@@ -217,8 +206,8 @@ function Dashboard() {
         <div
           className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'pb-20' : ''}`}
         >
-          {/* Full Width Header - Only for Food and Signals views */}
-          {(currentView === 'food' || currentView === 'signals') && (
+          {/* Full Width Header - Only for Entries view */}
+          {currentView === 'entries' && (
             <FullWidthHeader
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
@@ -247,20 +236,12 @@ function Dashboard() {
                 />
               </ErrorBoundary>
             )}
-            {currentView === 'food' && (
+            {currentView === 'entries' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
-                <FoodView
-                  foodsForSelectedDate={foodsForSelectedDate}
+                <EntriesView
+                  entriesForSelectedDate={entriesForSelectedDate}
                   foodStatsForSelectedDate={foodStatsForSelectedDate}
                   getIngredientsForSelectedDate={getIngredientsForSelectedDate}
-                />
-              </ErrorBoundary>
-            )}
-
-            {currentView === 'signals' && (
-              <ErrorBoundary fallback={SupabaseErrorFallback}>
-                <SignalsView
-                  symptomsForSelectedDate={symptomsForSelectedDate}
                 />
               </ErrorBoundary>
             )}
@@ -279,7 +260,8 @@ function Dashboard() {
         {isMobile && (
           <FloatingActionButton
             currentView={currentView}
-            onPlusClick={handlePlusClick}
+            onFoodClick={handleQuickCapture}
+            onSignalClick={handleAddSymptom}
           />
         )}
       </div>

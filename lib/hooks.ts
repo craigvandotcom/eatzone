@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
-import { Symptom, Food, FoodStats } from './types';
+import { Symptom, Food, FoodStats, TimelineEntry } from './types';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -628,4 +628,45 @@ export const useFoodStatsForDate = (
   }, [foodsForDate]);
 
   return { data: statsForDate };
+};
+
+// UNIFIED ENTRIES FOR DATE - Combines foods and signals into chronological timeline
+export const useEntriesForDate = (selectedDate: Date) => {
+  const { data: dashboardData } = useDashboardData();
+
+  const entries = useMemo(() => {
+    if (!dashboardData) return [];
+
+    const { allFoods, allSymptoms } = dashboardData;
+    const targetDateString = selectedDate.toDateString();
+
+    // Build timeline entries for foods
+    const foodEntries: TimelineEntry[] = (allFoods || [])
+      .filter(f => new Date(f.timestamp).toDateString() === targetDateString)
+      .map(f => ({
+        id: f.id,
+        type: 'food' as const,
+        timestamp: f.timestamp,
+        data: f,
+      }));
+
+    // Build timeline entries for signals
+    const signalEntries: TimelineEntry[] = (allSymptoms || [])
+      .filter(s => new Date(s.timestamp).toDateString() === targetDateString)
+      .map(s => ({
+        id: s.id,
+        type: 'signal' as const,
+        timestamp: s.timestamp,
+        data: s,
+      }));
+
+    // Combine and sort chronologically
+    const combined = [...foodEntries, ...signalEntries];
+    return combined.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }, [dashboardData, selectedDate]);
+
+  return { data: entries };
 };

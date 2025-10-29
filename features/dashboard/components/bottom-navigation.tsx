@@ -1,8 +1,8 @@
 'use client';
 
-import { BarChart3, Utensils, Activity, Settings } from 'lucide-react';
+import { BarChart3, BookText, Settings } from 'lucide-react';
 
-type ViewType = 'insights' | 'food' | 'signals' | 'settings';
+type ViewType = 'insights' | 'entries' | 'settings';
 
 interface BottomNavigationProps {
   currentView: ViewType;
@@ -30,26 +30,14 @@ export function BottomNavigation({
 
         <button
           className={`flex flex-col items-center space-y-0.5 p-1.5 rounded-lg ${
-            currentView === 'food'
+            currentView === 'entries'
               ? 'text-brand-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          onClick={() => onViewChange('food')}
+          onClick={() => onViewChange('entries')}
         >
-          <Utensils className="h-6 w-6" />
-          <span className="text-xs font-medium">Food</span>
-        </button>
-
-        <button
-          className={`flex flex-col items-center space-y-0.5 p-1.5 rounded-lg ${
-            currentView === 'signals'
-              ? 'text-brand-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-          onClick={() => onViewChange('signals')}
-        >
-          <Activity className="h-6 w-6" />
-          <span className="text-xs font-medium">Signals</span>
+          <BookText className="h-6 w-6" />
+          <span className="text-xs font-medium">Entries</span>
         </button>
 
         <button

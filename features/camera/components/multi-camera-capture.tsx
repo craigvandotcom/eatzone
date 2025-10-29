@@ -124,11 +124,11 @@ export function MultiCameraCapture({
             // Mark initial load as complete BEFORE changing camera index
             // This prevents the useEffect from restarting the camera
             isInitialCameraLoadRef.current = false;
-            
+
             setCurrentCameraIndex(preferredIndex);
-            logger.debug('Loaded preferred camera', { 
+            logger.debug('Loaded preferred camera', {
               index: preferredIndex,
-              deviceId: preferredDeviceId 
+              deviceId: preferredDeviceId,
             });
           } else {
             // No camera change needed, just mark initial load as complete

@@ -334,6 +334,47 @@ jest.mock('@/lib/hooks', () => ({
     symptoms: 0,
     totalEntries: 0,
   })),
+  useDashboardData: jest.fn(() => ({
+    data: {
+      recentFoods: [],
+      recentSymptoms: [],
+      todaysSymptoms: [],
+      foodStats: {
+        greenIngredients: 0,
+        yellowIngredients: 0,
+        redIngredients: 0,
+        totalIngredients: 0,
+        organicCount: 0,
+        totalOrganicPercentage: 0,
+        isFromToday: true,
+      },
+      allFoods: [],
+      allSymptoms: [],
+    },
+    error: null,
+    isLoading: false,
+  })),
+  useFoodsForDate: jest.fn(() => ({
+    data: [],
+  })),
+  useSymptomsForDate: jest.fn(() => ({
+    data: [],
+  })),
+  useFoodStatsForDate: jest.fn(() => ({
+    data: {
+      greenIngredients: 0,
+      yellowIngredients: 0,
+      redIngredients: 0,
+      totalIngredients: 0,
+      organicCount: 0,
+      totalOrganicPercentage: 0,
+      isFromSelectedDate: true,
+    },
+  })),
+  useEntriesForDate: jest.fn(() => ({
+    data: [],
+  })),
+  useTrackingStreak: jest.fn(() => 0),
 }));
 
 // Mock ErrorBoundary component

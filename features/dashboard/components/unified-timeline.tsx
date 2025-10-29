@@ -2,7 +2,7 @@
 
 import type { TimelineEntry } from '@/lib/types';
 import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface UnifiedTimelineProps {
   entries: TimelineEntry[];
@@ -59,8 +59,7 @@ export function UnifiedTimeline({
           <h3 className="text-lg font-semibold text-foreground">Summary</h3>
         </div>
         <Card>
-          <CardHeader></CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {/* Timeline container */}
             <div className="relative">
               {/* Timeline line */}
@@ -98,8 +97,7 @@ export function UnifiedTimeline({
         <h3 className="text-lg font-semibold text-foreground">Summary</h3>
       </div>
       <Card>
-        <CardHeader></CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {/* Timeline container */}
           <div className="relative">
             {/* Timeline line with markers positioned on it */}

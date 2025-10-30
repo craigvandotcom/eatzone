@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/utils/logger';
 
-type ViewType = 'insights' | 'food' | 'signals' | 'settings';
+type ViewType = 'insights' | 'entries' | 'settings';
 
 const STORAGE_KEY = 'dashboard-active-tab';
 const DEFAULT_TAB: ViewType = 'insights';
@@ -41,5 +41,5 @@ export function usePersistentTab(defaultValue: ViewType = DEFAULT_TAB) {
 
 // Type guard to validate stored tab values
 function isValidTab(value: string): value is ViewType {
-  return ['insights', 'food', 'signals', 'settings'].includes(value);
+  return ['insights', 'entries', 'settings'].includes(value);
 }

@@ -101,8 +101,24 @@ export function LoginFormClient() {
     setIsLoading(true);
     setError('');
 
+    // Read values directly from form inputs to handle autofill/password managers
+    // that don't trigger onChange events properly
+    const form = e.currentTarget as HTMLFormElement;
+    const emailInput = form.querySelector('#email') as HTMLInputElement;
+    const passwordInput = form.querySelector('#password') as HTMLInputElement;
+
+    const emailValue = emailInput?.value || email;
+    const passwordValue = passwordInput?.value || password;
+
+    // Validate
+    if (!emailValue || !passwordValue) {
+      setError('Please enter both email and password');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await login(email, password);
+      await login(emailValue.trim(), passwordValue.trim());
       router.push('/app');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -248,7 +264,9 @@ export function LoginFormClient() {
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -262,7 +280,9 @@ export function LoginFormClient() {
                   <div className="relative">
                     <Input
                       id="password"
+                      name="password"
                       type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
                       placeholder="Enter your password"
                       value={password}
                       onChange={e => setPassword(e.target.value)}

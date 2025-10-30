@@ -3,7 +3,7 @@
 import { Plus } from 'lucide-react';
 import { MetallicButton } from '@/components/ui/metallic-button';
 
-type ViewType = 'insights' | 'food' | 'signals' | 'settings';
+type ViewType = 'insights' | 'entries' | 'settings';
 
 interface CentralPlusButtonProps {
   currentView: ViewType;
@@ -14,7 +14,7 @@ export function CentralPlusButton({
   currentView,
   onPlusClick,
 }: CentralPlusButtonProps) {
-  const shouldShow = currentView === 'food' || currentView === 'signals';
+  const shouldShow = currentView === 'entries';
 
   const getBorderStyle = () => {
     // No colored borders - consistent neutral appearance

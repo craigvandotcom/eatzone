@@ -2,7 +2,7 @@
 
 import type { Ingredient } from '@/lib/types';
 import { getZoneBgClass, getZoneBgStyle } from '@/lib/utils/zone-colors';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface FoodZoneSummaryBarProps {
   ingredients: Ingredient[];
@@ -49,15 +49,14 @@ export function FoodZoneSummaryBar({
   if (totalIngredients === 0) {
     return (
       <div className={className}>
-        <div className="flex items-center justify-between mb-2">
-          {showTitle && (
+        {showTitle && (
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-foreground">Summary</h3>
-          )}
-          <span className="text-muted-foreground text-sm">0 ingredients</span>
-        </div>
+            <span className="text-muted-foreground text-sm">0 ingredients</span>
+          </div>
+        )}
         <Card>
-          <CardHeader></CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="py-4 space-y-2">
             {/* Zone distribution bar - empty state */}
             <div className="h-4 sm:h-5 w-full bg-muted rounded-full border">
               <div className="h-full bg-muted-foreground/20 w-full animate-pulse rounded-full flex items-center justify-center">
@@ -78,17 +77,16 @@ export function FoodZoneSummaryBar({
 
   return (
     <div className={className}>
-      <div className="flex items-center justify-between mb-2">
-        {showTitle && (
+      {showTitle && (
+        <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold text-foreground">Summary</h3>
-        )}
-        <span className="text-muted-foreground text-sm">
-          {totalIngredients} ingredient{totalIngredients !== 1 ? 's' : ''}
-        </span>
-      </div>
+          <span className="text-muted-foreground text-sm">
+            {totalIngredients} ingredient{totalIngredients !== 1 ? 's' : ''}
+          </span>
+        </div>
+      )}
       <Card>
-        <CardHeader></CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="py-4 space-y-2">
           {/* Zone distribution bar */}
           <div
             className="flex h-4 sm:h-5 w-full rounded-full overflow-hidden border bg-muted"

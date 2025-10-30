@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
-import { Symptom, Food, FoodStats } from './types';
+import { Symptom, Food, FoodStats, TimelineEntry } from './types';
 import {
   getAllFoods,
   getAllSymptoms,
@@ -14,6 +14,7 @@ import {
   getSymptomById,
 } from './db';
 import { logger } from './utils/logger';
+import { isSameLocalDate, timestampToLocalDate } from './utils/date-utils';
 
 // Create a shared supabase client for all hooks
 const supabase = createClient();
@@ -550,10 +551,11 @@ export const useFoodsForDate = (selectedDate: Date, allFoods?: Food[]) => {
   const foodsForDate = useMemo(() => {
     if (!foods) return [];
 
-    const targetDateString = selectedDate.toDateString();
     return foods.filter(food => {
-      const foodDate = new Date(food.timestamp).toDateString();
-      return foodDate === targetDateString;
+      return isSameLocalDate(
+        timestampToLocalDate(food.timestamp),
+        selectedDate
+      );
     });
   }, [foods, selectedDate]);
 
@@ -570,10 +572,11 @@ export const useSymptomsForDate = (
   const symptomsForDate = useMemo(() => {
     if (!symptoms) return [];
 
-    const targetDateString = selectedDate.toDateString();
     return symptoms.filter(symptom => {
-      const symptomDate = new Date(symptom.timestamp).toDateString();
-      return symptomDate === targetDateString;
+      return isSameLocalDate(
+        timestampToLocalDate(symptom.timestamp),
+        selectedDate
+      );
     });
   }, [symptoms, selectedDate]);
 
@@ -628,4 +631,48 @@ export const useFoodStatsForDate = (
   }, [foodsForDate]);
 
   return { data: statsForDate };
+};
+
+// UNIFIED ENTRIES FOR DATE - Combines foods and signals into chronological timeline
+export const useEntriesForDate = (selectedDate: Date) => {
+  const { data: dashboardData } = useDashboardData();
+
+  const entries = useMemo(() => {
+    if (!dashboardData) return [];
+
+    const { allFoods, allSymptoms } = dashboardData;
+
+    // Build timeline entries for foods
+    const foodEntries: TimelineEntry[] = (allFoods || [])
+      .filter(f =>
+        isSameLocalDate(timestampToLocalDate(f.timestamp), selectedDate)
+      )
+      .map(f => ({
+        id: f.id,
+        type: 'food' as const,
+        timestamp: f.timestamp,
+        data: f,
+      }));
+
+    // Build timeline entries for signals
+    const signalEntries: TimelineEntry[] = (allSymptoms || [])
+      .filter(s =>
+        isSameLocalDate(timestampToLocalDate(s.timestamp), selectedDate)
+      )
+      .map(s => ({
+        id: s.id,
+        type: 'signal' as const,
+        timestamp: s.timestamp,
+        data: s,
+      }));
+
+    // Combine and sort chronologically
+    const combined = [...foodEntries, ...signalEntries];
+    return combined.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }, [dashboardData, selectedDate]);
+
+  return { data: entries };
 };

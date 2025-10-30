@@ -438,6 +438,35 @@ export function getCategoryInfo(
   return SYMPTOM_CATEGORIES.find(cat => cat.name === category);
 }
 
+/**
+ * Safe wrapper for getCategoryInfo with runtime validation
+ * Returns undefined if category is invalid or missing
+ *
+ * @param category - Category to look up (may be invalid/missing)
+ * @returns CategoryInfo or undefined if invalid
+ */
+export function getCategoryInfoSafe(
+  category: SymptomCategory | string | null | undefined
+): SymptomCategoryInfo | undefined {
+  // Validate category exists and is valid
+  if (!category || typeof category !== 'string') {
+    return undefined;
+  }
+
+  // Type guard: check if category is a valid SymptomCategory
+  const validCategories: SymptomCategory[] = [
+    'digestion',
+    'energy',
+    'mind',
+    'recovery',
+  ];
+  if (!validCategories.includes(category as SymptomCategory)) {
+    return undefined;
+  }
+
+  return getCategoryInfo(category as SymptomCategory);
+}
+
 // Simple symptom score descriptions
 export const SYMPTOM_SCORE_LABELS = {
   '0': 'Baseline',

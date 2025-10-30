@@ -9,8 +9,8 @@ import Dashboard from '@/app/(protected)/app/page';
 import {
   useDashboardData,
   useFoodsForDate,
-  useSymptomsForDate,
   useFoodStatsForDate,
+  useEntriesForDate,
   useTrackingStreak,
 } from '@/lib/hooks';
 
@@ -31,8 +31,8 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/lib/hooks', () => ({
   useDashboardData: jest.fn(),
   useFoodsForDate: jest.fn(),
-  useSymptomsForDate: jest.fn(),
   useFoodStatsForDate: jest.fn(),
+  useEntriesForDate: jest.fn(),
   useTrackingStreak: jest.fn(),
 }));
 
@@ -47,11 +47,11 @@ const mockUseDashboardData = useDashboardData as jest.MockedFunction<
 const mockUseFoodsForDate = useFoodsForDate as jest.MockedFunction<
   typeof useFoodsForDate
 >;
-const mockUseSymptomsForDate = useSymptomsForDate as jest.MockedFunction<
-  typeof useSymptomsForDate
->;
 const mockUseFoodStatsForDate = useFoodStatsForDate as jest.MockedFunction<
   typeof useFoodStatsForDate
+>;
+const mockUseEntriesForDate = useEntriesForDate as jest.MockedFunction<
+  typeof useEntriesForDate
 >;
 const mockUseTrackingStreak = useTrackingStreak as jest.MockedFunction<
   typeof useTrackingStreak
@@ -85,7 +85,7 @@ describe('Bottom Navigation', () => {
 
     // Mock date-specific data hooks
     mockUseFoodsForDate.mockReturnValue({ data: [] });
-    mockUseSymptomsForDate.mockReturnValue({ data: [] });
+    mockUseEntriesForDate.mockReturnValue({ data: [] });
     mockUseFoodStatsForDate.mockReturnValue({
       data: {
         greenIngredients: 0,
@@ -107,9 +107,8 @@ describe('Bottom Navigation', () => {
     expect(
       screen.getByRole('button', { name: /insights/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /food/i })).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /signals/i })
+      screen.getByRole('button', { name: /entries/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /settings/i })
@@ -123,11 +122,11 @@ describe('Bottom Navigation', () => {
     // Initially should show insights view
     expect(screen.getByText(/overview/i)).toBeInTheDocument();
 
-    // Click on Food tab
-    const foodTab = screen.getByRole('button', { name: /food/i });
-    await user.click(foodTab);
+    // Click on Entries tab
+    const entriesTab = screen.getByRole('button', { name: /entries/i });
+    await user.click(entriesTab);
 
-    // Should show food view content (food category progress)
+    // Should show entries view content
     await waitFor(() => {
       expect(
         screen.queryByText(/analytics coming soon/i)
@@ -155,56 +154,47 @@ describe('Bottom Navigation', () => {
     expect(insightsTab).toBeInTheDocument();
   });
 
-  it('should show central plus button only for food and signals views', async () => {
+  it('should show central plus button only for entries view', async () => {
     const user = userEvent.setup();
     render(<Dashboard />);
 
-    // Initially on insights view - plus button should be hidden (opacity 0)
+    // Initially on insights view - plus button should not be in DOM
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
       const plusButton = plusButtons.find(
         button =>
-          button.querySelector('svg') &&
-          button.className.includes('rounded-full')
+          button.getAttribute('data-testid') === 'floating-action-button'
       );
-      // Plus button exists but should be hidden (opacity 0)
-      expect(plusButton).toBeInTheDocument();
-      const parentDiv = plusButton?.closest('[style*="opacity"]');
-      expect(parentDiv).toHaveStyle('opacity: 0');
+      // Plus button should not exist on insights view (FAB returns null)
+      expect(plusButton).toBeUndefined();
     });
 
-    // Switch to food view
-    const foodTab = screen.getByRole('button', { name: /food/i });
-    await user.click(foodTab);
+    // Switch to entries view
+    const entriesTab = screen.getByRole('button', { name: /entries/i });
+    await user.click(entriesTab);
 
     // Wait for transition and check for visible plus button
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
       const plusButton = plusButtons.find(
         button =>
-          button.querySelector('svg') &&
-          button.className.includes('rounded-full')
+          button.getAttribute('data-testid') === 'floating-action-button'
       );
       expect(plusButton).toBeInTheDocument();
-      const parentDiv = plusButton?.closest('[style*="opacity"]');
-      expect(parentDiv).toHaveStyle('opacity: 1');
     });
 
     // Switch to insights view
     const insightsTab = screen.getByRole('button', { name: /insights/i });
     await user.click(insightsTab);
 
-    // Plus button should be hidden again
+    // Plus button should not be in DOM again
     await waitFor(() => {
       const plusButtons = screen.queryAllByRole('button');
       const plusButton = plusButtons.find(
         button =>
-          button.querySelector('svg') &&
-          button.className.includes('rounded-full')
+          button.getAttribute('data-testid') === 'floating-action-button'
       );
-      expect(plusButton).toBeInTheDocument();
-      const parentDiv = plusButton?.closest('[style*="opacity"]');
-      expect(parentDiv).toHaveStyle('opacity: 0');
+      expect(plusButton).toBeUndefined();
     });
   });
 
@@ -212,17 +202,17 @@ describe('Bottom Navigation', () => {
     const user = userEvent.setup();
     render(<Dashboard />);
 
-    const foodTab = screen.getByRole('button', { name: /food/i });
+    const entriesTab = screen.getByRole('button', { name: /entries/i });
     const settingsTab = screen.getByRole('button', { name: /settings/i });
     const insightsTab = screen.getByRole('button', { name: /insights/i });
 
     // Rapidly switch between tabs
-    await user.click(foodTab);
+    await user.click(entriesTab);
     await user.click(settingsTab);
     await user.click(insightsTab);
-    await user.click(foodTab);
+    await user.click(entriesTab);
 
-    // Should end up on food view without errors
+    // Should end up on entries view without errors
     await waitFor(() => {
       expect(
         screen.queryByText(/analytics coming soon/i)
@@ -244,7 +234,7 @@ describe('Bottom Navigation', () => {
     // Desktop should have sidebar navigation instead
     // We can verify this by checking that navigation exists but not in bottom position
     const navigationButtons = screen.queryAllByRole('button', {
-      name: /insights|food|signals|settings/i,
+      name: /insights|entries|settings/i,
     });
     expect(navigationButtons.length).toBeGreaterThan(0); // Navigation exists
   });

@@ -17,6 +17,20 @@ export function UnifiedTimeline({
   const safeEntries = entries || [];
   const totalEntries = safeEntries.length;
 
+  // Calculate unique ingredients count from food entries
+  const uniqueIngredientsCount = useMemo(() => {
+    const allIngredients = safeEntries.flatMap(entry =>
+      entry.type === 'food' ? entry.data.ingredients || [] : []
+    );
+
+    // Count unique ingredients by name (case-insensitive)
+    const uniqueNames = new Set(
+      allIngredients.map(ing => ing.name.toLowerCase().trim())
+    );
+
+    return uniqueNames.size;
+  }, [safeEntries]);
+
   // Calculate position as percentage of day
   const getTimelinePosition = (timestamp: string): number => {
     const date = new Date(timestamp);
@@ -60,6 +74,10 @@ export function UnifiedTimeline({
       <div className={className}>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold text-foreground">Summary</h3>
+          <span className="text-muted-foreground text-sm">
+            {uniqueIngredientsCount} unique ingredient
+            {uniqueIngredientsCount !== 1 ? 's' : ''}
+          </span>
         </div>
         <Card>
           <CardContent className="pt-4">
@@ -98,6 +116,10 @@ export function UnifiedTimeline({
     <div className={className}>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-semibold text-foreground">Summary</h3>
+        <span className="text-muted-foreground text-sm">
+          {uniqueIngredientsCount} unique ingredient
+          {uniqueIngredientsCount !== 1 ? 's' : ''}
+        </span>
       </div>
       <Card>
         <CardContent className="pt-4">

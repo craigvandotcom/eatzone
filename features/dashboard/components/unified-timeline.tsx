@@ -144,7 +144,7 @@ export function UnifiedTimeline({
 
                   if (entry.type === 'food') {
                     emoji = '🍽️';
-                    borderColor = 'border-green-500';
+                    borderColor = 'border-zone-green';
                     entryName = entry.data.name;
                   } else if (entry.type === 'signal') {
                     const categoryInfo = getCategoryInfoSafe(
@@ -157,7 +157,7 @@ export function UnifiedTimeline({
 
                   // Limit stacking to prevent overflow - clamp offset between -48px (6 entries) and 0
                   const maxStackHeight = 6;
-                  const stackOffset = Math.min(
+                  const stackOffset = Math.max(
                     index * -8,
                     -(maxStackHeight - 1) * 8
                   );
@@ -165,11 +165,10 @@ export function UnifiedTimeline({
                   return (
                     <div
                       key={entry.id}
-                      className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out"
+                      className="absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out"
                       style={{
                         left: `${avgPosition}%`,
-                        top: `50%`, // Center on the timeline
-                        transform: `translate(-50%, calc(-50% + ${stackOffset}px))`, // Stack overlapping entries above timeline with overflow protection
+                        marginTop: `${stackOffset}px`, // Stack overlapping entries above timeline
                         zIndex: 10 + index,
                       }}
                       title={`${entryName} - ${new Date(

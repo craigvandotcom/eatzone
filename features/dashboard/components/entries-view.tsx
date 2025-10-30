@@ -114,7 +114,7 @@ export function EntriesView({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           {food.photo_url ? (
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-emerald-500">
+                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-zone-green">
                               <Image
                                 src={food.photo_url || '/placeholder.svg'}
                                 alt={food.name}
@@ -124,7 +124,7 @@ export function EntriesView({
                               />
                             </div>
                           ) : (
-                            <div className="w-12 h-12 border-2 border-emerald-500 bg-transparent rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 border-2 border-zone-green bg-transparent rounded-full flex items-center justify-center flex-shrink-0">
                               <span className="text-foreground text-lg">
                                 🍽️
                               </span>

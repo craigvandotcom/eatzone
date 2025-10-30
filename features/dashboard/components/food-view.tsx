@@ -100,7 +100,7 @@ export function FoodView({
                             />
                           </div>
                         ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <div className="w-12 h-12 bg-zone-green rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white text-lg">🍽️</span>
                           </div>
                         )}

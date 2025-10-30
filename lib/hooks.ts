@@ -14,6 +14,7 @@ import {
   getSymptomById,
 } from './db';
 import { logger } from './utils/logger';
+import { isSameLocalDate, timestampToLocalDate } from './utils/date-utils';
 
 // Create a shared supabase client for all hooks
 const supabase = createClient();
@@ -550,10 +551,11 @@ export const useFoodsForDate = (selectedDate: Date, allFoods?: Food[]) => {
   const foodsForDate = useMemo(() => {
     if (!foods) return [];
 
-    const targetDateString = selectedDate.toDateString();
     return foods.filter(food => {
-      const foodDate = new Date(food.timestamp).toDateString();
-      return foodDate === targetDateString;
+      return isSameLocalDate(
+        timestampToLocalDate(food.timestamp),
+        selectedDate
+      );
     });
   }, [foods, selectedDate]);
 
@@ -570,10 +572,11 @@ export const useSymptomsForDate = (
   const symptomsForDate = useMemo(() => {
     if (!symptoms) return [];
 
-    const targetDateString = selectedDate.toDateString();
     return symptoms.filter(symptom => {
-      const symptomDate = new Date(symptom.timestamp).toDateString();
-      return symptomDate === targetDateString;
+      return isSameLocalDate(
+        timestampToLocalDate(symptom.timestamp),
+        selectedDate
+      );
     });
   }, [symptoms, selectedDate]);
 
@@ -638,11 +641,12 @@ export const useEntriesForDate = (selectedDate: Date) => {
     if (!dashboardData) return [];
 
     const { allFoods, allSymptoms } = dashboardData;
-    const targetDateString = selectedDate.toDateString();
 
     // Build timeline entries for foods
     const foodEntries: TimelineEntry[] = (allFoods || [])
-      .filter(f => new Date(f.timestamp).toDateString() === targetDateString)
+      .filter(f =>
+        isSameLocalDate(timestampToLocalDate(f.timestamp), selectedDate)
+      )
       .map(f => ({
         id: f.id,
         type: 'food' as const,
@@ -652,7 +656,9 @@ export const useEntriesForDate = (selectedDate: Date) => {
 
     // Build timeline entries for signals
     const signalEntries: TimelineEntry[] = (allSymptoms || [])
-      .filter(s => new Date(s.timestamp).toDateString() === targetDateString)
+      .filter(s =>
+        isSameLocalDate(timestampToLocalDate(s.timestamp), selectedDate)
+      )
       .map(s => ({
         id: s.id,
         type: 'signal' as const,

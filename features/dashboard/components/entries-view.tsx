@@ -20,7 +20,7 @@ import {
   ErrorBoundary,
   SupabaseErrorFallback,
 } from '@/components/error-boundary';
-import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
+import { getCategoryInfoSafe } from '@/lib/symptoms/symptom-index';
 
 // Import types
 import type { TimelineEntry, FoodStats, Ingredient } from '@/lib/types';
@@ -177,7 +177,8 @@ export function EntriesView({
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 border-2 border-red-500 bg-transparent rounded-full flex items-center justify-center">
                             <span className="text-foreground text-lg">
-                              {getCategoryInfo(symptom.category)?.icon || '⚡'}
+                              {getCategoryInfoSafe(symptom.category)?.icon ||
+                                '⚡'}
                             </span>
                           </div>
                           <div className="text-left">

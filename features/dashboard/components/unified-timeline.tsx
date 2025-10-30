@@ -1,7 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { TimelineEntry } from '@/lib/types';
-import { getCategoryInfo } from '@/lib/symptoms/symptom-index';
+import { getCategoryInfoSafe } from '@/lib/symptoms/symptom-index';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface UnifiedTimelineProps {
@@ -23,20 +24,22 @@ export function UnifiedTimeline({
     return (hours / 24) * 100; // Returns percentage for left position
   };
 
-  // Group entries by similar time positions to handle overlaps
-  const groupedEntries = safeEntries.reduce(
-    (groups, entry) => {
-      const position = getTimelinePosition(entry.timestamp);
-      const key = Math.round(position); // Round to nearest percentage for grouping
+  // Group entries by similar time positions to handle overlaps - memoized for performance
+  const groupedEntries = useMemo(() => {
+    return safeEntries.reduce(
+      (groups, entry) => {
+        const position = getTimelinePosition(entry.timestamp);
+        const key = Math.round(position); // Round to nearest percentage for grouping
 
-      if (!groups[key]) {
-        groups[key] = [];
-      }
-      groups[key].push({ ...entry, position });
-      return groups;
-    },
-    {} as Record<number, Array<TimelineEntry & { position: number }>>
-  );
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+        groups[key].push({ ...entry, position });
+        return groups;
+      },
+      {} as Record<number, Array<TimelineEntry & { position: number }>>
+    );
+  }, [safeEntries]);
 
   // Time labels for the timeline
   const timeLabels = [
@@ -122,11 +125,20 @@ export function UnifiedTimeline({
                     borderColor = 'border-green-500';
                     entryName = entry.data.name;
                   } else if (entry.type === 'signal') {
-                    const categoryInfo = getCategoryInfo(entry.data.category);
+                    const categoryInfo = getCategoryInfoSafe(
+                      entry.data.category
+                    );
                     emoji = categoryInfo?.icon || '⚡';
                     borderColor = 'border-red-500';
                     entryName = entry.data.name;
                   }
+
+                  // Limit stacking to prevent overflow - clamp offset between -48px (6 entries) and 0
+                  const maxStackHeight = 6;
+                  const stackOffset = Math.min(
+                    index * -8,
+                    -(maxStackHeight - 1) * 8
+                  );
 
                   return (
                     <div
@@ -135,7 +147,7 @@ export function UnifiedTimeline({
                       style={{
                         left: `${avgPosition}%`,
                         top: `50%`, // Center on the timeline
-                        transform: `translate(-50%, calc(-50% + ${index * -8}px))`, // Stack overlapping entries above timeline
+                        transform: `translate(-50%, calc(-50% + ${stackOffset}px))`, // Stack overlapping entries above timeline with overflow protection
                         zIndex: 10 + index,
                       }}
                       title={`${entryName} - ${new Date(

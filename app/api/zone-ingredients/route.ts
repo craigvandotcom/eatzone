@@ -13,6 +13,7 @@ import {
 } from '@/lib/middleware/request-validation';
 import { aiPerformanceMonitor } from '@/lib/monitoring/ai-performance';
 import { logger } from '@/lib/utils/logger';
+import { APP_CONFIG } from '@/lib/config/constants';
 
 const zoneIngredientsSchema = z.object({
   ingredients: z.array(z.string()).min(1),
@@ -53,7 +54,11 @@ export async function POST(request: NextRequest) {
     const realIp = request.headers.get('x-real-ip');
     const ip = forwardedFor?.split(',')[0] ?? realIp ?? '127.0.0.1';
 
-    const rateLimitResult = await rateLimiter.limitGeneric(ip, 20, 60 * 1000); // 20 requests per minute
+    const rateLimitResult = await rateLimiter.limitGeneric(
+      ip,
+      APP_CONFIG.RATE_LIMIT.ZONING_REQUESTS_PER_MINUTE,
+      60 * 1000
+    );
 
     if (!rateLimitResult.success) {
       logger.warn('Rate limit exceeded for ingredient zoning', {
@@ -72,7 +77,8 @@ export async function POST(request: NextRequest) {
         {
           status: 429,
           headers: {
-            'X-RateLimit-Limit': '20',
+            'X-RateLimit-Limit':
+              APP_CONFIG.RATE_LIMIT.ZONING_REQUESTS_PER_MINUTE.toString(),
             'X-RateLimit-Remaining':
               rateLimitResult.remaining?.toString() || '0',
           },
@@ -121,11 +127,11 @@ export async function POST(request: NextRequest) {
     logger.debug('Calling OpenRouter for ingredient zoning');
 
     const response = await openrouter.chat.completions.create({
-      model: 'anthropic/claude-3.7-sonnet', // Better for structured JSON with improved reasoning
+      model: APP_CONFIG.AI.ZONING_MODEL,
       messages: [{ role: 'user', content: fullPrompt }],
       response_format: { type: 'json_object' },
-      max_tokens: 4096, // Further increased to handle long prompt + full response
-      temperature: 0.1,
+      max_tokens: APP_CONFIG.AI.ZONING_MAX_TOKENS,
+      temperature: APP_CONFIG.AI.ZONING_TEMPERATURE,
     });
 
     const aiResponse = response.choices[0]?.message?.content;
@@ -232,7 +238,7 @@ export async function POST(request: NextRequest) {
     aiPerformanceMonitor.endRequest(performanceId, {
       service: 'ingredient-zoning',
       success: true,
-      model: 'anthropic/claude-3.7-sonnet',
+      model: APP_CONFIG.AI.ZONING_MODEL,
       requestSize: JSON.stringify(sanitizedIngredients).length,
       responseSize: aiResponse.length,
     });
@@ -246,7 +252,7 @@ export async function POST(request: NextRequest) {
       service: 'ingredient-zoning',
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
-      model: 'anthropic/claude-3.7-sonnet',
+      model: APP_CONFIG.AI.ZONING_MODEL,
     });
 
     // Provide granular error responses based on error type

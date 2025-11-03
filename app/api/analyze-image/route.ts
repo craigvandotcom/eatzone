@@ -11,6 +11,7 @@ import {
 import { logger } from '@/lib/utils/logger';
 import { aiPerformanceMonitor } from '@/lib/monitoring/ai-performance';
 import type { OpenRouterMessageContent } from '@/lib/types';
+import { APP_CONFIG } from '@/lib/config/constants';
 
 // Zod schema for request validation - supports both single and multiple images
 const analyzeImageSchema = z
@@ -213,7 +214,7 @@ export async function POST(request: NextRequest) {
 
     // Call OpenRouter with vision model - single request with all images
     const response = await openrouter.chat.completions.create({
-      model: 'openai/gpt-4o',
+      model: APP_CONFIG.AI.IMAGE_ANALYSIS_MODEL,
       messages: [
         {
           role: 'user',
@@ -221,7 +222,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       max_tokens: getMaxTokens(images.length),
-      temperature: 0.1, // Low temperature for more consistent results
+      temperature: APP_CONFIG.AI.IMAGE_ANALYSIS_TEMPERATURE,
     });
 
     const aiResponseText = response.choices[0]?.message?.content;
@@ -305,7 +306,7 @@ export async function POST(request: NextRequest) {
     aiPerformanceMonitor.endRequest(performanceId, {
       service: 'image-analysis',
       success: true,
-      model: 'openai/gpt-4o',
+      model: APP_CONFIG.AI.IMAGE_ANALYSIS_MODEL,
       requestSize: JSON.stringify(images).length,
       responseSize: aiResponseText.length,
       tokenUsage: {
@@ -338,7 +339,7 @@ export async function POST(request: NextRequest) {
       service: 'image-analysis',
       success: false,
       error: errorDetails.message,
-      model: 'openai/gpt-4o',
+      model: APP_CONFIG.AI.IMAGE_ANALYSIS_MODEL,
     });
 
     // Handle different types of errors

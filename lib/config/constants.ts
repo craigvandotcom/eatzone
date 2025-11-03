@@ -44,11 +44,15 @@ export const IMAGE_CONFIG = {
 
 // API rate limiting configuration
 export const RATE_LIMIT_CONFIG = {
-  // Image analysis rate limits
+  // Image analysis rate limits (vision AI - expensive/slow)
   IMAGE_ANALYSIS_REQUESTS_PER_MINUTE: getEnvNumber(
     'IMAGE_ANALYSIS_RATE_LIMIT',
     10
   ),
+
+  // Ingredient zoning rate limits (text AI - cheaper/faster)
+  ZONING_REQUESTS_PER_MINUTE: getEnvNumber('ZONING_RATE_LIMIT', 50),
+
   RATE_LIMIT_WINDOW: '60 s',
 
   // Background processing limits
@@ -104,6 +108,21 @@ export const CAMERA_CONFIG = {
   DEFAULT_FACING_MODE: 'environment' as const, // Rear-facing camera on mobile
 } as const;
 
+// AI Model configuration
+export const AI_CONFIG = {
+  // Image analysis model (vision AI)
+  IMAGE_ANALYSIS_MODEL: process.env.IMAGE_ANALYSIS_MODEL || 'openai/gpt-4o',
+  IMAGE_ANALYSIS_MAX_TOKENS: getEnvNumber('IMAGE_ANALYSIS_MAX_TOKENS', 600),
+  IMAGE_ANALYSIS_TEMPERATURE: parseFloat(
+    process.env.IMAGE_ANALYSIS_TEMPERATURE || '0.1'
+  ),
+
+  // Ingredient zoning model (text AI)
+  ZONING_MODEL: process.env.ZONING_MODEL || 'anthropic/claude-3.7-sonnet',
+  ZONING_MAX_TOKENS: getEnvNumber('ZONING_MAX_TOKENS', 4096),
+  ZONING_TEMPERATURE: parseFloat(process.env.ZONING_TEMPERATURE || '0.1'),
+} as const;
+
 // Export all configs as a single object for convenience
 export const APP_CONFIG = {
   IMAGE: IMAGE_CONFIG,
@@ -112,4 +131,5 @@ export const APP_CONFIG = {
   DATABASE: DATABASE_CONFIG,
   VALIDATION: VALIDATION_CONFIG,
   CAMERA: CAMERA_CONFIG,
+  AI: AI_CONFIG,
 } as const;

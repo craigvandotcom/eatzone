@@ -11,6 +11,14 @@ const getEnvNumber = (key: string, defaultValue: number): number => {
   return isNaN(parsed) ? defaultValue : parsed;
 };
 
+// Helper to parse float with validation
+const getEnvFloat = (key: string, defaultValue: number): number => {
+  const value = process.env[key];
+  if (!value) return defaultValue;
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? defaultValue : parsed;
+};
+
 // Image processing configuration
 export const IMAGE_CONFIG = {
   // File size limits
@@ -111,16 +119,28 @@ export const CAMERA_CONFIG = {
 // AI Model configuration
 export const AI_CONFIG = {
   // Image analysis model (vision AI)
+  // Default: openai/gpt-4o
+  //   - Fast, accurate vision model for ingredient extraction
+  //   - Cost: ~$0.01-0.03 per image (varies by image size/complexity)
+  //   - Performance: ~2-4 seconds per request
+  // Alternative: anthropic/claude-3.5-sonnet
+  //   - Strong multimodal capabilities with good ingredient recognition
+  //   - Cost: ~$0.015-0.025 per image
   IMAGE_ANALYSIS_MODEL: process.env.IMAGE_ANALYSIS_MODEL || 'openai/gpt-4o',
   IMAGE_ANALYSIS_MAX_TOKENS: getEnvNumber('IMAGE_ANALYSIS_MAX_TOKENS', 600),
-  IMAGE_ANALYSIS_TEMPERATURE: parseFloat(
-    process.env.IMAGE_ANALYSIS_TEMPERATURE || '0.1'
-  ),
+  IMAGE_ANALYSIS_TEMPERATURE: getEnvFloat('IMAGE_ANALYSIS_TEMPERATURE', 0.1),
 
   // Ingredient zoning model (text AI)
+  // Default: anthropic/claude-3.7-sonnet
+  //   - Excellent at structured JSON output and zone classification
+  //   - Cost: ~$0.003 per 1K tokens (very cost-effective for text)
+  //   - Performance: ~1-2 seconds per request
+  // Alternative: openai/gpt-4o or openai/gpt-4-turbo
+  //   - Good JSON output capabilities
+  //   - Cost: ~$0.01 per 1K tokens (3x more expensive)
   ZONING_MODEL: process.env.ZONING_MODEL || 'anthropic/claude-3.7-sonnet',
   ZONING_MAX_TOKENS: getEnvNumber('ZONING_MAX_TOKENS', 4096),
-  ZONING_TEMPERATURE: parseFloat(process.env.ZONING_TEMPERATURE || '0.1'),
+  ZONING_TEMPERATURE: getEnvFloat('ZONING_TEMPERATURE', 0.1),
 } as const;
 
 // Export all configs as a single object for convenience

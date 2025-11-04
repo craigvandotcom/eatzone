@@ -59,10 +59,11 @@ export function FullWidthHeader({
     return (
       <div
         className={cn(
-          'w-full mt-[-1.5rem] mb-6',
+          'sticky top-0 z-40 w-full mb-6',
           'bg-gradient-to-br from-card to-card/90 text-card-foreground',
+          'backdrop-blur-sm',
           'rounded-b-lg shadow-lg',
-          'px-4 py-6 pt-8',
+          'px-4 py-6 pt-4',
           className
         )}
       >
@@ -106,14 +107,16 @@ export function FullWidthHeader({
   return (
     <div
       className={cn(
-        // Full width with top extension
-        'w-full mt-[-1.5rem] mb-6',
+        // Sticky positioning at top
+        'sticky top-0 z-40 w-full mb-6',
         // Card styling with gradient
         'bg-gradient-to-br from-card to-card/90 text-card-foreground',
+        // Backdrop blur for better visibility over scrolling content
+        'backdrop-blur-sm',
         // Rounded corners only on bottom
         'rounded-b-lg shadow-lg',
-        // Padding - extra top padding to compensate for negative margin
-        'px-4 py-2 pt-8',
+        // Padding
+        'px-4 py-2 pt-4',
         className
       )}
     >

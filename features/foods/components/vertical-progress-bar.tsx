@@ -16,7 +16,7 @@ export function VerticalProgressBar({
 
   return (
     <div
-      className="relative w-8 bg-gray-200 rounded-full overflow-hidden border-2 border-gray-400"
+      className="relative w-8 bg-secondary rounded-full overflow-hidden border-2 border-border"
       style={{ height }}
       title={`Daily Organic: ${Math.round(safePercentage)}%`}
     >
@@ -32,13 +32,13 @@ export function VerticalProgressBar({
       )}
 
       {/* Percentage label for debugging */}
-      <div className="absolute -right-12 top-1/2 transform -translate-y-1/2 text-xs text-gray-600 font-mono bg-white px-1 rounded border">
+      <div className="absolute -right-12 top-1/2 transform -translate-y-1/2 text-xs text-secondary bg-card px-1 rounded border">
         {Math.round(safePercentage)}%
       </div>
 
       {/* Empty state indicator */}
       {safePercentage === 0 && (
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-400 rounded-full opacity-60" />
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-muted rounded-full opacity-60" />
       )}
     </div>
   );

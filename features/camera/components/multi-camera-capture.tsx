@@ -465,7 +465,7 @@ export function MultiCameraCapture({
                     />
                     <button
                       onClick={() => removeImage(index)}
-                      className="absolute -bottom-3 -right-3 bg-red-500 text-white w-6 h-6 flex-shrink-0 flex items-center justify-center hover:bg-red-600 hover:scale-110 transition-all duration-200 shadow-md isolate z-10"
+                      className="absolute -bottom-3 -right-3 bg-destructive text-white w-6 h-6 flex-shrink-0 flex items-center justify-center hover:bg-destructive/90 hover:scale-110 transition-all duration-200 shadow-md isolate z-10"
                       style={{
                         borderRadius: '50%',
                         minWidth: '24px',
@@ -550,8 +550,8 @@ export function MultiCameraCapture({
           {isLoading && (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
-                <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-300">Starting camera...</p>
+                <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                <p className="text-secondary">Starting camera...</p>
               </div>
             </div>
           )}
@@ -559,8 +559,8 @@ export function MultiCameraCapture({
           {error && (
             <div className="h-full flex items-center justify-center">
               <div className="text-center p-4">
-                <Camera className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-300 text-sm">{error}</p>
+                <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                <p className="text-secondary text-sm">{error}</p>
                 <div className="flex flex-col gap-2 mt-4">
                   <Button variant="outline" size="sm" onClick={startCamera}>
                     Try Again

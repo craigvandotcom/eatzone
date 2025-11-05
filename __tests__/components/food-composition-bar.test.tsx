@@ -58,39 +58,39 @@ describe('FoodCompositionBar', () => {
       render(<FoodCompositionBar ingredients={[]} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.animate-pulse');
       expect(loadingBar).toBeInTheDocument();
-      expect(loadingBar).toHaveClass('h-full', 'bg-gray-300', 'w-full');
+      expect(loadingBar).toHaveClass('h-full', 'bg-tertiary', 'w-full');
     });
 
     it('renders loading animation when ingredients is null', () => {
       render(<FoodCompositionBar ingredients={null as any} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.animate-pulse');
@@ -101,17 +101,17 @@ describe('FoodCompositionBar', () => {
       render(<FoodCompositionBar ingredients={undefined as any} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.animate-pulse');
@@ -129,17 +129,17 @@ describe('FoodCompositionBar', () => {
       render(<FoodCompositionBar ingredients={ingredients} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.zone-bar-loading');
@@ -198,8 +198,8 @@ describe('FoodCompositionBar', () => {
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400',
-        'bg-gray-200'
+        'border-border',
+        'bg-secondary'
       );
 
       // Check that all zone segments are rendered
@@ -405,17 +405,17 @@ describe('FoodCompositionBar', () => {
 
       // Should render the loading state since no valid zones are found
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
     });
 

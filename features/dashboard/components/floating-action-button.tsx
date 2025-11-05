@@ -54,7 +54,7 @@ export function FloatingActionButton({
         {/* Signal FAB */}
         <button
           onClick={handleSignalClick}
-          className={`w-16 h-16 bg-red-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+          className={`w-16 h-16 bg-destructive text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
             isExpanded
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-4 pointer-events-none'
@@ -73,7 +73,7 @@ export function FloatingActionButton({
         {/* Food FAB */}
         <button
           onClick={handleFoodClick}
-          className={`w-16 h-16 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+          className={`w-16 h-16 bg-zone-green text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
             isExpanded
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-4 pointer-events-none'
@@ -94,8 +94,8 @@ export function FloatingActionButton({
           onClick={handleMainClick}
           className={`w-16 h-16 rounded-full shadow-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
             isExpanded
-              ? 'bg-black text-white border-2 border-white'
-              : 'bg-white text-gray-700 border-0'
+              ? 'bg-background text-foreground border-2 border-foreground'
+              : 'bg-card text-foreground border-0'
           }`}
           data-testid="floating-action-button"
           style={{

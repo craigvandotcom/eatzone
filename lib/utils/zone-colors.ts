@@ -10,8 +10,8 @@ export type ColorFormat = 'hex' | 'hsl' | 'rgb' | 'className' | 'tailwind';
 // Zone color definitions
 export const zoneColors = {
   green: {
-    // Light mode hex
-    hex: '#27a69a',
+    // Brand color hex (matches CSS variable --zone-green)
+    hex: '#01a878',
     // CSS variable references
     hsl: 'hsl(var(--zone-green))',
     rgb: 'rgb(var(--zone-green-rgb))',
@@ -27,7 +27,8 @@ export const zoneColors = {
     borderLight: 'border-zone-green/30',
   },
   yellow: {
-    hex: '#ffc00a',
+    // Brand color hex (matches CSS variable --zone-yellow)
+    hex: '#fad046',
     hsl: 'hsl(var(--zone-yellow))',
     rgb: 'rgb(var(--zone-yellow-rgb))',
     bg: 'bg-zone-yellow',
@@ -40,7 +41,8 @@ export const zoneColors = {
     borderLight: 'border-zone-yellow/30',
   },
   red: {
-    hex: '#fe5151',
+    // Brand color hex (matches CSS variable --zone-red)
+    hex: '#f84f36',
     hsl: 'hsl(var(--zone-red))',
     rgb: 'rgb(var(--zone-red-rgb))',
     bg: 'bg-zone-red',

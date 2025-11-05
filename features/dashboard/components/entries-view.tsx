@@ -175,7 +175,7 @@ export function EntriesView({
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 border-2 border-red-500 bg-transparent rounded-full flex items-center justify-center">
+                          <div className="w-12 h-12 border-2 border-destructive bg-transparent rounded-full flex items-center justify-center">
                             <span className="text-foreground text-lg">
                               {getCategoryInfoSafe(symptom.category)?.icon ||
                                 '⚡'}

@@ -58,16 +58,16 @@ describe('Zone Colors System', () => {
     });
 
     it('should have correct hex color values', () => {
-      expect(zoneColors.green.hex).toBe('#27a69a');
-      expect(zoneColors.yellow.hex).toBe('#ffc00a');
-      expect(zoneColors.red.hex).toBe('#fe5151');
+      expect(zoneColors.green.hex).toBe('#01a878');
+      expect(zoneColors.yellow.hex).toBe('#fad046');
+      expect(zoneColors.red.hex).toBe('#f84f36');
     });
   });
 
   describe('getZoneColor', () => {
     it('should return correct colors for different formats', () => {
       // Test green zone
-      expect(getZoneColor('green', 'hex')).toBe('#27a69a');
+      expect(getZoneColor('green', 'hex')).toBe('#01a878');
       expect(getZoneColor('green', 'hsl')).toBe('hsl(var(--zone-green))');
       expect(getZoneColor('green', 'rgb')).toBe('rgb(var(--zone-green-rgb))');
       expect(getZoneColor('green', 'className')).toBe('bg-zone-green');
@@ -211,22 +211,22 @@ describe('Zone Colors System', () => {
 
   describe('getZoneColorWithAlpha', () => {
     it('should return hex color without alpha when not specified', () => {
-      expect(getZoneColorWithAlpha('green')).toBe('#27a69a');
-      expect(getZoneColorWithAlpha('yellow')).toBe('#ffc00a');
-      expect(getZoneColorWithAlpha('red')).toBe('#fe5151');
+      expect(getZoneColorWithAlpha('green')).toBe('#01a878');
+      expect(getZoneColorWithAlpha('yellow')).toBe('#fad046');
+      expect(getZoneColorWithAlpha('red')).toBe('#f84f36');
     });
 
     it('should append alpha value when specified', () => {
-      expect(getZoneColorWithAlpha('green', '80')).toBe('#27a69a80');
-      expect(getZoneColorWithAlpha('yellow', '40')).toBe('#ffc00a40');
-      expect(getZoneColorWithAlpha('red', 'FF')).toBe('#fe5151FF');
+      expect(getZoneColorWithAlpha('green', '80')).toBe('#01a87880');
+      expect(getZoneColorWithAlpha('yellow', '40')).toBe('#fad04640');
+      expect(getZoneColorWithAlpha('red', 'FF')).toBe('#f84f36FF');
     });
 
     it('should handle different alpha formats', () => {
       // Test with percentage-like values
-      expect(getZoneColorWithAlpha('green', '50')).toBe('#27a69a50');
+      expect(getZoneColorWithAlpha('green', '50')).toBe('#01a87850');
       // Test with hex-like values
-      expect(getZoneColorWithAlpha('green', 'CC')).toBe('#27a69aCC');
+      expect(getZoneColorWithAlpha('green', 'CC')).toBe('#01a878CC');
     });
   });
 
@@ -347,7 +347,7 @@ describe('Zone Colors System', () => {
         getZoneColorWithAlpha(zone as ZoneType, '80')
       );
 
-      expect(chartColors).toEqual(['#27a69a80', '#ffc00a80', '#fe515180']);
+      expect(chartColors).toEqual(['#01a87880', '#fad04680', '#f84f3680']);
     });
 
     it('should support inline styling for dynamic components', () => {

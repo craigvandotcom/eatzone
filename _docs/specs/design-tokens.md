@@ -9,12 +9,14 @@ This document defines the design tokens used throughout the eatZone application 
 Use semantic tokens instead of hardcoded colors for better maintainability and theme support.
 
 **Text Colors:**
+
 - `text-primary` - Primary text (foreground)
 - `text-secondary` - Secondary text (muted-foreground)
 - `text-tertiary` - Tertiary text (60% opacity)
 - `text-disabled` - Disabled text (40% opacity)
 
 **Background Colors:**
+
 - `bg-primary` - Primary background
 - `bg-secondary` - Secondary background (cards)
 - `bg-tertiary` - Tertiary background
@@ -22,6 +24,7 @@ Use semantic tokens instead of hardcoded colors for better maintainability and t
 - `bg-subtle` - Subtle backgrounds (muted)
 
 **Interactive States:**
+
 - `interactive` - Default interactive element color
 - `interactive-hover` - Hover state
 - `interactive-active` - Active state (brand primary)
@@ -30,11 +33,13 @@ Use semantic tokens instead of hardcoded colors for better maintainability and t
 ### Zone Colors
 
 **Brand zone colors for food classification:**
+
 - `bg-zone-green` / `text-zone-green` / `border-zone-green` - Healthy foods (#01a878)
 - `bg-zone-yellow` / `text-zone-yellow` / `border-zone-yellow` - Moderate foods (#fad046)
 - `bg-zone-red` / `text-zone-red` / `border-zone-red` - Avoid foods (#f84f36)
 
 **With opacity variants:**
+
 - `bg-zone-green/10`, `bg-zone-green/50`, `bg-zone-green/80`
 - Same pattern for yellow and red
 
@@ -56,6 +61,7 @@ Standardized icon sizes for consistency:
 - **icon-xl**: 48px (`h-12 w-12`) - Feature icons, empty states, placeholders
 
 **Current Usage:**
+
 - Bottom nav icons: `h-6 w-6` ✅
 - Desktop sidebar icons: `h-4 w-4` ✅
 - FAB icons: `w-6 h-6` ✅
@@ -92,12 +98,13 @@ Typography is consistent across the application.
 ## Border Radius
 
 ### CSS Variable
+
 `--radius: 0.75rem` (12px)
 
 ### Standard Values
 
 - **sm**: `calc(var(--radius) - 4px)` = 8px - Small elements
-- **md**: `calc(var(--radius) - 2px)` = 10px - Medium elements  
+- **md**: `calc(var(--radius) - 2px)` = 10px - Medium elements
 - **lg**: `var(--radius)` = 12px - Large elements (default)
 - **xl**: 16px - Extra large
 - **2xl**: 24px - Very large
@@ -142,44 +149,51 @@ Standard button sizes for touch-friendly interactions:
 ### Avoid Hardcoded Colors
 
 ❌ **Don't:**
+
 ```tsx
-className="bg-red-500 text-gray-700"
-className="hover:bg-emerald-500"
+className = 'bg-red-500 text-gray-700';
+className = 'hover:bg-emerald-500';
 ```
 
 ✅ **Do:**
+
 ```tsx
-className="bg-destructive text-foreground"
-className="hover:bg-zone-green"
+className = 'bg-destructive text-foreground';
+className = 'hover:bg-zone-green';
 ```
 
 ### Use Semantic Tokens
 
 ❌ **Don't:**
+
 ```tsx
-className="text-gray-400 bg-gray-100"
+className = 'text-gray-400 bg-gray-100';
 ```
 
 ✅ **Do:**
+
 ```tsx
-className="text-muted-foreground bg-secondary"
+className = 'text-muted-foreground bg-secondary';
 ```
 
 ### Zone Colors for Food Features
 
 ❌ **Don't:**
+
 ```tsx
-className="bg-green-500" // Generic green
+className = 'bg-green-500'; // Generic green
 ```
 
 ✅ **Do:**
+
 ```tsx
-className="bg-zone-green" // Semantic zone color
+className = 'bg-zone-green'; // Semantic zone color
 ```
 
 ## Examples
 
 ### Button with Semantic Colors
+
 ```tsx
 <button className="bg-zone-green hover:bg-zone-green/90 text-white">
   Add Food
@@ -187,6 +201,7 @@ className="bg-zone-green" // Semantic zone color
 ```
 
 ### Card with Proper Tokens
+
 ```tsx
 <Card className="bg-card border-border">
   <p className="text-primary">Main text</p>
@@ -195,6 +210,7 @@ className="bg-zone-green" // Semantic zone color
 ```
 
 ### Progress Bar
+
 ```tsx
 <div className="h-3 w-full bg-secondary border border-border rounded-full">
   <div className="h-full bg-zone-green" style={{ width: '60%' }} />
@@ -204,6 +220,7 @@ className="bg-zone-green" // Semantic zone color
 ## Design Token Reference
 
 All tokens are defined in:
+
 - **CSS Variables**: `app/globals.css`
 - **Tailwind Config**: `tailwind.config.ts`
 - **Zone Utilities**: `lib/utils/zone-colors.ts`
@@ -211,8 +228,8 @@ All tokens are defined in:
 ## Maintenance
 
 When adding new components:
+
 1. Use semantic tokens from this guide
 2. Avoid hardcoded Tailwind color utilities (except zone colors)
 3. Reference existing components for patterns
 4. Update this document if new tokens are needed
-

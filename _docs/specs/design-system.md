@@ -7,6 +7,7 @@ This document provides comprehensive guidelines for using the eatZone design sys
 ## Quick Reference
 
 **Before starting any UI work, review:**
+
 1. [Design Tokens](./ design-tokens.md) - Color, typography, spacing standards
 2. This document - Usage patterns and best practices
 
@@ -17,6 +18,7 @@ This document provides comprehensive guidelines for using the eatZone design sys
 Semantic tokens adapt to theme changes and ensure consistency.
 
 **Use semantic tokens for:**
+
 - General UI elements (buttons, cards, text)
 - Backgrounds and borders
 - Interactive states
@@ -39,11 +41,13 @@ Semantic tokens adapt to theme changes and ensure consistency.
 Zone colors are domain-specific for food classification.
 
 **Use zone colors for:**
+
 - Food-related features (composition bars, badges)
 - Zone indicators and charts
 - Food entry buttons
 
 **Zone Color Semantic Meaning:**
+
 - **Green Zone** (#01a878): Whole, nutritious foods - eat freely
 - **Yellow Zone** (#fad046): Processed or individual-dependent foods - moderate
 - **Red Zone** (#f84f36): Ultra-processed or inflammatory foods - avoid
@@ -69,6 +73,7 @@ Zone colors are domain-specific for food classification.
 System colors communicate state and actions.
 
 **Destructive actions:**
+
 ```tsx
 <button className="bg-destructive text-white">
   Delete Entry
@@ -80,11 +85,10 @@ System colors communicate state and actions.
 ```
 
 **Brand colors (sparingly):**
+
 ```tsx
 // Active navigation states
-<button className="text-brand-primary">
-  Active Tab
-</button>
+<button className="text-brand-primary">Active Tab</button>
 ```
 
 ## Common Patterns
@@ -136,7 +140,7 @@ System colors communicate state and actions.
   <label className="text-sm font-medium text-foreground">
     Food Name
   </label>
-  <input 
+  <input
     type="text"
     className="w-full h-10 px-3 bg-input border-border border rounded-md text-foreground"
     placeholder="Enter food name..."
@@ -260,9 +264,7 @@ System colors communicate state and actions.
 ```tsx
 // Start with mobile, enhance for desktop
 <div className="p-4 md:p-6 lg:p-8">
-  <h1 className="text-2xl md:text-3xl lg:text-4xl">
-    Responsive Title
-  </h1>
+  <h1 className="text-2xl md:text-3xl lg:text-4xl">Responsive Title</h1>
 </div>
 ```
 
@@ -301,7 +303,7 @@ System colors communicate state and actions.
 </button>
 
 // Progress bars need descriptions
-<div 
+<div
   className="h-3 w-full bg-secondary"
   role="progressbar"
   aria-valuenow={60}
@@ -330,6 +332,7 @@ Before submitting changes, verify:
 ### Browser Testing
 
 Test in:
+
 - Safari (iOS) - PWA primary target
 - Chrome (desktop)
 - Firefox (desktop)
@@ -345,6 +348,7 @@ Test in:
 ### For Existing Components
 
 1. **Identify hardcoded colors:**
+
    ```bash
    grep -r "bg-red-5\|text-gray-\|bg-emerald" features/
    ```
@@ -381,6 +385,7 @@ Test in:
 ## Support
 
 Questions about the design system? Check:
+
 1. This document for usage patterns
 2. Existing components for examples
 3. Design tokens doc for available tokens
@@ -406,4 +411,3 @@ Questions about the design system? Check:
 
 **Last Updated**: November 2025
 **Version**: 1.0.0
-

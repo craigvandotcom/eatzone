@@ -133,10 +133,10 @@ export function getZoneBgStyle(
   const colorConfig = zoneColors[zone];
 
   if (opacity !== undefined) {
-    // Handle unzoned separately since it doesn't use CSS variables
+    // Handle unzoned using CSS variable for consistency
     if (zone === 'unzoned') {
       return {
-        backgroundColor: `rgba(156, 163, 175, ${opacity})`,
+        backgroundColor: `rgb(var(--unzoned-color) / ${opacity})`,
       };
     }
     // Use CSS variable with opacity for dark mode support

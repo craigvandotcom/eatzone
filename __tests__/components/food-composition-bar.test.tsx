@@ -3,39 +3,39 @@ import { render, screen } from '@testing-library/react';
 import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
 import type { Ingredient } from '@/lib/types';
 
-// Mock the zone color utilities
+// Mock the zone color utilities with brand colors
 jest.mock('@/lib/utils/zone-colors', () => ({
   getZoneColor: jest.fn((zone: string, format: string) => {
     const colors = {
-      green: { hex: '#10b981', rgb: 'rgb(16, 185, 129)' },
-      yellow: { hex: '#f59e0b', rgb: 'rgb(245, 158, 11)' },
-      red: { hex: '#ef4444', rgb: 'rgb(239, 68, 68)' },
-      unzoned: { hex: '#6b7280', rgb: 'rgb(107, 114, 128)' },
+      green: { hex: '#01a878', rgb: 'rgb(1, 168, 120)' },
+      yellow: { hex: '#fad046', rgb: 'rgb(250, 208, 70)' },
+      red: { hex: '#f84f36', rgb: 'rgb(248, 79, 54)' },
+      unzoned: { hex: '#9ca3af', rgb: 'rgb(156, 163, 175)' },
     };
     return (
       colors[zone as keyof typeof colors]?.[
         format as keyof typeof colors.green
-      ] || '#6b7280'
+      ] || '#9ca3af'
     );
   }),
   getZoneBgClass: jest.fn((zone: string) => {
     const classes = {
-      green: 'bg-green-500',
-      yellow: 'bg-yellow-500',
-      red: 'bg-red-500',
+      green: 'bg-zone-green',
+      yellow: 'bg-zone-yellow',
+      red: 'bg-zone-red',
       unzoned: 'bg-gray-500',
     };
     return classes[zone as keyof typeof classes] || 'bg-gray-500';
   }),
   getZoneBgStyle: jest.fn((zone: string) => {
     const styles = {
-      green: { backgroundColor: '#10b981' },
-      yellow: { backgroundColor: '#f59e0b' },
-      red: { backgroundColor: '#ef4444' },
-      unzoned: { backgroundColor: '#6b7280' },
+      green: { backgroundColor: '#01a878' },
+      yellow: { backgroundColor: '#fad046' },
+      red: { backgroundColor: '#f84f36' },
+      unzoned: { backgroundColor: '#9ca3af' },
     };
     return (
-      styles[zone as keyof typeof styles] || { backgroundColor: '#6b7280' }
+      styles[zone as keyof typeof styles] || { backgroundColor: '#9ca3af' }
     );
   }),
 }));

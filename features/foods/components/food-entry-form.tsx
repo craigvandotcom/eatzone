@@ -860,17 +860,10 @@ export function FoodEntryForm({
                           autoFocus
                         />
                       ) : (
-                        <div className="flex-1 pl-3 pr-2 flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-foreground">
+                        <div className="flex-1 pl-3 pr-2 flex items-center gap-2 min-w-0">
+                          <span className="text-sm font-medium text-foreground truncate">
                             {ingredient.name}
                           </span>
-                          {ingredient.organic && (
-                            <span
-                              className={`text-xs ${getZoneBgClass('green', 'light')} ${getZoneTextClass('green')} px-1.5 py-0.5 rounded-full`}
-                            >
-                              organic
-                            </span>
-                          )}
                           {/* Info icon for zoned ingredients */}
                           {ingredient.zone !== 'unzoned' &&
                             ingredient.group && (
@@ -878,7 +871,7 @@ export function FoodEntryForm({
                                 <PopoverTrigger asChild>
                                   <button
                                     type="button"
-                                    className="p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                                    className="p-0.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                                     aria-label="Ingredient classification info"
                                   >
                                     <Info className="h-3 w-3" />
@@ -913,7 +906,7 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleToggleOrganic(index)}
-                          className={`p-1 transition-colors ${
+                          className={`p-1 transition-all flex items-center justify-center ${
                             ingredient.organic
                               ? `${getZoneTextClass('green')} hover:opacity-80`
                               : `text-muted-foreground hover:${getZoneTextClass('green')}`
@@ -924,7 +917,9 @@ export function FoodEntryForm({
                               : 'Mark as organic'
                           }
                         >
-                          <Leaf className="h-3 w-3" />
+                          <Leaf
+                            className={`transition-all ${ingredient.organic ? 'h-4 w-4' : 'h-3 w-3'}`}
+                          />
                         </button>
                         <button
                           type="button"

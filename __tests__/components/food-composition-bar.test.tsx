@@ -3,39 +3,39 @@ import { render, screen } from '@testing-library/react';
 import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
 import type { Ingredient } from '@/lib/types';
 
-// Mock the zone color utilities
+// Mock the zone color utilities with brand colors
 jest.mock('@/lib/utils/zone-colors', () => ({
   getZoneColor: jest.fn((zone: string, format: string) => {
     const colors = {
-      green: { hex: '#10b981', rgb: 'rgb(16, 185, 129)' },
-      yellow: { hex: '#f59e0b', rgb: 'rgb(245, 158, 11)' },
-      red: { hex: '#ef4444', rgb: 'rgb(239, 68, 68)' },
-      unzoned: { hex: '#6b7280', rgb: 'rgb(107, 114, 128)' },
+      green: { hex: '#01a878', rgb: 'rgb(1, 168, 120)' },
+      yellow: { hex: '#fad046', rgb: 'rgb(250, 208, 70)' },
+      red: { hex: '#f84f36', rgb: 'rgb(248, 79, 54)' },
+      unzoned: { hex: '#9ca3af', rgb: 'rgb(156, 163, 175)' },
     };
     return (
       colors[zone as keyof typeof colors]?.[
         format as keyof typeof colors.green
-      ] || '#6b7280'
+      ] || '#9ca3af'
     );
   }),
   getZoneBgClass: jest.fn((zone: string) => {
     const classes = {
-      green: 'bg-green-500',
-      yellow: 'bg-yellow-500',
-      red: 'bg-red-500',
+      green: 'bg-zone-green',
+      yellow: 'bg-zone-yellow',
+      red: 'bg-zone-red',
       unzoned: 'bg-gray-500',
     };
     return classes[zone as keyof typeof classes] || 'bg-gray-500';
   }),
   getZoneBgStyle: jest.fn((zone: string) => {
     const styles = {
-      green: { backgroundColor: '#10b981' },
-      yellow: { backgroundColor: '#f59e0b' },
-      red: { backgroundColor: '#ef4444' },
-      unzoned: { backgroundColor: '#6b7280' },
+      green: { backgroundColor: '#01a878' },
+      yellow: { backgroundColor: '#fad046' },
+      red: { backgroundColor: '#f84f36' },
+      unzoned: { backgroundColor: '#9ca3af' },
     };
     return (
-      styles[zone as keyof typeof styles] || { backgroundColor: '#6b7280' }
+      styles[zone as keyof typeof styles] || { backgroundColor: '#9ca3af' }
     );
   }),
 }));
@@ -58,39 +58,39 @@ describe('FoodCompositionBar', () => {
       render(<FoodCompositionBar ingredients={[]} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.animate-pulse');
       expect(loadingBar).toBeInTheDocument();
-      expect(loadingBar).toHaveClass('h-full', 'bg-gray-300', 'w-full');
+      expect(loadingBar).toHaveClass('h-full', 'bg-tertiary', 'w-full');
     });
 
     it('renders loading animation when ingredients is null', () => {
       render(<FoodCompositionBar ingredients={null as any} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.animate-pulse');
@@ -101,17 +101,17 @@ describe('FoodCompositionBar', () => {
       render(<FoodCompositionBar ingredients={undefined as any} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.animate-pulse');
@@ -129,17 +129,17 @@ describe('FoodCompositionBar', () => {
       render(<FoodCompositionBar ingredients={ingredients} />);
 
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
 
       const loadingBar = container?.querySelector('.zone-bar-loading');
@@ -198,8 +198,8 @@ describe('FoodCompositionBar', () => {
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400',
-        'bg-gray-200'
+        'border-border',
+        'bg-secondary'
       );
 
       // Check that all zone segments are rendered
@@ -405,17 +405,17 @@ describe('FoodCompositionBar', () => {
 
       // Should render the loading state since no valid zones are found
       const container = document.querySelector(
-        '.h-3.w-full.bg-gray-200.rounded-full.overflow-hidden.border.border-gray-400'
+        '.h-3.w-full.bg-secondary.rounded-full.overflow-hidden.border.border-border'
       );
       expect(container).toBeInTheDocument();
       expect(container).toHaveClass(
         'h-3',
         'w-full',
-        'bg-gray-200',
+        'bg-secondary',
         'rounded-full',
         'overflow-hidden',
         'border',
-        'border-gray-400'
+        'border-border'
       );
     });
 

@@ -18,8 +18,8 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   if (totalIngredients === 0) {
     // Still analyzing or no ingredients
     return (
-      <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
-        <div className="h-full bg-gray-300 w-full animate-pulse"></div>
+      <div className="h-3 w-full bg-secondary rounded-full overflow-hidden border border-border">
+        <div className="h-full bg-tertiary w-full animate-pulse"></div>
       </div>
     );
   }
@@ -38,7 +38,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   if (zonedCount === 0 && unzonedCount > 0) {
     // Only unzoned ingredients, show loading animation
     return (
-      <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
+      <div className="h-3 w-full bg-secondary rounded-full overflow-hidden border border-border">
         <div
           className="transition-all duration-500 zone-bar-loading relative"
           style={{
@@ -58,8 +58,8 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
   if (zonedCount === 0) {
     // No ingredients at all
     return (
-      <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden border border-gray-400">
-        <div className="h-full bg-gray-300 w-full animate-pulse"></div>
+      <div className="h-3 w-full bg-secondary rounded-full overflow-hidden border border-border">
+        <div className="h-full bg-tertiary w-full animate-pulse"></div>
       </div>
     );
   }
@@ -73,7 +73,7 @@ export function FoodCompositionBar({ ingredients }: FoodCompositionBarProps) {
 
   return (
     <div
-      className="flex h-3 w-full rounded-full overflow-hidden border border-gray-400 bg-gray-200"
+      className="flex h-3 w-full rounded-full overflow-hidden border border-border bg-secondary"
       title={`Green: ${greenCount}, Yellow: ${yellowCount}, Red: ${redCount}${unzonedCount > 0 ? `, Unzoned: ${unzonedCount}` : ''}`}
     >
       {greenPercent > 0 && (

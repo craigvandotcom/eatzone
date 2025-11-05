@@ -151,7 +151,7 @@ export function UnifiedTimeline({
                       entry.data.category
                     );
                     emoji = categoryInfo?.icon || '⚡';
-                    borderColor = 'border-red-500';
+                    borderColor = 'border-destructive';
                     entryName = entry.data.name;
                   }
 

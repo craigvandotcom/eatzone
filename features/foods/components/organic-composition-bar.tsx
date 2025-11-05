@@ -19,7 +19,7 @@ export function OrganicCompositionBar({
 
   if (totalIngredients === 0) {
     return (
-      <div className="h-2 w-full bg-gray-200 rounded-full animate-pulse border border-gray-400" />
+      <div className="h-2 w-full bg-secondary rounded-full animate-pulse border border-border" />
     );
   }
 
@@ -30,7 +30,7 @@ export function OrganicCompositionBar({
 
   return (
     <div
-      className="relative flex h-2 w-full rounded-full overflow-hidden bg-gray-200 border border-gray-400"
+      className="relative flex h-2 w-full rounded-full overflow-hidden bg-secondary border border-border"
       title={`Organic: ${organicCount}/${totalIngredients}`}
     >
       {organicPercent > 0 && (

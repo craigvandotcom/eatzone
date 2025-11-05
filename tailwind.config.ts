@@ -204,6 +204,26 @@ const config: Config = {
             dark: 'hsl(var(--zone-red) / 0.8)',
           },
         },
+        // Semantic color tokens
+        text: {
+          primary: 'hsl(var(--text-primary))',
+          secondary: 'hsl(var(--text-secondary))',
+          tertiary: 'hsl(var(--text-tertiary))',
+          disabled: 'hsl(var(--text-disabled))',
+        },
+        bg: {
+          primary: 'hsl(var(--bg-primary))',
+          secondary: 'hsl(var(--bg-secondary))',
+          tertiary: 'hsl(var(--bg-tertiary))',
+          elevated: 'hsl(var(--bg-elevated))',
+          subtle: 'hsl(var(--bg-subtle))',
+        },
+        interactive: {
+          DEFAULT: 'hsl(var(--interactive-default))',
+          hover: 'hsl(var(--interactive-hover))',
+          active: 'hsl(var(--interactive-active))',
+          disabled: 'hsl(var(--interactive-disabled))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

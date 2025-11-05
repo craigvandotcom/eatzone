@@ -235,7 +235,7 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {isValidEmail ? (
                         <>
-                          <CheckCircle className="h-3 w-3 text-emerald-500 mr-1" />{' '}
+                          <CheckCircle className="h-3 w-3 text-zone-green mr-1" />{' '}
                           Valid email format
                         </>
                       ) : (
@@ -270,9 +270,9 @@ function SignupForm() {
                       disabled={isLoading}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
                       ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
+                        <Eye className="h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
                   </div>
@@ -280,7 +280,7 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {isPasswordStrong ? (
                         <>
-                          <CheckCircle className="h-3 w-3 text-emerald-500 mr-1" />{' '}
+                          <CheckCircle className="h-3 w-3 text-zone-green mr-1" />{' '}
                           Strong password
                         </>
                       ) : (
@@ -317,9 +317,9 @@ function SignupForm() {
                       disabled={isLoading}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
                       ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
+                        <Eye className="h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
                   </div>
@@ -327,12 +327,12 @@ function SignupForm() {
                     <div className="flex items-center text-xs">
                       {passwordsMatch ? (
                         <>
-                          <CheckCircle className="h-3 w-3 text-emerald-500 mr-1" />{' '}
+                          <CheckCircle className="h-3 w-3 text-zone-green mr-1" />{' '}
                           Passwords match
                         </>
                       ) : (
                         <>
-                          <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />{' '}
+                          <AlertTriangle className="h-3 w-3 text-destructive mr-1" />{' '}
                           Passwords do not match
                         </>
                       )}

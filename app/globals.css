@@ -47,13 +47,6 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Metallic/Silver palette for dark mode */
-    --silver-light: 240 5% 20%;
-    --silver-base: 240 5% 15%;
-    --silver-dark: 240 5% 10%;
-    --silver-accent: 240 5% 25%;
-    --metallic-shine: 240 5% 30%;
-
     /* Category accent colors for rings/glows */
     --food-accent: 142 76% 36%;
     --symptom-accent: 0 84% 60%;
@@ -77,6 +70,24 @@
     --brand-primary-rgb: 1 168 120;
     --brand-red-rgb: 248 79 54;
     --brand-yellow-rgb: 250 208 70;
+
+    /* Semantic color tokens for consistent usage */
+    --text-primary: var(--foreground);
+    --text-secondary: var(--muted-foreground);
+    --text-tertiary: 0 0% 60%;
+    --text-disabled: 0 0% 40%;
+
+    --bg-primary: var(--background);
+    --bg-secondary: var(--card);
+    --bg-tertiary: var(--secondary);
+    --bg-elevated: var(--card);
+    --bg-subtle: var(--muted);
+
+    /* Interactive states */
+    --interactive-default: var(--muted-foreground);
+    --interactive-hover: var(--foreground);
+    --interactive-active: var(--brand-primary);
+    --interactive-disabled: var(--muted);
   }
 }
 

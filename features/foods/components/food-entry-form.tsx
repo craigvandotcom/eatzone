@@ -98,26 +98,40 @@ export function FoodEntryForm({
   const analysisInitiatedRef = useRef(false);
 
   // Helper function to validate image data before rendering
+  // Accepts both base64 data URLs (for new entries) and HTTP/HTTPS URLs (for existing entries)
   const validateImageData = (imageData: string): boolean => {
     if (!imageData || typeof imageData !== 'string') {
       return false;
     }
 
-    // Check if it's a valid data URL format
-    if (!imageData.startsWith('data:image/')) {
-      logger.warn('Invalid image format detected', {
-        dataStart: imageData.substring(0, 50),
-      });
-      return false;
+    // Accept base64 data URLs (for new entries from camera capture)
+    if (imageData.startsWith('data:image/')) {
+      // Validate data URL structure
+      if (!imageData.includes(',')) {
+        logger.warn('Malformed data URL detected');
+        return false;
+      }
+      return true;
     }
 
-    // Check for basic data URL structure
-    if (!imageData.includes(',')) {
-      logger.warn('Malformed data URL detected');
-      return false;
+    // Accept HTTP/HTTPS URLs (for existing entries from database/Supabase Storage)
+    if (imageData.startsWith('http://') || imageData.startsWith('https://')) {
+      // Basic URL validation - ensure it looks like a valid URL
+      try {
+        new URL(imageData);
+        return true;
+      } catch {
+        logger.warn('Invalid URL format detected', {
+          dataStart: imageData.substring(0, 50),
+        });
+        return false;
+      }
     }
 
-    return true;
+    logger.warn('Invalid image format detected', {
+      dataStart: imageData.substring(0, 50),
+    });
+    return false;
   };
 
   // Memoized function to get image array from various sources (performance optimization)

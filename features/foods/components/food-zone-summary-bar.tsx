@@ -157,10 +157,6 @@ export function FoodZoneSummaryBar({
                 }}
               />
             )}
-            {/* Empty state indicator for organic */}
-            {organicCount === 0 && (
-              <div className="absolute right-0 w-1 h-full bg-muted-foreground opacity-50" />
-            )}
           </div>
         </CardContent>
       </Card>

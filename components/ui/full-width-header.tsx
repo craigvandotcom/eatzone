@@ -59,7 +59,8 @@ export function FullWidthHeader({
     return (
       <div
         className={cn(
-          'sticky top-0 z-40 w-full mb-6',
+          // Fixed positioning - matches actual header (prevents iOS overscroll + no layout shift)
+          'fixed top-0 left-0 right-0 z-40 w-full',
           'bg-gradient-to-br from-card to-card/90 text-card-foreground',
           'backdrop-blur-sm',
           'rounded-b-lg shadow-lg',
@@ -107,8 +108,8 @@ export function FullWidthHeader({
   return (
     <div
       className={cn(
-        // Sticky positioning at top
-        'sticky top-0 z-40 w-full mb-6',
+        // Fixed positioning - locked to viewport top (prevents iOS overscroll pull-down)
+        'fixed top-0 left-0 right-0 z-40 w-full',
         // Card styling with gradient
         'bg-gradient-to-br from-card to-card/90 text-card-foreground',
         // Backdrop blur for better visibility over scrolling content

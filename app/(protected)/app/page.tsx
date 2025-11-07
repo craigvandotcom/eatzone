@@ -216,7 +216,10 @@ function Dashboard() {
             />
           )}
 
-          <div className="px-4 py-6 space-y-6 max-w-full">
+          <div
+            className={`px-4 py-6 space-y-6 max-w-full ${currentView === 'entries' ? 'pt-20' : ''}`}
+          >
+            {/* pt-20 (~80px) accounts for fixed header height when entries view is active */}
             {currentView === 'insights' && (
               <ErrorBoundary fallback={SupabaseErrorFallback}>
                 <InsightsView

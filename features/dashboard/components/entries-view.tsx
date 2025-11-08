@@ -35,7 +35,6 @@ export function EntriesView({
   foodStatsForSelectedDate,
   getIngredientsForSelectedDate,
 }: EntriesViewProps) {
-
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
       {/* Unified Timeline with Zone Bars */}
@@ -95,56 +94,56 @@ export function EntriesView({
                     prefetch={true}
                   >
                     <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          {food.photo_url ? (
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-zone-green">
-                              <Image
-                                src={food.photo_url || '/placeholder.svg'}
-                                alt={food.name}
-                                className="w-full h-full object-cover"
-                                width={48}
-                                height={48}
-                              />
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3 flex-1 min-w-0">
+                            {food.photo_url ? (
+                              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-zone-green">
+                                <Image
+                                  src={food.photo_url || '/placeholder.svg'}
+                                  alt={food.name}
+                                  className="w-full h-full object-cover"
+                                  width={48}
+                                  height={48}
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 border-2 border-zone-green bg-transparent rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-foreground text-lg">
+                                  🍽️
+                                </span>
+                              </div>
+                            )}
+                            <div className="text-left flex-1 min-w-0">
+                              <p className="font-medium text-foreground truncate">
+                                {food.status === 'analyzing'
+                                  ? 'New Food'
+                                  : food.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {food.ingredients
+                                  ?.map(ing => ing.name)
+                                  .join(', ') || 'No ingredients'}
+                              </p>
                             </div>
-                          ) : (
-                            <div className="w-12 h-12 border-2 border-zone-green bg-transparent rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-foreground text-lg">
-                                🍽️
-                              </span>
+                          </div>
+                          <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
+                            <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
+                              <AnimatedComponentErrorBoundary>
+                                <FoodCompositionBar
+                                  ingredients={food.ingredients || []}
+                                />
+                              </AnimatedComponentErrorBoundary>
+                              <AnimatedComponentErrorBoundary>
+                                <OrganicCompositionBar
+                                  ingredients={food.ingredients || []}
+                                />
+                              </AnimatedComponentErrorBoundary>
                             </div>
-                          )}
-                          <div className="text-left flex-1 min-w-0">
-                            <p className="font-medium text-foreground truncate">
-                              {food.status === 'analyzing'
-                                ? 'New Food'
-                                : food.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {food.ingredients
-                                ?.map(ing => ing.name)
-                                .join(', ') || 'No ingredients'}
-                            </p>
                           </div>
                         </div>
-                        <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
-                          <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
-                            <AnimatedComponentErrorBoundary>
-                              <FoodCompositionBar
-                                ingredients={food.ingredients || []}
-                              />
-                            </AnimatedComponentErrorBoundary>
-                            <AnimatedComponentErrorBoundary>
-                              <OrganicCompositionBar
-                                ingredients={food.ingredients || []}
-                              />
-                            </AnimatedComponentErrorBoundary>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
                   </Link>
                 );
               }
@@ -159,39 +158,42 @@ export function EntriesView({
                     prefetch={true}
                   >
                     <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 border-2 border-destructive bg-transparent rounded-full flex items-center justify-center">
-                            <span className="text-foreground text-lg">
-                              {getCategoryInfoSafe(symptom.category)?.icon ||
-                                '⚡'}
-                            </span>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 border-2 border-destructive bg-transparent rounded-full flex items-center justify-center">
+                              <span className="text-foreground text-lg">
+                                {getCategoryInfoSafe(symptom.category)?.icon ||
+                                  '⚡'}
+                              </span>
+                            </div>
+                            <div className="text-left">
+                              <p className="font-medium text-foreground">
+                                {symptom.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(symptom.timestamp).toLocaleString(
+                                  'en-US',
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                    hour12: true,
+                                  }
+                                )}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-left">
-                            <p className="font-medium text-foreground">
-                              {symptom.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(symptom.timestamp).toLocaleString(
-                                'en-US',
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                  hour12: true,
-                                }
-                              )}
-                            </p>
-                          </div>
+                          <Badge
+                            variant="outline"
+                            className="text-xs capitalize"
+                          >
+                            {symptom.category}
+                          </Badge>
                         </div>
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {symptom.category}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
                   </Link>
                 );
               }

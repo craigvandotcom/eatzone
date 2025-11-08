@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from '@/__tests__/setup/test-utils';
-import userEvent from '@testing-library/user-event';
 import { EntriesView } from '@/features/dashboard/components/entries-view';
 import type { TimelineEntry, FoodStats, Ingredient } from '@/lib/types';
 import { mockFoods } from '@/__tests__/fixtures/foods';
@@ -135,8 +134,6 @@ describe('EntriesView', () => {
   });
 
   it('navigates to food edit page when food entry is clicked', async () => {
-    const user = userEvent.setup();
-
     render(
       <EntriesView
         entriesForSelectedDate={[mockFoodEntry]}
@@ -145,24 +142,15 @@ describe('EntriesView', () => {
       />
     );
 
-    const foodCard = screen
+    // Check that Link component has correct href
+    const foodLink = screen
       .getByText(mockFoods[0].name)
-      .closest('[class*="cursor-pointer"]');
-    expect(foodCard).toBeInTheDocument();
-
-    if (foodCard) {
-      await user.click(foodCard);
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith(
-          `/app/foods/edit/${mockFoods[0].id}`
-        );
-      });
-    }
+      .closest('a');
+    expect(foodLink).toBeInTheDocument();
+    expect(foodLink).toHaveAttribute('href', `/app/foods/edit/${mockFoods[0].id}`);
   });
 
   it('navigates to symptom edit page when signal entry is clicked', async () => {
-    const user = userEvent.setup();
-
     render(
       <EntriesView
         entriesForSelectedDate={[mockSignalEntry]}
@@ -171,19 +159,12 @@ describe('EntriesView', () => {
       />
     );
 
-    const signalCard = screen
+    // Check that Link component has correct href
+    const signalLink = screen
       .getByText('Headache')
-      .closest('[class*="cursor-pointer"]');
-    expect(signalCard).toBeInTheDocument();
-
-    if (signalCard) {
-      await user.click(signalCard);
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith(
-          `/app/symptoms/edit/${mockSignalEntry.data.id}`
-        );
-      });
-    }
+      .closest('a');
+    expect(signalLink).toBeInTheDocument();
+    expect(signalLink).toHaveAttribute('href', `/app/symptoms/edit/${mockSignalEntry.data.id}`);
   });
 
   it('handles invalid category gracefully', () => {

@@ -82,19 +82,21 @@ export function EntriesView({
             </div>
           )}
           {entriesForSelectedDate &&
-            entriesForSelectedDate.length > 0 &&
-            entriesForSelectedDate.map(entry => {
-              // Render food entry
-              if (entry.type === 'food') {
-                const food = entry.data;
-                return (
-                  <Link
-                    key={entry.id}
-                    href={`/app/foods/edit/${food.id}`}
-                    prefetch={true}
-                  >
-                    <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
-                      <CardContent className="p-4">
+            entriesForSelectedDate.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {entriesForSelectedDate.map(entry => {
+                  // Render food entry
+                  if (entry.type === 'food') {
+                    const food = entry.data;
+                    return (
+                      <Link
+                        key={entry.id}
+                        href={`/app/foods/edit/${food.id}`}
+                        prefetch={true}
+                        className="block"
+                      >
+                        <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
+                          <CardContent className="!py-3 !px-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3 flex-1 min-w-0">
                             {food.photo_url ? (
@@ -148,17 +150,18 @@ export function EntriesView({
                 );
               }
 
-              // Render signal entry
-              if (entry.type === 'signal') {
-                const symptom = entry.data;
-                return (
-                  <Link
-                    key={entry.id}
-                    href={`/app/symptoms/edit/${symptom.id}`}
-                    prefetch={true}
-                  >
+                  // Render signal entry
+                  if (entry.type === 'signal') {
+                    const symptom = entry.data;
+                    return (
+                      <Link
+                        key={entry.id}
+                        href={`/app/symptoms/edit/${symptom.id}`}
+                        prefetch={true}
+                        className="block"
+                      >
                     <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
-                      <CardContent className="p-4">
+                      <CardContent className="py-3 px-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div className="w-12 h-12 border-2 border-destructive bg-transparent rounded-full flex items-center justify-center">
@@ -199,7 +202,9 @@ export function EntriesView({
               }
 
               return null;
-            })}
+                })}
+              </div>
+            )}
         </div>
       </div>
     </ErrorBoundary>

@@ -44,10 +44,6 @@ export function OrganicCompositionBar({
           }}
         />
       )}
-      {/* Empty state indicator */}
-      {organicCount === 0 && (
-        <div className="absolute right-0 w-1 h-full bg-gray-400 opacity-50" />
-      )}
     </div>
   );
 }

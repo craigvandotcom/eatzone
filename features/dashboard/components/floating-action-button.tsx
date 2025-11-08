@@ -54,13 +54,18 @@ export function FloatingActionButton({
         {/* Signal FAB */}
         <button
           onClick={handleSignalClick}
-          className={`w-16 h-16 bg-destructive text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+          className={`w-16 h-16 bg-destructive text-white rounded-full shadow-lg flex items-center justify-center flex-shrink-0 ${
             isExpanded
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4 pointer-events-none'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-75 translate-y-4 pointer-events-none'
           }`}
           style={{
             transitionDelay: isExpanded ? '0ms' : '0ms',
+            transitionDuration: isExpanded ? '150ms' : '300ms',
+            transitionTimingFunction: isExpanded
+              ? 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+              : 'ease-in-out',
+            transitionProperty: 'opacity, transform',
             minWidth: '64px',
             minHeight: '64px',
             maxWidth: '64px',
@@ -73,13 +78,18 @@ export function FloatingActionButton({
         {/* Food FAB */}
         <button
           onClick={handleFoodClick}
-          className={`w-16 h-16 bg-zone-green text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+          className={`w-16 h-16 bg-zone-green text-white rounded-full shadow-lg flex items-center justify-center flex-shrink-0 ${
             isExpanded
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4 pointer-events-none'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-75 translate-y-4 pointer-events-none'
           }`}
           style={{
             transitionDelay: isExpanded ? '50ms' : '0ms',
+            transitionDuration: isExpanded ? '150ms' : '300ms',
+            transitionTimingFunction: isExpanded
+              ? 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+              : 'ease-in-out',
+            transitionProperty: 'opacity, transform',
             minWidth: '64px',
             minHeight: '64px',
             maxWidth: '64px',

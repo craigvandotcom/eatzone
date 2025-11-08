@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SymptomEntryForm } from '@/features/symptoms/components/symptom-entry-form';
@@ -20,6 +20,11 @@ export default function AddSymptomPage() {
 
   // Enable keyboard-aware scrolling on mobile to prevent keyboard from hiding inputs
   useKeyboardAwareScroll({ enabled: isMobile });
+
+  // Prefetch dashboard route for faster navigation back
+  useEffect(() => {
+    router.prefetch('/app');
+  }, [router]);
 
   const handleAddSymptoms = async (
     symptoms: Omit<Symptom, 'id' | 'timestamp'>[],

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MultiCameraCapture } from '@/features/camera/components/multi-camera-capture';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
@@ -89,6 +89,12 @@ function Dashboard() {
     [currentView, setCurrentView]
   );
 
+  // Prefetch food and symptom add page routes for faster navigation
+  useEffect(() => {
+    router.prefetch('/app/foods/add');
+    router.prefetch('/app/symptoms/add');
+  }, [router]);
+
   const handleCameraCapture = useCallback(
     async (images: string[]) => {
       try {
@@ -138,6 +144,7 @@ function Dashboard() {
 
         // Store all captured images as JSON array in sessionStorage
         sessionStorage.setItem('pendingFoodImages', imagesJson);
+        // Route is prefetched on mount for instant navigation
         router.replace('/app/foods/add');
       } catch (error) {
         logger.error('Failed to store image data', error);
@@ -152,6 +159,7 @@ function Dashboard() {
   );
 
   const handleManualEntry = useCallback(() => {
+    // Route is prefetched on mount for instant navigation
     router.replace('/app/foods/add');
   }, [router]);
 

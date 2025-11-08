@@ -32,6 +32,11 @@ export default function EditSymptomPage({
   // Enable keyboard-aware scrolling on mobile to prevent keyboard from hiding inputs
   useKeyboardAwareScroll({ enabled: isMobile });
 
+  // Prefetch dashboard route for faster navigation back
+  useEffect(() => {
+    router.prefetch('/app');
+  }, [router]);
+
   // First resolve params
   useEffect(() => {
     const resolveParams = async () => {

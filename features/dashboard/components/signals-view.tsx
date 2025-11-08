@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback } from 'react';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
 import { Activity } from 'lucide-react';
 import { SymptomTimeline } from '@/features/symptoms/components/symptom-timeline';
 import {
@@ -25,15 +24,6 @@ interface SignalsViewProps {
 }
 
 export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
-  const router = useRouter();
-
-  const handleEditSymptom = useCallback(
-    (symptom: Symptom) => {
-      router.push(`/app/symptoms/edit/${symptom.id}`);
-    },
-    [router]
-  );
-
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
       {/* Symptom Timeline for Selected Date */}
@@ -73,40 +63,45 @@ export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
           {symptomsForSelectedDate &&
             symptomsForSelectedDate.length > 0 &&
             symptomsForSelectedDate.map(symptom => (
-              <Card
+              <Link
                 key={symptom.id}
-                className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
-                onClick={() => handleEditSymptom(symptom)}
+                href={`/app/symptoms/edit/${symptom.id}`}
+                prefetch={true}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 border-2 border-primary bg-transparent rounded-full flex items-center justify-center">
-                        <span className="text-foreground text-lg">
-                          {getCategoryInfo(symptom.category)?.icon || '⚡'}
-                        </span>
+                <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 border-2 border-primary bg-transparent rounded-full flex items-center justify-center">
+                          <span className="text-foreground text-lg">
+                            {getCategoryInfo(symptom.category)?.icon || '⚡'}
+                          </span>
+                        </div>
+                        <div className="text-left">
+                          <p className="font-medium text-foreground">
+                            {symptom.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(symptom.timestamp).toLocaleString(
+                              'en-US',
+                              {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true,
+                              }
+                            )}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-left">
-                        <p className="font-medium text-foreground">
-                          {symptom.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(symptom.timestamp).toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                          })}
-                        </p>
-                      </div>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {symptom.category}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {symptom.category}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
         </div>
       </div>

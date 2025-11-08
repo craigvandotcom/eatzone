@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
 import { Utensils } from 'lucide-react';
 import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
 import { OrganicCompositionBar } from '@/features/foods/components/organic-composition-bar';
@@ -33,15 +32,6 @@ export function FoodView({
   foodStatsForSelectedDate,
   getIngredientsForSelectedDate,
 }: FoodViewProps) {
-  const router = useRouter();
-
-  const handleEditFood = useCallback(
-    (food: Food) => {
-      router.push(`/app/foods/edit/${food.id}`);
-    },
-    [router]
-  );
-
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
       {/* Food Zone Summary Bar for Selected Date */}
@@ -81,59 +71,61 @@ export function FoodView({
           {foodsForSelectedDate && foodsForSelectedDate.length > 0 && (
             <div className="space-y-3 overflow-hidden">
               {foodsForSelectedDate.map(food => (
-                <Card
+                <Link
                   key={food.id}
-                  className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
-                  onClick={() => handleEditFood(food)}
+                  href={`/app/foods/edit/${food.id}`}
+                  prefetch={true}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        {food.photo_url ? (
-                          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                            <Image
-                              src={food.photo_url || '/placeholder.svg'}
-                              alt={food.name}
-                              className="w-full h-full object-cover"
-                              width={48}
-                              height={48}
-                            />
+                  <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          {food.photo_url ? (
+                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                              <Image
+                                src={food.photo_url || '/placeholder.svg'}
+                                alt={food.name}
+                                className="w-full h-full object-cover"
+                                width={48}
+                                height={48}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-12 bg-zone-green rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-lg">🍽️</span>
+                            </div>
+                          )}
+                          <div className="text-left flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate">
+                              {food.status === 'analyzing'
+                                ? 'New Food'
+                                : food.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {food.ingredients
+                                ?.map(ing => ing.name)
+                                .join(', ') || 'No ingredients'}
+                            </p>
                           </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-zone-green rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-white text-lg">🍽️</span>
+                        </div>
+                        <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
+                          <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
+                            <AnimatedComponentErrorBoundary>
+                              <FoodCompositionBar
+                                ingredients={food.ingredients || []}
+                              />
+                            </AnimatedComponentErrorBoundary>
+                            <AnimatedComponentErrorBoundary>
+                              <OrganicCompositionBar
+                                ingredients={food.ingredients || []}
+                              />
+                            </AnimatedComponentErrorBoundary>
                           </div>
-                        )}
-                        <div className="text-left flex-1 min-w-0">
-                          <p className="font-medium text-foreground truncate">
-                            {food.status === 'analyzing'
-                              ? 'New Food'
-                              : food.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {food.ingredients
-                              ?.map(ing => ing.name)
-                              .join(', ') || 'No ingredients'}
-                          </p>
                         </div>
                       </div>
-                      <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
-                        <div className="w-16 sm:w-20 md:w-24 space-y-1.5">
-                          <AnimatedComponentErrorBoundary>
-                            <FoodCompositionBar
-                              ingredients={food.ingredients || []}
-                            />
-                          </AnimatedComponentErrorBoundary>
-                          <AnimatedComponentErrorBoundary>
-                            <OrganicCompositionBar
-                              ingredients={food.ingredients || []}
-                            />
-                          </AnimatedComponentErrorBoundary>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}

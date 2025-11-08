@@ -1,10 +1,9 @@
 'use client';
 
-import { useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useRouter } from 'next/navigation';
 import { Utensils } from 'lucide-react';
 import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
 import { OrganicCompositionBar } from '@/features/foods/components/organic-composition-bar';
@@ -36,21 +35,6 @@ export function EntriesView({
   foodStatsForSelectedDate,
   getIngredientsForSelectedDate,
 }: EntriesViewProps) {
-  const router = useRouter();
-
-  const handleEditFood = useCallback(
-    (foodId: string) => {
-      router.push(`/app/foods/edit/${foodId}`);
-    },
-    [router]
-  );
-
-  const handleEditSymptom = useCallback(
-    (symptomId: string) => {
-      router.push(`/app/symptoms/edit/${symptomId}`);
-    },
-    [router]
-  );
 
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
@@ -105,11 +89,12 @@ export function EntriesView({
               if (entry.type === 'food') {
                 const food = entry.data;
                 return (
-                  <Card
+                  <Link
                     key={entry.id}
-                    className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
-                    onClick={() => handleEditFood(food.id)}
+                    href={`/app/foods/edit/${food.id}`}
+                    prefetch={true}
                   >
+                    <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -160,6 +145,7 @@ export function EntriesView({
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 );
               }
 
@@ -167,11 +153,12 @@ export function EntriesView({
               if (entry.type === 'signal') {
                 const symptom = entry.data;
                 return (
-                  <Card
+                  <Link
                     key={entry.id}
-                    className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
-                    onClick={() => handleEditSymptom(symptom.id)}
+                    href={`/app/symptoms/edit/${symptom.id}`}
+                    prefetch={true}
                   >
+                    <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -205,6 +192,7 @@ export function EntriesView({
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 );
               }
 

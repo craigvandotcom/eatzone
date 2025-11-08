@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
 import { Utensils } from 'lucide-react';
 import { FoodCompositionBar } from '@/features/foods/components/food-composition-bar';
 import { OrganicCompositionBar } from '@/features/foods/components/organic-composition-bar';
@@ -33,14 +32,6 @@ export function FoodView({
   foodStatsForSelectedDate,
   getIngredientsForSelectedDate,
 }: FoodViewProps) {
-  const router = useRouter();
-
-  const handleEditFood = useCallback(
-    (food: Food) => {
-      router.push(`/app/foods/edit/${food.id}`);
-    },
-    [router]
-  );
 
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
@@ -81,11 +72,12 @@ export function FoodView({
           {foodsForSelectedDate && foodsForSelectedDate.length > 0 && (
             <div className="space-y-3 overflow-hidden">
               {foodsForSelectedDate.map(food => (
-                <Card
+                <Link
                   key={food.id}
-                  className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
-                  onClick={() => handleEditFood(food)}
+                  href={`/app/foods/edit/${food.id}`}
+                  prefetch={true}
                 >
+                  <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -134,6 +126,7 @@ export function FoodView({
                     </div>
                   </CardContent>
                 </Card>
+                </Link>
               ))}
             </div>
           )}

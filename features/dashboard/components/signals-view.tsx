@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback } from 'react';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
 import { Activity } from 'lucide-react';
 import { SymptomTimeline } from '@/features/symptoms/components/symptom-timeline';
 import {
@@ -25,14 +24,6 @@ interface SignalsViewProps {
 }
 
 export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
-  const router = useRouter();
-
-  const handleEditSymptom = useCallback(
-    (symptom: Symptom) => {
-      router.push(`/app/symptoms/edit/${symptom.id}`);
-    },
-    [router]
-  );
 
   return (
     <ErrorBoundary fallback={SupabaseErrorFallback}>
@@ -73,11 +64,12 @@ export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
           {symptomsForSelectedDate &&
             symptomsForSelectedDate.length > 0 &&
             symptomsForSelectedDate.map(symptom => (
-              <Card
+              <Link
                 key={symptom.id}
-                className="cursor-pointer hover:shadow-xl transition-shadow duration-200"
-                onClick={() => handleEditSymptom(symptom)}
+                href={`/app/symptoms/edit/${symptom.id}`}
+                prefetch={true}
               >
+                <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -107,6 +99,7 @@ export function SignalsView({ symptomsForSelectedDate }: SignalsViewProps) {
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             ))}
         </div>
       </div>

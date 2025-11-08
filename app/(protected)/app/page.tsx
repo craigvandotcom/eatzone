@@ -89,9 +89,10 @@ function Dashboard() {
     [currentView, setCurrentView]
   );
 
-  // Prefetch food add page route for faster navigation
+  // Prefetch food and symptom add page routes for faster navigation
   useEffect(() => {
     router.prefetch('/app/foods/add');
+    router.prefetch('/app/symptoms/add');
   }, [router]);
 
   const handleCameraCapture = useCallback(

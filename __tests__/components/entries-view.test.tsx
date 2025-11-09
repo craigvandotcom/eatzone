@@ -143,11 +143,12 @@ describe('EntriesView', () => {
     );
 
     // Check that Link component has correct href
-    const foodLink = screen
-      .getByText(mockFoods[0].name)
-      .closest('a');
+    const foodLink = screen.getByText(mockFoods[0].name).closest('a');
     expect(foodLink).toBeInTheDocument();
-    expect(foodLink).toHaveAttribute('href', `/app/foods/edit/${mockFoods[0].id}`);
+    expect(foodLink).toHaveAttribute(
+      'href',
+      `/app/foods/edit/${mockFoods[0].id}`
+    );
   });
 
   it('navigates to symptom edit page when signal entry is clicked', async () => {
@@ -160,11 +161,12 @@ describe('EntriesView', () => {
     );
 
     // Check that Link component has correct href
-    const signalLink = screen
-      .getByText('Headache')
-      .closest('a');
+    const signalLink = screen.getByText('Headache').closest('a');
     expect(signalLink).toBeInTheDocument();
-    expect(signalLink).toHaveAttribute('href', `/app/symptoms/edit/${mockSignalEntry.data.id}`);
+    expect(signalLink).toHaveAttribute(
+      'href',
+      `/app/symptoms/edit/${mockSignalEntry.data.id}`
+    );
   });
 
   it('handles invalid category gracefully', () => {

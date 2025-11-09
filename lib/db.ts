@@ -201,6 +201,50 @@ export const deleteFood = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
+/**
+ * Duplicate an existing food entry with current timestamp
+ * Copies all food data (name, ingredients, images, notes, meal_type)
+ * but creates a new entry with current timestamp
+ */
+export const duplicateFood = async (foodId: string): Promise<string> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  // Get the original food entry
+  const originalFood = await getFoodById(foodId);
+  if (!originalFood) throw new Error('Food not found');
+
+  // Generate new food ID
+  const newFoodId = crypto.randomUUID();
+
+  // Create duplicated food entry with:
+  // - New ID
+  // - Current timestamp
+  // - Same user_id
+  // - All other data copied as-is (images, ingredients already zoned, etc.)
+  const duplicatedFood = {
+    id: newFoodId,
+    user_id: user.user.id,
+    name: originalFood.name,
+    timestamp: generateTimestamp(), // Current time
+    ingredients: originalFood.ingredients, // Already zoned, copy as-is
+    notes: originalFood.notes,
+    meal_type: originalFood.meal_type,
+    photo_url: originalFood.photo_url, // Reuse existing image URLs
+    image_urls: originalFood.image_urls, // Reuse existing image URLs
+    status: originalFood.status, // Preserve status (should be 'processed' for existing entries)
+  };
+
+  const { data, error } = await supabase
+    .from('foods')
+    .insert(duplicatedFood)
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
+};
+
 export const getAllFoods = async (): Promise<Food[]> => {
   const { data, error } = await supabase
     .from('foods')

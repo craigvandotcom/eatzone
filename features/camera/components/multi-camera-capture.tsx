@@ -12,6 +12,7 @@ import { ModeSelector, type CameraMode } from './mode-selector';
 import { ImageProcessingErrorBoundary } from './image-processing-error-boundary';
 import { useErrorHandler } from '@/components/error-boundary';
 import { CameraCycleButton } from './camera-cycle-button';
+import { LoadingSpinner } from '@/components/ui/loading-states';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function MultiCameraCapture({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [showCamera, setShowCamera] = useState(true);
@@ -110,10 +112,18 @@ export function MultiCameraCapture({
       // Only load preferred camera on the first enumeration to avoid camera restart
       // After that, camera changes only happen through manual cycling
       if (isInitialCameraLoadRef.current) {
-        // Load preferred camera from localStorage
-        const preferredDeviceId = localStorage.getItem(
-          APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY
-        );
+        // Load preferred camera from localStorage with error handling
+        let preferredDeviceId: string | null = null;
+        try {
+          preferredDeviceId = localStorage.getItem(
+            APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY
+          );
+        } catch (err) {
+          logger.warn('Failed to access localStorage for camera preference', {
+            error: err instanceof Error ? err.message : String(err),
+          });
+          // Continue with default camera if localStorage is unavailable
+        }
 
         if (preferredDeviceId) {
           const preferredIndex = videoDevices.findIndex(
@@ -155,17 +165,24 @@ export function MultiCameraCapture({
     const nextIndex = (currentCameraIndex + 1) % availableCameras.length;
     setCurrentCameraIndex(nextIndex);
 
-    // Save preference to localStorage
+    // Save preference to localStorage with error handling
     const selectedDevice = availableCameras[nextIndex];
     if (selectedDevice) {
-      localStorage.setItem(
-        APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY,
-        selectedDevice.deviceId
-      );
-      logger.debug('Saved camera preference', {
-        index: nextIndex,
-        deviceId: selectedDevice.deviceId,
-      });
+      try {
+        localStorage.setItem(
+          APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY,
+          selectedDevice.deviceId
+        );
+        logger.debug('Saved camera preference', {
+          index: nextIndex,
+          deviceId: selectedDevice.deviceId,
+        });
+      } catch (err) {
+        logger.warn('Failed to save camera preference to localStorage', {
+          error: err instanceof Error ? err.message : String(err),
+        });
+        // Continue without saving preference if localStorage is unavailable
+      }
     }
 
     // Restart camera with new device
@@ -333,6 +350,9 @@ export function MultiCameraCapture({
     const filesToProcess = files.slice(0, remainingSlots);
 
     try {
+      // Show loading state during file validation
+      setIsUploading(true);
+
       // First validate all files on server-side
       const validationPromises = filesToProcess.map(async file => {
         // Convert file to base64 for validation
@@ -366,6 +386,9 @@ export function MultiCameraCapture({
       // Wait for all validations to complete
       const validatedImages = await Promise.all(validationPromises);
 
+      // Hide loading state after validation completes
+      setIsUploading(false);
+
       const updatedImages = [...capturedImages, ...validatedImages];
       setCapturedImages(updatedImages);
 
@@ -390,6 +413,8 @@ export function MultiCameraCapture({
         }, 500);
       }
     } catch (error) {
+      // Hide loading state on error
+      setIsUploading(false);
       logger.error('File upload validation failed', error);
       if (error instanceof Error) {
         handleError(error);
@@ -562,11 +587,25 @@ export function MultiCameraCapture({
                       multiple
                       onChange={handleFileUpload}
                       className="absolute inset-0 opacity-0 cursor-pointer w-32 h-32"
-                      disabled={capturedImages.length >= maxImages}
+                      disabled={
+                        capturedImages.length >= maxImages || isUploading
+                      }
                     />
                     <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer transition-colors">
                       <Upload className="h-12 w-12 text-white" />
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Loading Overlay */}
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                  <div className="flex flex-col items-center gap-3 bg-card/90 p-6 rounded-xl shadow-lg border border-white/20">
+                    <LoadingSpinner size="lg" className="text-white" />
+                    <span className="text-white text-sm font-medium">
+                      Validating images...
+                    </span>
                   </div>
                 </div>
               )}

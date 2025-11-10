@@ -43,7 +43,9 @@ describe('FoodView', () => {
       />
     );
 
-    expect(screen.getByText(/loading foods for selected date/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/loading foods for selected date/i)
+    ).toBeInTheDocument();
   });
 
   it('renders loading state when food stats are undefined', () => {
@@ -142,11 +144,12 @@ describe('FoodView', () => {
     );
 
     // Check that Link component has correct href
-    const foodLink = screen
-      .getByText(mockFoods[0].name)
-      .closest('a');
+    const foodLink = screen.getByText(mockFoods[0].name).closest('a');
     expect(foodLink).toBeInTheDocument();
-    expect(foodLink).toHaveAttribute('href', `/app/foods/edit/${mockFoods[0].id}`);
+    expect(foodLink).toHaveAttribute(
+      'href',
+      `/app/foods/edit/${mockFoods[0].id}`
+    );
   });
 
   it('uses Link component with prefetch enabled', () => {
@@ -158,9 +161,7 @@ describe('FoodView', () => {
       />
     );
 
-    const foodLink = screen
-      .getByText(mockFoods[0].name)
-      .closest('a');
+    const foodLink = screen.getByText(mockFoods[0].name).closest('a');
     expect(foodLink).toBeInTheDocument();
     // Next.js Link with prefetch={true} should be present
     // We verify this by checking the href attribute exists
@@ -192,9 +193,13 @@ describe('FoodView', () => {
 
     // Should render skeleton loaders (FoodEntrySkeleton components)
     // Check for loading spinner which indicates loading state
-    expect(screen.getByText(/loading foods for selected date/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/loading foods for selected date/i)
+    ).toBeInTheDocument();
     // Skeleton elements are rendered via FoodEntrySkeleton component
-    const loadingElements = container.querySelectorAll('[class*="animate-pulse"]');
+    const loadingElements = container.querySelectorAll(
+      '[class*="animate-pulse"]'
+    );
     expect(loadingElements.length).toBeGreaterThan(0);
   });
 
@@ -209,12 +214,9 @@ describe('FoodView', () => {
 
     // Check all food links are present
     mockFoods.forEach(food => {
-      const foodLink = screen
-        .getByText(food.name)
-        .closest('a');
+      const foodLink = screen.getByText(food.name).closest('a');
       expect(foodLink).toBeInTheDocument();
       expect(foodLink).toHaveAttribute('href', `/app/foods/edit/${food.id}`);
     });
   });
 });
-

@@ -25,7 +25,9 @@ describe('SignalsView', () => {
     render(<SignalsView symptomsForSelectedDate={undefined} />);
 
     expect(screen.getByText(/loading symptom data/i)).toBeInTheDocument();
-    expect(screen.getByText(/loading symptoms for selected date/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/loading symptoms for selected date/i)
+    ).toBeInTheDocument();
   });
 
   it('renders empty state when no symptoms', () => {
@@ -82,9 +84,7 @@ describe('SignalsView', () => {
     render(<SignalsView symptomsForSelectedDate={[mockSymptoms[0]]} />);
 
     // Check that Link component has correct href
-    const symptomLink = screen
-      .getByText(mockSymptoms[0].name)
-      .closest('a');
+    const symptomLink = screen.getByText(mockSymptoms[0].name).closest('a');
     expect(symptomLink).toBeInTheDocument();
     expect(symptomLink).toHaveAttribute(
       'href',
@@ -95,9 +95,7 @@ describe('SignalsView', () => {
   it('uses Link component with prefetch enabled', () => {
     render(<SignalsView symptomsForSelectedDate={[mockSymptoms[0]]} />);
 
-    const symptomLink = screen
-      .getByText(mockSymptoms[0].name)
-      .closest('a');
+    const symptomLink = screen.getByText(mockSymptoms[0].name).closest('a');
     expect(symptomLink).toBeInTheDocument();
     // Next.js Link with prefetch={true} should be present
     // We verify this by checking the href attribute exists
@@ -119,9 +117,13 @@ describe('SignalsView', () => {
 
     // Should render skeleton loaders (SymptomEntrySkeleton components)
     // Check for loading spinner which indicates loading state
-    expect(screen.getByText(/loading symptoms for selected date/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/loading symptoms for selected date/i)
+    ).toBeInTheDocument();
     // Skeleton elements are rendered via SymptomEntrySkeleton component
-    const loadingElements = container.querySelectorAll('[class*="animate-pulse"]');
+    const loadingElements = container.querySelectorAll(
+      '[class*="animate-pulse"]'
+    );
     expect(loadingElements.length).toBeGreaterThan(0);
   });
 
@@ -130,9 +132,7 @@ describe('SignalsView', () => {
 
     // Check all symptom links are present
     mockSymptoms.forEach(symptom => {
-      const symptomLink = screen
-        .getByText(symptom.name)
-        .closest('a');
+      const symptomLink = screen.getByText(symptom.name).closest('a');
       expect(symptomLink).toBeInTheDocument();
       expect(symptomLink).toHaveAttribute(
         'href',
@@ -153,4 +153,3 @@ describe('SignalsView', () => {
     expect(screen.getByText(invalidSymptom.name)).toBeInTheDocument();
   });
 });
-

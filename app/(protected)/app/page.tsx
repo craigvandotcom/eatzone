@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { MultiCameraCapture } from '@/features/camera/components/multi-camera-capture';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import { useIsMobile } from '@/components/ui/use-mobile';
@@ -60,12 +60,21 @@ function Dashboard() {
   const allSymptoms = dashboardData?.allSymptoms;
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isMobile = useIsMobile();
 
   // View state
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const [currentView, setCurrentView] = usePersistentTab('insights');
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+
+  // Read view query param from URL and set view accordingly
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam && ['insights', 'entries', 'settings'].includes(viewParam)) {
+      setCurrentView(viewParam as ViewType);
+    }
+  }, [searchParams, setCurrentView]);
 
   // Date-specific data hooks - pass existing data to prevent duplicate API calls
   const { data: foodsForSelectedDate } = useFoodsForDate(

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { APP_CONFIG } from '@/lib/config/constants';
 import { validateImageFile } from '@/lib/utils/file-validation';
@@ -450,7 +450,10 @@ export function MultiCameraCapture({
       case 'upload':
         // Directly trigger file selection when upload button is clicked
         fileInputRef.current?.click();
-        break;
+        // Don't change the selected mode - keep it on camera
+        // so the upload overlay doesn't show
+        setSelectedMode('camera');
+        return; // Early return to prevent the mode change above
       case 'camera':
         // Multi-camera mode - user can tap to capture multiple photos
         break;
@@ -576,27 +579,16 @@ export function MultiCameraCapture({
                 </div>
               )}
 
-              {/* Upload Overlay - only active in upload mode */}
-              {selectedMode === 'upload' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative">
-                    <Input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleFileUpload}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-32 h-32"
-                      disabled={
-                        capturedImages.length >= maxImages || isUploading
-                      }
-                    />
-                    <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer transition-colors">
-                      <Upload className="h-12 w-12 text-white" />
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Hidden file input for upload functionality */}
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={capturedImages.length >= maxImages || isUploading}
+              />
 
               {/* Upload Loading Overlay */}
               {isUploading && (

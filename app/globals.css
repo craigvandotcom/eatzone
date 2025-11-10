@@ -165,23 +165,67 @@ select {
    MOBILE-FIRST TOUCH OPTIMIZATION
    ============================================ */
 
-/* 1. Disable webkit tap highlight (removes blue flash on iOS/Android) */
+/* 1. Disable webkit tap highlight globally (safe - prevents blue flash) */
 * {
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
-/* 2. Allow text selection only where needed */
+/* 2. Disable user selection ONLY on interactive/UI elements */
+/* Content areas remain selectable by default (better UX and accessibility) */
+button,
+a,
+[role='button'],
+[role='link'],
+nav,
+nav *,
+header,
+header *,
+footer,
+footer *,
+svg,
+img,
+.icon,
+[class*='icon'],
+[class*='badge'],
+[class*='button']:not(input):not(textarea),
+[class*='nav'],
+[class*='header'],
+[class*='footer'] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* Disable iOS menu on UI controls */
+}
+
+/* 3. Explicitly enable text selection in content areas */
+/* This ensures users can select and copy text in cards, entries, descriptions, etc. */
+article,
+section,
+.card,
+[class*='card'],
+[class*='content'],
+[class*='description'],
+[class*='summary'],
+[class*='entry'],
+[class*='timeline'],
+p,
+li,
+span:not([role='button']):not(button),
+div:not(button):not([role='button']):not(nav):not(header):not(footer) {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default; /* Allow iOS share menu on content */
+}
+
+/* 4. Explicitly allow selection in form inputs */
 input,
 textarea,
 [contenteditable] {
   -webkit-user-select: text;
   user-select: text;
+  -webkit-touch-callout: default;
 }
 
-/* 3. Disable ALL hover effects on touch devices */
+/* 5. Disable ALL hover effects on touch devices */
 @media (hover: none) and (pointer: coarse) {
   /* Remove hover classes completely on touch devices */
   button:hover,
@@ -202,7 +246,7 @@ textarea,
   }
 }
 
-/* 4. Remove default focus styles on touch devices, keep for keyboard nav */
+/* 6. Remove default focus styles on touch devices, keep for keyboard nav */
 @media (hover: none) and (pointer: coarse) {
   button:focus,
   a:focus,
@@ -212,7 +256,7 @@ textarea,
   }
 }
 
-/* 5. Preserve focus styles for keyboard navigation (desktop/accessibility) */
+/* 7. Preserve focus styles for keyboard navigation (desktop/accessibility) */
 @media (hover: hover) and (pointer: fine) {
   button:focus-visible,
   a:focus-visible,
@@ -222,7 +266,7 @@ textarea,
   }
 }
 
-/* 6. Active states for immediate touch feedback (mobile only) */
+/* 8. Active states for immediate touch feedback (mobile only) */
 @media (hover: none) and (pointer: coarse) {
   button:active,
   a:active,

@@ -47,6 +47,7 @@ export function MultiCameraCapture({
   );
   const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
   const isInitialCameraLoadRef = useRef<boolean>(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -322,7 +323,11 @@ export function MultiCameraCapture({
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      // Reset mode if no files selected
+      setSelectedMode('camera');
+      return;
+    }
 
     const remainingSlots = maxImages - capturedImages.length;
     const filesToProcess = files.slice(0, remainingSlots);
@@ -364,8 +369,25 @@ export function MultiCameraCapture({
       const updatedImages = [...capturedImages, ...validatedImages];
       setCapturedImages(updatedImages);
 
+      // Auto-switch back to camera mode after successful upload
+      setSelectedMode('camera');
+
+      // Reset file input so same file can be selected again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      // Auto-submit after reaching max images (same as camera capture)
       if (updatedImages.length >= maxImages) {
-        setShowCamera(false);
+        // Small delay to show the final image in collection, then navigate smoothly
+        setTimeout(() => {
+          stopCamera();
+          // Use React 19 transition to coordinate navigation and modal closing
+          startTransition(() => {
+            onCapture(updatedImages);
+            onOpenChange(false);
+          });
+        }, 500);
       }
     } catch (error) {
       logger.error('File upload validation failed', error);
@@ -374,6 +396,8 @@ export function MultiCameraCapture({
       } else {
         handleError(new Error('File validation failed'));
       }
+      // Reset mode on error
+      setSelectedMode('camera');
     }
   };
 
@@ -399,7 +423,8 @@ export function MultiCameraCapture({
         handleManualEntry();
         break;
       case 'upload':
-        // Mode changed to upload - user can now click the upload area
+        // Directly trigger file selection when upload button is clicked
+        fileInputRef.current?.click();
         break;
       case 'camera':
         // Multi-camera mode - user can tap to capture multiple photos
@@ -465,7 +490,7 @@ export function MultiCameraCapture({
                     />
                     <button
                       onClick={() => removeImage(index)}
-                      className="absolute -bottom-3 -right-3 bg-destructive text-white w-6 h-6 flex-shrink-0 flex items-center justify-center hover:bg-destructive/90 hover:scale-110 transition-all duration-200 shadow-md isolate z-10"
+                      className="absolute -bottom-3 -right-3 bg-destructive text-white w-6 h-6 flex-shrink-0 flex items-center justify-center transition-all duration-200 shadow-md isolate z-10 active:bg-destructive/90 active:scale-110"
                       style={{
                         borderRadius: '50%',
                         minWidth: '24px',
@@ -507,7 +532,7 @@ export function MultiCameraCapture({
               {/* Capture Overlay - only active in camera mode */}
               {selectedMode === 'camera' && (
                 <div
-                  className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
+                  className="absolute inset-0 cursor-pointer bg-black/5 active:bg-black/20 transition-colors"
                   onClick={captureImage}
                 >
                   {/* Centered camera icon with counter */}
@@ -531,6 +556,7 @@ export function MultiCameraCapture({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative">
                     <Input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       multiple
@@ -538,7 +564,7 @@ export function MultiCameraCapture({
                       className="absolute inset-0 opacity-0 cursor-pointer w-32 h-32"
                       disabled={capturedImages.length >= maxImages}
                     />
-                    <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
+                    <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer transition-colors">
                       <Upload className="h-12 w-12 text-white" />
                     </div>
                   </div>

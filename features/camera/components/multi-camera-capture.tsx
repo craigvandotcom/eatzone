@@ -12,6 +12,7 @@ import { ModeSelector, type CameraMode } from './mode-selector';
 import { ImageProcessingErrorBoundary } from './image-processing-error-boundary';
 import { useErrorHandler } from '@/components/error-boundary';
 import { CameraCycleButton } from './camera-cycle-button';
+import { LoadingSpinner } from '@/components/ui/loading-states';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function MultiCameraCapture({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [showCamera, setShowCamera] = useState(true);
@@ -47,6 +49,7 @@ export function MultiCameraCapture({
   );
   const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
   const isInitialCameraLoadRef = useRef<boolean>(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -109,10 +112,18 @@ export function MultiCameraCapture({
       // Only load preferred camera on the first enumeration to avoid camera restart
       // After that, camera changes only happen through manual cycling
       if (isInitialCameraLoadRef.current) {
-        // Load preferred camera from localStorage
-        const preferredDeviceId = localStorage.getItem(
-          APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY
-        );
+        // Load preferred camera from localStorage with error handling
+        let preferredDeviceId: string | null = null;
+        try {
+          preferredDeviceId = localStorage.getItem(
+            APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY
+          );
+        } catch (err) {
+          logger.warn('Failed to access localStorage for camera preference', {
+            error: err instanceof Error ? err.message : String(err),
+          });
+          // Continue with default camera if localStorage is unavailable
+        }
 
         if (preferredDeviceId) {
           const preferredIndex = videoDevices.findIndex(
@@ -154,17 +165,24 @@ export function MultiCameraCapture({
     const nextIndex = (currentCameraIndex + 1) % availableCameras.length;
     setCurrentCameraIndex(nextIndex);
 
-    // Save preference to localStorage
+    // Save preference to localStorage with error handling
     const selectedDevice = availableCameras[nextIndex];
     if (selectedDevice) {
-      localStorage.setItem(
-        APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY,
-        selectedDevice.deviceId
-      );
-      logger.debug('Saved camera preference', {
-        index: nextIndex,
-        deviceId: selectedDevice.deviceId,
-      });
+      try {
+        localStorage.setItem(
+          APP_CONFIG.CAMERA.PREFERRED_CAMERA_KEY,
+          selectedDevice.deviceId
+        );
+        logger.debug('Saved camera preference', {
+          index: nextIndex,
+          deviceId: selectedDevice.deviceId,
+        });
+      } catch (err) {
+        logger.warn('Failed to save camera preference to localStorage', {
+          error: err instanceof Error ? err.message : String(err),
+        });
+        // Continue without saving preference if localStorage is unavailable
+      }
     }
 
     // Restart camera with new device
@@ -322,12 +340,19 @@ export function MultiCameraCapture({
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      // Reset mode if no files selected
+      setSelectedMode('camera');
+      return;
+    }
 
     const remainingSlots = maxImages - capturedImages.length;
     const filesToProcess = files.slice(0, remainingSlots);
 
     try {
+      // Show loading state during file validation
+      setIsUploading(true);
+
       // First validate all files on server-side
       const validationPromises = filesToProcess.map(async file => {
         // Convert file to base64 for validation
@@ -361,19 +386,43 @@ export function MultiCameraCapture({
       // Wait for all validations to complete
       const validatedImages = await Promise.all(validationPromises);
 
+      // Hide loading state after validation completes
+      setIsUploading(false);
+
       const updatedImages = [...capturedImages, ...validatedImages];
       setCapturedImages(updatedImages);
 
+      // Auto-switch back to camera mode after successful upload
+      setSelectedMode('camera');
+
+      // Reset file input so same file can be selected again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      // Auto-submit after reaching max images (same as camera capture)
       if (updatedImages.length >= maxImages) {
-        setShowCamera(false);
+        // Small delay to show the final image in collection, then navigate smoothly
+        setTimeout(() => {
+          stopCamera();
+          // Use React 19 transition to coordinate navigation and modal closing
+          startTransition(() => {
+            onCapture(updatedImages);
+            onOpenChange(false);
+          });
+        }, 500);
       }
     } catch (error) {
+      // Hide loading state on error
+      setIsUploading(false);
       logger.error('File upload validation failed', error);
       if (error instanceof Error) {
         handleError(error);
       } else {
         handleError(new Error('File validation failed'));
       }
+      // Reset mode on error
+      setSelectedMode('camera');
     }
   };
 
@@ -399,7 +448,8 @@ export function MultiCameraCapture({
         handleManualEntry();
         break;
       case 'upload':
-        // Mode changed to upload - user can now click the upload area
+        // Directly trigger file selection when upload button is clicked
+        fileInputRef.current?.click();
         break;
       case 'camera':
         // Multi-camera mode - user can tap to capture multiple photos
@@ -465,7 +515,7 @@ export function MultiCameraCapture({
                     />
                     <button
                       onClick={() => removeImage(index)}
-                      className="absolute -bottom-3 -right-3 bg-destructive text-white w-6 h-6 flex-shrink-0 flex items-center justify-center hover:bg-destructive/90 hover:scale-110 transition-all duration-200 shadow-md isolate z-10"
+                      className="absolute -bottom-3 -right-3 bg-destructive text-white w-6 h-6 flex-shrink-0 flex items-center justify-center transition-all duration-200 shadow-md isolate z-10 active:bg-destructive/90 active:scale-110"
                       style={{
                         borderRadius: '50%',
                         minWidth: '24px',
@@ -507,7 +557,7 @@ export function MultiCameraCapture({
               {/* Capture Overlay - only active in camera mode */}
               {selectedMode === 'camera' && (
                 <div
-                  className="absolute inset-0 cursor-pointer bg-black/5 hover:bg-black/10 active:bg-black/20 transition-colors"
+                  className="absolute inset-0 cursor-pointer bg-black/5 active:bg-black/20 transition-colors"
                   onClick={captureImage}
                 >
                   {/* Centered camera icon with counter */}
@@ -531,16 +581,31 @@ export function MultiCameraCapture({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative">
                     <Input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       multiple
                       onChange={handleFileUpload}
                       className="absolute inset-0 opacity-0 cursor-pointer w-32 h-32"
-                      disabled={capturedImages.length >= maxImages}
+                      disabled={
+                        capturedImages.length >= maxImages || isUploading
+                      }
                     />
-                    <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
+                    <div className="w-32 h-32 rounded-full border-4 border-white/80 bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg cursor-pointer transition-colors">
                       <Upload className="h-12 w-12 text-white" />
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Loading Overlay */}
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                  <div className="flex flex-col items-center gap-3 bg-card/90 p-6 rounded-xl shadow-lg border border-white/20">
+                    <LoadingSpinner size="lg" className="text-white" />
+                    <span className="text-white text-sm font-medium">
+                      Validating images...
+                    </span>
                   </div>
                 </div>
               )}

@@ -161,6 +161,19 @@ select {
   background: hsl(var(--muted-foreground) / 0.6);
 }
 
+/* Disable hover effects on touch devices (mobile-only PWA) */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove all hover pseudo-class effects on touch devices */
+  *:hover {
+    background-color: inherit !important;
+    color: inherit !important;
+    opacity: inherit !important;
+    transform: inherit !important;
+    box-shadow: inherit !important;
+    text-decoration: inherit !important;
+  }
+}
+
 /* Safe area support for bottom navigation */
 .safe-area-pb {
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));

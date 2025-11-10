@@ -161,9 +161,29 @@ select {
   background: hsl(var(--muted-foreground) / 0.6);
 }
 
-/* Disable hover effects on touch devices (mobile-only PWA) */
+/* ============================================
+   MOBILE-FIRST TOUCH OPTIMIZATION
+   ============================================ */
+
+/* 1. Disable webkit tap highlight (removes blue flash on iOS/Android) */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 2. Allow text selection only where needed */
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* 3. Disable ALL hover effects on touch devices */
 @media (hover: none) and (pointer: coarse) {
-  /* Prevent hover states from triggering on touch - revert to default state */
+  /* Remove hover classes completely on touch devices */
   button:hover,
   a:hover,
   [role='button']:hover,
@@ -171,14 +191,45 @@ select {
   textarea:hover,
   select:hover,
   [class*='hover:']:hover {
-    background-color: revert;
-    color: revert;
-    opacity: revert;
-    transform: revert;
-    box-shadow: revert;
-    text-decoration: revert;
-    border-color: revert;
-    scale: revert;
+    /* Don't revert - keep current state by using unset */
+    background-color: unset;
+    color: unset;
+    opacity: unset;
+    transform: unset;
+    box-shadow: unset;
+    border-color: unset;
+    scale: unset;
+  }
+}
+
+/* 4. Remove default focus styles on touch devices, keep for keyboard nav */
+@media (hover: none) and (pointer: coarse) {
+  button:focus,
+  a:focus,
+  [role='button']:focus {
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+/* 5. Preserve focus styles for keyboard navigation (desktop/accessibility) */
+@media (hover: hover) and (pointer: fine) {
+  button:focus-visible,
+  a:focus-visible,
+  [role='button']:focus-visible {
+    outline: 2px solid hsl(var(--brand-primary));
+    outline-offset: 2px;
+  }
+}
+
+/* 6. Active states for immediate touch feedback (mobile only) */
+@media (hover: none) and (pointer: coarse) {
+  button:active,
+  a:active,
+  [role='button']:active {
+    /* Subtle scale down for tactile feedback */
+    transform: scale(0.97);
+    transition: transform 0.05s ease-out;
   }
 }
 

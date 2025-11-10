@@ -163,14 +163,22 @@ select {
 
 /* Disable hover effects on touch devices (mobile-only PWA) */
 @media (hover: none) and (pointer: coarse) {
-  /* Remove all hover pseudo-class effects on touch devices */
-  *:hover {
-    background-color: inherit !important;
-    color: inherit !important;
-    opacity: inherit !important;
-    transform: inherit !important;
-    box-shadow: inherit !important;
-    text-decoration: inherit !important;
+  /* Prevent hover states from triggering on touch - revert to default state */
+  button:hover,
+  a:hover,
+  [role='button']:hover,
+  input:hover,
+  textarea:hover,
+  select:hover,
+  [class*='hover:']:hover {
+    background-color: revert;
+    color: revert;
+    opacity: revert;
+    transform: revert;
+    box-shadow: revert;
+    text-decoration: revert;
+    border-color: revert;
+    scale: revert;
   }
 }
 

@@ -31,21 +31,41 @@ export function FullWidthHeader({
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const dateString = date.toDateString();
-    const todayString = today.toDateString();
-    const yesterdayString = yesterday.toDateString();
+    // Normalize dates to midnight for accurate comparison
+    const dateMidnight = new Date(date);
+    dateMidnight.setHours(0, 0, 0, 0);
+    const todayMidnight = new Date(today);
+    todayMidnight.setHours(0, 0, 0, 0);
+    const yesterdayMidnight = new Date(yesterday);
+    yesterdayMidnight.setHours(0, 0, 0, 0);
+
+    const dateString = dateMidnight.toDateString();
+    const todayString = todayMidnight.toDateString();
+    const yesterdayString = yesterdayMidnight.toDateString();
 
     if (dateString === todayString) {
       return 'Today';
     } else if (dateString === yesterdayString) {
       return 'Yesterday';
     } else {
-      // Format as "Mon, Jan 15"
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-      });
+      // Calculate days difference
+      const daysDiff = Math.floor(
+        (todayMidnight.getTime() - dateMidnight.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      if (daysDiff >= 2 && daysDiff <= 7) {
+        // Previous 6 days (2-7 days ago): Day name only
+        return date.toLocaleDateString('en-US', {
+          weekday: 'short',
+        });
+      } else {
+        // Earlier: Date format (Nov 6, Oct 1)
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
+      }
     }
   }, []);
 
@@ -143,7 +163,7 @@ export function FullWidthHeader({
 
           <button
             onClick={handleToday}
-            className="px-3 py-1 text-lg font-semibold text-foreground transition-colors active:text-primary active:scale-95"
+            className="min-w-[80px] px-3 py-1 text-lg font-semibold text-foreground transition-colors active:text-primary active:scale-95 text-center"
           >
             {formatDate(currentDate)}
           </button>

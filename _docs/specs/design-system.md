@@ -257,6 +257,145 @@ System colors communicate state and actions.
 <button className="h-11 w-11 min-h-[44px] min-w-[44px]">Delete</button>
 ```
 
+## Mobile Touch Interactions
+
+### State-Driven Styling (Not Hover-Based)
+
+**Critical Rule:** On mobile, visual state must be driven by React state, not CSS `:hover` pseudo-classes. Hover states are disabled on touch devices and will not provide feedback.
+
+```tsx
+// ❌ WRONG - Hover classes don't work on mobile
+<button
+  className={`text-muted-foreground hover:${getZoneTextClass('green')}`}
+  onClick={() => setOrganic(true)}
+>
+  <Leaf />
+</button>
+
+// ✅ CORRECT - State-driven styling
+<button
+  className={cn(
+    'text-muted-foreground transition-all',
+    isOrganic ? getZoneTextClass('green') : 'text-muted-foreground',
+    'active:scale-110 active:opacity-80' // Touch feedback
+  )}
+  onClick={() => setIsOrganic(!isOrganic)}
+>
+  <Leaf />
+</button>
+```
+
+### Active States for Touch Feedback
+
+Use `:active` pseudo-classes to provide immediate tactile feedback on touch devices:
+
+```tsx
+// ✅ Good - Immediate feedback on tap
+<button className="
+  text-muted-foreground
+  transition-all
+  active:scale-95
+  active:bg-muted/20
+  active:text-foreground
+">
+  Tap me
+</button>
+
+// ✅ Toggle buttons - State determines appearance
+<button className={cn(
+  'transition-all',
+  isActive ? 'text-brand-primary scale-105' : 'text-muted-foreground scale-100',
+  'active:scale-95 active:bg-muted/20' // Press feedback
+)}>
+  Tab
+</button>
+```
+
+### Common Touch Feedback Patterns
+
+**Icon Buttons:**
+
+```tsx
+<button
+  className="
+  p-1 
+  text-muted-foreground 
+  transition-all 
+  active:scale-110 
+  active:opacity-80
+"
+>
+  <Edit2 className="h-3 w-3" />
+</button>
+```
+
+**Navigation Tabs:**
+
+```tsx
+<button
+  className={cn(
+    'transition-all duration-150',
+    currentView === 'insights'
+      ? 'text-brand-primary scale-105'
+      : 'text-muted-foreground scale-100',
+    'active:scale-95 active:bg-muted/20'
+  )}
+>
+  <BarChart3 />
+</button>
+```
+
+**List Items:**
+
+```tsx
+<div
+  className="
+    p-3 
+    bg-muted 
+    rounded-lg 
+    transition-colors 
+    cursor-pointer 
+    active:bg-muted/50 
+    active:scale-[0.99]
+  "
+  onClick={handleClick}
+>
+  Content
+</div>
+```
+
+### Scale Values for Active States
+
+- **Small buttons (icons):** `active:scale-110` or `active:scale-95`
+- **Medium buttons:** `active:scale-105` or `active:scale-95`
+- **Large buttons/tabs:** `active:scale-[0.98]` or `active:scale-95`
+- **List items:** `active:scale-[0.99]` or `active:scale-[0.98]`
+
+### Transition Timing
+
+Always include `transition-all` or specific transition properties for smooth state changes:
+
+```tsx
+// ✅ Smooth transitions
+className = 'transition-all duration-150';
+
+// ✅ Specific transitions
+className = 'transition-colors transition-transform';
+```
+
+### Never Use Hover Classes for Mobile
+
+```tsx
+// ❌ WRONG - These don't work on touch devices
+className="hover:text-foreground hover:bg-accent"
+
+// ✅ CORRECT - Use active states + state-driven styling
+className={cn(
+  isActive ? 'text-foreground bg-accent' : 'text-muted-foreground',
+  'active:scale-95'
+)}
+```
+
 ## Responsive Design
 
 ### Mobile-First Approach

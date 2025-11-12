@@ -885,7 +885,7 @@ export function FoodEntryForm({
                                 <PopoverTrigger asChild>
                                   <button
                                     type="button"
-                                    className="p-0.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                                    className="p-0.5 text-muted-foreground transition-colors flex-shrink-0 active:text-foreground active:scale-110"
                                     aria-label="Ingredient classification info"
                                   >
                                     <Info className="h-3 w-3" />
@@ -920,11 +920,13 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleToggleOrganic(index)}
-                          className={`p-1 transition-all flex items-center justify-center ${
+                          className={cn(
+                            'p-1 transition-all flex items-center justify-center',
                             ingredient.organic
-                              ? `${getZoneTextClass('green')} hover:opacity-80`
-                              : `text-muted-foreground hover:${getZoneTextClass('green')}`
-                          }`}
+                              ? getZoneTextClass('green')
+                              : 'text-muted-foreground',
+                            'active:scale-110 active:opacity-80'
+                          )}
                           title={
                             ingredient.organic
                               ? 'Mark as non-organic'
@@ -932,13 +934,16 @@ export function FoodEntryForm({
                           }
                         >
                           <Leaf
-                            className={`transition-all ${ingredient.organic ? 'h-4 w-4' : 'h-3 w-3'}`}
+                            className={cn(
+                              'transition-all',
+                              ingredient.organic ? 'h-4 w-4' : 'h-3 w-3'
+                            )}
                           />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleEditIngredient(index)}
-                          className="p-1 text-muted-foreground hover:text-blue-600 transition-colors"
+                          className="p-1 text-muted-foreground transition-colors active:text-blue-600 active:scale-110"
                           title="Edit ingredient"
                         >
                           <Edit2 className="h-3 w-3" />
@@ -946,7 +951,10 @@ export function FoodEntryForm({
                         <button
                           type="button"
                           onClick={() => handleDeleteIngredient(index)}
-                          className={`p-1 text-muted-foreground hover:${getZoneTextClass('red')} transition-colors`}
+                          className={cn(
+                            'p-1 text-muted-foreground transition-colors',
+                            `active:${getZoneTextClass('red')} active:scale-110`
+                          )}
                           title="Delete ingredient"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -965,7 +973,7 @@ export function FoodEntryForm({
           <button
             type="button"
             onClick={() => setShowNotes(!showNotes)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-sm text-muted-foreground transition-colors active:text-foreground active:scale-[0.98]"
           >
             {showNotes ? (
               <ChevronUp className="h-4 w-4" />

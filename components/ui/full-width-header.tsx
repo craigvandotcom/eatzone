@@ -136,14 +136,14 @@ export function FullWidthHeader({
             variant="ghost"
             size="icon"
             onClick={handlePreviousDay}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 text-muted-foreground active:text-foreground active:scale-95"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
           <button
             onClick={handleToday}
-            className="px-3 py-1 text-lg font-semibold text-foreground hover:text-primary transition-colors"
+            className="px-3 py-1 text-lg font-semibold text-foreground transition-colors active:text-primary active:scale-95"
           >
             {formatDate(currentDate)}
           </button>
@@ -153,7 +153,7 @@ export function FullWidthHeader({
             size="icon"
             onClick={handleNextDay}
             disabled={!canGoForward()}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 text-muted-foreground active:text-foreground active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

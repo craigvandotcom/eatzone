@@ -225,25 +225,11 @@ textarea,
   -webkit-touch-callout: default;
 }
 
-/* 5. Disable ALL hover effects on touch devices */
+/* 5. Disable hover effects on touch devices - use active states instead */
 @media (hover: none) and (pointer: coarse) {
-  /* Remove hover classes completely on touch devices */
-  button:hover,
-  a:hover,
-  [role='button']:hover,
-  input:hover,
-  textarea:hover,
-  select:hover,
-  [class*='hover:']:hover {
-    /* Don't revert - keep current state by using unset */
-    background-color: unset;
-    color: unset;
-    opacity: unset;
-    transform: unset;
-    box-shadow: unset;
-    border-color: unset;
-    scale: unset;
-  }
+  /* Note: We rely on explicit :active pseudo-classes for touch feedback */
+  /* Hover classes are automatically ignored on touch devices */
+  /* This ensures state-driven styling (via React state) works correctly */
 }
 
 /* 6. Remove default focus styles on touch devices, keep for keyboard nav */

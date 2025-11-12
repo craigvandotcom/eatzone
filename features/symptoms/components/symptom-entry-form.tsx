@@ -184,7 +184,7 @@ export function SymptomEntryForm({
                   <div key={category.name} className="space-y-2">
                     {/* Category Header */}
                     <div
-                      className="p-3 bg-muted rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                      className="p-3 bg-muted rounded-lg transition-colors cursor-pointer active:bg-muted/50 active:scale-[0.99]"
                       onClick={() => toggleCategory(category.name)}
                     >
                       <div className="flex items-center justify-between">
@@ -210,7 +210,7 @@ export function SymptomEntryForm({
                         {symptoms.map(symptom => (
                           <div
                             key={symptom.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                            className="flex items-center justify-between p-2 rounded-lg bg-muted/50 transition-colors cursor-pointer active:bg-muted active:scale-[0.98]"
                             onClick={() => addSymptom(symptom)}
                           >
                             <div className="flex items-center gap-2">
@@ -295,7 +295,7 @@ export function SymptomEntryForm({
             <button
               type="button"
               onClick={() => setShowNotes(!showNotes)}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 text-sm text-muted-foreground transition-colors active:text-foreground active:scale-[0.98]"
             >
               {showNotes ? (
                 <ChevronUp className="h-4 w-4" />

@@ -57,7 +57,7 @@ export function CameraCycleButton({
         disabled={disabled}
         variant="secondary"
         size="icon"
-        className="relative h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm shadow-lg hover:bg-card border-2 border-white/40 transition-all"
+        className="relative h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm shadow-lg border-2 border-white/40 transition-all active:bg-card active:scale-95"
         aria-label="Switch camera"
       >
         <SwitchCamera className="h-5 w-5 text-white" />

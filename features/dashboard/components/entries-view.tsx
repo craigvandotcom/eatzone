@@ -229,7 +229,7 @@ export function EntriesView({
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-10 w-10 text-muted-foreground hover:text-foreground touch-manipulation [&_svg]:!h-[24px] [&_svg]:!w-[24px]"
+                                      className="h-10 w-10 text-muted-foreground touch-manipulation [&_svg]:!h-[24px] [&_svg]:!w-[24px] active:text-foreground active:scale-95"
                                       onClick={e => {
                                         e.preventDefault();
                                         e.stopPropagation();

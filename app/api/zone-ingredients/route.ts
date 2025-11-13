@@ -54,11 +54,7 @@ export async function POST(request: NextRequest) {
     const realIp = request.headers.get('x-real-ip');
     const ip = forwardedFor?.split(',')[0] ?? realIp ?? '127.0.0.1';
 
-    const rateLimitResult = await rateLimiter.limitGeneric(
-      ip,
-      APP_CONFIG.RATE_LIMIT.ZONING_REQUESTS_PER_MINUTE,
-      60 * 1000
-    );
+    const rateLimitResult = await rateLimiter.limitZoning(ip);
 
     if (!rateLimitResult.success) {
       logger.warn('Rate limit exceeded for ingredient zoning', {

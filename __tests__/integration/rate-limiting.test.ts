@@ -197,18 +197,18 @@ describe('Rate Limiting Integration Tests', () => {
       const rateLimiter = getRateLimiter();
       const ip = '192.168.1.2';
 
-      // Test the 20 requests per minute limit for zoning
+      // Test the 50 requests per minute limit for zoning (default)
       const results = [];
 
-      for (let i = 0; i < 25; i++) {
-        const result = await rateLimiter.limitGeneric(ip, 20, 60000);
+      for (let i = 0; i < 55; i++) {
+        const result = await rateLimiter.limitZoning(ip);
         results.push(result);
       }
 
       const successful = results.filter(r => r.success);
       const blocked = results.filter(r => !r.success);
 
-      expect(successful.length).toBe(20);
+      expect(successful.length).toBe(50);
       expect(blocked.length).toBe(5);
     });
   });

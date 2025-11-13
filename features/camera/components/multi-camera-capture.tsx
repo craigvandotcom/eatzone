@@ -7,7 +7,7 @@ import { Camera, X } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
 import { APP_CONFIG } from '@/lib/config/constants';
 import { validateImageFile } from '@/lib/utils/file-validation';
-import { smartCompressImage } from '@/lib/utils/image-compression';
+import { compressImageWithWorker } from '@/lib/utils/worker-compression';
 import { ModeSelector, type CameraMode } from './mode-selector';
 import { ImageProcessingErrorBoundary } from './image-processing-error-boundary';
 import { useErrorHandler } from '@/components/error-boundary';
@@ -51,6 +51,52 @@ export function MultiCameraCapture({
   const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
   const isInitialCameraLoadRef = useRef<boolean>(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * Compress image using Web Worker with smart compression strategy
+   * Uses the same logic as smartCompressImage but with Web Worker support
+   */
+  const compressImageSmart = async (
+    base64Data: string,
+    maxSizeBytes: number = APP_CONFIG.IMAGE.MAX_FILE_SIZE
+  ) => {
+    const { getBase64ImageSize } = await import('@/lib/utils/image-utils');
+    const originalSize = getBase64ImageSize(base64Data);
+
+    // If image is already small enough, return as-is
+    if (originalSize <= maxSizeBytes) {
+      return {
+        compressedImage: base64Data,
+        originalSize,
+        compressedSize: originalSize,
+        compressionRatio: 1,
+        quality: 1,
+      };
+    }
+
+    // Determine compression strategy based on size
+    const options: Parameters<typeof compressImageWithWorker>[1] = {
+      format: 'image/jpeg',
+    };
+
+    // Convert maxSizeBytes to targetSizeKB for worker
+    options.targetSizeKB = Math.ceil(maxSizeBytes / 1024);
+
+    // For very large images, also reduce dimensions
+    if (originalSize > maxSizeBytes * 4) {
+      options.maxWidth = 1920;
+      options.maxHeight = 1920;
+      options.quality = 0.8;
+    } else if (originalSize > maxSizeBytes * 2) {
+      options.maxWidth = 2048;
+      options.maxHeight = 2048;
+      options.quality = 0.85;
+    } else {
+      options.quality = 0.9;
+    }
+
+    return await compressImageWithWorker(base64Data, options);
+  };
 
   useEffect(() => {
     if (open) {
@@ -283,8 +329,8 @@ export function MultiCameraCapture({
         return;
       }
 
-      // Compress image to optimize storage
-      const compressionResult = await smartCompressImage(rawImageData);
+      // Compress image to optimize storage (using Web Worker)
+      const compressionResult = await compressImageSmart(rawImageData);
 
       logger.debug('Image captured and compressed', {
         originalSize: compressionResult.originalSize,
@@ -401,8 +447,40 @@ export function MultiCameraCapture({
               };
             }
 
-            // 5. Compress image (matches camera capture behavior)
-            const compressionResult = await smartCompressImage(base64Data);
+            // 4.5. Optional: Server-side backup validation in production (security layer)
+            if (process.env.NODE_ENV === 'production') {
+              try {
+                const serverValidation = await fetch('/api/upload-validation', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    filename: file.name,
+                    mimeType: file.type,
+                    size: file.size,
+                    base64Data,
+                  }),
+                });
+
+                if (!serverValidation.ok) {
+                  // Log mismatch but don't block - client validation already passed
+                  logger.warn('Server validation mismatch detected', {
+                    filename: file.name,
+                    clientValid: true,
+                    serverStatus: serverValidation.status,
+                  });
+                  // Continue processing - client validation is primary
+                }
+              } catch (error) {
+                // Log but don't block - it's a backup check
+                logger.error('Server validation check failed', {
+                  filename: file.name,
+                  error: error instanceof Error ? error.message : String(error),
+                });
+              }
+            }
+
+            // 5. Compress image using Web Worker (matches camera capture behavior)
+            const compressionResult = await compressImageSmart(base64Data);
 
             logger.debug('Image uploaded and compressed', {
               filename: file.name,

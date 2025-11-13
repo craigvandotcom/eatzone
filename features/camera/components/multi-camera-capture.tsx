@@ -13,6 +13,7 @@ import { ImageProcessingErrorBoundary } from './image-processing-error-boundary'
 import { useErrorHandler } from '@/components/error-boundary';
 import { CameraCycleButton } from './camera-cycle-button';
 import { LoadingSpinner } from '@/components/ui/loading-states';
+import { toast } from 'sonner';
 
 interface MultiCameraCaptureProps {
   open: boolean;
@@ -350,77 +351,159 @@ export function MultiCameraCapture({
     const filesToProcess = files.slice(0, remainingSlots);
 
     try {
-      // Show loading state during file validation
+      // Show loading state during file validation and compression
       setIsUploading(true);
 
-      // First validate all files on server-side
-      const validationPromises = filesToProcess.map(async file => {
-        // Convert file to base64 for validation
-        const base64Data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+      // Process all files with individual error handling
+      const validationResults = await Promise.allSettled(
+        filesToProcess.map(async file => {
+          try {
+            // 1. Quick size check before reading file
+            if (file.size > APP_CONFIG.IMAGE.MAX_FILE_SIZE) {
+              return {
+                success: false,
+                filename: file.name,
+                error: `File too large (max ${Math.round(APP_CONFIG.IMAGE.MAX_FILE_SIZE / 1024 / 1024)}MB)`,
+              };
+            }
 
-        // Validate with server
-        const response = await fetch('/api/upload-validation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: file.name,
-            mimeType: file.type,
-            size: file.size,
-            base64Data,
-          }),
-        });
+            // 2. Quick MIME type check
+            if (!APP_CONFIG.IMAGE.ALLOWED_TYPES.includes(file.type as any)) {
+              return {
+                success: false,
+                filename: file.name,
+                error: `File type ${file.type} not allowed`,
+              };
+            }
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || 'File validation failed');
-        }
+            // 3. Convert file to base64 with proper error handling
+            const base64Data = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const result = reader.result;
+                if (typeof result === 'string') {
+                  resolve(result);
+                } else {
+                  reject(new Error('Invalid file read result'));
+                }
+              };
+              reader.onerror = () => reject(new Error('Failed to read file'));
+              reader.readAsDataURL(file);
+            });
 
-        return base64Data;
-      });
+            // 4. Client-side validation (instant, no network)
+            const validation = validateImageFile(base64Data);
+            if (!validation.valid) {
+              return {
+                success: false,
+                filename: file.name,
+                error: validation.error?.message || 'Validation failed',
+              };
+            }
 
-      // Wait for all validations to complete
-      const validatedImages = await Promise.all(validationPromises);
+            // 5. Compress image (matches camera capture behavior)
+            const compressionResult = await smartCompressImage(base64Data);
 
-      // Hide loading state after validation completes
+            logger.debug('Image uploaded and compressed', {
+              filename: file.name,
+              originalSize: compressionResult.originalSize,
+              compressedSize: compressionResult.compressedSize,
+              compressionRatio: compressionResult.compressionRatio,
+            });
+
+            return {
+              success: true,
+              base64Data: compressionResult.compressedImage,
+              filename: file.name,
+            };
+          } catch (error) {
+            return {
+              success: false,
+              filename: file.name,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            };
+          }
+        })
+      );
+
+      // Hide loading state after all files processed
       setIsUploading(false);
 
-      const updatedImages = [...capturedImages, ...validatedImages];
-      setCapturedImages(updatedImages);
+      // Separate successful and failed uploads
+      const successful: string[] = [];
+      const failed: Array<{ filename: string; error: string }> = [];
 
-      // Auto-switch back to camera mode after successful upload
+      validationResults.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          if (result.value.success && result.value.base64Data) {
+            successful.push(result.value.base64Data);
+          } else if (!result.value.success && result.value.error) {
+            failed.push({
+              filename: result.value.filename,
+              error: result.value.error,
+            });
+          }
+        } else {
+          // Promise.allSettled rejection (shouldn't happen with our try/catch)
+          failed.push({
+            filename: filesToProcess[index]?.name || `File ${index + 1}`,
+            error: result.reason?.message || 'Unknown error',
+          });
+        }
+      });
+
+      // Show user-friendly error messages for failed files
+      if (failed.length > 0) {
+        const errorMessages = failed
+          .map(f => `${f.filename}: ${f.error}`)
+          .join('\n');
+        logger.warn('Some files failed validation', { failed });
+
+        toast.error(
+          failed.length === filesToProcess.length
+            ? `All files failed validation:\n${errorMessages}`
+            : `${failed.length} of ${filesToProcess.length} files failed:\n${errorMessages}`
+        );
+      }
+
+      // Add successful images if any
+      if (successful.length > 0) {
+        const updatedImages = [...capturedImages, ...successful];
+        setCapturedImages(updatedImages);
+
+        // Show success message if some files succeeded
+        if (failed.length > 0) {
+          toast.success(`Successfully added ${successful.length} image(s)`);
+        }
+
+        // Auto-submit after reaching max images (same as camera capture)
+        if (updatedImages.length >= maxImages) {
+          // Small delay to show the final image in collection, then navigate smoothly
+          setTimeout(() => {
+            stopCamera();
+            // Use React 19 transition to coordinate navigation and modal closing
+            startTransition(() => {
+              onCapture(updatedImages);
+              onOpenChange(false);
+            });
+          }, 500);
+        }
+      }
+
+      // Auto-switch back to camera mode after upload
       setSelectedMode('camera');
 
       // Reset file input so same file can be selected again if needed
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-
-      // Auto-submit after reaching max images (same as camera capture)
-      if (updatedImages.length >= maxImages) {
-        // Small delay to show the final image in collection, then navigate smoothly
-        setTimeout(() => {
-          stopCamera();
-          // Use React 19 transition to coordinate navigation and modal closing
-          startTransition(() => {
-            onCapture(updatedImages);
-            onOpenChange(false);
-          });
-        }, 500);
-      }
     } catch (error) {
       // Hide loading state on error
       setIsUploading(false);
-      logger.error('File upload validation failed', error);
-      if (error instanceof Error) {
-        handleError(error);
-      } else {
-        handleError(new Error('File validation failed'));
-      }
+      logger.error('File upload failed', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'File upload failed';
+      toast.error(errorMessage);
       // Reset mode on error
       setSelectedMode('camera');
     }

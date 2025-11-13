@@ -72,17 +72,26 @@ export default function AddFoodPage() {
   }, [router]);
 
   const handleAddFood = async (food: Omit<Food, 'id' | 'timestamp'>) => {
-    // Include image data if available
-    if (capturedImages?.length) {
-      await dbAddFood({ ...food, images: capturedImages });
-    } else {
-      await dbAddFood(food);
+    try {
+      // Include image data if available
+      if (capturedImages?.length) {
+        await dbAddFood({ ...food, images: capturedImages });
+      } else {
+        await dbAddFood(food);
+      }
+
+      // Invalidate SWR cache to trigger immediate refresh
+      await mutate('dashboard-data');
+
+      router.push('/app');
+    } catch (error) {
+      logger.error('Failed to add food entry', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to save food entry. Please try again.';
+      toast.error(errorMessage);
     }
-
-    // Invalidate SWR cache to trigger immediate refresh
-    await mutate('dashboard-data');
-
-    router.push('/app');
   };
 
   const handleClose = () => {

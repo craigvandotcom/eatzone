@@ -97,18 +97,22 @@ export function FullWidthHeader({
     );
   }
 
-  const handlePreviousDay = () => {
+  const handlePreviousDay = (e: React.MouseEvent<HTMLButtonElement>) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 1);
     setCurrentDate(newDate);
     onDateChange?.(newDate);
+    // Remove focus after tap (prevents background color persistence on mobile Safari)
+    e.currentTarget.blur();
   };
 
-  const handleNextDay = () => {
+  const handleNextDay = (e: React.MouseEvent<HTMLButtonElement>) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 1);
     setCurrentDate(newDate);
     onDateChange?.(newDate);
+    // Remove focus after tap (prevents background color persistence on mobile Safari)
+    e.currentTarget.blur();
   };
 
   const handleToday = () => {

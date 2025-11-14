@@ -37,8 +37,9 @@ pnpm dev
 
 ### Database Development
 
-- **`db:reset` (Manual Task)**: This is not an automated script. To test the application with a clean slate, you must clear the IndexedDB manually via your browser's developer tools.
-  - **How-to**: Open DevTools → Application → Storage → IndexedDB → Right-click on the database → Delete.
+- **`pnpm db:reset`**: Clears all user data from Supabase (dev only). Resets the database to a clean state for testing.
+- **`pnpm db:seed`**: Seeds test data into Supabase (dev only). Useful for populating sample foods and symptoms.
+- **`pnpm db:status`**: Checks database connection and displays current status.
 
 ## Development Workflow
 
@@ -51,7 +52,7 @@ cd eatZone
 pnpm install
 
 # Setup environment variables
-cp _docs/environment-setup.md .env.local
+cp .env.example .env.local
 # Edit .env.local with your actual values
 
 # Start development
@@ -113,8 +114,8 @@ eatZone/
 │   ├── ui/               # shadcn/ui components
 │   └── *.tsx             # Custom components
 ├── lib/                  # Utility functions
-│   ├── db.ts            # Database layer (future)
-│   ├── hooks/           # Custom React hooks (future)
+│   ├── db.ts            # Supabase database client and operations
+│   ├── hooks/           # Custom React hooks
 │   └── utils.ts         # Utility functions
 ├── public/              # Static assets
 ├── _docs/               # Documentation
@@ -147,20 +148,24 @@ pnpm add -D <package-name>
 ### Database Development
 
 ```bash
-# Clear IndexedDB for testing
-# 1. Open DevTools (F12)
-# 2. Go to Application tab
-# 3. Expand IndexedDB
-# 4. Right-click database → Delete
+# Reset database (clears all user data)
+pnpm db:reset
+
+# Seed test data
+pnpm db:seed
+
+# Check database status
+pnpm db:status
 ```
 
 ### Environment Variables
 
 ```bash
 # Add new environment variable
-# 1. Update _docs/environment-setup.md
-# 2. Add to .env.local
+# 1. Update .env.example with the new variable
+# 2. Add to .env.local with actual value
 # 3. Use in code: process.env.VARIABLE_NAME
+# 4. Update _docs/specs/environment-setup.md if needed
 ```
 
 ## Troubleshooting

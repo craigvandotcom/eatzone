@@ -1001,7 +1001,7 @@ export function FoodEntryForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  className="bg-transparent text-destructive border-destructive active:bg-destructive active:text-destructive-foreground active:scale-95 transition-all"
                 >
                   Delete
                 </Button>
@@ -1018,7 +1018,7 @@ export function FoodEntryForm({
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={onDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-destructive text-destructive-foreground active:bg-destructive/90 active:scale-95 transition-all"
                   >
                     Delete
                   </AlertDialogAction>

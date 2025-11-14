@@ -2,7 +2,7 @@
 
 ## Overview
 
-Puls uses Supabase Auth for secure, centralized authentication with automatic demo mode support for development and preview environments.
+eatZone uses Supabase Auth for secure, centralized authentication with automatic demo mode support for development and preview environments.
 
 ## Environment Modes
 
@@ -26,12 +26,12 @@ Puls uses Supabase Auth for secure, centralized authentication with automatic de
 
 ## Demo Accounts
 
-| Environment | Email              | Password     | Auto-created |
-| ----------- | ------------------ | ------------ | ------------ |
-| Development | `dev@test.com`     | `password`   | Yes          |
-| Preview     | `demo@puls.app`    | `demo123`    | Yes          |
-| Preview     | `preview@puls.app` | `preview123` | Yes          |
-| Preview     | `test@puls.app`    | `test123`    | Yes          |
+| Environment | Email                 | Password     | Auto-created |
+| ----------- | --------------------- | ------------ | ------------ |
+| Development | `dev@test.com`        | `password`   | Yes          |
+| Preview     | `demo@eatzone.app`    | `demo123`    | Yes          |
+| Preview     | `preview@eatzone.app` | `preview123` | Yes          |
+| Preview     | `test@eatzone.app`    | `test123`    | Yes          |
 
 ## Authentication Flow
 

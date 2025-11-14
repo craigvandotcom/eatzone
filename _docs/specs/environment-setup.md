@@ -36,8 +36,9 @@ N8N_WEBHOOK_TOKEN=your_secure_webhook_token_here
 
 # Upstash Redis for rate limiting
 # Get these from: https://console.upstash.com/
-UPSTASH_REDIS_REST_URL=your_upstash_redis_url_here
-UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token_here
+# Note: These use KV_ prefix for consistency with Vercel KV naming
+KV_REST_API_URL=your_upstash_redis_url_here
+KV_REST_API_TOKEN=your_upstash_redis_token_here
 
 # ======================
 # Development Configuration
@@ -77,7 +78,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 
 - **OpenRouter**: Keep your API key secure, monitor usage
 - **n8n**: Use strong webhook tokens, consider IP whitelisting
-- **Upstash**: Use separate Redis instances for dev/prod
+- **Upstash Redis**: Use separate Redis instances for dev/prod (configured via `KV_REST_API_URL` and `KV_REST_API_TOKEN`)
 
 ## Environment Variable Types
 
@@ -87,7 +88,7 @@ These are only available in API routes and server components:
 
 - `OPENROUTER_API_KEY`
 - `N8N_WEBHOOK_TOKEN`
-- `UPSTASH_REDIS_REST_TOKEN`
+- `KV_REST_API_TOKEN`
 
 ### Client-Side (Public)
 

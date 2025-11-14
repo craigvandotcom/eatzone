@@ -76,7 +76,7 @@ export function FoodView({
                   href={`/app/foods/edit/${food.id}`}
                   prefetch={true}
                 >
-                  <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
+                  <Card className="cursor-pointer active:shadow-xl active:scale-[0.99] transition-all duration-200">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">

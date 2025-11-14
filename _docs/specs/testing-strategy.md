@@ -91,12 +91,12 @@ pnpm test:e2e:headed    # Run in visible browser
 
 ## Auth Testing Notes
 
-**Real Email Required**: Auth tests use `craigvh89@gmail.com` for login validation.
+**Real Email Required**: Auth tests use environment variables for login validation.
 
 **Configuration**:
 
-1. Update `TEST_PASSWORD` in `__tests__/e2e/auth-flow.spec.ts`
-2. Tests automatically skip if password not configured
+1. Set `TEST_USER_EMAIL` and `TEST_USER_PASSWORD` in `.env.local`
+2. Tests automatically skip if credentials not configured
 3. Signup tests are placeholders for future implementation
 
 ## Best Practices

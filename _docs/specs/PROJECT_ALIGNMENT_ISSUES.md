@@ -8,11 +8,25 @@ This document lists areas where the project code does not fully adhere to the sp
 
 ### Issue: Hover Classes Used in Components
 
+**Status:** ✅ Partially Resolved - CSS fix applied to disable hover on touch devices
+
 **Spec Reference:** `design-system.md` - "Mobile Touch Interactions" section
 
 **Problem:** Several components use `hover:` classes which don't work on touch devices. Visual state should be driven by React state, not CSS `:hover` pseudo-classes.
 
-**Affected Files:**
+**Solution Applied:**
+
+- Added CSS media query in `app/globals.css` (section 5) to disable hover states on touch devices
+- This prevents lingering hover states after tap on mobile
+- shadcn/ui components (like `Button`) can keep hover classes for desktop compatibility
+
+**Remaining Work:**
+
+- Remove `hover:` classes from custom components (not shadcn/ui)
+- Replace with state-driven styling + `active:` classes
+- See affected files list below
+
+**Affected Files (still need updates):**
 
 - `features/symptoms/components/symptom-entry-form.tsx` (line 326)
 - `features/foods/components/food-entry-form.tsx` (lines 1004, 1021)

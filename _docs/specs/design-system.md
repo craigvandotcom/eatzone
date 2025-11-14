@@ -25,8 +25,8 @@ Semantic tokens adapt to theme changes and ensure consistency.
 - Form elements
 
 ```tsx
-// ✅ Good - Semantic tokens
-<button className="bg-card text-foreground hover:bg-card/80">
+// ✅ Good - Semantic tokens (mobile-first: active states)
+<button className="bg-card text-foreground active:bg-card/80 active:scale-95">
   Click me
 </button>
 
@@ -97,22 +97,22 @@ System colors communicate state and actions.
 
 ```tsx
 // Primary action (zone green for food-related)
-<button className="bg-zone-green hover:bg-zone-green/90 text-white h-11 px-4 rounded-md">
+<button className="bg-zone-green active:bg-zone-green/90 active:scale-95 text-white h-11 px-4 rounded-md transition-all">
   Add Food
 </button>
 
 // Secondary action
-<button className="bg-secondary hover:bg-secondary/80 text-foreground h-11 px-4 rounded-md">
+<button className="bg-secondary active:bg-secondary/80 active:scale-95 text-foreground h-11 px-4 rounded-md transition-all">
   Cancel
 </button>
 
 // Destructive action
-<button className="bg-destructive hover:bg-destructive/90 text-white h-11 px-4 rounded-md">
+<button className="bg-destructive active:bg-destructive/90 active:scale-95 text-white h-11 px-4 rounded-md transition-all">
   Delete
 </button>
 
 // Ghost button
-<button className="hover:bg-accent text-foreground h-11 px-4 rounded-md">
+<button className="active:bg-accent active:scale-95 text-foreground h-11 px-4 rounded-md transition-all">
   Learn More
 </button>
 ```
@@ -127,7 +127,7 @@ System colors communicate state and actions.
 </div>
 
 // Interactive card
-<div className="bg-card hover:bg-card/80 border-border border rounded-lg p-6 cursor-pointer transition-colors">
+<div className="bg-card active:bg-card/80 active:scale-[0.99] border-border border rounded-lg p-6 cursor-pointer transition-all">
   <h3 className="text-foreground font-semibold">Clickable Card</h3>
 </div>
 ```

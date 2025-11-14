@@ -29,26 +29,21 @@ This document outlines the brand identity for the Health Tracker app. It should 
   2.  **Private by Design:** Your data stays on your device. Period.
   3.  **See What Matters:** Instantly visualize the patterns between your habits and how you feel.
 
-## 5. Visual Identity (Initial MVP)
+## 5. Visual Identity
 
 - **Logo:** Refer to `public/placeholder-logo.svg`.
 - **Color Palette:**
-  - **Primary:** (e.g., A calming blue or green)
-  - **Secondary:** (e.g., Neutral grays)
-  - **Accent/Call-to-Action:** (e.g., A vibrant, energetic color)
-  - **Health Categories:**
-    - Green: `hsl(var(--green-500))`
-    - Yellow: `hsl(var(--yellow-500))`
-    - Red: `hsl(var(--red-500))`
+  - **Primary:** Vivid Turquoise `#01a878` - Represents health, vitality, and the Green Zone
+  - **Secondary:** Neutral grays for UI elements and backgrounds
+  - **Accent/Call-to-Action:** Vivid Turquoise `#01a878` for primary actions
+  - **Health Categories (Zone Colors):**
+    - **Green Zone:** Vivid Turquoise `#01a878` - Nutrient-dense, healing foods
+    - **Yellow Zone:** Yellow `#fad046` - Context-dependent foods requiring testing
+    - **Red Zone:** Vivid Red `#f84f36` - Inflammatory foods to avoid
 - **Typography:**
-  - **Headings:** (e.g., A clean, modern sans-serif like Inter)
-  - **Body:** (e.g., A highly readable sans-serif, also Inter)
+  - **Headings:** Inter (clean, modern sans-serif)
+  - **Body:** Inter (highly readable sans-serif)
 
 ---
 
 _This is a living document and should be updated as the brand evolves._
-
-new colours:
-Vivid turquoise #01a878
-Vivid red #f84f36
-Yellow #fad046

@@ -323,7 +323,7 @@ export function SymptomEntryForm({
                 type="button"
                 variant="outline"
                 onClick={onDelete}
-                className="bg-transparent text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                className="bg-transparent text-destructive border-destructive active:bg-destructive active:text-destructive-foreground active:scale-95 transition-all"
               >
                 Delete
               </Button>

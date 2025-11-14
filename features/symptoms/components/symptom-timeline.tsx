@@ -139,7 +139,7 @@ export function SymptomTimeline({
                         hour12: true,
                       })}`}
                     >
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 border-2 border-primary bg-transparent rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200 cursor-pointer touch-manipulation">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 border-2 border-primary bg-transparent rounded-full flex items-center justify-center shadow-md active:shadow-lg active:scale-110 transition-all duration-200 cursor-pointer touch-manipulation">
                         <span className="text-foreground text-xs sm:text-sm">
                           {emoji}
                         </span>

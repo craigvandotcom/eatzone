@@ -177,7 +177,7 @@ export function EntriesView({
                         prefetch={true}
                         className="block"
                       >
-                        <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
+                        <Card className="cursor-pointer active:shadow-xl active:scale-[0.99] transition-all duration-200">
                           <CardContent className="!py-3 !px-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -293,7 +293,7 @@ export function EntriesView({
                       prefetch={true}
                       className="block"
                     >
-                      <Card className="cursor-pointer hover:shadow-xl transition-shadow duration-200">
+                      <Card className="cursor-pointer active:shadow-xl active:scale-[0.99] transition-all duration-200">
                         <CardContent className="py-3 px-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
@@ -364,7 +364,7 @@ export function EntriesView({
                   handleDeleteFood(deletingFoodId);
                 }
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground active:bg-destructive/90 active:scale-95"
             >
               Delete
             </AlertDialogAction>

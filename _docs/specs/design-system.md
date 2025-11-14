@@ -396,6 +396,66 @@ className={cn(
 )}
 ```
 
+### Technical Implementation: Disabling Hover on Touch Devices
+
+**Why:** shadcn/ui components (like `Button`) include `hover:` classes for desktop compatibility. On mobile, these can cause lingering states after tap.
+
+**Solution:** CSS media query disables hover states on touch devices while preserving them for desktop:
+
+```css
+@media (hover: none) and (pointer: coarse) {
+  button:hover,
+  a:hover,
+  [role='button']:hover {
+    background-color: inherit !important;
+    color: inherit !important;
+    opacity: inherit !important;
+    transform: none !important;
+  }
+}
+```
+
+**Location:** `app/globals.css` - Section 5: "Disable hover effects on touch devices"
+
+**For New Components:**
+
+- ✅ Use `active:` classes for touch feedback
+- ✅ Use state-driven styling for visual changes
+- ✅ Avoid adding new `hover:` classes (they're disabled on mobile anyway)
+- ✅ If using shadcn/ui components, rely on the CSS override above
+
+## Component Library Integration
+
+### Using shadcn/ui Components
+
+shadcn/ui components include `hover:` classes for desktop compatibility. These are automatically disabled on touch devices via CSS.
+
+**Guidelines:**
+
+- ✅ Use shadcn/ui components as-is (hover classes are handled by CSS)
+- ✅ Add `active:` classes for mobile touch feedback
+- ✅ Override with state-driven styling when needed
+- ❌ Don't remove hover classes from shadcn/ui components (breaks desktop compatibility)
+
+**Example:**
+
+```tsx
+// ✅ Good - shadcn/ui Button with mobile touch feedback
+<Button
+  variant="ghost"
+  size="icon"
+  className="active:scale-95 active:text-foreground"
+>
+  <ChevronLeft />
+</Button>
+```
+
+**Custom Components:**
+
+- Never add `hover:` classes to custom components
+- Use state-driven styling + `active:` classes only
+- See "Mobile Touch Interactions" section for patterns
+
 ## Responsive Design
 
 ### Mobile-First Approach

@@ -227,8 +227,19 @@ textarea,
 
 /* 5. Disable hover effects on touch devices - use active states instead */
 @media (hover: none) and (pointer: coarse) {
+  /* Disable hover states on touch devices to prevent lingering states after tap */
+  /* This fixes the issue where mobile browsers simulate hover on first tap */
+  button:hover,
+  a:hover,
+  [role='button']:hover {
+    background-color: inherit !important;
+    color: inherit !important;
+    opacity: inherit !important;
+    transform: none !important;
+  }
+
   /* Note: We rely on explicit :active pseudo-classes for touch feedback */
-  /* Hover classes are automatically ignored on touch devices */
+  /* Hover classes are automatically ignored on touch devices via this CSS */
   /* This ensures state-driven styling (via React state) works correctly */
 }
 

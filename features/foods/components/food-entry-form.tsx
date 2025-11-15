@@ -302,13 +302,17 @@ export function FoodEntryForm({
         if (!response.ok) {
           // Enhanced error parsing with detailed logging
           let errorMessage = 'Unknown error';
-          let errorDetails: { code?: string; message?: string; [key: string]: unknown } = {};
+          let errorDetails: {
+            code?: string;
+            message?: string;
+            [key: string]: unknown;
+          } = {};
           try {
             const errorData = await response.json();
             errorMessage =
               errorData?.error?.message || errorData?.message || errorMessage;
             errorDetails = errorData?.error || {};
-            
+
             // Log full error details for debugging
             logger.error('Image analysis API error - detailed', {
               status: response.status,

@@ -512,37 +512,14 @@ export function MultiCameraCapture({
               };
             }
 
-            // 4.5. Optional: Server-side backup validation in production (security layer)
-            if (process.env.NODE_ENV === 'production') {
-              try {
-                const serverValidation = await fetch('/api/upload-validation', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    filename: file.name,
-                    mimeType: file.type,
-                    size: file.size,
-                    base64Data,
-                  }),
-                });
-
-                if (!serverValidation.ok) {
-                  // Log mismatch but don't block - client validation already passed
-                  logger.warn('Server validation mismatch detected', {
-                    filename: file.name,
-                    clientValid: true,
-                    serverStatus: serverValidation.status,
-                  });
-                  // Continue processing - client validation is primary
-                }
-              } catch (error) {
-                // Log but don't block - it's a backup check
-                logger.error('Server validation check failed', {
-                  filename: file.name,
-                  error: error instanceof Error ? error.message : String(error),
-                });
-              }
-            }
+            // 4.5. Server-side validation REMOVED
+            // This was causing 413 "Request Entity Too Large" errors because:
+            // - Validation happened BEFORE compression (uncompressed images are huge)
+            // - Vercel has a 4.5MB body size limit for API routes
+            // - Even a single uncompressed photo can exceed this limit
+            // Client-side validation (steps 1-4 above) is sufficient and comprehensive:
+            // - File size checks, MIME type validation, extension validation, magic number validation
+            // Server-side validation can be added AFTER compression if needed in the future
 
             // 5. Compress image using Web Worker (matches camera capture behavior)
             const compressionResult = await compressImageSmart(base64Data);

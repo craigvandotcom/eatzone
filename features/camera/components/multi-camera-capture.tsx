@@ -112,43 +112,52 @@ export function MultiCameraCapture({
     );
 
     // Fix B: Verify compression actually reduced size - re-compress if needed
-    if (compressedSize > effectiveMaxSize) {
+    // CRITICAL: We MUST guarantee images are under 1MB to prevent Vercel 413 errors
+    let finalSize = compressedSize;
+    let attempts = 0;
+    const maxCompressionAttempts = 3;
+
+    while (finalSize > effectiveMaxSize && attempts < maxCompressionAttempts) {
+      attempts++;
       logger.warn(
-        'Compression did not meet target size, re-compressing more aggressively',
+        `Compression attempt ${attempts} did not meet target size, re-compressing more aggressively`,
         {
           target: effectiveMaxSize,
-          actual: compressedSize,
+          actual: finalSize,
           originalSize,
         }
       );
 
-      // Re-compress with more aggressive settings
+      // Progressively more aggressive compression
+      const qualityMultiplier = Math.pow(0.7, attempts); // 0.7, 0.49, 0.343...
+      const dimensionMultiplier = Math.pow(0.8, attempts); // 0.8, 0.64, 0.512...
+
       const aggressiveOptions: Parameters<typeof compressImageWithWorker>[1] = {
         format: 'image/jpeg',
         targetSizeKB: Math.ceil(effectiveMaxSize / 1024),
-        quality: Math.max(0.5, (options.quality || 0.9) * 0.7), // Reduce quality by 30%
-        maxWidth: Math.floor((options.maxWidth || 2048) * 0.8), // Reduce dimensions by 20%
-        maxHeight: Math.floor((options.maxHeight || 2048) * 0.8),
+        quality: Math.max(0.3, (options.quality || 0.9) * qualityMultiplier),
+        maxWidth: Math.max(800, Math.floor((options.maxWidth || 2048) * dimensionMultiplier)),
+        maxHeight: Math.max(800, Math.floor((options.maxHeight || 2048) * dimensionMultiplier)),
       };
 
       compressionResult = await compressImageWithWorker(
         base64Data,
         aggressiveOptions
       );
-      const finalSize = getBase64ImageSize(compressionResult.compressedImage);
+      finalSize = getBase64ImageSize(compressionResult.compressedImage);
+    }
 
-      // If still too large after aggressive compression, log warning but proceed
-      // (Some images may not compress well, but we'll catch this in storage validation)
-      if (finalSize > effectiveMaxSize) {
-        logger.warn(
-          'Image still exceeds target size after aggressive compression',
-          {
-            target: effectiveMaxSize,
-            finalSize,
-            originalSize,
-          }
-        );
-      }
+    // CRITICAL: If we still can't compress below limit, reject the image
+    // This prevents 413 errors when sending to API
+    if (finalSize > effectiveMaxSize) {
+      const errorMessage = `Image too large after compression: ${Math.round(finalSize / 1024 / 1024 * 100) / 100}MB (max: ${Math.round(effectiveMaxSize / 1024 / 1024 * 100) / 100}MB). Please try a smaller or simpler image.`;
+      logger.error('Image compression failed to meet size limit', {
+        target: effectiveMaxSize,
+        finalSize,
+        originalSize,
+        attempts,
+      });
+      throw new Error(errorMessage);
     }
 
     // Verify compressed image is still a valid data URL

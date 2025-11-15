@@ -175,11 +175,12 @@ export function validateImageData(data: unknown): ValidationResult {
     // Base64 encoded data is ~33% larger than original
     const estimatedSize = (image.length * 3) / 4;
 
-    if (estimatedSize > APP_CONFIG.IMAGE.MAX_FILE_SIZE) {
+    // Use API-specific size limit (more aggressive than storage limit)
+    if (estimatedSize > APP_CONFIG.IMAGE.MAX_API_IMAGE_SIZE) {
       return {
         isValid: false,
         error: {
-          message: `Image ${i + 1} is too large. Maximum size is ${Math.round(APP_CONFIG.IMAGE.MAX_FILE_SIZE / (1024 * 1024))}MB`,
+          message: `Image ${i + 1} is too large. Maximum size is ${Math.round(APP_CONFIG.IMAGE.MAX_API_IMAGE_SIZE / (1024 * 1024))}MB`,
           code: 'IMAGE_TOO_LARGE',
           statusCode: 400,
         },
@@ -196,10 +197,11 @@ export function validateImageData(data: unknown): ValidationResult {
 export async function validateImageAnalysisRequest(
   request: NextRequest
 ): Promise<ValidationResult> {
-  // Validate request size first
+  // Validate request size first - use API-specific total payload limit
+  // This ensures we stay under Vercel's 4.5MB serverless function limit
   const sizeValidation = await validateRequestSize(
     request,
-    APP_CONFIG.IMAGE.MAX_FILE_SIZE * APP_CONFIG.IMAGE.MAX_IMAGES_PER_REQUEST
+    APP_CONFIG.IMAGE.MAX_TOTAL_API_PAYLOAD
   );
 
   if (!sizeValidation.isValid) {

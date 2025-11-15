@@ -58,7 +58,8 @@ export function MultiCameraCapture({
    */
   const compressImageSmart = async (
     base64Data: string,
-    maxSizeBytes: number = APP_CONFIG.IMAGE.MAX_FILE_SIZE
+    // Use API-specific size limit for transmission (more aggressive than storage limit)
+    maxSizeBytes: number = APP_CONFIG.IMAGE.MAX_API_IMAGE_SIZE
   ) => {
     const { getBase64ImageSize } = await import('@/lib/utils/image-utils');
     const originalSize = getBase64ImageSize(base64Data);
@@ -82,17 +83,20 @@ export function MultiCameraCapture({
     // Convert maxSizeBytes to targetSizeKB for worker
     options.targetSizeKB = Math.ceil(maxSizeBytes / 1024);
 
-    // For very large images, also reduce dimensions
+    // Aggressive compression for API transmission to stay under Vercel 4.5MB limit
+    // Use API_MAX_DIMENSION (1024px) for all images to ensure consistent sizing
     if (originalSize > maxSizeBytes * 4) {
-      options.maxWidth = 1920;
-      options.maxHeight = 1920;
-      options.quality = 0.8;
+      options.maxWidth = APP_CONFIG.IMAGE.API_MAX_DIMENSION;
+      options.maxHeight = APP_CONFIG.IMAGE.API_MAX_DIMENSION;
+      options.quality = 0.7; // Lower quality for very large images
     } else if (originalSize > maxSizeBytes * 2) {
-      options.maxWidth = 2048;
-      options.maxHeight = 2048;
-      options.quality = 0.85;
+      options.maxWidth = APP_CONFIG.IMAGE.API_MAX_DIMENSION;
+      options.maxHeight = APP_CONFIG.IMAGE.API_MAX_DIMENSION;
+      options.quality = 0.75;
     } else {
-      options.quality = 0.9;
+      options.maxWidth = APP_CONFIG.IMAGE.API_MAX_DIMENSION;
+      options.maxHeight = APP_CONFIG.IMAGE.API_MAX_DIMENSION;
+      options.quality = 0.8; // Good balance for API transmission
     }
 
     return await compressImageWithWorker(base64Data, options);

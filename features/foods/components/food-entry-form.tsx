@@ -38,6 +38,7 @@ import {
   type FoodSubmissionData,
 } from '@/lib/services/food-submission';
 import { getBase64ImageSize } from '@/lib/utils/image-utils';
+import { APP_CONFIG } from '@/lib/config/constants';
 import {
   Popover,
   PopoverContent,
@@ -192,9 +193,10 @@ export function FoodEntryForm({
 
       if (!isMountedRef.current) return;
 
-      // Comprehensive image validation
-      const maxImageSize = 10 * 1024 * 1024; // 10MB per image
-      const maxTotalImages = 5; // Maximum number of images
+      // Comprehensive image validation using API limits
+      const maxImageSize = APP_CONFIG.IMAGE.MAX_API_IMAGE_SIZE; // 1.2MB per image for API calls
+      const maxTotalPayload = APP_CONFIG.IMAGE.MAX_TOTAL_API_PAYLOAD; // 4MB total payload limit
+      const maxTotalImages = APP_CONFIG.IMAGE.MAX_IMAGES_PER_REQUEST; // Maximum number of images
       const validationErrors = [];
 
       // Check image count limit
@@ -223,7 +225,7 @@ export function FoodEntryForm({
           continue;
         }
 
-        // Check file size (accurate calculation)
+        // Check file size (accurate calculation) - use API limit
         try {
           const imageSize = getBase64ImageSize(img);
           if (imageSize > maxImageSize) {
@@ -241,6 +243,31 @@ export function FoodEntryForm({
         }
       }
 
+      // Check total payload size for API transmission (critical for Vercel 4.5MB limit)
+      const totalPayloadSize = images.reduce((sum, img) => {
+        try {
+          return sum + getBase64ImageSize(img);
+        } catch {
+          return sum;
+        }
+      }, 0);
+
+      if (totalPayloadSize > maxTotalPayload) {
+        const totalMB = (totalPayloadSize / (1024 * 1024)).toFixed(1);
+        const maxMB = (maxTotalPayload / (1024 * 1024)).toFixed(1);
+
+        validationErrors.push(
+          `Combined image size (${totalMB}MB) exceeds API limit (${maxMB}MB). Please use fewer or smaller images.`
+        );
+
+        logger.error('Total payload size exceeds API limit', {
+          totalPayloadSize,
+          maxTotalPayload,
+          imageCount: images.length,
+          individualSizes: images.map(img => getBase64ImageSize(img)),
+        });
+      }
+
       // Report validation errors
       if (invalidImages.length > 0) {
         validationErrors.push(
@@ -252,7 +279,10 @@ export function FoodEntryForm({
         const oversizedList = oversizedImages
           .map(img => `#${img.index} (${img.size}MB)`)
           .join(', ');
-        validationErrors.push(`Images too large (max 10MB): ${oversizedList}`);
+        const maxMB = Math.round(maxImageSize / (1024 * 1024));
+        validationErrors.push(
+          `Images too large (max ${maxMB}MB): ${oversizedList}`
+        );
       }
 
       // If there are validation errors, report them and return

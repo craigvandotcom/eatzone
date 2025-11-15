@@ -276,10 +276,6 @@ export function FoodEntryForm({
         logger.debug('Sending images to analyze-image API', {
           imageCount: images.length,
           imageSizes: images.map(img => img.length),
-          imageFormats: images.map(img => {
-            const match = img.match(/^data:image\/(\w+);/);
-            return match ? match[1] : 'unknown';
-          }),
         });
 
         // Send single image or multiple images based on count
@@ -300,37 +296,22 @@ export function FoodEntryForm({
         }
 
         if (!response.ok) {
-          // Enhanced error parsing with detailed logging
+          // Simplified error parsing - just get the message and status
           let errorMessage = 'Unknown error';
-          let errorDetails: {
-            code?: string;
-            message?: string;
-            [key: string]: unknown;
-          } = {};
           try {
             const errorData = await response.json();
             errorMessage =
               errorData?.error?.message || errorData?.message || errorMessage;
-            errorDetails = errorData?.error || {};
-
-            // Log full error details for debugging
-            logger.error('Image analysis API error - detailed', {
-              status: response.status,
-              statusText: response.statusText,
-              errorMessage,
-              errorCode: errorDetails.code,
-              errorDetails,
-              imageCount,
-            });
           } catch {
             // Fallback to status text if JSON parsing fails
             errorMessage = response.statusText || errorMessage;
-            logger.error('Image analysis API error - JSON parse failed', {
-              status: response.status,
-              statusText: response.statusText,
-              imageCount,
-            });
           }
+
+          logger.error('Image analysis API error', {
+            status: response.status,
+            statusText: response.statusText,
+            errorMessage,
+          });
 
           throw new Error(`Analysis failed: ${errorMessage}`);
         }

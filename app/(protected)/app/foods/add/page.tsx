@@ -40,62 +40,10 @@ export default function AddFoodPage() {
         try {
           const images = JSON.parse(pendingImagesJson);
           if (Array.isArray(images) && images.length > 0) {
-            // Fix D: Comprehensive validation of retrieved images
-            logger.debug('Images retrieved from sessionStorage', {
-              totalImages: images.length,
-              firstImageStart: images[0]?.substring(0, 100),
-              imageTypes: images.map(img => {
-                if (!img || typeof img !== 'string') return 'invalid-type';
-                if (img.startsWith('data:image/')) return 'data-url';
-                if (img.startsWith('http')) return 'http-url';
-                return 'unknown';
-              }),
-            });
-
-            // Validate all images are proper base64 data URLs
-            const validImages = images.filter(img => {
-              // Check type
-              if (!img || typeof img !== 'string') {
-                logger.warn('Invalid image type detected', {
-                  type: typeof img,
-                  value: String(img).substring(0, 50),
-                });
-                return false;
-              }
-
-              // Check format
-              if (!img.startsWith('data:image/')) {
-                logger.warn('Image does not start with data:image/', {
-                  start: img.substring(0, 50),
-                });
-                return false;
-              }
-
-              // Check structure (must have comma separator)
-              if (!img.includes(',') || !img.includes(';base64,')) {
-                logger.warn('Image missing base64 separator', {
-                  hasComma: img.includes(','),
-                  hasBase64Marker: img.includes(';base64,'),
-                });
-                return false;
-              }
-
-              // Basic sanity check - data URL should be reasonably long
-              if (img.length < 100) {
-                logger.warn('Image data URL suspiciously short', {
-                  length: img.length,
-                });
-                return false;
-              }
-
-              return true;
-            });
-
-            logger.debug('Image validation results', {
-              totalImages: images.length,
-              validImages: validImages.length,
-              invalidCount: images.length - validImages.length,
-            });
+            // Validate all images are proper base64
+            const validImages = images.filter(
+              img => typeof img === 'string' && img.startsWith('data:image/')
+            );
 
             if (validImages.length > 0) {
               logger.debug('Valid images found', {
@@ -103,22 +51,7 @@ export default function AddFoodPage() {
                 validImages: validImages.length,
               });
               setCapturedImages(validImages);
-            } else {
-              // Fix D: Better error messaging when no valid images found
-              logger.error('No valid images after filtering', {
-                totalImages: images.length,
-                sampleImageStart: images[0]?.substring(0, 100),
-              });
-              toast.error('No valid images found. Please recapture.');
-              router.push('/app');
             }
-          } else {
-            logger.warn('Invalid images array from sessionStorage', {
-              isArray: Array.isArray(images),
-              length: images?.length,
-            });
-            toast.error('Invalid image data. Please try again.');
-            router.push('/app');
           }
         } catch (error) {
           logger.error('Error parsing images from sessionStorage', error);

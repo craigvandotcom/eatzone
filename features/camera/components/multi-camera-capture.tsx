@@ -55,9 +55,6 @@ export function MultiCameraCapture({
   /**
    * Compress image using Web Worker with smart compression strategy
    * Uses the same logic as smartCompressImage but with Web Worker support
-   *
-   * Fix A: Ensures compression respects Vercel API body size limits (1MB per image)
-   * Fix B: Verifies compression actually reduced size and re-compresses if needed
    */
   const compressImageSmart = async (
     base64Data: string,
@@ -66,15 +63,8 @@ export function MultiCameraCapture({
     const { getBase64ImageSize } = await import('@/lib/utils/image-utils');
     const originalSize = getBase64ImageSize(base64Data);
 
-    // Fix A: Cap maxSizeBytes to Vercel API-safe limit (1MB per image)
-    // Vercel has a 4.5MB hard limit for serverless function request bodies
-    // With JSON overhead and multiple images, 1MB per image ensures we stay under limit
-    // Example: 3 images @ 1MB each = ~3MB + JSON overhead = ~3.5MB (safe)
-    const VERCEL_API_SAFE_LIMIT = 1 * 1024 * 1024; // 1MB per image
-    const effectiveMaxSize = Math.min(maxSizeBytes, VERCEL_API_SAFE_LIMIT);
-
     // If image is already small enough, return as-is
-    if (originalSize <= effectiveMaxSize) {
+    if (originalSize <= maxSizeBytes) {
       return {
         compressedImage: base64Data,
         originalSize,
@@ -90,14 +80,14 @@ export function MultiCameraCapture({
     };
 
     // Convert maxSizeBytes to targetSizeKB for worker
-    options.targetSizeKB = Math.ceil(effectiveMaxSize / 1024);
+    options.targetSizeKB = Math.ceil(maxSizeBytes / 1024);
 
     // For very large images, also reduce dimensions
-    if (originalSize > effectiveMaxSize * 4) {
+    if (originalSize > maxSizeBytes * 4) {
       options.maxWidth = 1920;
       options.maxHeight = 1920;
       options.quality = 0.8;
-    } else if (originalSize > effectiveMaxSize * 2) {
+    } else if (originalSize > maxSizeBytes * 2) {
       options.maxWidth = 2048;
       options.maxHeight = 2048;
       options.quality = 0.85;
@@ -105,73 +95,7 @@ export function MultiCameraCapture({
       options.quality = 0.9;
     }
 
-    // First compression attempt
-    let compressionResult = await compressImageWithWorker(base64Data, options);
-    const compressedSize = getBase64ImageSize(
-      compressionResult.compressedImage
-    );
-
-    // Fix B: Verify compression actually reduced size - re-compress if needed
-    // CRITICAL: We MUST guarantee images are under 1MB to prevent Vercel 413 errors
-    let finalSize = compressedSize;
-    let attempts = 0;
-    const maxCompressionAttempts = 3;
-
-    while (finalSize > effectiveMaxSize && attempts < maxCompressionAttempts) {
-      attempts++;
-      logger.warn(
-        `Compression attempt ${attempts} did not meet target size, re-compressing more aggressively`,
-        {
-          target: effectiveMaxSize,
-          actual: finalSize,
-          originalSize,
-        }
-      );
-
-      // Progressively more aggressive compression
-      const qualityMultiplier = Math.pow(0.7, attempts); // 0.7, 0.49, 0.343...
-      const dimensionMultiplier = Math.pow(0.8, attempts); // 0.8, 0.64, 0.512...
-
-      const aggressiveOptions: Parameters<typeof compressImageWithWorker>[1] = {
-        format: 'image/jpeg',
-        targetSizeKB: Math.ceil(effectiveMaxSize / 1024),
-        quality: Math.max(0.3, (options.quality || 0.9) * qualityMultiplier),
-        maxWidth: Math.max(800, Math.floor((options.maxWidth || 2048) * dimensionMultiplier)),
-        maxHeight: Math.max(800, Math.floor((options.maxHeight || 2048) * dimensionMultiplier)),
-      };
-
-      compressionResult = await compressImageWithWorker(
-        base64Data,
-        aggressiveOptions
-      );
-      finalSize = getBase64ImageSize(compressionResult.compressedImage);
-    }
-
-    // CRITICAL: If we still can't compress below limit, reject the image
-    // This prevents 413 errors when sending to API
-    if (finalSize > effectiveMaxSize) {
-      const errorMessage = `Image too large after compression: ${Math.round(finalSize / 1024 / 1024 * 100) / 100}MB (max: ${Math.round(effectiveMaxSize / 1024 / 1024 * 100) / 100}MB). Please try a smaller or simpler image.`;
-      logger.error('Image compression failed to meet size limit', {
-        target: effectiveMaxSize,
-        finalSize,
-        originalSize,
-        attempts,
-      });
-      throw new Error(errorMessage);
-    }
-
-    // Verify compressed image is still a valid data URL
-    if (
-      !compressionResult.compressedImage.startsWith('data:image/') ||
-      !compressionResult.compressedImage.includes(',')
-    ) {
-      logger.error('Compression produced invalid data URL format', {
-        resultStart: compressionResult.compressedImage.substring(0, 100),
-      });
-      throw new Error('Compression produced invalid image format');
-    }
-
-    return compressionResult;
+    return await compressImageWithWorker(base64Data, options);
   };
 
   useEffect(() => {
@@ -523,34 +447,40 @@ export function MultiCameraCapture({
               };
             }
 
-            // 4.5. Server-side validation REMOVED
-            // This was causing 413 "Request Entity Too Large" errors because:
-            // - Validation happened BEFORE compression (uncompressed images are huge)
-            // - Vercel has a 4.5MB body size limit for API routes
-            // - Even a single uncompressed photo can exceed this limit
-            // Client-side validation (steps 1-4 above) is sufficient and comprehensive:
-            // - File size checks, MIME type validation, extension validation, magic number validation
-            // Server-side validation can be added AFTER compression if needed in the future
+            // 4.5. Optional: Server-side backup validation in production (security layer)
+            if (process.env.NODE_ENV === 'production') {
+              try {
+                const serverValidation = await fetch('/api/upload-validation', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    filename: file.name,
+                    mimeType: file.type,
+                    size: file.size,
+                    base64Data,
+                  }),
+                });
+
+                if (!serverValidation.ok) {
+                  // Log mismatch but don't block - client validation already passed
+                  logger.warn('Server validation mismatch detected', {
+                    filename: file.name,
+                    clientValid: true,
+                    serverStatus: serverValidation.status,
+                  });
+                  // Continue processing - client validation is primary
+                }
+              } catch (error) {
+                // Log but don't block - it's a backup check
+                logger.error('Server validation check failed', {
+                  filename: file.name,
+                  error: error instanceof Error ? error.message : String(error),
+                });
+              }
+            }
 
             // 5. Compress image using Web Worker (matches camera capture behavior)
             const compressionResult = await compressImageSmart(base64Data);
-
-            // Verify compressed image format is valid
-            const compressedImage = compressionResult.compressedImage;
-            if (
-              !compressedImage.startsWith('data:image/') ||
-              !compressedImage.includes(',')
-            ) {
-              logger.error('Compressed image has invalid format', {
-                filename: file.name,
-                resultStart: compressedImage.substring(0, 100),
-              });
-              return {
-                success: false,
-                filename: file.name,
-                error: 'Compression produced invalid image format',
-              };
-            }
 
             logger.debug('Image uploaded and compressed', {
               filename: file.name,
@@ -561,7 +491,7 @@ export function MultiCameraCapture({
 
             return {
               success: true,
-              base64Data: compressedImage,
+              base64Data: compressionResult.compressedImage,
               filename: file.name,
             };
           } catch (error) {

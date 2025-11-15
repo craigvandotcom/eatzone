@@ -153,41 +153,6 @@ function Dashboard() {
 
         // Store all captured images as JSON array in sessionStorage
         sessionStorage.setItem('pendingFoodImages', imagesJson);
-
-        // Fix C: Verify storage succeeded - detect truncation or quota exceeded
-        const stored = sessionStorage.getItem('pendingFoodImages');
-        if (!stored) {
-          logger.error('SessionStorage write failed - data was not stored');
-          toast({
-            title: 'Storage error',
-            description:
-              'Failed to save images. Please try again with fewer or smaller images.',
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        // Verify stored data matches what we wrote (detects truncation)
-        if (stored !== imagesJson) {
-          logger.error('SessionStorage write failed - data was truncated', {
-            expectedLength: imagesJson.length,
-            actualLength: stored.length,
-            difference: imagesJson.length - stored.length,
-          });
-          toast({
-            title: 'Storage error',
-            description:
-              'Images too large for storage. Please try with fewer or smaller images.',
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        logger.debug('Images successfully stored in sessionStorage', {
-          imageCount: images.length,
-          storageSize: stored.length,
-        });
-
         // Route is prefetched on mount for instant navigation
         router.replace('/app/foods/add');
       } catch (error) {

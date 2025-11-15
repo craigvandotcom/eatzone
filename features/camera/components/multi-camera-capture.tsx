@@ -55,6 +55,9 @@ export function MultiCameraCapture({
   /**
    * Compress image using Web Worker with smart compression strategy
    * Uses the same logic as smartCompressImage but with Web Worker support
+   *
+   * Fix A: Ensures compression respects sessionStorage limits (3MB per image)
+   * Fix B: Verifies compression actually reduced size and re-compresses if needed
    */
   const compressImageSmart = async (
     base64Data: string,
@@ -63,8 +66,13 @@ export function MultiCameraCapture({
     const { getBase64ImageSize } = await import('@/lib/utils/image-utils');
     const originalSize = getBase64ImageSize(base64Data);
 
+    // Fix A: Cap maxSizeBytes to sessionStorage-safe limit (3MB per image)
+    // SessionStorage has ~4MB total limit, so 3MB per image leaves room for overhead
+    const SESSION_STORAGE_SAFE_LIMIT = 3 * 1024 * 1024; // 3MB
+    const effectiveMaxSize = Math.min(maxSizeBytes, SESSION_STORAGE_SAFE_LIMIT);
+
     // If image is already small enough, return as-is
-    if (originalSize <= maxSizeBytes) {
+    if (originalSize <= effectiveMaxSize) {
       return {
         compressedImage: base64Data,
         originalSize,
@@ -80,14 +88,14 @@ export function MultiCameraCapture({
     };
 
     // Convert maxSizeBytes to targetSizeKB for worker
-    options.targetSizeKB = Math.ceil(maxSizeBytes / 1024);
+    options.targetSizeKB = Math.ceil(effectiveMaxSize / 1024);
 
     // For very large images, also reduce dimensions
-    if (originalSize > maxSizeBytes * 4) {
+    if (originalSize > effectiveMaxSize * 4) {
       options.maxWidth = 1920;
       options.maxHeight = 1920;
       options.quality = 0.8;
-    } else if (originalSize > maxSizeBytes * 2) {
+    } else if (originalSize > effectiveMaxSize * 2) {
       options.maxWidth = 2048;
       options.maxHeight = 2048;
       options.quality = 0.85;
@@ -95,7 +103,64 @@ export function MultiCameraCapture({
       options.quality = 0.9;
     }
 
-    return await compressImageWithWorker(base64Data, options);
+    // First compression attempt
+    let compressionResult = await compressImageWithWorker(base64Data, options);
+    const compressedSize = getBase64ImageSize(
+      compressionResult.compressedImage
+    );
+
+    // Fix B: Verify compression actually reduced size - re-compress if needed
+    if (compressedSize > effectiveMaxSize) {
+      logger.warn(
+        'Compression did not meet target size, re-compressing more aggressively',
+        {
+          target: effectiveMaxSize,
+          actual: compressedSize,
+          originalSize,
+        }
+      );
+
+      // Re-compress with more aggressive settings
+      const aggressiveOptions: Parameters<typeof compressImageWithWorker>[1] = {
+        format: 'image/jpeg',
+        targetSizeKB: Math.ceil(effectiveMaxSize / 1024),
+        quality: Math.max(0.5, (options.quality || 0.9) * 0.7), // Reduce quality by 30%
+        maxWidth: Math.floor((options.maxWidth || 2048) * 0.8), // Reduce dimensions by 20%
+        maxHeight: Math.floor((options.maxHeight || 2048) * 0.8),
+      };
+
+      compressionResult = await compressImageWithWorker(
+        base64Data,
+        aggressiveOptions
+      );
+      const finalSize = getBase64ImageSize(compressionResult.compressedImage);
+
+      // If still too large after aggressive compression, log warning but proceed
+      // (Some images may not compress well, but we'll catch this in storage validation)
+      if (finalSize > effectiveMaxSize) {
+        logger.warn(
+          'Image still exceeds target size after aggressive compression',
+          {
+            target: effectiveMaxSize,
+            finalSize,
+            originalSize,
+          }
+        );
+      }
+    }
+
+    // Verify compressed image is still a valid data URL
+    if (
+      !compressionResult.compressedImage.startsWith('data:image/') ||
+      !compressionResult.compressedImage.includes(',')
+    ) {
+      logger.error('Compression produced invalid data URL format', {
+        resultStart: compressionResult.compressedImage.substring(0, 100),
+      });
+      throw new Error('Compression produced invalid image format');
+    }
+
+    return compressionResult;
   };
 
   useEffect(() => {
@@ -482,6 +547,23 @@ export function MultiCameraCapture({
             // 5. Compress image using Web Worker (matches camera capture behavior)
             const compressionResult = await compressImageSmart(base64Data);
 
+            // Verify compressed image format is valid
+            const compressedImage = compressionResult.compressedImage;
+            if (
+              !compressedImage.startsWith('data:image/') ||
+              !compressedImage.includes(',')
+            ) {
+              logger.error('Compressed image has invalid format', {
+                filename: file.name,
+                resultStart: compressedImage.substring(0, 100),
+              });
+              return {
+                success: false,
+                filename: file.name,
+                error: 'Compression produced invalid image format',
+              };
+            }
+
             logger.debug('Image uploaded and compressed', {
               filename: file.name,
               originalSize: compressionResult.originalSize,
@@ -491,7 +573,7 @@ export function MultiCameraCapture({
 
             return {
               success: true,
-              base64Data: compressionResult.compressedImage,
+              base64Data: compressedImage,
               filename: file.name,
             };
           } catch (error) {

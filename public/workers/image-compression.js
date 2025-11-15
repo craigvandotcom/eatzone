@@ -73,57 +73,101 @@ function compressImage(imageData, options = {}) {
         // Draw and compress image
         ctx.drawImage(img, 0, 0, width, height);
 
-        let compressedData;
         let currentQuality = quality;
         let attempts = 0;
         const maxAttempts = 10;
 
-        do {
-          // Convert to compressed format
-          compressedData = canvas.convertToBlob({
+        // Async compression loop
+        const tryCompress = async () => {
+          do {
+            attempts++;
+
+            // Convert to compressed format (this is async!)
+            const compressedData = await canvas.convertToBlob({
+              type: format,
+              quality: currentQuality,
+            });
+
+            // Check size if target is specified
+            if (targetSizeKB) {
+              const currentSizeKB = compressedData.size / 1024;
+
+              if (currentSizeKB <= targetSizeKB || attempts >= maxAttempts) {
+                // Success - convert blob to base64 and resolve
+                const reader = new FileReader();
+                reader.onload = function () {
+                  const result = {
+                    compressedImage: reader.result,
+                    originalSize: estimateBase64Size(imageData),
+                    compressedSize: compressedData.size,
+                    quality: currentQuality,
+                    compressionRatio:
+                      estimateBase64Size(imageData) / compressedData.size,
+                    dimensions: { width, height },
+                    originalDimensions: {
+                      width: img.width,
+                      height: img.height,
+                    },
+                  };
+                  resolve(result);
+                };
+                reader.onerror = () =>
+                  reject(new Error('Failed to read compressed image data'));
+                reader.readAsDataURL(compressedData);
+                return;
+              }
+
+              // Reduce quality for next attempt
+              currentQuality = Math.max(0.1, currentQuality * 0.9);
+            } else {
+              // No target size - just compress once and return
+              const reader = new FileReader();
+              reader.onload = function () {
+                const result = {
+                  compressedImage: reader.result,
+                  originalSize: estimateBase64Size(imageData),
+                  compressedSize: compressedData.size,
+                  quality: currentQuality,
+                  compressionRatio:
+                    estimateBase64Size(imageData) / compressedData.size,
+                  dimensions: { width, height },
+                  originalDimensions: { width: img.width, height: img.height },
+                };
+                resolve(result);
+              };
+              reader.onerror = () =>
+                reject(new Error('Failed to read compressed image data'));
+              reader.readAsDataURL(compressedData);
+              return;
+            }
+          } while (attempts < maxAttempts);
+
+          // If we get here, we exceeded max attempts - return best effort
+          const finalBlob = await canvas.convertToBlob({
             type: format,
             quality: currentQuality,
           });
 
-          // Check size if target is specified
-          if (targetSizeKB) {
-            const currentSizeKB = estimateBlobSize(compressedData) / 1024;
-
-            if (currentSizeKB <= targetSizeKB || attempts >= maxAttempts) {
-              break;
-            }
-
-            // Reduce quality for next attempt
-            currentQuality = Math.max(0.1, currentQuality * 0.9);
-          } else {
-            break;
-          }
-
-          attempts++;
-        } while (attempts < maxAttempts);
-
-        // Convert blob to base64
-        const reader = new FileReader();
-        reader.onload = function () {
-          const result = {
-            compressedImage: reader.result,
-            originalSize: estimateBase64Size(imageData),
-            compressedSize: estimateBlobSize(compressedData),
-            quality: currentQuality,
-            compressionRatio:
-              estimateBase64Size(imageData) / estimateBlobSize(compressedData),
-            dimensions: { width, height },
-            originalDimensions: { width: img.width, height: img.height },
+          const reader = new FileReader();
+          reader.onload = function () {
+            const result = {
+              compressedImage: reader.result,
+              originalSize: estimateBase64Size(imageData),
+              compressedSize: finalBlob.size,
+              quality: currentQuality,
+              compressionRatio: estimateBase64Size(imageData) / finalBlob.size,
+              dimensions: { width, height },
+              originalDimensions: { width: img.width, height: img.height },
+            };
+            resolve(result);
           };
-
-          resolve(result);
+          reader.onerror = () =>
+            reject(new Error('Failed to read compressed image data'));
+          reader.readAsDataURL(finalBlob);
         };
 
-        reader.onerror = function () {
-          reject(new Error('Failed to read compressed image data'));
-        };
-
-        reader.readAsDataURL(compressedData);
+        // Start async compression
+        tryCompress().catch(reject);
       } catch (error) {
         reject(new Error(`Image compression failed: ${error.message}`));
       }

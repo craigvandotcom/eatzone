@@ -4,7 +4,7 @@
  */
 
 import { logger } from '@/lib/utils/logger';
-import { smartCompressImage } from '@/lib/utils/image-compression';
+import { compressImage } from '@/lib/utils/image-compression';
 
 export interface CompressionOptions {
   maxWidth?: number;
@@ -158,15 +158,28 @@ class WorkerCompressionManager {
     options: CompressionOptions
   ): Promise<CompressionResult> {
     // Use existing compression function as fallback
-    const compressionOptions: any = {};
+    // Convert targetSizeKB to maxSizeBytes for main thread compression
+    const maxSizeBytes = options.targetSizeKB
+      ? options.targetSizeKB * 1024
+      : undefined;
+
+    const compressionOptions: any = {
+      maxSizeBytes,
+    };
+
     if (options.maxWidth !== undefined)
       compressionOptions.maxWidth = options.maxWidth;
     if (options.maxHeight !== undefined)
       compressionOptions.maxHeight = options.maxHeight;
     if (options.quality !== undefined)
       compressionOptions.quality = options.quality;
+    if (options.format !== undefined)
+      compressionOptions.format =
+        options.format === 'image/jpeg'
+          ? 'jpeg'
+          : options.format.replace('image/', '');
 
-    return await smartCompressImage(imageData, compressionOptions);
+    return await compressImage(imageData, compressionOptions);
   }
 
   /**

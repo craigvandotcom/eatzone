@@ -22,10 +22,16 @@ const getEnvFloat = (key: string, defaultValue: number): number => {
 // Image processing configuration
 export const IMAGE_CONFIG = {
   // File size limits
-  MAX_FILE_SIZE: getEnvNumber('MAX_IMAGE_FILE_SIZE', 10 * 1024 * 1024), // 10MB default
+  MAX_FILE_SIZE: getEnvNumber('MAX_IMAGE_FILE_SIZE', 10 * 1024 * 1024), // 10MB default (for storage)
+
+  // API transmission limits (more aggressive due to Vercel 4.5MB request body limit)
+  // With 3 images + JSON overhead, target 1.2MB per image = ~3.6MB total
+  MAX_API_IMAGE_SIZE: getEnvNumber('MAX_API_IMAGE_SIZE', 1.2 * 1024 * 1024), // 1.2MB per image for API calls
+  MAX_TOTAL_API_PAYLOAD: getEnvNumber('MAX_TOTAL_API_PAYLOAD', 4 * 1024 * 1024), // 4MB total (safety margin under 4.5MB)
 
   // Image dimensions
-  MAX_DIMENSION: 800, // 800px max dimension
+  MAX_DIMENSION: 800, // 800px max dimension (for storage)
+  API_MAX_DIMENSION: 1024, // 1024px for API calls (good quality/size balance)
   QUALITY: 0.75, // 75% JPEG quality
   FORMAT: 'image/jpeg' as const,
 

@@ -56,7 +56,7 @@ export function MultiCameraCapture({
    * Compress image using Web Worker with smart compression strategy
    * Uses the same logic as smartCompressImage but with Web Worker support
    *
-   * Fix A: Ensures compression respects sessionStorage limits (3MB per image)
+   * Fix A: Ensures compression respects Vercel API body size limits (1MB per image)
    * Fix B: Verifies compression actually reduced size and re-compresses if needed
    */
   const compressImageSmart = async (
@@ -66,10 +66,12 @@ export function MultiCameraCapture({
     const { getBase64ImageSize } = await import('@/lib/utils/image-utils');
     const originalSize = getBase64ImageSize(base64Data);
 
-    // Fix A: Cap maxSizeBytes to sessionStorage-safe limit (3MB per image)
-    // SessionStorage has ~4MB total limit, so 3MB per image leaves room for overhead
-    const SESSION_STORAGE_SAFE_LIMIT = 3 * 1024 * 1024; // 3MB
-    const effectiveMaxSize = Math.min(maxSizeBytes, SESSION_STORAGE_SAFE_LIMIT);
+    // Fix A: Cap maxSizeBytes to Vercel API-safe limit (1MB per image)
+    // Vercel has a 4.5MB hard limit for serverless function request bodies
+    // With JSON overhead and multiple images, 1MB per image ensures we stay under limit
+    // Example: 3 images @ 1MB each = ~3MB + JSON overhead = ~3.5MB (safe)
+    const VERCEL_API_SAFE_LIMIT = 1 * 1024 * 1024; // 1MB per image
+    const effectiveMaxSize = Math.min(maxSizeBytes, VERCEL_API_SAFE_LIMIT);
 
     // If image is already small enough, return as-is
     if (originalSize <= effectiveMaxSize) {
